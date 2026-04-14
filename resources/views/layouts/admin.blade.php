@@ -149,28 +149,28 @@
         
         <!-- Zona central: botones nav -->
         <div class="topbar-central">
-            <button class="btn-nav-icon activo" data-ruta="/admin/dashboard" title="Panel general">
+            <button class="btn-nav-icon {{ request()->is('admin/dashboard') ? 'activo' : '' }}" data-ruta="/admin/dashboard" title="Panel general">
                 <i class="bi bi-grid"></i>
             </button>
-            <button class="btn-nav-icon" data-ruta="/admin/usuarios" title="Usuarios">
+            <button class="btn-nav-icon {{ request()->is('admin/usuarios*') ? 'activo' : '' }}" data-ruta="/admin/usuarios" title="Usuarios">
                 <i class="bi bi-people"></i>
             </button>
-            <button class="btn-nav-icon" data-ruta="/admin/propiedades" title="Propiedades">
+            <button class="btn-nav-icon {{ request()->is('admin/propiedades*') ? 'activo' : '' }}" data-ruta="/admin/propiedades" title="Propiedades">
                 <i class="bi bi-house"></i>
             </button>
-            <button class="btn-nav-icon" data-ruta="/admin/alquileres" title="Alquileres">
+            <button class="btn-nav-icon {{ request()->is('admin/alquileres*') ? 'activo' : '' }}" data-ruta="/admin/alquileres" title="Alquileres">
                 <i class="bi bi-file-text"></i>
             </button>
-            <button class="btn-nav-icon" data-ruta="/admin/solicitudes" title="Solicitudes">
+            <button class="btn-nav-icon {{ request()->is('admin/solicitudes*') ? 'activo' : '' }}" data-ruta="/admin/solicitudes" title="Solicitudes">
                 <i class="bi bi-inbox"></i>
             </button>
-            <button class="btn-nav-icon" data-ruta="/admin/incidencias" title="Incidencias">
+            <button class="btn-nav-icon {{ request()->is('admin/incidencias*') ? 'activo' : '' }}" data-ruta="/admin/incidencias" title="Incidencias">
                 <i class="bi bi-exclamation-triangle"></i>
             </button>
-            <button class="btn-nav-icon" data-ruta="/admin/suscripciones" title="Suscripciones">
+            <button class="btn-nav-icon {{ request()->is('admin/suscripciones*') ? 'activo' : '' }}" data-ruta="/admin/suscripciones" title="Suscripciones">
                 <i class="bi bi-credit-card"></i>
             </button>
-            <button class="btn-nav-icon" data-ruta="/admin/configuracion" title="Configuración">
+            <button class="btn-nav-icon {{ request()->is('admin/configuracion*') ? 'activo' : '' }}" data-ruta="/admin/configuracion" title="Configuración">
                 <i class="bi bi-gear"></i>
             </button>
         </div>

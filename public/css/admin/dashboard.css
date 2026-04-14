@@ -1,0 +1,636 @@
+/* ========================================
+   DASHBOARD ADMIN — SPOTYSTAY
+   CSS Completo — No incluye estilos de layout.admin
+   ======================================== */
+
+/* ── Reset y base ── */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #F0F4F8;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ── Hero Admin ── */
+.hero-admin {
+    background: #035498;
+    padding: 36px 40px;
+    border-radius: 0 0 20px 20px;
+    position: relative;
+    overflow: hidden;
+    margin: 0 0 16px 0;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-admin h1 {
+    color: white;
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.hero-admin p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    margin-top: 4px;
+    margin-bottom: 0;
+}
+
+/* ── Círculos decorativos hero ── */
+.hero-deco {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    pointer-events: none;
+}
+
+.hero-deco-1 {
+    width: 300px;
+    height: 300px;
+    top: -100px;
+    right: -80px;
+}
+
+.hero-deco-2 {
+    width: 200px;
+    height: 200px;
+    bottom: -80px;
+    right: 200px;
+}
+
+.hero-deco-3 {
+    width: 150px;
+    height: 150px;
+    top: 20px;
+    right: 250px;
+}
+
+/* ── KPI Grid ── */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    padding: 24px 40px 0 40px;
+}
+
+/* ── KPI Card ── */
+.kpi-card {
+    background: white;
+    border-radius: 14px;
+    padding: 28px 24px;
+    border: 1px solid #E5E7EB;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.3s ease;
+}
+
+.kpi-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ── KPI Header ── */
+.kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.kpi-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #6B7280;
+    font-weight: 500;
+}
+
+/* ── KPI Icon ── */
+.kpi-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.kpi-icon-blue {
+    background: #E8F0FB;
+    color: #035498;
+}
+
+.kpi-icon-green {
+    background: #E6F7F1;
+    color: #1AA068;
+}
+
+.kpi-icon-orange {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.kpi-icon-red {
+    background: #FEE2E2;
+    color: #EF4444;
+}
+
+/* ── KPI Número ── */
+.kpi-numero {
+    font-size: 40px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1;
+    margin: 0;
+}
+
+.kpi-numero-orange {
+    color: #D97706;
+}
+
+.kpi-numero-red {
+    color: #EF4444;
+}
+
+.kpi-sub {
+    font-size: 13px;
+    color: #6B7280;
+    margin-top: 8px;
+    margin-bottom: 0;
+}
+
+/* ── Central Grid ── */
+.central-grid {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 16px;
+    padding: 24px 40px 0 40px;
+}
+
+/* ── Card Admin Base ── */
+.card-admin {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #E5E7EB;
+    overflow: hidden;
+}
+
+/* ── Card con franja superior ── */
+.card-con-franja {
+    position: relative;
+}
+
+.card-franja {
+    height: 3px;
+    width: 100%;
+    background: linear-gradient(90deg, #035498, #1AA068);
+}
+
+/* ── Card Header Admin ── */
+.card-header-admin {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #E5E7EB;
+    background: #F9FAFB;
+    font-weight: 600;
+    font-size: 15px;
+    color: #111827;
+}
+
+/* ── Buscador ── */
+.buscador-input {
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #111827;
+    outline: none;
+    background: white;
+    width: 160px;
+    font-family: inherit;
+}
+
+.buscador-input:focus {
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
+}
+
+/* ── Link ver todos ── */
+.link-ver-todos {
+    color: #035498;
+    font-size: 13px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.link-ver-todos:hover {
+    text-decoration: underline;
+    color: #024279;
+}
+
+/* ── Tabla Admin ── */
+.tabla-admin {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-admin thead th {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #9CA3AF;
+    letter-spacing: 0.8px;
+    padding: 12px 24px;
+    text-align: left;
+    font-weight: 500;
+    background: transparent;
+    border: none;
+}
+
+.tabla-admin tbody tr {
+    border-bottom: 1px solid #F3F4F6;
+    transition: background-color 0.2s ease;
+}
+
+.tabla-admin tbody tr:hover {
+    background: #F9FAFB;
+}
+
+.tabla-admin tbody td {
+    padding: 14px 24px;
+    font-size: 14px;
+    color: #111827;
+    border: none;
+}
+
+/* ── Badges estado ── */
+.badge-estado {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.badge-pendiente {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.badge-activo {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.badge-rechazado {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+/* ── Acciones tabla ── */
+.acciones-tabla {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.btn-aprobar {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #1AA068;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 0;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-aprobar:hover {
+    text-decoration: underline;
+    color: #148f4f;
+}
+
+.btn-rechazar {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #EF4444;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 0;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-rechazar:hover {
+    text-decoration: underline;
+    color: #dc2626;
+}
+
+.sin-accion {
+    color: #9CA3AF;
+    font-size: 14px;
+}
+
+/* ── Lista solicitudes ── */
+.lista-solicitudes {
+    padding: 0 8px;
+}
+
+.solicitud-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 16px;
+    border-bottom: 1px solid #F3F4F6;
+    transition: background-color 0.2s ease;
+}
+
+.solicitud-item:last-child {
+    border-bottom: none;
+}
+
+.solicitud-item:hover {
+    background: #F9FAFB;
+}
+
+.solicitud-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-weight: 600;
+    font-size: 13px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.solicitud-info {
+    flex: 1;
+}
+
+.solicitud-nombre {
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
+    margin: 0;
+}
+
+.solicitud-ciudad {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 0;
+    margin-top: 2px;
+}
+
+.solicitud-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    margin-left: auto;
+}
+
+.solicitud-tiempo {
+    font-size: 12px;
+    color: #9CA3AF;
+}
+
+.btn-revisar {
+    color: #035498;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-revisar:hover {
+    text-decoration: underline;
+    color: #024279;
+}
+
+/* ── Badge contador ── */
+.badge-contador {
+    background: #035498;
+    color: white;
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ── Card Footer Admin ── */
+.card-footer-admin {
+    padding: 14px 24px;
+    text-align: center;
+    border-top: 1px solid #F3F4F6;
+    background: #F9FAFB;
+}
+
+.card-footer-admin a {
+    color: #035498;
+    font-size: 13px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.card-footer-admin a:hover {
+    text-decoration: underline;
+    color: #024279;
+}
+
+/* ── Inferior Grid ── */
+.inferior-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 16px 40px 40px 40px;
+}
+
+/* ── Donut Container ── */
+.donut-container {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    padding: 24px;
+}
+
+.donut-wrapper {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    flex-shrink: 0;
+}
+
+.donut-centro {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.donut-numero {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.donut-label {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 0;
+    margin-top: 2px;
+}
+
+/* ── Donut Leyenda ── */
+.donut-leyenda {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.leyenda-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.leyenda-punto {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.leyenda-nombre {
+    font-size: 13px;
+    color: #374151;
+    flex: 1;
+}
+
+.leyenda-numero {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+}
+
+/* ── Timeline ── */
+.timeline {
+    position: relative;
+    padding: 24px 24px 24px 36px;
+}
+
+.timeline-linea {
+    position: absolute;
+    left: 36px;
+    top: 24px;
+    bottom: 24px;
+    width: 2px;
+    background: #E5E7EB;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-punto {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+    position: relative;
+    z-index: 1;
+}
+
+.timeline-contenido {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex: 1;
+    gap: 12px;
+}
+
+.timeline-texto {
+    font-size: 14px;
+    color: #111827;
+    margin: 0;
+    flex: 1;
+}
+
+.timeline-hora {
+    font-size: 12px;
+    color: #9CA3AF;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* ── Responsive básico ── */
+@media (max-width: 1024px) {
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .central-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .inferior-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .kpi-grid {
+        grid-template-columns: 1fr;
+        padding: 16px 16px 0 16px;
+    }
+    
+    .central-grid {
+        padding: 16px 16px 0 16px;
+    }
+    
+    .inferior-grid {
+        padding: 16px 16px 16px 16px;
+    }
+    
+    .hero-admin {
+        padding: 24px 16px;
+    }
+    
+    .donut-container {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .buscador-input {
+        width: 100%;
+    }
+}

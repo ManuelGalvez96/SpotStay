@@ -117,7 +117,6 @@ class ConversacionSeeder extends Seeder
                 DB::table('tbl_conversacion_usuario')->insert([
                     'id_conversacion_fk' => $idConversacion,
                     'id_usuario_fk' => $idUsuario,
-                    'creado_conversacion_usuario' => Carbon::now(),
                 ]);
             }
         }

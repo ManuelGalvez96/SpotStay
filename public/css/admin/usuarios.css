@@ -1,0 +1,833 @@
+/* ========================================
+   GESTIÓN DE USUARIOS — SPOTYSTAY
+   CSS Completo
+   ======================================== */
+
+/* ── Reset y base ── */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #F0F4F8;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ── Hero Admin ── */
+.hero-admin {
+    background: #035498;
+    padding: 36px 40px;
+    border-radius: 0 0 20px 20px;
+    position: relative;
+    overflow: hidden;
+    margin: 0 0 16px 0;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-admin h1 {
+    color: white;
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.hero-admin p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    margin-top: 4px;
+    margin-bottom: 0;
+}
+
+/* ── Círculos decorativos hero ── */
+.hero-deco {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    pointer-events: none;
+}
+
+.hero-deco-1 {
+    width: 300px;
+    height: 300px;
+    top: -100px;
+    right: -80px;
+}
+
+.hero-deco-2 {
+    width: 200px;
+    height: 200px;
+    bottom: -80px;
+    right: 200px;
+}
+
+.hero-deco-3 {
+    width: 150px;
+    height: 150px;
+    top: 20px;
+    right: 250px;
+}
+
+/* ── Toolbar Admin ── */
+.toolbar-admin {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #E5E7EB;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.toolbar-izquierda {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.toolbar-derecha {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* ── Input Búsqueda ── */
+.input-busqueda {
+    position: relative;
+}
+
+.input-busqueda i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9CA3AF;
+    font-size: 14px;
+}
+
+.input-busqueda input {
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 8px 12px 8px 32px;
+    font-size: 13px;
+    width: 220px;
+    outline: none;
+    background: white;
+    color: #111827;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+}
+
+.input-busqueda input:focus {
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
+}
+
+.input-busqueda input::placeholder {
+    color: #9CA3AF;
+}
+
+/* ── Select Filtros ── */
+.select-filtro {
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #374151;
+    outline: none;
+    background: white;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+}
+
+.select-filtro:focus {
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
+}
+
+/* ── Botón Exportar ── */
+.btn-exportar {
+    border: 1px solid #035498;
+    color: #035498;
+    background: transparent;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.btn-exportar:hover {
+    background: #EEF4FF;
+    color: #024080;
+}
+
+/* ── Botón Primario ── */
+.btn-primario {
+    background: #035498;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    font-family: inherit;
+    transition: background 0.2s ease;
+}
+
+.btn-primario:hover {
+    background: #024080;
+}
+
+/* ── KPI Grid Pequeño ── */
+.kpi-grid-pequeno {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 16px;
+}
+
+/* ── KPI Mini ── */
+.kpi-mini {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #E5E7EB;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 80px;
+    transition: box-shadow 0.2s ease;
+}
+
+.kpi-mini:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.kpi-mini-icono {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.kpi-mini-azul {
+    background: #E8F0FB;
+    color: #035498;
+}
+
+.kpi-mini-verde {
+    background: #E6F7F1;
+    color: #1AA068;
+}
+
+.kpi-mini-rojo {
+    background: #FEE2E2;
+    color: #EF4444;
+}
+
+.kpi-mini-naranja {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.kpi-mini-datos {
+    display: flex;
+    flex-direction: column;
+}
+
+.kpi-mini-numero {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1;
+    margin: 0;
+}
+
+.kpi-mini-numero-rojo {
+    color: #EF4444;
+}
+
+.kpi-mini-numero-naranja {
+    color: #D97706;
+}
+
+.kpi-mini-label {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 0;
+    margin-top: 2px;
+}
+
+/* ── Card Admin ── */
+.card-admin {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #E5E7EB;
+    overflow: hidden;
+    margin-top: 16px;
+}
+
+/* ── Tabla Header ── */
+.tabla-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #E5E7EB;
+    background: #F9FAFB;
+    font-size: 13px;
+    color: #6B7280;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* ── Paginación ── */
+.paginacion {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-pag {
+    background: transparent;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: #6B7280;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.btn-pag:hover {
+    border-color: #035498;
+    color: #035498;
+    background: #EEF4FF;
+}
+
+.pag-numero {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: #6B7280;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.pag-numero:hover {
+    background: #E5E7EB;
+    color: #111827;
+}
+
+.pag-numero.activo {
+    background: #035498;
+    color: white;
+}
+
+/* ── Tabla Admin ── */
+.tabla-admin {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-admin thead th {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #9CA3AF;
+    letter-spacing: 0.8px;
+    padding: 12px 20px;
+    text-align: left;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+}
+
+.tabla-admin tbody tr {
+    border-bottom: 1px solid #F3F4F6;
+    transition: background-color 0.2s ease;
+}
+
+.tabla-admin tbody tr:hover {
+    background: #F9FAFB;
+}
+
+.tabla-admin tbody td {
+    padding: 14px 20px;
+    font-size: 14px;
+    color: #111827;
+    border: none;
+    vertical-align: middle;
+}
+
+.fila-inactiva {
+    opacity: 0.65;
+}
+
+/* ── Avatar Tabla ── */
+.avatar-tabla {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-weight: 600;
+    font-size: 13px;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ── Info Usuario Celda ── */
+.usuario-celda {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.usuario-nombre {
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
+    margin: 0;
+}
+
+.usuario-email {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 0;
+}
+
+/* ── Badges Rol ── */
+.badge-rol {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.badge-arrendador {
+    background: #E8F0FB;
+    color: #035498;
+}
+
+.badge-inquilino {
+    background: #E6F7F1;
+    color: #1AA068;
+}
+
+.badge-gestor {
+    background: #F3E8FF;
+    color: #7C3AED;
+}
+
+.badge-miembro {
+    background: #F1F5F9;
+    color: #475569;
+}
+
+.badge-admin {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+/* ── Badges Estado ── */
+.badge-estado {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.badge-activo {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.badge-inactivo {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+/* ── Toggle Switch ── */
+.toggle-switch {
+    width: 36px;
+    height: 20px;
+    border-radius: 10px;
+    background: #CBD5E1;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    display: inline-block;
+}
+
+.toggle-switch.activo {
+    background: #1AA068;
+}
+
+.toggle-circulo {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: left 0.2s ease;
+}
+
+.toggle-switch.activo .toggle-circulo {
+    left: 18px;
+}
+
+/* ── Acciones Tabla ── */
+.acciones-tabla {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-accion {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #9CA3AF;
+    font-size: 16px;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-accion:hover {
+    color: #035498;
+    background: #EEF4FF;
+}
+
+/* ── Tabla Footer ── */
+.tabla-footer {
+    padding: 12px 24px;
+    text-align: center;
+    font-size: 13px;
+    color: #6B7280;
+    border-top: 1px solid #F3F4F6;
+    background: #F9FAFB;
+}
+
+/* ── Modal Overlay ── */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 200;
+    display: none;
+}
+
+.modal-overlay.visible {
+    display: block;
+}
+
+/* ── Modal Admin ── */
+.modal-admin {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 520px;
+    background: white;
+    border-radius: 16px;
+    z-index: 201;
+    display: none;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.modal-admin.visible {
+    display: block;
+}
+
+/* ── Modal Header ── */
+.modal-header-admin {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #E5E7EB;
+    background: white;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.modal-titulo-grupo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-titulo {
+    font-weight: 600;
+    font-size: 16px;
+    color: #111827;
+}
+
+.btn-cerrar-modal {
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    color: #9CA3AF;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.btn-cerrar-modal:hover {
+    color: #111827;
+}
+
+/* ── Modal Body ── */
+.modal-cuerpo {
+    padding: 24px;
+}
+
+.modal-usuario-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.modal-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 22px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: #035498;
+}
+
+.modal-usuario-info {
+    flex: 1;
+}
+
+.modal-usuario-info h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    color: #111827;
+}
+
+.modal-usuario-info p {
+    font-size: 13px;
+    color: #6B7280;
+    margin: 0;
+}
+
+.modal-badges {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.modal-separador {
+    height: 1px;
+    background: #E5E7EB;
+    margin: 16px 0;
+}
+
+/* ── Modal Grid Datos ── */
+.modal-grid-datos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.dato-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dato-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #9CA3AF;
+    font-weight: 500;
+}
+
+.dato-valor {
+    font-size: 14px;
+    color: #111827;
+    font-weight: 500;
+}
+
+/* ── Propiedades Lista ── */
+.modal-propiedades-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.propiedad-mini-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #F3F4F6;
+    font-size: 13px;
+    gap: 8px;
+}
+
+.propiedad-mini-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+/* ── Modal Footer ── */
+.modal-footer-admin {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-top: 1px solid #E5E7EB;
+    background: #F9FAFB;
+    gap: 8px;
+}
+
+.btn-desactivar {
+    border: 1px solid #EF4444;
+    color: #EF4444;
+    background: transparent;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.btn-desactivar:hover {
+    background: #FEE2E2;
+    color: #DC2626;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+    .kpi-grid-pequeno {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .toolbar-izquierda {
+        flex-wrap: wrap;
+    }
+    
+    .tabla-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .modal-admin {
+        width: 90%;
+    }
+}
+
+@media (max-width: 768px) {
+    .toolbar-admin {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .toolbar-izquierda {
+        flex-direction: column;
+    }
+    
+    .toolbar-derecha {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .toolbar-derecha button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .input-busqueda input {
+        width: 100%;
+    }
+    
+    .kpi-grid-pequeno {
+        grid-template-columns: 1fr;
+    }
+    
+    .tabla-admin {
+        font-size: 12px;
+    }
+    
+    .tabla-admin td {
+        padding: 10px 12px;
+    }
+    
+    .modal-admin {
+        width: 95%;
+    }
+    
+    .modal-grid-datos {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-footer-admin {
+        flex-direction: column;
+    }
+    
+    .modal-footer-admin button {
+        width: 100%;
+    }
+}

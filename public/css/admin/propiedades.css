@@ -1,0 +1,982 @@
+/* ════════════════════════════════════════ */
+/* PROPIEDADES ADMIN — CSS */
+/* ════════════════════════════════════════ */
+
+/* ── Hero Admin ── */
+.hero-admin {
+    background: linear-gradient(135deg, #035498 0%, #0275b9 100%);
+    padding: 36px 40px;
+    border-radius: 12px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+    color: white;
+}
+
+.hero-admin > .hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-admin h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+}
+
+.hero-admin p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+}
+
+.hero-deco {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    pointer-events: none;
+}
+
+.hero-deco-1 {
+    width: 240px;
+    height: 240px;
+    top: -80px;
+    right: -80px;
+}
+
+.hero-deco-2 {
+    width: 120px;
+    height: 120px;
+    bottom: -30px;
+    right: 60px;
+}
+
+.hero-deco-3 {
+    width: 160px;
+    height: 160px;
+    bottom: -50px;
+    left: 40px;
+}
+
+/* ── Toolbar Admin ── */
+.toolbar-admin {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.toolbar-izquierda {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex: 1;
+    min-width: 320px;
+}
+
+.toolbar-derecha {
+    display: flex;
+    gap: 12px;
+}
+
+.input-busqueda {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+}
+
+.input-busqueda i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9CA3AF;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.input-busqueda input {
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    font-size: 13px;
+    background: white;
+    color: #111827;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-busqueda input:focus {
+    outline: none;
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
+}
+
+.select-filtro {
+    padding: 8px 12px;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    font-size: 13px;
+    background: white;
+    color: #111827;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.select-filtro:focus {
+    outline: none;
+    border-color: #035498;
+}
+
+.btn-exportar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.btn-exportar:hover {
+    background: #F3F4F6;
+    border-color: #D1D5DB;
+}
+
+.btn-primario {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #035498;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-primario:hover {
+    background: #024178;
+}
+
+/* ── KPI Grid Pequeño ── */
+.kpi-grid-pequeno {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.kpi-mini {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: box-shadow 0.2s;
+}
+
+.kpi-mini:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.kpi-mini-icono {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+}
+
+.kpi-mini-azul {
+    background: #D1E7F7;
+    color: #035498;
+}
+
+.kpi-mini-verde {
+    background: #D1FAE5;
+    color: #1AA068;
+}
+
+.kpi-mini-naranja {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.kpi-mini-rojo {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.kpi-mini-datos {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.kpi-mini-numero {
+    font-size: 18px;
+    font-weight: 700;
+    color: #035498;
+}
+
+.kpi-mini-numero-naranja {
+    color: #D97706;
+}
+
+.kpi-mini-numero-rojo {
+    color: #991B1B;
+}
+
+.kpi-mini-label {
+    font-size: 11px;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+/* ── Card Admin ── */
+.card-admin {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.tabla-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #E5E7EB;
+    gap: 16px;
+}
+
+.tabla-header > span {
+    font-size: 13px;
+    color: #6B7280;
+    font-weight: 500;
+}
+
+.paginacion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-pag {
+    padding: 6px 12px;
+    border: 1px solid #E5E7EB;
+    background: white;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #111827;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.btn-pag:hover {
+    background: #F9FAFB;
+    border-color: #D1D5DB;
+}
+
+.btn-pag:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pag-numero {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #E5E7EB;
+    background: white;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #111827;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pag-numero:hover {
+    border-color: #035498;
+}
+
+.pag-numero.activo {
+    background: #035498;
+    color: white;
+    border-color: #035498;
+}
+
+/* ── Tabla Admin ── */
+.tabla-admin {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-admin thead {
+    background: #F9FAFB;
+}
+
+.tabla-admin th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.tabla-admin td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #F3F4F6;
+    font-size: 13px;
+    color: #111827;
+    vertical-align: middle;
+}
+
+.tabla-admin tbody tr:hover {
+    background: #F9FAFB;
+}
+
+.fila-inactiva {
+    opacity: 0.65;
+}
+
+.propiedad-celda {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.propiedad-nombre {
+    font-weight: 600;
+    font-size: 13px;
+    color: #111827;
+    margin: 0;
+}
+
+.propiedad-ciudad {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 0;
+}
+
+.thumb-propiedad {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    display: inline-block;
+}
+
+.precio-propiedad {
+    font-weight: 700;
+    font-size: 13px;
+    color: #111827;
+}
+
+.avatar-tabla {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 11px;
+}
+
+/* ── Badges ── */
+.badge-estado {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.badge-alquilada {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.badge-publicada {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.badge-borrador {
+    background: #F1F5F9;
+    color: #475569;
+}
+
+.badge-inactiva {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.badge-pendiente {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.badge-activo {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+/* ── Acciones Tabla ── */
+.acciones-tabla {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.btn-accion {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: #F1F5F9;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+.btn-accion:hover {
+    background: #E0E7FF;
+    color: #035498;
+}
+
+.btn-accion.btn-eliminar:hover {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+/* ── Tabla Footer ── */
+.tabla-footer {
+    padding: 12px 16px;
+    background: #F9FAFB;
+    border-top: 1px solid #E5E7EB;
+    font-size: 12px;
+    color: #6B7280;
+}
+
+/* ── Modal Overlay ── */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 999;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-overlay.visible {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* ── Modal Admin ── */
+.modal-admin {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    display: none;
+    z-index: 1000;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease-out;
+}
+
+.modal-admin.visible {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-ancho {
+    max-width: 640px;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -45%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+/* ── Modal Header ── */
+.modal-header-admin {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.modal-titulo-grupo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modal-titulo {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.btn-cerrar-modal {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #6B7280;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.btn-cerrar-modal:hover {
+    color: #111827;
+}
+
+/* ── Modal Imagen ── */
+.modal-imagen-propiedad {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0;
+}
+
+.modal-imagen-texto {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px 24px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+/* ── Modal Cuerpo ── */
+.modal-cuerpo {
+    padding: 20px 24px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.seccion-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #9CA3AF;
+    font-weight: 500;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.seccion-label.mt {
+    margin-top: 16px;
+}
+
+.modal-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 0;
+}
+
+.modal-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 0;
+}
+
+.dato-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dato-label {
+    font-size: 10px;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-weight: 500;
+}
+
+.dato-valor {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.total-estimado {
+    background: #E8F0FB;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #035498;
+    margin-top: 12px;
+}
+
+.modal-separador {
+    height: 1px;
+    background: #E5E7EB;
+    margin: 16px 0;
+}
+
+/* ── Persona Fila ── */
+.persona-fila {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.badge-el-mismo {
+    background: #F1F5F9;
+    color: #475569;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: auto;
+}
+
+.link-accion {
+    color: #035498;
+    font-size: 13px;
+    text-decoration: none;
+    cursor: pointer;
+    display: block;
+    margin-top: 6px;
+    transition: text-decoration 0.2s;
+}
+
+.link-accion:hover {
+    text-decoration: underline;
+}
+
+/* ── Inquilino Item ── */
+.inquilino-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #F3F4F6;
+}
+
+.inquilino-item:last-child {
+    border-bottom: none;
+}
+
+/* ── Contrato Card ── */
+.contrato-card {
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 8px;
+    gap: 16px;
+}
+
+.contrato-acciones {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.btn-link-azul {
+    background: transparent;
+    border: none;
+    color: #035498;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    transition: text-decoration 0.2s;
+}
+
+.btn-link-azul:hover {
+    text-decoration: underline;
+}
+
+/* ── Incidencias ── */
+.incidencias-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.incidencia-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #111827;
+}
+
+.punto-verde {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #1AA068;
+    flex-shrink: 0;
+}
+
+.punto-naranja {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #D97706;
+    flex-shrink: 0;
+}
+
+.tiempo-texto {
+    font-size: 12px;
+    color: #9CA3AF;
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+/* ── Servicios Tags ── */
+.servicios-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.tag-servicio {
+    background: #F1F5F9;
+    color: #475569;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* ── Modal Footer ── */
+.modal-footer-admin {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-top: 1px solid #E5E7EB;
+    gap: 12px;
+    background: #F9FAFB;
+}
+
+.modal-footer-derecha {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-desactivar {
+    padding: 8px 16px;
+    border: 1px solid #FEE2E2;
+    background: white;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #991B1B;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-desactivar:hover {
+    background: #FEE2E2;
+}
+
+/* ════════════════════════════════════════ */
+/* RESPONSIVE */
+/* ════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+    .toolbar-admin {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .toolbar-izquierda {
+        width: 100%;
+    }
+
+    .kpi-grid-pequeno {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modal-grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modal-admin {
+        width: 95%;
+        max-width: 580px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-admin {
+        padding: 24px 20px;
+    }
+
+    .hero-admin h1 {
+        font-size: 22px;
+    }
+
+    .hero-admin p {
+        font-size: 13px;
+    }
+
+    .toolbar-izquierda {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .toolbar-izquierda > * {
+        width: 100%;
+    }
+
+    .kpi-grid-pequeno {
+        grid-template-columns: 1fr;
+    }
+
+    .tabla-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .paginacion {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .tabla-admin {
+        font-size: 12px;
+    }
+
+    .tabla-admin th,
+    .tabla-admin td {
+        padding: 10px 12px;
+    }
+
+    .acciones-tabla {
+        gap: 4px;
+    }
+
+    .btn-accion {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+
+    .modal-grid-3,
+    .modal-grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-admin {
+        width: 100%;
+        max-height: 90vh;
+        border-radius: 0;
+        top: auto;
+        bottom: 0;
+        transform: translate(-50%, 0);
+    }
+
+    .modal-admin.visible {
+        animation: slideUpMobile 0.3s ease-out;
+    }
+
+    @keyframes slideUpMobile {
+        from {
+            opacity: 0;
+            transform: translate(-50%, 100%);
+        }
+        to {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+    }
+
+    .modal-footer-admin {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .modal-footer-derecha {
+        flex-direction: column;
+    }
+
+    .btn-primario,
+    .btn-exportar,
+    .btn-desactivar {
+        width: 100%;
+    }
+}

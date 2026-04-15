@@ -6,31 +6,39 @@ use App\Http\Controllers\AuthController;
 
 // Rutas Públicas
 Route::get('/', function () {
-return view('inicio');
+    return view('inicio');
 });
+Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Rutas de Autenticación
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'authenticate']);
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
+Route::get('/admin/usuarios/check-email', [AuthController::class, 'checkEmail']);
+
+
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Rutas Protegidas (Panel Administrativo)
-Route::middleware(['auth', 'admin'])->group(function () {
-// Dashboard
-Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
-Route::post('/admin/alquiler/{id}/aprobar', [AdminController::class, 'aprobar']);
-Route::post('/admin/alquiler/{id}/rechazar', [AdminController::class, 'rechazar']);
+Route::middleware(['role:admin'])->group(function () {
 
-// Usuarios
-Route::get('/admin/usuarios', [AdminController::class, 'usuarios']);
-Route::get('/admin/usuarios/filtrar', [AdminController::class, 'filtrarUsuarios']);
-Route::post('/admin/usuarios/{id}/toggle-estado', [AdminController::class, 'toggleEstado']);
-Route::get('/admin/usuarios/exportar', [AdminController::class, 'exportarUsuarios']);
 
-// Propiedades
-Route::get('/admin/propiedades', [AdminController::class, 'propiedades']);
-Route::get('/admin/propiedades/filtrar', [AdminController::class, 'filtrarPropiedades']);
-Route::post('/admin/propiedades/{id}/desactivar', [AdminController::class, 'desactivarPropiedad']);
-Route::delete('/admin/propiedades/{id}', [AdminController::class, 'eliminarPropiedad']);
-Route::get('/admin/propiedades/exportar', [AdminController::class, 'exportarPropiedades']);
+    // Dashboard
+    Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
+    Route::post('/admin/alquiler/{id}/aprobar', [AdminController::class, 'aprobar']);
+    Route::post('/admin/alquiler/{id}/rechazar', [AdminController::class, 'rechazar']);
+
+    // Usuarios
+    Route::get('/admin/usuarios', [AdminController::class, 'usuarios']);
+    Route::get('/admin/usuarios/filtrar', [AdminController::class, 'filtrarUsuarios']);
+    Route::post('/admin/usuarios/{id}/toggle-estado', [AdminController::class, 'toggleEstado']);
+    Route::get('/admin/usuarios/exportar', [AdminController::class, 'exportarUsuarios']);
+
+    // Propiedades
+    Route::get('/admin/propiedades', [AdminController::class, 'propiedades']);
+    Route::get('/admin/propiedades/filtrar', [AdminController::class, 'filtrarPropiedades']);
+    Route::post('/admin/propiedades/{id}/desactivar', [AdminController::class, 'desactivarPropiedad']);
+    Route::delete('/admin/propiedades/{id}', [AdminController::class, 'eliminarPropiedad']);
+    Route::get('/admin/propiedades/exportar', [AdminController::class, 'exportarPropiedades']);
 });

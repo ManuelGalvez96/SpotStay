@@ -54,11 +54,11 @@ class PropiedadController extends Controller
         }
 
         if ($request->input('precioMin')) {
-            $query->where('precio_mensual_propiedad', '>=', $request->input('precioMin'));
+            $query->where('precio_propiedad', '>=', $request->input('precioMin'));
         }
 
         if ($request->input('precioMax')) {
-            $query->where('precio_mensual_propiedad', '<=', $request->input('precioMax'));
+            $query->where('precio_propiedad', '<=', $request->input('precioMax'));
         }
 
         $propiedades = $query->get();

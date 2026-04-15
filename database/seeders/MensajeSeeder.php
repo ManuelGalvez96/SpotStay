@@ -32,8 +32,8 @@ class MensajeSeeder extends Seeder
             foreach ($mensajesCalle as $index => $msg) {
                 DB::table('tbl_mensaje')->insert([
                     'id_conversacion_fk' => $conversacionCalle,
-                    'id_usuario_fk' => $msg['id_usuario_fk'],
-                    'contenido_mensaje' => $msg['contenido'],
+                    'id_remitente_fk' => $msg['id_usuario_fk'],
+                    'cuerpo_mensaje' => $msg['contenido'],
                     'leido_mensaje' => $msg['leido'],
                     'creado_mensaje' => Carbon::now()->addHours($index),
                 ]);
@@ -76,8 +76,8 @@ class MensajeSeeder extends Seeder
 
                 DB::table('tbl_mensaje')->insert([
                     'id_conversacion_fk' => $conv->id_conversacion,
-                    'id_usuario_fk' => $idRemitente,
-                    'contenido_mensaje' => $contenido,
+                    'id_remitente_fk' => $idRemitente,
+                    'cuerpo_mensaje' => $contenido,
                     'leido_mensaje' => $leido,
                     'creado_mensaje' => Carbon::now()->addHours($i),
                 ]);

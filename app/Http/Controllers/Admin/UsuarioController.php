@@ -65,8 +65,8 @@ class UsuarioController extends Controller
 
         if ($request->input('q')) {
             $q = '%' . $request->input('q') . '%';
-            $query->where(function ($q) use ($q) {
-                $q->where('tbl_usuario.nombre_usuario', 'like', $q)
+            $query->where(function ($builder) use ($q) {
+                $builder->where('tbl_usuario.nombre_usuario', 'like', $q)
                   ->orWhere('tbl_usuario.email_usuario', 'like', $q);
             });
         }

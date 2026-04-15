@@ -31,14 +31,14 @@ class ContratoSeeder extends Seeder
 
             DB::table('tbl_contrato')->insert([
                 'id_alquiler_fk' => $alquiler->id_alquiler,
-                'url_contrato' => $url,
+                'url_pdf_contrato' => $url,
                 'hash_contrato' => $hash,
-                'firmado_arrendador_contrato' => true,
-                'fecha_firma_arrendador_contrato' => $fechaInicio->subDay(),
-                'ip_firma_arrendador_contrato' => '192.168.1.1',
-                'firmado_inquilino_contrato' => true,
-                'fecha_firma_inquilino_contrato' => $fechaInicio->subDay(),
-                'ip_firma_inquilino_contrato' => '192.168.1.2',
+                'firmado_arrendador' => true,
+                'fecha_firma_arrendador' => $fechaInicio->subDay(),
+                'ip_firma_arrendador' => '192.168.1.1',
+                'firmado_inquilino' => true,
+                'fecha_firma_inquilino' => $fechaInicio->subDay(),
+                'ip_firma_inquilino' => '192.168.1.2',
                 'estado_contrato' => 'firmado',
                 'creado_contrato' => Carbon::now(),
             ]);

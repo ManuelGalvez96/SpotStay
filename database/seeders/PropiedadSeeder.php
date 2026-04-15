@@ -11,10 +11,10 @@ class PropiedadSeeder extends Seeder
     public function run(): void
     {
         $propiedades = [
-            // Carlos García
+            // Arrendador 1
             [
-                'arrendador_email' => 'carlos@spotstay.com',
-                'gestor_email' => 'carlos@spotstay.com',
+                'arrendador_email' => 'arrendador@spotstay.com',
+                'gestor_email' => 'admin@spotstay.com',
                 'titulo' => 'Piso en Calle Mayor',
                 'direccion' => 'Calle Mayor 14',
                 'ciudad' => 'Madrid',
@@ -27,8 +27,8 @@ class PropiedadSeeder extends Seeder
                 'estado' => 'alquilada',
             ],
             [
-                'arrendador_email' => 'carlos@spotstay.com',
-                'gestor_email' => 'carlos@spotstay.com',
+                'arrendador_email' => 'arrendador@spotstay.com',
+                'gestor_email' => 'admin@spotstay.com',
                 'titulo' => 'Piso Calle Serrano',
                 'direccion' => 'Calle Serrano 47',
                 'ciudad' => 'Madrid',
@@ -41,8 +41,8 @@ class PropiedadSeeder extends Seeder
                 'estado' => 'alquilada',
             ],
             [
-                'arrendador_email' => 'carlos@spotstay.com',
-                'gestor_email' => 'carlos@spotstay.com',
+                'arrendador_email' => 'arrendador@spotstay.com',
+                'gestor_email' => 'admin@spotstay.com',
                 'titulo' => 'Estudio Fuencarral',
                 'direccion' => 'Calle Fuencarral 22',
                 'ciudad' => 'Madrid',
@@ -54,10 +54,10 @@ class PropiedadSeeder extends Seeder
                 'gastos' => json_encode(['agua' => 25, 'luz' => 40, 'comunidad' => 30]),
                 'estado' => 'publicada',
             ],
-            // Elena Vargas
+            // Arrendador 2
             [
-                'arrendador_email' => 'elena@spotstay.com',
-                'gestor_email' => 'elena@spotstay.com',
+                'arrendador_email' => 'admin@spotstay.com',
+                'gestor_email' => 'admin@spotstay.com',
                 'titulo' => 'Piso Av. Diagonal',
                 'direccion' => 'Av. Diagonal 88',
                 'ciudad' => 'Barcelona',
@@ -70,8 +70,8 @@ class PropiedadSeeder extends Seeder
                 'estado' => 'alquilada',
             ],
             [
-                'arrendador_email' => 'elena@spotstay.com',
-                'gestor_email' => 'elena@spotstay.com',
+                'arrendador_email' => 'admin@spotstay.com',
+                'gestor_email' => 'admin@spotstay.com',
                 'titulo' => 'Piso Calle Pelai',
                 'direccion' => 'Calle Pelai 12',
                 'ciudad' => 'Barcelona',
@@ -83,10 +83,10 @@ class PropiedadSeeder extends Seeder
                 'gastos' => json_encode(['agua' => 28, 'luz' => 48, 'comunidad' => 38]),
                 'estado' => 'alquilada',
             ],
-            // Roberto Mora
+            // Arrendador 1
             [
-                'arrendador_email' => 'roberto.mora@spotstay.com',
-                'gestor_email' => 'roberto.mora@spotstay.com',
+                'arrendador_email' => 'arrendador@spotstay.com',
+                'gestor_email' => 'admin@spotstay.com',
                 'titulo' => 'Lujo Paseo de Gracia',
                 'direccion' => 'Paseo de Gracia 5',
                 'ciudad' => 'Barcelona',
@@ -99,8 +99,8 @@ class PropiedadSeeder extends Seeder
                 'estado' => 'publicada',
             ],
             [
-                'arrendador_email' => 'roberto.mora@spotstay.com',
-                'gestor_email' => 'roberto.mora@spotstay.com',
+                'arrendador_email' => 'arrendador@spotstay.com',
+                'gestor_email' => 'admin@spotstay.com',
                 'titulo' => 'Piso Centro Málaga',
                 'direccion' => 'Calle Larios 7',
                 'ciudad' => 'Málaga',
@@ -113,8 +113,8 @@ class PropiedadSeeder extends Seeder
                 'estado' => 'publicada',
             ],
             [
-                'arrendador_email' => 'roberto.mora@spotstay.com',
-                'gestor_email' => 'roberto.mora@spotstay.com',
+                'arrendador_email' => 'admin@spotstay.com',
+                'gestor_email' => 'admin@spotstay.com',
                 'titulo' => 'Piso Historic Sevilla',
                 'direccion' => 'Alameda de Hércules 3',
                 'ciudad' => 'Sevilla',
@@ -126,10 +126,10 @@ class PropiedadSeeder extends Seeder
                 'gastos' => json_encode(['agua' => 20, 'luz' => 38, 'comunidad' => 28]),
                 'estado' => 'publicada',
             ],
-            // Otro arrendador
+            // Arrendador 2
             [
-                'arrendador_email' => 'andres.molina@email.com',
-                'gestor_email' => 'andres.molina@email.com',
+                'arrendador_email' => 'admin@spotstay.com',
+                'gestor_email' => 'admin@spotstay.com',
                 'titulo' => 'Piso Valencia',
                 'direccion' => 'Calle Colón 8',
                 'ciudad' => 'Valencia',
@@ -142,8 +142,8 @@ class PropiedadSeeder extends Seeder
                 'estado' => 'borrador',
             ],
             [
-                'arrendador_email' => 'tomas.garcia@email.com',
-                'gestor_email' => 'tomas.garcia@email.com',
+                'arrendador_email' => 'arrendador@spotstay.com',
+                'gestor_email' => 'admin@spotstay.com',
                 'titulo' => 'Piso Gran Vía',
                 'direccion' => 'Gran Vía 45',
                 'ciudad' => 'Bilbao',
@@ -157,8 +157,8 @@ class PropiedadSeeder extends Seeder
             ],
             // Propiedades adicionales (11-15)
             [
-                'arrendador_email' => 'daniel.flores@email.com',
-                'gestor_email' => 'daniel.flores@email.com',
+                'arrendador_email' => 'admin@spotstay.com',
+                'gestor_email' => 'admin@spotstay.com',
                 'titulo' => 'Piso Zaragoza',
                 'direccion' => 'Calle Coso 15',
                 'ciudad' => 'Zaragoza',
@@ -171,8 +171,8 @@ class PropiedadSeeder extends Seeder
                 'estado' => 'publicada',
             ],
             [
-                'arrendador_email' => 'lucía.serrano@email.com',
-                'gestor_email' => 'lucía.serrano@email.com',
+                'arrendador_email' => 'arrendador@spotstay.com',
+                'gestor_email' => 'admin@spotstay.com',
                 'titulo' => 'Piso Alicante',
                 'direccion' => 'Paseo de la Explanada 3',
                 'ciudad' => 'Alicante',
@@ -185,8 +185,8 @@ class PropiedadSeeder extends Seeder
                 'estado' => 'publicada',
             ],
             [
-                'arrendador_email' => 'elena.prieto@email.com',
-                'gestor_email' => 'elena.prieto@email.com',
+                'arrendador_email' => 'admin@spotstay.com',
+                'gestor_email' => 'admin@spotstay.com',
                 'titulo' => 'Piso Granada',
                 'direccion' => 'Calle Reyes Católicos 12',
                 'ciudad' => 'Granada',
@@ -199,8 +199,8 @@ class PropiedadSeeder extends Seeder
                 'estado' => 'borrador',
             ],
             [
-                'arrendador_email' => 'carmen.iglesias@email.com',
-                'gestor_email' => 'carmen.iglesias@email.com',
+                'arrendador_email' => 'arrendador@spotstay.com',
+                'gestor_email' => 'admin@spotstay.com',
                 'titulo' => 'Piso Murcia',
                 'direccion' => 'Plaza de las Flores 7',
                 'ciudad' => 'Murcia',
@@ -213,8 +213,8 @@ class PropiedadSeeder extends Seeder
                 'estado' => 'inactiva',
             ],
             [
-                'arrendador_email' => 'isabel.sanz@email.com',
-                'gestor_email' => 'isabel.sanz@email.com',
+                'arrendador_email' => 'admin@spotstay.com',
+                'gestor_email' => 'admin@spotstay.com',
                 'titulo' => 'Piso Valladolid',
                 'direccion' => 'Calle Miguel Íscar 15',
                 'ciudad' => 'Valladolid',
@@ -247,7 +247,7 @@ class PropiedadSeeder extends Seeder
                 'latitud_propiedad' => $prop['lat'],
                 'longitud_propiedad' => $prop['lng'],
                 'descripcion_propiedad' => $prop['descripcion'],
-                'precio_mensual_propiedad' => $prop['precio'],
+                'precio_propiedad' => $prop['precio'],
                 'gastos_propiedad' => $prop['gastos'],
                 'estado_propiedad' => $prop['estado'],
                 'id_arrendador_fk' => $idArrendador,

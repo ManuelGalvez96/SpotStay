@@ -7,6 +7,14 @@ Route::get('/', function () {
     return view('inicio');
 });
 
+// Ruta del Arrendador
+Route::get('/arrendador/dashboard', function () {
+    return view('landlord.dashboard');
+})->name('arrendador.dashboard');
+Route::get('/landlord/dashboard', function () {
+    return redirect()->route('arrendador.dashboard');
+});
+
 // Rutas del Admin
 Route::middleware(['web'])->group(function () {
     // Dashboard

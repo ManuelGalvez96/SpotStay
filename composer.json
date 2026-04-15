@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "laravel/laravel",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Aplicación base para el framework Laravel.",
     "keywords": [
         "laravel",
         "framework"
@@ -11,6 +11,7 @@
     "require": {
         "php": "^8.3",
         "laravel/framework": "^13.0",
+        "laravel/socialite": "^5.26",
         "laravel/tinker": "^3.0"
     },
     "require-dev": {

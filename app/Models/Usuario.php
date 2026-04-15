@@ -27,6 +27,7 @@ class Usuario extends Model
         'nombre_usuario',
         'email_usuario',
         'contrasena_usuario',
+        'google_id',
         'telefono_usuario',
         'avatar_usuario',
         'activo_usuario',

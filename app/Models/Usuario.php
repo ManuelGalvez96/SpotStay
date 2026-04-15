@@ -60,7 +60,10 @@ class Usuario extends Authenticatable
     }
 
 
+
     // Roles asignados al usuario (relación many-to-many)
+
+
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(

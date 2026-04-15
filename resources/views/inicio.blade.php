@@ -31,7 +31,7 @@
           </div>
         </div>
         <div class="flex items-center gap-4">
-          <a href="#" class="btn btn-ghost" data-media-type="banani-button">Iniciar sesión</a>
+          <a href="{{ route('login') }}" class="btn btn-ghost" data-media-type="banani-button">Iniciar sesión</a>
           <a href="#" class="btn btn-primary" data-media-type="banani-button">Regístrate</a>
         </div>
       </div>
@@ -289,8 +289,7 @@
             <div class="contenedor-icono-mapa">
               <iconify-icon
                 icon="lucide:map"
-                class="icono-grande-acento"
-></iconify-icon>
+                class="icono-grande-acento"></iconify-icon>
             </div>
             <h2 class="text-4xl titulo-seccion-secundario">
               Busca exactamente donde quieres vivir
@@ -370,8 +369,7 @@
             <div class="circulo-beneficio-fondo">
               <iconify-icon
                 icon="lucide:credit-card"
-                class="icono-beneficio-grande icono-estilo-acento"
-></iconify-icon>
+                class="icono-beneficio-grande icono-estilo-acento"></iconify-icon>
             </div>
             <h3 class="text-2xl margen-inf-medio">
               Pagos Seguros y Online

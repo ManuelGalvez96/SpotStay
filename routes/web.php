@@ -11,6 +11,14 @@ Route::get('/', function () {
     return view('inicio');
 });
 
+// Logout
+Route::post('/logout', function () {
+    auth()->logout();
+    session()->invalidate();
+    session()->regenerateToken();
+    return response()->json(['success' => true]);
+});
+
 // Rutas Admin - Sin middleware
 Route::get('/admin/dashboard', [DashboardController::class, 'index']);
 Route::post('/admin/alquiler/{id}/aprobar', [DashboardController::class, 'aprobarAlquiler']);

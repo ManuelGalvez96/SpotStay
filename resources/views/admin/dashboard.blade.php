@@ -169,8 +169,16 @@
             
             <div class="donut-leyenda">
                 @forelse($usuariosPorRol as $rol)
+                @php
+                    $colorRol = match($rol->nombre_rol) {
+                        'Inquilino' => '#1AA068',
+                        'Arrendador' => '#035498',
+                        'Miembro' => '#94A3B8',
+                        default => '#CBD5E1'
+                    };
+                @endphp
                 <div class="leyenda-item">
-                    <span class="leyenda-punto" style="background: @switch($rol->nombre_rol)@case('Inquilino')#1AA068@break@case('Arrendador')#035498@break@case('Miembro')#94A3B8@break@default#CBD5E1@endswitch;"></span>
+                    <span class="leyenda-punto" style="background: {{ $colorRol }};"></span>
                     <span class="leyenda-nombre">{{ $rol->nombre_rol }}</span>
                     <span class="leyenda-numero">{{ $rol->total }}</span>
                 </div>

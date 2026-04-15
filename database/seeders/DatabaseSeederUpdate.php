@@ -6,9 +6,6 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Ejecuta los seeders en orden correcto para respetar las foreign keys
-     */
     public function run(): void
     {
         $this->call([

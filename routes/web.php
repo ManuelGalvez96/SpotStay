@@ -3,6 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\UsuarioController;
+use App\Http\Controllers\Admin\PropiedadController;
+use App\Http\Controllers\Admin\SolicitudController;
+use App\Http\Controllers\Admin\IncidenciaController;
 
 // Rutas Públicas
 Route::get('/', function () {
@@ -23,7 +28,6 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Rutas Protegidas (Panel Administrativo)
 Route::middleware(['role:admin'])->group(function () {
 
-
     // Dashboard
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
     Route::post('/admin/alquiler/{id}/aprobar', [AdminController::class, 'aprobar']);
@@ -41,4 +45,18 @@ Route::middleware(['role:admin'])->group(function () {
     Route::post('/admin/propiedades/{id}/desactivar', [AdminController::class, 'desactivarPropiedad']);
     Route::delete('/admin/propiedades/{id}', [AdminController::class, 'eliminarPropiedad']);
     Route::get('/admin/propiedades/exportar', [AdminController::class, 'exportarPropiedades']);
+
+    // Solicitudes
+    Route::get('/admin/solicitudes', [SolicitudController::class, 'index']);
+    Route::get('/admin/solicitudes/filtrar', [SolicitudController::class, 'filtrar']);
+    Route::get('/admin/solicitudes/{id}', [SolicitudController::class, 'show']);
+    Route::post('/admin/solicitudes/{id}/aprobar', [SolicitudController::class, 'aprobar']);
+    Route::post('/admin/solicitudes/{id}/rechazar', [SolicitudController::class, 'rechazar']);
+
+    // Incidencias
+    Route::get('/admin/incidencias', [IncidenciaController::class, 'index']);
+    Route::get('/admin/incidencias/filtrar', [IncidenciaController::class, 'filtrar']);
+    Route::get('/admin/incidencias/{id}', [IncidenciaController::class, 'show']);
+    Route::post('/admin/incidencias/{id}/estado', [IncidenciaController::class, 'cambiarEstado']);
+    Route::post('/admin/incidencias/{id}/asignar', [IncidenciaController::class, 'asignar']);
 });

@@ -14,126 +14,9 @@
     
     <title>@yield('titulo', 'Admin — SpotStay')</title>
     
-    @yield('css')
+    <link rel="stylesheet" href="{{ asset('css/admin/layout.css') }}">
     
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        }
-        .topbar {
-            height: 56px;
-            background: white;
-            border-bottom: 1px solid #E5E7EB;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 24px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .topbar-izq {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .topbar-logo {
-            color: #035498;
-            font-weight: 700;
-            font-size: 16px;
-        }
-        .topbar-central {
-            display: flex;
-            gap: 4px;
-        }
-        .btn-nav-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 8px;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            color: #8C93A0;
-            font-size: 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            transition: all 0.2s ease;
-        }
-        .btn-nav-icon:hover {
-            background: #F1F5F9;
-            color: #111827;
-        }
-        .btn-nav-icon.activo {
-            background: #EEF4FF;
-            color: #035498;
-        }
-        .btn-nav-icon.activo::after {
-            content: '';
-            position: absolute;
-            bottom: 4px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: #035498;
-        }
-        .topbar-der {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .campana-container {
-            position: relative;
-            cursor: pointer;
-        }
-        .icon-campana {
-            font-size: 18px;
-            color: #6B7280;
-        }
-        .badge-campana {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            background: #EF4444;
-            color: white;
-            border-radius: 50%;
-            font-size: 10px;
-            padding: 1px 5px;
-            font-weight: 600;
-            min-width: 18px;
-            text-align: center;
-        }
-        .avatar-admin {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #035498;
-            color: white;
-            font-size: 13px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .admin-nombre {
-            font-size: 13px;
-            color: #6B7280;
-        }
-        .chevron-admin {
-            font-size: 12px;
-            color: #9CA3AF;
-        }
-        .content-wrapper {
-            background: #F0F4F8;
-            min-height: calc(100vh - 56px);
-        }
-    </style>
+    @yield('css')
 </head>
 <body>
     <!-- TOPBAR -->
@@ -181,10 +64,17 @@
                 <i class="bi bi-bell icon-campana" id="iconCampana"></i>
                 <span class="badge-campana" id="badgeCampana">9</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="admin-container" id="adminContainer">
                 <div class="avatar-admin">A</div>
                 <span class="admin-nombre">Admin</span>
                 <i class="bi bi-chevron-down chevron-admin"></i>
+                
+                <!-- DROPDOWN MENU -->
+                <div class="admin-dropdown" id="adminDropdown">
+                    <button class="dropdown-item">Perfil</button>
+                    <button class="dropdown-item">Configuración</button>
+                    <button class="dropdown-item dropdown-item-logout" id="btnLogout">Cerrar sesión</button>
+                </div>
             </div>
         </div>
     </div>
@@ -199,6 +89,8 @@
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script src="{{ asset('js/admin/layout.js') }}"></script>
     
     @yield('scripts')
 </body>

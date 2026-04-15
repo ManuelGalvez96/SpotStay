@@ -1,0 +1,434 @@
+/* Incidencias CSS */
+
+/* Kanban board */
+.kanban-board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 16px;
+    overflow-x: auto;
+}
+
+/* Kanban columna */
+.kanban-col {
+    border-radius: 12px;
+    padding: 16px;
+    min-height: 400px;
+}
+
+.kanban-col-abierta {
+    background: #FEF9F9;
+    border-top: 3px solid #EF4444;
+}
+
+.kanban-col-proceso {
+    background: #FFFBF5;
+    border-top: 3px solid #D97706;
+}
+
+.kanban-col-resuelta {
+    background: #F5FDF9;
+    border-top: 3px solid #1AA068;
+}
+
+.kanban-col-cerrada {
+    background: #F8F9FA;
+    border-top: 3px solid #CBD5E1;
+}
+
+/* Kanban header */
+.kanban-col-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px rgba(0,0,0,0.06) solid;
+}
+
+.kanban-punto {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.kanban-punto-rojo {
+    background: #EF4444;
+}
+
+.kanban-punto-naranja {
+    background: #D97706;
+}
+
+.kanban-punto-verde {
+    background: #1AA068;
+}
+
+.kanban-punto-gris {
+    background: #CBD5E1;
+}
+
+.kanban-col-header span:nth-child(2) {
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
+    flex: 1;
+}
+
+.badge-kanban {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.badge-kanban-rojo {
+    background: #FEE2E2;
+    color: #EF4444;
+}
+
+.badge-kanban-naranja {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.badge-kanban-verde {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.badge-kanban-gris {
+    background: #F1F5F9;
+    color: #475569;
+}
+
+/* Tarjeta incidencia */
+.tarjeta-inc {
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #E5E7EB;
+    padding: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.tarjeta-inc:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* Tarjeta top */
+.tarjeta-inc-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.tarjeta-tiempo {
+    font-size: 11px;
+    color: #9CA3AF;
+}
+
+/* Badge prioridad */
+.badge-prioridad {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.badge-prioridad-urgente {
+    background: #FEE2E2;
+    color: #EF4444;
+}
+
+.badge-prioridad-alta {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.badge-prioridad-media {
+    background: #F1F5F9;
+    color: #475569;
+}
+
+.badge-prioridad-baja {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+/* Tarjeta título y desc */
+.tarjeta-titulo {
+    font-weight: 600;
+    font-size: 13px;
+    color: #111827;
+    margin: 8px 0 4px;
+    line-height: 1.3;
+}
+
+.tarjeta-desc {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 0;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/* Tarjeta bottom */
+.tarjeta-inc-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.tarjeta-propiedad {
+    font-size: 11px;
+    color: #9CA3AF;
+}
+
+.tarjeta-inquilino {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+}
+
+.avatar-mini {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #A8D5BF;
+    font-size: 9px;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Tarjeta categoría */
+.tarjeta-categoria {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: #9CA3AF;
+}
+
+/* Tarjeta resuelta */
+.tarjeta-inc-resuelta {
+    opacity: 0.85;
+    position: relative;
+}
+
+.check-resuelta {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #1AA068;
+    font-size: 14px;
+}
+
+/* Tarjeta cerrada */
+.tarjeta-inc-cerrada {
+    opacity: 0.6;
+}
+
+/* Gestor asignado */
+.tarjeta-gestor {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #F3F4F6;
+}
+
+.gestor-label {
+    font-size: 11px;
+    color: #9CA3AF;
+}
+
+.gestor-nombre {
+    font-size: 11px;
+    color: #111827;
+    font-weight: 500;
+}
+
+/* Kanban vacío */
+.kanban-vacio {
+    font-size: 13px;
+    color: #9CA3AF;
+    text-align: center;
+    padding: 20px 0;
+}
+
+/* Badge urgente pulsante */
+.badge-urgente-pulsante {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #EF4444;
+    display: inline-block;
+    margin-left: 4px;
+    animation: pulso 1.5s infinite;
+}
+
+@keyframes pulso {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.3);
+    }
+}
+
+/* Modal imagen incidencia */
+.modal-imagen-inc {
+    height: 140px;
+    width: 100%;
+    background: linear-gradient(135deg, #8AAAC4, #6B93B5);
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-imagen-texto {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 14px 24px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.6));
+    color: white;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+/* Asignación fila */
+.asignacion-fila {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 8px;
+}
+
+/* Estados fila */
+.estados-fila {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.btn-estado {
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    background: transparent;
+    transition: all 0.15s;
+}
+
+.btn-estado[data-estado="abierta"] {
+    border: 1px solid #EF4444;
+    color: #EF4444;
+}
+
+.btn-estado[data-estado="abierta"].activo {
+    background: #FEE2E2;
+}
+
+.btn-estado[data-estado="en_proceso"] {
+    border: 1px solid #D97706;
+    color: #D97706;
+}
+
+.btn-estado[data-estado="en_proceso"].activo {
+    background: #FEF3C7;
+}
+
+.btn-estado[data-estado="resuelta"] {
+    border: 1px solid #1AA068;
+    color: #1AA068;
+}
+
+.btn-estado[data-estado="resuelta"].activo {
+    background: #D1FAE5;
+}
+
+.btn-estado[data-estado="cerrada"] {
+    border: 1px solid #6B7280;
+    color: #6B7280;
+}
+
+.btn-estado[data-estado="cerrada"].activo {
+    background: #F1F5F9;
+}
+
+/* Timeline historial */
+.timeline {
+    position: relative;
+    padding: 8px 0 8px 24px;
+}
+
+.timeline-linea-v {
+    position: absolute;
+    left: 5px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #E5E7EB;
+}
+
+.timeline-evento {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.timeline-punto-modal {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+    position: relative;
+    z-index: 1;
+}
+
+.timeline-evento-info {
+    flex: 1;
+}
+
+.timeline-evento-texto {
+    font-size: 13px;
+    color: #111827;
+    margin: 0;
+}
+
+.timeline-evento-hora {
+    font-size: 11px;
+    color: #9CA3AF;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .kanban-board {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .kanban-board {
+        grid-template-columns: 1fr;
+    }
+}

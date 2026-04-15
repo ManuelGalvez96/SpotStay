@@ -1,0 +1,406 @@
+/* Solicitudes CSS */
+
+/* Layout dos columnas */
+.solicitudes-grid {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+/* Solicitud card */
+.solicitud-card {
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #E5E7EB;
+    border-left: 3px solid #D97706;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.solicitud-card:hover {
+    background: #FAFAFA;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* Solicitud card top */
+.solicitud-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+/* Solicitud persona */
+.solicitud-persona {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.solicitud-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-weight: 600;
+    font-size: 14px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.solicitud-info {
+    flex: 1;
+}
+
+.solicitud-nombre {
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.solicitud-email {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 0;
+}
+
+.solicitud-ciudad {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Meta derecha */
+.solicitud-meta-derecha {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.solicitud-tiempo {
+    font-size: 12px;
+    color: #9CA3AF;
+}
+
+/* Propiedad solicitada */
+.propiedad-solicitada {
+    margin-top: 8px;
+}
+
+.propiedad-resumen-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 6px;
+}
+
+.dato-resumen {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dato-resumen-label {
+    font-size: 10px;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.dato-resumen-valor {
+    font-size: 12px;
+    color: #111827;
+    font-weight: 500;
+}
+
+/* Acciones solicitud */
+.solicitud-acciones {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-aprobar-sol {
+    background: #1AA068;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+}
+
+.btn-aprobar-sol:hover {
+    background: #158a5a;
+}
+
+.btn-rechazar-sol {
+    border: 1px solid #EF4444;
+    color: #EF4444;
+    background: transparent;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+}
+
+.btn-rechazar-sol:hover {
+    background: #FEE2E2;
+}
+
+.btn-ver-sol {
+    border: 1px solid #E5E7EB;
+    color: #6B7280;
+    background: transparent;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+}
+
+.btn-ver-sol:hover {
+    background: #F3F4F6;
+}
+
+/* Historial items */
+.historial-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border-bottom: 1px solid #F3F4F6;
+}
+
+.solicitud-avatar-mini {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #B8CCE4;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.historial-info {
+    flex: 1;
+}
+
+.historial-nombre {
+    font-weight: 600;
+    font-size: 13px;
+    color: #111827;
+    display: block;
+}
+
+.historial-ciudad {
+    font-size: 12px;
+    color: #6B7280;
+}
+
+.historial-motivo {
+    font-size: 11px;
+    color: #9CA3AF;
+    font-style: italic;
+}
+
+.historial-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.historial-tiempo {
+    font-size: 11px;
+    color: #9CA3AF;
+}
+
+/* Tiempo medio */
+.tiempo-medio-centro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 24px;
+}
+
+.tiempo-medio-numero {
+    font-size: 36px;
+    font-weight: 700;
+    color: #035498;
+}
+
+.tiempo-medio-label {
+    font-size: 13px;
+    color: #6B7280;
+    margin-top: 4px;
+}
+
+.tiempo-medio-stats {
+    display: flex;
+    justify-content: space-around;
+    padding: 16px 24px;
+    border-top: 1px solid #E5E7EB;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.stat-numero {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #6B7280;
+}
+
+/* Badges contadores */
+.badge-contador-verde {
+    background: #1AA068;
+    color: white;
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 12px;
+}
+
+.badge-contador-rojo {
+    background: #EF4444;
+    color: white;
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 12px;
+}
+
+/* Texto pendientes */
+.texto-pendientes {
+    font-size: 13px;
+    font-weight: 500;
+    color: #D97706;
+}
+
+/* Sin resultados */
+.sin-resultados {
+    text-align: center;
+    color: #9CA3AF;
+    padding: 32px;
+    font-size: 14px;
+}
+
+/* Modal persona header */
+.modal-persona-header {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.modal-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #B8CCE4;
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-persona-info h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    color: #111827;
+}
+
+.modal-persona-info p {
+    font-size: 13px;
+    color: #6B7280;
+    margin: 2px 0;
+}
+
+/* Docs lista */
+.docs-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.doc-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+}
+
+.doc-item i {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.doc-item span {
+    flex: 1;
+    color: #111827;
+}
+
+.link-accion {
+    color: #035498;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.link-accion:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .solicitudes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .propiedad-resumen-grid {
+        grid-template-columns: 1fr;
+    }
+}

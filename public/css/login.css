@@ -49,7 +49,8 @@ body {
 .input {
     margin-left: 10px;
     border: none;
-    flex: 1; /* Esto hace que el input ocupe el espacio medio entre los iconos */
+    flex: 1;
+    /* Esto hace que el input ocupe el espacio medio entre los iconos */
     height: 100%;
     background: transparent;
     outline: none;
@@ -128,4 +129,50 @@ body {
 
 .btn:hover {
     border: 1px solid #2d79f3;
+}
+
+/* Estilos de Validación */
+.error-mensaje {
+    color: #ff4d4d;
+    font-size: 13px;
+    margin-left: 5px;
+    display: block;
+    font-weight: 500;
+}
+
+
+.error-mensaje:empty {
+    display: none;
+}
+
+
+.error-contenedor {
+    margin-top: 5px;
+    background-color: rgba(255, 77, 77, 0.1);
+    border: 1.5px solid rgba(255, 77, 77, 0.3);
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.error-lista {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+
+.status-mensaje {
+    color: #2d79f3;
+    font-size: 13px;
+    text-align: center;
+    margin-top: 15px;
+    font-weight: 500;
+}
+
+.btn-login-deshabilitado {
+
+    background-color: #a0a0a0 !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
 }

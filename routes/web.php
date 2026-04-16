@@ -48,6 +48,7 @@ Route::post('/admin/solicitudes/{id}/rechazar', [SolicitudController::class, 're
 // Incidencias
 Route::get('/admin/incidencias', [IncidenciaController::class, 'index']);
 Route::get('/admin/incidencias/filtrar', [IncidenciaController::class, 'filtrar']);
+Route::post('/admin/incidencias/crear', [IncidenciaController::class, 'crear']);
 Route::get('/admin/incidencias/{id}', [IncidenciaController::class, 'show']);
 Route::post('/admin/incidencias/{id}/estado', [IncidenciaController::class, 'cambiarEstado']);
 Route::post('/admin/incidencias/{id}/asignar', [IncidenciaController::class, 'asignar']);

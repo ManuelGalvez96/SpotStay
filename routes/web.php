@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\Admin\PropiedadController;
 use App\Http\Controllers\Admin\SolicitudController;
 use App\Http\Controllers\Admin\IncidenciaController;
+use App\Http\Controllers\Gestor\DashboardController as GestorDashboardController;
+use App\Http\Controllers\Gestor\IncidenciaController as GestorIncidenciaController;
 
 Route::get('/', function () {
     return view('inicio');
@@ -23,6 +25,17 @@ Route::post('/logout', function () {
 Route::get('/admin/dashboard', [DashboardController::class, 'index']);
 Route::post('/admin/alquiler/{id}/aprobar', [DashboardController::class, 'aprobarAlquiler']);
 Route::post('/admin/alquiler/{id}/rechazar', [DashboardController::class, 'rechazarAlquiler']);
+
+// Rutas Gestor
+Route::get('/gestor/dashboard', [GestorDashboardController::class, 'index']);
+Route::get('/gestor/incidencias/{id}', [GestorIncidenciaController::class, 'show']);
+Route::post('/gestor/incidencias/{id}/iniciar', [GestorIncidenciaController::class, 'iniciarGestion']);
+Route::post('/gestor/incidencias/{id}/estado', [GestorIncidenciaController::class, 'cambiarEstado']);
+Route::post('/gestor/incidencias/{id}/espera', [GestorIncidenciaController::class, 'marcarEspera']);
+Route::post('/gestor/incidencias/{id}/intervencion', [GestorIncidenciaController::class, 'registrarIntervencion']);
+Route::post('/gestor/incidencias/{id}/comunicacion', [GestorIncidenciaController::class, 'registrarComunicacion']);
+Route::post('/gestor/incidencias/{id}/documento', [GestorIncidenciaController::class, 'subirDocumento']);
+Route::post('/gestor/incidencias/{id}/presupuesto', [GestorIncidenciaController::class, 'crearPresupuesto']);
 
 // Usuarios
 Route::get('/admin/usuarios', [UsuarioController::class, 'index']);

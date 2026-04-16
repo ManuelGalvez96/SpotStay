@@ -77,6 +77,7 @@ class AuthController extends Controller
         $request->validate([
             'nombre' => 'required|string|min:3|max:255',
             'email' => 'required|string|email|max:255|unique:tbl_usuario,email_usuario',
+            'telefono' => 'nullable|string|max:20',
             'password' => 'required|string|min:6|confirmed',
         ], [
             'nombre.required' => 'El nombre es obligatorio.',
@@ -93,6 +94,7 @@ class AuthController extends Controller
         $usuario = Usuario::create([
             'nombre_usuario' => $request->nombre,
             'email_usuario' => $request->email,
+            'telefono_usuario' => $request->telefono,
             'contrasena_usuario' => Hash::make($request->password),
             'activo_usuario' => true,
             'creado_usuario' => Carbon::now(),

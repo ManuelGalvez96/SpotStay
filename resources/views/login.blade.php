@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -37,11 +37,12 @@
                 <path d="m304 224c-8.832031 0-16-7.167969-16-16v-80c0-52.929688-43.070312-96-96-96s-96 43.070312-96 96v80c0 8.832031-7.1875 16-16 16s-16-7.167969-16-16v-80c0-70.59375 57.40625-128 128-128s128 57.40625 128 128v80c0 8.832031-7.1875 16-16 16zm0 0"></path>
             </svg>
             <input type="password" id="password-usuario" name="password" class="input" placeholder="Introduce tu contraseña">
-            <svg id="toggle-password" viewBox="0 0 576 512" height="1em" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
-
-
-                <path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM144 256a144 144 0 1 1 288 0 144 144 0 1 1 -288 0zm144-64c0 35.3-28.7 64-64 64c-7.1 0-13.9-1.2-20.3-3.3c-5.5-1.8-11.9 1.6-11.7 7.4c.3 6.9 1.3 13.8 3.2 20.7c13.7 51.2 66.4 81.6 117.6 67.9s81.6-66.4 67.9-117.6c-11.1-41.5-47.8-69.4-88.6-71.1c-5.8-.2-9.2 6.1-7.4 11.7c2.1 6.4 3.3 13.2 3.3 20.3z"></path>
-            </svg>
+            <span id="ver-password" style="cursor: pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
+                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
+                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
+                </svg>
+            </span>
         </div>
         </div>
         <span id="error-password" class="error-mensaje">@error('password') {{ $message }} @enderror</span>
@@ -84,5 +85,108 @@
     </form>
 </body>
 <script src="{{ asset('js/login.js') }}"></script>
+
+</html> -->
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>SpotStay | Iniciar Sesión</title>
+    <link rel="stylesheet" href="{{ asset('css/login.css') }}">
+    <style>
+        /* Estilos para errores y validaciones (se mantienen en el Blade por petición del usuario) */
+        .error-mensaje {
+            color: #ff4d4d;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: block;
+            text-align: left;
+        }
+
+        .disponibilidad-mensaje {
+            color: #1AA068;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: block;
+            text-align: left;
+        }
+
+        .btn-login-desabilitado {
+            opacity: 0.5;
+            cursor: not-allowed !important;
+            filter: grayscale(1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-city"></div>
+    <div class="login-card" id="mainContainer">
+        <div class="yeti-wrapper">
+            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <circle class="yeti-part" cx="62" cy="52" r="14" />
+                <circle class="yeti-part" cx="138" cy="52" r="14" />
+                <path class="yeti-part" d="M40,200 Q40,55 100,55 Q160,55 160,200 Z" />
+                <path class="suit-jacket" d="M30,200 L170,200 L160,152 Q100,132 40,152 Z" />
+                <path class="suit-shirt" d="M100,140 L120,168 L100,200 L80,168 Z" />
+                <path class="suit-tie" d="M100,150 L110,168 L100,192 L90,168 Z" />
+                <g id="face-group">
+                    <circle cx="82" cy="105" r="5" fill="#000" />
+                    <circle cx="118" cy="105" r="5" fill="#000" />
+                    <path d="M92 128 Q100 133 108 128" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round" />
+                </g>
+                <circle class="hand hand-l" cx="48" cy="180" r="19" />
+                <circle class="hand hand-r" cx="152" cy="180" r="19" />
+            </svg>
+        </div>
+        <div class="form-content">
+            <span class="logo-text">SpotStay</span>
+            <span class="subtitle">Luxury Rentals Management</span>
+            <form action="{{ route('login') }}" method="POST">
+                @csrf
+                <div class="input-wrapper">
+                    <input type="email" name="email" placeholder="Email Corporativo" oninput="handleMove(this.value)" onblur="resetFace()">
+                </div>
+                <div class="input-wrapper">
+                    <input type="password" id="pass" name="password" placeholder="Contraseña" onfocus="checkState(this); container.classList.add('hiding-pass')" onblur="container.classList.remove('hiding-pass')">
+                    <button class="toggle-pass" type="button" onmousedown="handleToggle(event, 'pass')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
+                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
+                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
+                        </svg>
+                    </button>
+                </div>
+                <button type="submit" class="btn-submit">Iniciar Sesión</button>
+            </form>
+            <a href="{{ url('/register') }}" class="nav-link">¿No tienes cuenta? <b>Regístrate aquí</b></a>
+        </div>
+    </div>
+    <script>
+        const container = document.getElementById('mainContainer');
+        const face = document.getElementById('face-group');
+
+        function checkState(el) {
+            el.type === 'text' ? container.classList.add('peek-active') : container.classList.remove('peek-active');
+        }
+
+        function handleToggle(e, id) {
+            e.preventDefault();
+            const i = document.getElementById(id);
+            i.type = i.type === 'password' ? 'text' : 'password';
+            checkState(i);
+            i.focus();
+        }
+
+        function handleMove(v) {
+            face.style.transform = `translateX(${Math.min(Math.max((v.length - 12) * 0.6, -8), 8)}px)`;
+        }
+
+        function resetFace() {
+            face.style.transform = `translateX(0px)`;
+        }
+    </script>
+</body>
 
 </html>

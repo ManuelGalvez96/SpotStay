@@ -34,19 +34,36 @@
             <span class="logo-text">Crea tu cuenta</span>
             <span class="subtitle">Únete al equipo de SpotStay</span>
 
+            {{-- Alertas Globales de Laravel --}}
+            @if(session('status'))
+                <div class="alert alert-success">
+                    {{ session('status') }}
+                </div>
+            @endif
+
+            @if($errors->any())
+                <div class="alert alert-error">
+                    <ul>
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form action="{{ route('register') }}" method="POST">
                 @csrf
                 <div class="grid-container">
                     <div class="contenedor-entrada full-width">
                         <div class="input-wrapper">
-                            <input type="text" id="nombre-usuario" name="nombre" placeholder="Nombre Completo">
+                            <input type="text" id="nombre-usuario" name="nombre" placeholder="Nombre Completo" value="{{ old('nombre') }}">
                         </div>
                         <span id="error-nombre" class="error-mensaje"></span>
                     </div>
 
                     <div class="contenedor-entrada">
                         <div class="input-wrapper">
-                            <input type="email" id="email-usuario" name="email" placeholder="Correo Electrónico">
+                            <input type="email" id="email-usuario" name="email" placeholder="Correo Electrónico" value="{{ old('email') }}">
                         </div>
                         <span id="error-email" class="error-mensaje"></span>
                         <span id="disponibilidad-email" class="disponibilidad-mensaje"></span>
@@ -54,9 +71,10 @@
 
                     <div class="contenedor-entrada">
                         <div class="input-wrapper">
-                            <input type="tel" id="telefono-usuario" name="telefono" placeholder="Teléfono">
+                            <input type="tel" id="telefono-usuario" name="telefono" placeholder="Teléfono" value="{{ old('telefono') }}">
                         </div>
                         <span id="error-telefono" class="error-mensaje"></span>
+                        <span id="disponibilidad-telefono" class="disponibilidad-mensaje"></span>
                     </div>
 
                     <div class="contenedor-entrada">

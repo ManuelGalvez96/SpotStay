@@ -22,6 +22,7 @@ Route::post('/login', [AuthController::class, 'authenticate']);
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
 Route::get('/admin/usuarios/check-email', [AuthController::class, 'checkEmail']);
+Route::get('/admin/usuarios/check-telefono', [AuthController::class, 'checkTelefono']);
 
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

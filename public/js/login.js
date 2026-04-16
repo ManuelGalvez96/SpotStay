@@ -1,17 +1,17 @@
-document.addEventListener("DOMContentLoaded", () => {
-    iniciarValidacionLogin();
-});
+document.addEventListener("DOMContentLoaded", function () {
+    // --- REFERENCIAS DOM ---
+    const container = document.getElementById("mainContainer");
+    const face = document.getElementById("face-group");
+    const emailInput = document.getElementById("email-login");
+    const passwordInput = document.getElementById("pass");
+    const botonEnviar = document.getElementById("boton-enviar");
+    const verPassword = document.getElementById("ver-password");
 
-function iniciarValidacionLogin() {
-    // Referencias a mensajes de error
+    // Mensajes de error
     const eEmail = document.getElementById("error-email");
     const ePassword = document.getElementById("error-password");
 
-    // Referencias a inputs
-    const emailInput = document.getElementById("email-usuario");
-    const passwordInput = document.getElementById("password-usuario");
-    const botonEnviar = document.getElementById("boton-enviar");
-    const verPassword = document.getElementById("ver-password");
+    // SVG Icons
     const svgOjoAbierto = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
         <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
         <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
@@ -22,27 +22,28 @@ function iniciarValidacionLogin() {
         <path d="M3.35 5.47q-.27.24-.518.487A13 13 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7 7 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12z"/>
     </svg>`;
 
-    if (!emailInput || !passwordInput) return;
+    if (!emailInput || !face) return;
 
-    // Listeners
-    emailInput.oninput = comprobarEmail;
-    emailInput.onblur = comprobarEmail;
+    // --- FUNCIONES DEL YETI ---
 
-    passwordInput.oninput = comprobarPassword;
-    passwordInput.onblur = comprobarPassword;
+    const handleMove = (val) => {
+        const move = Math.min(Math.max((val.length - 12) * 0.6, -8), 8);
+        face.style.transform = `translateX(${move}px)`;
+    };
 
-    // Funcionalidad del ojo (ver/ocultar contraseña)
-    if (verPassword) {
-        verPassword.onclick = () => {
-            const esPassword = passwordInput.getAttribute("type") === "password";
-            const type = esPassword ? "text" : "password";
-            passwordInput.setAttribute("type", type);
-            
-            // Cambiamos el icono dinámicamente según el estado
-            verPassword.innerHTML = esPassword ? svgOjoCerrado : svgOjoAbierto;
-            verPassword.style.color = esPassword ? "#2d79f3" : "inherit";
-        };
-    }
+    const resetFace = () => {
+        face.style.transform = `translateX(0px)`;
+    };
+
+    const checkState = (input) => {
+        if (input.type === "text") {
+            container.classList.add("peek-active");
+        } else {
+            container.classList.remove("peek-active");
+        }
+    };
+
+    // --- FUNCIONES DE VALIDACIÓN ---
 
     function comprobarBoton() {
         const email = emailInput.value.trim();
@@ -54,10 +55,10 @@ function iniciarValidacionLogin() {
 
         if (emailValido && passwordValido) {
             botonEnviar.disabled = false;
-            botonEnviar.classList.remove("btn-login-deshabilitado");
+            botonEnviar.classList.remove("btn-login-desabilitado");
         } else {
             botonEnviar.disabled = true;
-            botonEnviar.classList.add("btn-login-deshabilitado");
+            botonEnviar.classList.add("btn-login-desabilitado");
         }
     }
 
@@ -67,42 +68,57 @@ function iniciarValidacionLogin() {
 
         if (valor === "") {
             eEmail.innerText = "El correo electrónico es obligatorio.";
-            comprobarBoton();
-            return;
-        }
-
-        if (!regex.test(valor)) {
+        } else if (!regex.test(valor)) {
             eEmail.innerText = "Introduce un correo válido.";
-            comprobarBoton();
-            return;
+        } else {
+            eEmail.innerText = "";
         }
-
-        eEmail.innerText = "";
         comprobarBoton();
     }
 
     function comprobarPassword() {
         const valor = passwordInput.value.trim();
-
         if (valor === "") {
             ePassword.innerText = "La contraseña es obligatoria.";
-            comprobarBoton();
-            return;
-        }
-
-        if (valor.length < 6) {
+        } else if (valor.length < 6) {
             ePassword.innerText = "Mínimo 6 caracteres.";
-            comprobarBoton();
-            return;
+        } else {
+            ePassword.innerText = "";
         }
-
-        ePassword.innerText = "";
         comprobarBoton();
     }
 
-    // Validar inicialmente (por si hay valores previos del navegador o old('email'))
+    // --- LISTENERS ---
+
+    emailInput.addEventListener("input", (e) => {
+        handleMove(e.target.value);
+        comprobarEmail();
+    });
+    emailInput.addEventListener("blur", resetFace);
+
+    passwordInput.addEventListener("focus", () => {
+        checkState(passwordInput);
+        container.classList.add("hiding-pass");
+    });
+    passwordInput.addEventListener("blur", () => {
+        container.classList.remove("hiding-pass");
+    });
+    passwordInput.addEventListener("input", comprobarPassword);
+
+    // Toggle de Visibilidad
+    if (verPassword) {
+        verPassword.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+            const esPassword = passwordInput.type === "password";
+            passwordInput.type = esPassword ? "text" : "password";
+            verPassword.innerHTML = esPassword ? svgOjoCerrado : svgOjoAbierto;
+            verPassword.style.color = esPassword ? "#2d79f3" : "inherit";
+            checkState(passwordInput);
+            passwordInput.focus();
+        });
+    }
+
+    // Inicialización si hay valores previos
     if (emailInput.value !== "") comprobarEmail();
     if (passwordInput.value !== "") comprobarPassword();
-    
-    comprobarBoton();
-}
+});

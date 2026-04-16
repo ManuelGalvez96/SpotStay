@@ -14,6 +14,7 @@ function iniciarValidacionCrearUsuario() {
     const ePassword = document.getElementById("error-password");
     const ePasswordConfirmation = document.getElementById("error-password-confirmation");
     const sEmail = document.getElementById("disponibilidad-email");
+    const sTelefono = document.getElementById("disponibilidad-telefono");
 
     // Inputs
     const nombreInput = document.getElementById("nombre-usuario");
@@ -40,7 +41,9 @@ function iniciarValidacionCrearUsuario() {
 
     // --- VARIABLES DE ESTADO ---
     let emailDisponible = false;
+    let telefonoDisponible = false; // Ahora es obligatorio, empieza en false
     let timeoutEmail = null;
+    let timeoutTelefono = null;
 
     if (!nombreInput || !face) return;
 
@@ -72,14 +75,15 @@ function iniciarValidacionCrearUsuario() {
         const password = passwordInput.value.trim();
         const passwordConfirmation = passwordConfirmationInput.value.trim();
         const emailFormato = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const regexTel = /^\+\d{1,4} \d{6,11}$/;
 
         let nombreValido = nombre !== "" && nombre.length >= 3;
         let emailValido = email !== "" && emailFormato.test(email) && emailDisponible;
         let passwordValido = password !== "" && password.length >= 6;
         let passwordConfirmationValido = passwordConfirmation !== "" && password === passwordConfirmation;
-
-        // Teléfono opcional: es válido si está vacío O si tiene al menos 9 caracteres
-        let telefonoValido = telefono === "" || telefono.length >= 9;
+        
+        // Teléfono OBLIGATORIO: debe cumplir el formato Y estar disponible
+        let telefonoValido = telefono !== "" && regexTel.test(telefono) && telefonoDisponible;
 
         if (nombreValido && emailValido && passwordValido && passwordConfirmationValido && telefonoValido) {
             botonEnviar.disabled = false;
@@ -144,16 +148,45 @@ function iniciarValidacionCrearUsuario() {
     }
 
     function comprobarTelefono() {
-        if (!telefonoInput || !eTelefono) return;
+        if (!telefonoInput || !eTelefono || !sTelefono) return;
         const valor = telefonoInput.value.trim();
+        const regexTel = /^\+\d{1,4} \d{6,11}$/;
+
         if (valor === "") {
-            eTelefono.innerText = "";
-        } else if (valor.length < 9) {
-            eTelefono.innerText = "El teléfono debe tener al menos 9 dígitos.";
-        } else {
-            eTelefono.innerText = "";
+            eTelefono.innerText = "El teléfono es obligatorio.";
+            sTelefono.innerText = "";
+            telefonoDisponible = false;
+            comprobarBoton();
+            return;
         }
-        comprobarBoton();
+
+        if (!regexTel.test(valor)) {
+            eTelefono.innerText = "Formato: +34 600123456 (Prefijo + Espacio + 6 a 11 dígitos)";
+            sTelefono.innerText = "";
+            telefonoDisponible = false;
+            comprobarBoton();
+            return;
+        }
+
+        eTelefono.innerText = "";
+        clearTimeout(timeoutTelefono);
+        timeoutTelefono = setTimeout(() => {
+            fetch(`/admin/usuarios/check-telefono?telefono=${encodeURIComponent(valor)}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.disponible) {
+                        eTelefono.innerText = "";
+                        sTelefono.innerText = "Disponible.";
+                        telefonoDisponible = true;
+                    } else {
+                        sTelefono.innerText = "";
+                        eTelefono.innerText = "Ya está en uso.";
+                        telefonoDisponible = false;
+                    }
+                    comprobarBoton();
+                })
+                .catch(err => console.error("Error comprobando teléfono:", err));
+        }, 300);
     }
 
     function comprobarPassword() {

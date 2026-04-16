@@ -50,8 +50,14 @@ class AuthController extends Controller
             // Si tiene éxito, regenerar la sesión para evitar ataques de fijación de sesión
             $request->session()->regenerate();
 
-            // Redirigir al panel de administración (o a la página que intentaba visitar)
-            return redirect()->intended('/admin/dashboard');
+            // Redirigir según el rol del usuario
+            if (Auth::user()->roles()->where('slug_rol', 'admin')->exists()) {
+                return redirect()->intended('/admin/dashboard');
+            }
+
+            if (Auth::user()->roles()->where('slug_rol', 'miembro')->exists()) {
+                return redirect()->intended('/miembro/inicio');
+            }
         }
 
         // 3. Si la autenticación falla, volver con error
@@ -77,7 +83,7 @@ class AuthController extends Controller
         $request->validate([
             'nombre' => 'required|string|min:3|max:255',
             'email' => 'required|string|email|max:255|unique:tbl_usuario,email_usuario',
-            'telefono' => 'nullable|string|max:20',
+            'telefono' => 'required|string|max:20|regex:/^\+\d{1,4} \d{6,11}$/',
             'password' => 'required|string|min:6|confirmed',
         ], [
             'nombre.required' => 'El nombre es obligatorio.',
@@ -85,6 +91,8 @@ class AuthController extends Controller
             'email.required' => 'El correo electrónico es obligatorio.',
             'email.email' => 'Introduce un correo electrónico válido.',
             'email.unique' => 'Este correo electrónico ya está registrado.',
+            'telefono.required' => 'El teléfono es obligatorio.',
+            'telefono.regex' => 'Formato: +34 600123456 ("+" + Prefijo + Espacio + 6 a 11 dígitos)',
             'password.required' => 'La contraseña es obligatoria.',
             'password.min' => 'La contraseña debe tener al menos 6 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
@@ -101,10 +109,10 @@ class AuthController extends Controller
             'actualizado_usuario' => Carbon::now(),
         ]);
 
-        // 3. Asignación automática del rol "inquilino"
-        $rolInquilino = Rol::where('slug_rol', 'inquilino')->first();
-        if ($rolInquilino) {
-            $usuario->roles()->attach($rolInquilino->id_rol, [
+        // 3. Asignación automática del rol "miembro"
+        $rolMiembro = Rol::where('slug_rol', 'miembro')->first();
+        if ($rolMiembro) {
+            $usuario->roles()->attach($rolMiembro->id_rol, [
                 'asignado_rol_usuario' => Carbon::now()
             ]);
         }
@@ -121,6 +129,16 @@ class AuthController extends Controller
     {
         $email = $request->query('email');
         $existe = Usuario::where('email_usuario', $email)->exists();
+
+        return response()->json([
+            'disponible' => !$existe
+        ]);
+    }
+
+    public function checkTelefono(Request $request)
+    {
+        $telefono = $request->query('telefono');
+        $existe = Usuario::where('telefono_usuario', $telefono)->exists();
 
         return response()->json([
             'disponible' => !$existe

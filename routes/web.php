@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\Admin\PropiedadController;
 use App\Http\Controllers\Admin\SolicitudController;
 use App\Http\Controllers\Admin\IncidenciaController;
+use App\Http\Controllers\Admin\AlquilerController;
 
 Route::get('/', function () {
     return view('inicio');
@@ -52,4 +53,12 @@ Route::post('/admin/incidencias/crear', [IncidenciaController::class, 'crear']);
 Route::get('/admin/incidencias/{id}', [IncidenciaController::class, 'show']);
 Route::post('/admin/incidencias/{id}/estado', [IncidenciaController::class, 'cambiarEstado']);
 Route::post('/admin/incidencias/{id}/asignar', [IncidenciaController::class, 'asignar']);
+
+// Alquileres
+Route::get('/admin/alquileres', [AlquilerController::class, 'index']);
+Route::get('/admin/alquileres/filtrar', [AlquilerController::class, 'filtrar']);
+Route::post('/admin/alquileres/crear', [AlquilerController::class, 'crear']);
+Route::get('/admin/alquileres/{id}', [AlquilerController::class, 'show']);
+Route::post('/admin/alquiler/{id}/aprobar', [AlquilerController::class, 'aprobar']);
+Route::post('/admin/alquiler/{id}/rechazar', [AlquilerController::class, 'rechazar']);
 

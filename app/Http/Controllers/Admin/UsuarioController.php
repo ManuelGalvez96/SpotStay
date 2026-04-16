@@ -64,10 +64,10 @@ class UsuarioController extends Controller
         }
 
         if ($request->input('q')) {
-            $q = '%' . $request->input('q') . '%';
-            $query->where(function ($q) use ($q) {
-                $q->where('tbl_usuario.nombre_usuario', 'like', $q)
-                  ->orWhere('tbl_usuario.email_usuario', 'like', $q);
+            $terminoBusqueda = '%' . $request->input('q') . '%';
+            $query->where(function ($subQuery) use ($terminoBusqueda) {
+                $subQuery->where('tbl_usuario.nombre_usuario', 'like', $terminoBusqueda)
+                    ->orWhere('tbl_usuario.email_usuario', 'like', $terminoBusqueda);
             });
         }
 

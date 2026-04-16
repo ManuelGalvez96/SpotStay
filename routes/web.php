@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\PropiedadController;
 use App\Http\Controllers\Admin\SolicitudController;
 use App\Http\Controllers\Admin\IncidenciaController;
 use App\Http\Controllers\Admin\AlquilerController;
+use App\Http\Controllers\Admin\SuscripcionController;
 
 Route::get('/', function () {
     return view('inicio');
@@ -61,4 +62,12 @@ Route::post('/admin/alquileres/crear', [AlquilerController::class, 'crear']);
 Route::get('/admin/alquileres/{id}', [AlquilerController::class, 'show']);
 Route::post('/admin/alquiler/{id}/aprobar', [AlquilerController::class, 'aprobar']);
 Route::post('/admin/alquiler/{id}/rechazar', [AlquilerController::class, 'rechazar']);
+
+// Suscripciones
+Route::get('/admin/suscripciones', [SuscripcionController::class, 'index']);
+Route::get('/admin/suscripciones/filtrar', [SuscripcionController::class, 'filtrar']);
+Route::get('/admin/suscripciones/exportar', [SuscripcionController::class, 'exportar']);
+Route::get('/admin/suscripciones/{id}', [SuscripcionController::class, 'show']);
+Route::post('/admin/suscripciones/{id}/editar', [SuscripcionController::class, 'editar']);
+Route::post('/admin/suscripciones/{id}/cancelar', [SuscripcionController::class, 'cancelar']);
 

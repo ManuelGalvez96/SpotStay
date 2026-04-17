@@ -50,7 +50,8 @@
         </div>
 
         <div class="resumen-gastos">
-            <div class="resumen-pill">Mensual estimado: <strong>{{ number_format((float) $resumenGastos['mensual_estimado'], 2, ',', '.') }} EUR</strong></div>
+            <div class="resumen-pill">Total mensual (con alquiler): <strong>{{ number_format((float) $resumenGastos['mensual_total'], 2, ',', '.') }} EUR</strong></div>
+            <div class="resumen-pill resumen-pill-pendiente">Total pendiente: <strong>{{ number_format((float) $resumenGastos['total_pendiente_importe'], 2, ',', '.') }} EUR</strong></div>
             <div class="resumen-pill">Pendientes del mes: <strong>{{ $resumenGastos['pendientes_mes'] }}</strong></div>
             <div class="resumen-pill resumen-pill-alerta">Pagos atrasados: <strong>{{ $resumenGastos['atrasados'] }}</strong></div>
             <div class="resumen-pill">Pagados este mes: <strong>{{ $resumenGastos['pagados_mes'] }}</strong></div>
@@ -76,10 +77,7 @@
             <div class="fila-form-gasto">
                 <label>
                     Quién paga
-                    <select name="pagador_gasto" required>
-                        <option value="gestor" {{ old('pagador_gasto') === 'gestor' ? 'selected' : '' }}>Gestor</option>
-                        <option value="inquilinos" {{ old('pagador_gasto') === 'inquilinos' ? 'selected' : '' }}>Inquilinos (reparto automático)</option>
-                    </select>
+                    <input type="text" value="Inquilinos (reparto automático)" readonly />
                 </label>
                 <label>
                     Día de vencimiento

@@ -271,7 +271,6 @@ class PropiedadController extends Controller
             'concepto_gasto' => ['required', 'string', 'max:200'],
             'categoria_gasto' => ['nullable', 'string', 'max:50'],
             'importe_gasto' => ['required', 'numeric', 'min:0.01'],
-            'pagador_gasto' => ['required', 'in:gestor,inquilinos'],
             'dia_vencimiento' => ['required', 'integer', 'min:1', 'max:28'],
             'fecha_inicio_gasto' => ['required', 'date'],
         ]);
@@ -286,9 +285,9 @@ class PropiedadController extends Controller
         }
 
         $inquilinos = $this->getInquilinosActivosIds($id);
-        if ($validated['pagador_gasto'] === 'inquilinos' && $inquilinos->isEmpty()) {
+        if ($inquilinos->isEmpty()) {
             throw ValidationException::withMessages([
-                'pagador_gasto' => 'No hay inquilinos activos para repartir este gasto.',
+                'concepto_gasto' => 'No hay inquilinos activos para repartir este gasto.',
             ]);
         }
 
@@ -300,7 +299,7 @@ class PropiedadController extends Controller
                 'concepto_gasto' => trim($validated['concepto_gasto']),
                 'categoria_gasto' => trim((string) ($validated['categoria_gasto'] ?? '')) !== '' ? trim((string) $validated['categoria_gasto']) : null,
                 'importe_gasto' => round((float) $validated['importe_gasto'], 2),
-                'pagador_gasto' => $validated['pagador_gasto'],
+                'pagador_gasto' => 'inquilinos',
                 'periodicidad_gasto' => 'mensual',
                 'dia_vencimiento' => (int) $validated['dia_vencimiento'],
                 'fecha_inicio_gasto' => $inicio->toDateString(),
@@ -317,7 +316,7 @@ class PropiedadController extends Controller
                     $cursor->copy(),
                     round((float) $validated['importe_gasto'], 2),
                     (int) $validated['dia_vencimiento'],
-                    $validated['pagador_gasto'],
+                    'inquilinos',
                     $gestorId,
                     $inquilinos
                 );
@@ -625,8 +624,9 @@ class PropiedadController extends Controller
             && Schema::hasTable('tbl_gasto_cuota_detalle');
 
         $resumenGastos = [
-            'mensual_estimado' => 0,
+            'mensual_total' => 0,
             'pendientes_mes' => 0,
+            'total_pendiente_importe' => 0,
             'atrasados' => 0,
             'pagados_mes' => 0,
         ];
@@ -644,6 +644,7 @@ class PropiedadController extends Controller
         if ($gastosHabilitados) {
             $propiedadId = (int) $propiedad->id_propiedad;
             $this->sincronizarGastosBaseDePropiedad($propiedad, $gestorId);
+            $this->normalizarPagadoresSoloInquilinos($propiedadId, $gestorId);
             $this->ensureCuotasMensualesGeneradas($propiedadId, $gestorId);
 
             $hoy = Carbon::today()->toDateString();
@@ -652,16 +653,22 @@ class PropiedadController extends Controller
             $finMes = Carbon::today()->endOfMonth()->toDateString();
 
             $resumenGastos = [
-                'mensual_estimado' => (float) DB::table('tbl_gasto')
+                'mensual_total' => (float) DB::table('tbl_gasto')
                     ->where('id_propiedad_fk', $propiedadId)
                     ->where('estado_gasto', 'activo')
-                    ->sum('importe_gasto'),
+                    ->sum('importe_gasto') + (float) $propiedad->precio_propiedad,
                 'pendientes_mes' => DB::table('tbl_gasto_cuota')
                     ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
                     ->where('tbl_gasto.id_propiedad_fk', $propiedadId)
                     ->where('tbl_gasto_cuota.mes_cuota', $mesActual)
                     ->whereIn('tbl_gasto_cuota.estado_cuota', ['pendiente', 'parcial'])
                     ->count(),
+                'total_pendiente_importe' => (float) DB::table('tbl_gasto_cuota_detalle')
+                    ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
+                    ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+                    ->where('tbl_gasto.id_propiedad_fk', $propiedadId)
+                    ->where('tbl_gasto_cuota_detalle.estado_detalle', '!=', 'pagado')
+                    ->sum('tbl_gasto_cuota_detalle.importe_detalle'),
                 'atrasados' => DB::table('tbl_gasto_cuota')
                     ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
                     ->where('tbl_gasto.id_propiedad_fk', $propiedadId)
@@ -810,5 +817,70 @@ class PropiedadController extends Controller
             'cuotasGasto' => $cuotasGasto,
             'cuotasDetallePorId' => $cuotasDetallePorId,
         ];
+    }
+
+    private function normalizarPagadoresSoloInquilinos(int $propiedadId, int $gestorId): void
+    {
+        DB::table('tbl_gasto')
+            ->where('id_propiedad_fk', $propiedadId)
+            ->where('id_gestor_fk', $gestorId)
+            ->where('pagador_gasto', '!=', 'inquilinos')
+            ->update([
+                'pagador_gasto' => 'inquilinos',
+                'actualizado_gasto' => now(),
+            ]);
+
+        $inquilinos = $this->getInquilinosActivosIds($propiedadId);
+        if ($inquilinos->isEmpty()) {
+            return;
+        }
+
+        $cuotasConGestor = DB::table('tbl_gasto_cuota_detalle')
+            ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
+            ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+            ->where('tbl_gasto.id_propiedad_fk', $propiedadId)
+            ->where('tbl_gasto_cuota_detalle.id_pagador_fk', $gestorId)
+            ->select('tbl_gasto_cuota.id_gasto_cuota', 'tbl_gasto_cuota.importe_total_cuota')
+            ->distinct()
+            ->get();
+
+        foreach ($cuotasConGestor as $cuota) {
+            DB::transaction(function () use ($cuota, $inquilinos) {
+                DB::table('tbl_gasto_cuota_detalle')
+                    ->where('id_gasto_cuota_fk', $cuota->id_gasto_cuota)
+                    ->delete();
+
+                $totalInquilinos = max(1, (int) $inquilinos->count());
+                $importeTotal = (float) $cuota->importe_total_cuota;
+                $base = floor((($importeTotal / $totalInquilinos) * 100)) / 100;
+                $acumulado = 0.0;
+
+                foreach ($inquilinos->values() as $index => $idInquilino) {
+                    $importeDetalle = $index === $totalInquilinos - 1
+                        ? round($importeTotal - $acumulado, 2)
+                        : round($base, 2);
+
+                    $acumulado += $importeDetalle;
+
+                    DB::table('tbl_gasto_cuota_detalle')->insert([
+                        'id_gasto_cuota_fk' => (int) $cuota->id_gasto_cuota,
+                        'id_pagador_fk' => (int) $idInquilino,
+                        'importe_detalle' => $importeDetalle,
+                        'estado_detalle' => 'pendiente',
+                        'pagado_detalle' => null,
+                        'creado_detalle' => now(),
+                        'actualizado_detalle' => now(),
+                    ]);
+                }
+
+                DB::table('tbl_gasto_cuota')
+                    ->where('id_gasto_cuota', (int) $cuota->id_gasto_cuota)
+                    ->update([
+                        'estado_cuota' => 'pendiente',
+                        'pagado_cuota' => null,
+                        'actualizado_cuota' => now(),
+                    ]);
+            });
+        }
     }
 }

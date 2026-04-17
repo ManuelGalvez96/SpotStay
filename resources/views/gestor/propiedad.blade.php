@@ -19,6 +19,37 @@
     <div class="hero-deco hero-deco-2"></div>
 </div>
 
+<div class="card-admin card-gastos" id="gastos-propiedad">
+    <div class="card-header-admin card-header-acciones">
+        <span>Pagos principales del mes</span>
+        <a href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad . '/gastos') }}" class="link-ver-todos">Gestionar gastos</a>
+    </div>
+
+    @if(!$gastosHabilitados)
+        <div class="mensaje-estado mensaje-info">Para activar esta sección, ejecuta las migraciones pendientes.</div>
+    @else
+        <div class="pagos-principales-grid">
+            @foreach($pagosPrincipales as $clavePago => $pagoPrincipal)
+                @php
+                    $estadoPagoCard = in_array($pagoPrincipal['estado'], ['pagado', 'pendiente', 'parcial', 'atrasado'], true)
+                        ? $pagoPrincipal['estado']
+                        : 'sin_dato';
+                @endphp
+                <div class="pago-principal-card pago-principal-{{ $estadoPagoCard }}">
+                    <span class="pago-principal-titulo">{{ $pagoPrincipal['label'] }}</span>
+                    <strong class="pago-principal-importe">{{ number_format((float) $pagoPrincipal['importe'], 2, ',', '.') }} EUR</strong>
+                    <span class="pago-principal-estado estado-{{ $estadoPagoCard }}">
+                        {{ $estadoPagoCard === 'sin_dato' ? 'Sin dato este mes' : ucfirst($estadoPagoCard) }}
+                    </span>
+                </div>
+            @endforeach
+        </div>
+            <div class="total-pendiente-box">
+                Total pendiente: <strong>{{ number_format((float) $resumenGastos['total_pendiente_importe'], 2, ',', '.') }} EUR</strong>
+            </div>
+    @endif
+</div>
+
 <div class="central-grid detalle-grid">
     <div class="card-admin">
         <div class="card-header-admin"><span>Información de la propiedad</span></div>
@@ -107,31 +138,4 @@
     </div>
 </div>
 
-<div class="card-admin card-gastos" id="gastos-propiedad">
-    <div class="card-header-admin card-header-acciones">
-        <span>Pagos principales del mes</span>
-        <a href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad . '/gastos') }}" class="link-ver-todos">Gestionar gastos</a>
-    </div>
-
-    @if(!$gastosHabilitados)
-        <div class="mensaje-estado mensaje-info">Para activar esta sección, ejecuta las migraciones pendientes.</div>
-    @else
-        <div class="pagos-principales-grid">
-            @foreach($pagosPrincipales as $clavePago => $pagoPrincipal)
-                @php
-                    $estadoPagoCard = in_array($pagoPrincipal['estado'], ['pagado', 'pendiente', 'parcial', 'atrasado'], true)
-                        ? $pagoPrincipal['estado']
-                        : 'sin_dato';
-                @endphp
-                <div class="pago-principal-card pago-principal-{{ $estadoPagoCard }}">
-                    <span class="pago-principal-titulo">{{ $pagoPrincipal['label'] }}</span>
-                    <strong class="pago-principal-importe">{{ number_format((float) $pagoPrincipal['importe'], 2, ',', '.') }} EUR</strong>
-                    <span class="pago-principal-estado estado-{{ $estadoPagoCard }}">
-                        {{ $estadoPagoCard === 'sin_dato' ? 'Sin dato este mes' : ucfirst($estadoPagoCard) }}
-                    </span>
-                </div>
-            @endforeach
-        </div>
-    @endif
-</div>
 @endsection

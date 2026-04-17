@@ -1,5 +1,25 @@
+.resumen-kpis-gestor {
+    margin: 24px 40px 0;
+    padding: 14px;
+    border: 1px solid #dbe4ea;
+    border-radius: 14px;
+    background: #f8fbff;
+}
+
+.resumen-kpis-label {
+    margin-bottom: 10px;
+    color: #415362;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.resumen-kpis-label strong {
+    color: #0f3554;
+    font-size: 1.1rem;
+}
+
 .gestor-kpis {
-    padding: 24px 40px 0;
+    padding: 0;
 }
 
 .kpi-clickable {
@@ -168,8 +188,9 @@
 }
 
 @media (max-width: 1024px) {
-    .gestor-kpis {
-        padding: 16px 16px 0;
+    .resumen-kpis-gestor {
+        margin-left: 16px;
+        margin-right: 16px;
     }
 
     .filtros-card-gestor,
@@ -184,6 +205,14 @@
 }
 
 @media (max-width: 768px) {
+    .resumen-kpis-gestor {
+        padding: 12px;
+    }
+
+    .resumen-kpis-label {
+        font-size: 0.9rem;
+    }
+
     .filtros-propiedades {
         grid-template-columns: 1fr;
         padding: 16px;

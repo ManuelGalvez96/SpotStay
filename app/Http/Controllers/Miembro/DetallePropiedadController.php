@@ -7,6 +7,11 @@ use Illuminate\Support\Facades\DB;
 
 class DetallePropiedadController extends Controller
 {
+    public function show($id)
+    {
+        return $this->index($id);
+    }
+
     public function index($id)
     {
         // Busca la propiedad por su ID

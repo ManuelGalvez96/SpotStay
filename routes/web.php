@@ -33,9 +33,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['role:admin'])->group(function () {
 
     // Dashboard
-    Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
-    Route::post('/admin/alquiler/{id}/aprobar', [AdminController::class, 'aprobar']);
-    Route::post('/admin/alquiler/{id}/rechazar', [AdminController::class, 'rechazar']);
+    Route::get('/admin/dashboard', [DashboardController::class, 'index']);
+    Route::post('/admin/alquiler/{id}/aprobar', [DashboardController::class, 'aprobarAlquiler']);
+    Route::post('/admin/alquiler/{id}/rechazar', [DashboardController::class, 'rechazarAlquiler']);
+
 
     // Usuarios
     Route::get('/admin/usuarios', [AdminController::class, 'usuarios']);

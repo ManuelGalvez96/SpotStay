@@ -2,13 +2,23 @@
     padding: 24px 40px 0;
 }
 
+.kpi-clickable {
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kpi-clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
 .filtros-card-gestor {
     margin: 16px 40px 0;
 }
 
 .filtros-propiedades {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr auto;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
     gap: 12px;
     padding: 18px 24px 24px;
 }
@@ -26,33 +36,6 @@
 .filtros-propiedades select:focus {
     border-color: #035498;
     box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
-}
-
-.acciones-filtros-propiedades {
-    display: flex;
-    gap: 8px;
-}
-
-.btn-aplicar-admin,
-.btn-limpiar-admin {
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-    border: 1px solid transparent;
-    cursor: pointer;
-}
-
-.btn-aplicar-admin {
-    background: #035498;
-    color: white;
-}
-
-.btn-limpiar-admin {
-    background: #F1F5F9;
-    color: #334155;
-    border-color: #E2E8F0;
 }
 
 .tabla-propiedades-card {
@@ -74,6 +57,78 @@
     margin: 0;
     font-size: 12px;
     color: #6B7280;
+}
+
+.th-sort {
+    color: inherit;
+    text-decoration: none;
+}
+
+.th-sort:hover {
+    text-decoration: underline;
+}
+
+.th-sort.activo {
+    color: #035498;
+}
+
+.salud-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.salud-punto {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.salud-verde {
+    background: #DCFCE7;
+    color: #166534;
+}
+
+.salud-verde .salud-punto {
+    background: #16A34A;
+}
+
+.salud-amarillo {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.salud-amarillo .salud-punto {
+    background: #D97706;
+}
+
+.salud-rojo {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.salud-rojo .salud-punto {
+    background: #DC2626;
+}
+
+.acciones-rapidas {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.link-secundario {
+    color: #475569;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.link-secundario:hover {
+    text-decoration: underline;
 }
 
 .tabla-vacia {

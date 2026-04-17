@@ -18,33 +18,47 @@
     <div class="hero-deco hero-deco-3"></div>
 </div>
 
-<div class="kpi-grid-pequeno gestor-kpis">
-    <div class="kpi-mini">
+<div class="kpi-grid-pequeno gestor-kpis" id="propiedadesKpiGrid">
+    <div class="kpi-mini kpi-clickable" data-filter-key="estado" data-filter-value="">
         <div class="kpi-mini-icono kpi-mini-azul"><i class="bi bi-house"></i></div>
         <div class="kpi-mini-datos">
             <span class="kpi-mini-numero">{{ $totalAsignadas }}</span>
             <span class="kpi-mini-label">Asignadas</span>
         </div>
     </div>
-    <div class="kpi-mini">
+    <div class="kpi-mini kpi-clickable" data-filter-key="estado" data-filter-value="publicada">
         <div class="kpi-mini-icono kpi-mini-verde"><i class="bi bi-megaphone"></i></div>
         <div class="kpi-mini-datos">
             <span class="kpi-mini-numero">{{ $totalPublicadas }}</span>
             <span class="kpi-mini-label">Publicadas</span>
         </div>
     </div>
-    <div class="kpi-mini">
+    <div class="kpi-mini kpi-clickable" data-filter-key="estado" data-filter-value="alquilada">
         <div class="kpi-mini-icono kpi-mini-naranja"><i class="bi bi-key"></i></div>
         <div class="kpi-mini-datos">
             <span class="kpi-mini-numero">{{ $totalAlquiladas }}</span>
             <span class="kpi-mini-label">Alquiladas</span>
         </div>
     </div>
-    <div class="kpi-mini">
+    <div class="kpi-mini kpi-clickable" data-filter-key="estado" data-filter-value="borrador">
         <div class="kpi-mini-icono kpi-mini-rojo"><i class="bi bi-pencil-square"></i></div>
         <div class="kpi-mini-datos">
             <span class="kpi-mini-numero">{{ $totalBorrador }}</span>
             <span class="kpi-mini-label">Borrador</span>
+        </div>
+    </div>
+    <div class="kpi-mini kpi-clickable" data-filter-key="operativo" data-filter-value="criticas">
+        <div class="kpi-mini-icono kpi-mini-rojo"><i class="bi bi-exclamation-triangle"></i></div>
+        <div class="kpi-mini-datos">
+            <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ $totalConCriticas }}</span>
+            <span class="kpi-mini-label">Con incidencias críticas</span>
+        </div>
+    </div>
+    <div class="kpi-mini kpi-clickable" data-filter-key="operativo" data-filter-value="sin_alquiler">
+        <div class="kpi-mini-icono kpi-mini-azul"><i class="bi bi-person-x"></i></div>
+        <div class="kpi-mini-datos">
+            <span class="kpi-mini-numero">{{ $totalSinAlquiler }}</span>
+            <span class="kpi-mini-label">Sin alquiler activo</span>
         </div>
     </div>
 </div>
@@ -54,7 +68,7 @@
         <span>Filtros de propiedades</span>
     </div>
 
-    <form method="GET" action="{{ url('/gestor/propiedades') }}" class="filtros-propiedades">
+    <form method="GET" action="{{ url('/gestor/propiedades') }}" class="filtros-propiedades" id="propiedadesFiltrosForm">
         <input type="text" name="q" value="{{ $q }}" placeholder="Buscar por título, dirección o arrendador">
 
         <select name="estado">
@@ -67,28 +81,56 @@
 
         <input type="text" name="ciudad" value="{{ $ciudad }}" placeholder="Filtrar por ciudad">
 
-        <div class="acciones-filtros-propiedades">
-            <button type="submit" class="btn-aplicar-admin">Aplicar</button>
-            <a href="{{ url('/gestor/propiedades') }}" class="btn-limpiar-admin">Limpiar</a>
-        </div>
+        <select name="operativo">
+            <option value="" {{ $operativo === '' ? 'selected' : '' }}>Operativa: todas</option>
+            <option value="criticas" {{ $operativo === 'criticas' ? 'selected' : '' }}>Con incidencias críticas</option>
+            <option value="sin_alquiler" {{ $operativo === 'sin_alquiler' ? 'selected' : '' }}>Sin alquiler activo</option>
+            <option value="estables" {{ $operativo === 'estables' ? 'selected' : '' }}>Estables</option>
+        </select>
+
     </form>
 </div>
 
-<div class="card-admin tabla-propiedades-card">
+<div class="card-admin tabla-propiedades-card" id="propiedadesTablaCard">
     <div class="card-header-admin">
         <span>{{ $propiedades->total() }} propiedades encontradas</span>
     </div>
 
+    @php
+        $nextDir = $dir === 'asc' ? 'desc' : 'asc';
+    @endphp
+
     <table class="tabla-admin">
         <thead>
             <tr>
-                <th>PROPIEDAD</th>
+                <th>
+                    <a class="th-sort {{ $sort === 'titulo_propiedad' ? 'activo' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'titulo_propiedad', 'dir' => $sort === 'titulo_propiedad' ? $nextDir : 'asc']) }}">
+                        PROPIEDAD
+                    </a>
+                </th>
                 <th>ARRENDADOR</th>
+                <th>
+                    <a class="th-sort {{ $sort === 'incidencias_criticas' ? 'activo' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'incidencias_criticas', 'dir' => $sort === 'incidencias_criticas' ? $nextDir : 'desc']) }}">
+                        SALUD
+                    </a>
+                </th>
                 <th>ESTADO</th>
-                <th>PRECIO</th>
-                <th>INCIDENCIAS ACTIVAS</th>
-                <th>ALQUILERES ACTIVOS</th>
-                <th>ACCIÓN</th>
+                <th>
+                    <a class="th-sort {{ $sort === 'precio_propiedad' ? 'activo' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'precio_propiedad', 'dir' => $sort === 'precio_propiedad' ? $nextDir : 'asc']) }}">
+                        PRECIO
+                    </a>
+                </th>
+                <th>
+                    <a class="th-sort {{ $sort === 'incidencias_activas' ? 'activo' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'incidencias_activas', 'dir' => $sort === 'incidencias_activas' ? $nextDir : 'desc']) }}">
+                        INCIDENCIAS ACTIVAS
+                    </a>
+                </th>
+                <th>
+                    <a class="th-sort {{ $sort === 'alquileres_activos' ? 'activo' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'alquileres_activos', 'dir' => $sort === 'alquileres_activos' ? $nextDir : 'desc']) }}">
+                        ALQUILERES ACTIVOS
+                    </a>
+                </th>
+                <th>ACCIONES</th>
             </tr>
         </thead>
         <tbody>
@@ -101,6 +143,13 @@
                         'inactiva' => 'rechazado',
                         default => 'pendiente'
                     };
+
+                    $salud = 'verde';
+                    if ((int) $propiedad->total_incidencias_criticas > 0) {
+                        $salud = 'rojo';
+                    } elseif ((int) $propiedad->total_incidencias_activas > 0) {
+                        $salud = 'amarillo';
+                    }
                 @endphp
                 <tr>
                     <td>
@@ -110,15 +159,27 @@
                         </div>
                     </td>
                     <td>{{ $propiedad->nombre_arrendador }}</td>
+                    <td>
+                        <span class="salud-chip salud-{{ $salud }}">
+                            <span class="salud-punto"></span>
+                            {{ ucfirst($salud) }}
+                        </span>
+                    </td>
                     <td><span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst($propiedad->estado_propiedad) }}</span></td>
                     <td>{{ number_format((float) $propiedad->precio_propiedad, 2, ',', '.') }} EUR/mes</td>
                     <td>{{ $propiedad->total_incidencias_activas }}</td>
                     <td>{{ $propiedad->total_alquileres_activos }}</td>
-                    <td><a href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad) }}" class="link-ver-todos">Ver detalle →</a></td>
+                    <td>
+                        <div class="acciones-rapidas">
+                            <a href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad) }}" class="link-ver-todos">Detalle</a>
+                            <a href="{{ url('/gestor/incidencias?propiedad_id=' . $propiedad->id_propiedad) }}" class="link-secundario">Incidencias</a>
+                            <a href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad . '#alquileres-activos') }}" class="link-secundario">Alquileres</a>
+                        </div>
+                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="tabla-vacia">No tienes propiedades asignadas con esos filtros.</td>
+                    <td colspan="8" class="tabla-vacia">No tienes propiedades asignadas con esos filtros.</td>
                 </tr>
             @endforelse
         </tbody>
@@ -142,4 +203,8 @@
         </div>
     @endif
 </div>
+@endsection
+
+@section('scripts')
+<script src="{{ asset('js/gestor/propiedades-filtros.js') }}"></script>
 @endsection

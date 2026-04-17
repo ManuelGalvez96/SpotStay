@@ -24,6 +24,12 @@ class PropiedadController extends Controller
             ->whereIn('estado_incidencia', ['abierta', 'en_proceso', 'esperando'])
             ->groupBy('id_propiedad_fk');
 
+        $subIncidenciasCriticas = DB::table('tbl_incidencia')
+            ->select('id_propiedad_fk', DB::raw('COUNT(*) as total_incidencias_criticas'))
+            ->whereIn('estado_incidencia', ['abierta', 'en_proceso', 'esperando'])
+            ->whereIn('prioridad_incidencia', ['alta', 'urgente'])
+            ->groupBy('id_propiedad_fk');
+
         $baseQuery = DB::table('tbl_propiedad')
             ->join('tbl_usuario as arrendador', 'arrendador.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
             ->leftJoinSub($subAlquileresActivos, 'alq_activos', function ($join) {
@@ -32,6 +38,9 @@ class PropiedadController extends Controller
             ->leftJoinSub($subIncidenciasActivas, 'inc_activas', function ($join) {
                 $join->on('inc_activas.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad');
             })
+            ->leftJoinSub($subIncidenciasCriticas, 'inc_criticas', function ($join) {
+                $join->on('inc_criticas.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad');
+            })
             ->where('tbl_propiedad.id_gestor_fk', $gestorId);
 
         $query = clone $baseQuery;
@@ -39,6 +48,9 @@ class PropiedadController extends Controller
         $q = trim((string) $request->query('q', ''));
         $estado = (string) $request->query('estado', '');
         $ciudad = trim((string) $request->query('ciudad', ''));
+        $operativo = (string) $request->query('operativo', '');
+        $sort = (string) $request->query('sort', 'creado_propiedad');
+        $dir = strtolower((string) $request->query('dir', 'desc'));
 
         if ($q !== '') {
             $query->where(function ($sub) use ($q) {
@@ -56,6 +68,31 @@ class PropiedadController extends Controller
             $query->where('tbl_propiedad.ciudad_propiedad', 'like', '%' . $ciudad . '%');
         }
 
+        if ($operativo === 'criticas') {
+            $query->whereRaw('COALESCE(inc_criticas.total_incidencias_criticas, 0) > 0');
+        }
+
+        if ($operativo === 'sin_alquiler') {
+            $query->whereRaw('COALESCE(alq_activos.total_alquileres_activos, 0) = 0');
+        }
+
+        if ($operativo === 'estables') {
+            $query->whereRaw('COALESCE(inc_activas.total_incidencias_activas, 0) = 0')
+                ->whereRaw('COALESCE(alq_activos.total_alquileres_activos, 0) > 0');
+        }
+
+        $allowedSorts = [
+            'titulo_propiedad' => 'tbl_propiedad.titulo_propiedad',
+            'precio_propiedad' => 'tbl_propiedad.precio_propiedad',
+            'creado_propiedad' => 'tbl_propiedad.creado_propiedad',
+            'incidencias_activas' => DB::raw('COALESCE(inc_activas.total_incidencias_activas, 0)'),
+            'alquileres_activos' => DB::raw('COALESCE(alq_activos.total_alquileres_activos, 0)'),
+            'incidencias_criticas' => DB::raw('COALESCE(inc_criticas.total_incidencias_criticas, 0)'),
+        ];
+
+        $sortColumn = $allowedSorts[$sort] ?? $allowedSorts['creado_propiedad'];
+        $sortDir = in_array($dir, ['asc', 'desc'], true) ? $dir : 'desc';
+
         $propiedades = $query
             ->select(
                 'tbl_propiedad.id_propiedad',
@@ -68,9 +105,11 @@ class PropiedadController extends Controller
                 'tbl_propiedad.creado_propiedad',
                 'arrendador.nombre_usuario as nombre_arrendador',
                 DB::raw('COALESCE(alq_activos.total_alquileres_activos, 0) as total_alquileres_activos'),
-                DB::raw('COALESCE(inc_activas.total_incidencias_activas, 0) as total_incidencias_activas')
+                DB::raw('COALESCE(inc_activas.total_incidencias_activas, 0) as total_incidencias_activas'),
+                DB::raw('COALESCE(inc_criticas.total_incidencias_criticas, 0) as total_incidencias_criticas')
             )
-            ->orderBy('tbl_propiedad.creado_propiedad', 'desc')
+            ->orderBy($sortColumn, $sortDir)
+            ->orderBy('tbl_propiedad.id_propiedad', 'desc')
             ->paginate(10)
             ->withQueryString();
 
@@ -78,6 +117,12 @@ class PropiedadController extends Controller
         $totalPublicadas = (clone $baseQuery)->where('tbl_propiedad.estado_propiedad', 'publicada')->count();
         $totalAlquiladas = (clone $baseQuery)->where('tbl_propiedad.estado_propiedad', 'alquilada')->count();
         $totalBorrador = (clone $baseQuery)->where('tbl_propiedad.estado_propiedad', 'borrador')->count();
+        $totalConCriticas = (clone $baseQuery)
+            ->whereRaw('COALESCE(inc_criticas.total_incidencias_criticas, 0) > 0')
+            ->count();
+        $totalSinAlquiler = (clone $baseQuery)
+            ->whereRaw('COALESCE(alq_activos.total_alquileres_activos, 0) = 0')
+            ->count();
 
         return view('gestor.propiedades', compact(
             'propiedades',
@@ -85,9 +130,14 @@ class PropiedadController extends Controller
             'totalPublicadas',
             'totalAlquiladas',
             'totalBorrador',
+            'totalConCriticas',
+            'totalSinAlquiler',
             'q',
             'estado',
-            'ciudad'
+            'ciudad',
+            'operativo',
+            'sort',
+            'dir'
         ));
     }
 

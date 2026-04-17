@@ -42,7 +42,7 @@
 </div>
 
 <div class="inferior-grid detalle-grid-inferior">
-    <div class="card-admin">
+    <div class="card-admin" id="alquileres-activos">
         <div class="card-header-admin"><span>Alquileres activos</span></div>
         <table class="tabla-admin">
             <thead>

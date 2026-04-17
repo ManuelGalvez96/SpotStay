@@ -17,13 +17,16 @@
     <div class="hero-deco hero-deco-3"></div>
 </div>
 
-<div class="central-grid incidencias-filtros-wrap">
+<div class="central-grid incidencias-filtros-wrap" id="incidenciasFiltrosWrap">
     <div class="card-admin">
         <div class="card-header-admin">
             <span>Filtros</span>
         </div>
 
-        <form method="GET" action="{{ url('/gestor/incidencias') }}" class="form-filtros-admin">
+        <form method="GET" action="{{ url('/gestor/incidencias') }}" class="form-filtros-admin" id="incidenciasFiltrosForm">
+            @if(($propiedadId ?? 0) > 0)
+                <input type="hidden" name="propiedad_id" value="{{ $propiedadId }}">
+            @endif
             <input type="text" name="titulo" value="{{ $titulo }}" placeholder="Filtrar por título">
             <input type="text" name="propiedad" value="{{ $propiedad }}" placeholder="Filtrar por propiedad">
 
@@ -45,10 +48,6 @@
 
             <input type="date" name="fecha" value="{{ $fecha }}">
 
-            <div class="acciones-filtros-admin">
-                <button type="submit" class="btn-aplicar-admin">Aplicar filtros</button>
-                <a href="{{ url('/gestor/incidencias') }}" class="btn-limpiar-admin">Limpiar</a>
-            </div>
         </form>
     </div>
 
@@ -66,7 +65,7 @@
     </div>
 </div>
 
-<div class="incidencias-tabla-wrap">
+<div class="incidencias-tabla-wrap" id="incidenciasTablaWrap">
     <div class="card-admin">
         <div class="card-header-admin">
             <span>Listado de incidencias</span>
@@ -131,4 +130,8 @@
         @endif
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script src="{{ asset('js/gestor/incidencias-filtros.js') }}"></script>
 @endsection

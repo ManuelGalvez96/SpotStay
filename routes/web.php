@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\SolicitudController;
 use App\Http\Controllers\Admin\IncidenciaController;
 use App\Http\Controllers\Gestor\DashboardController as GestorDashboardController;
 use App\Http\Controllers\Gestor\IncidenciaController as GestorIncidenciaController;
+use App\Http\Controllers\Gestor\PropiedadController as GestorPropiedadController;
 
 // Rutas Públicas
 Route::get('/', function () {
@@ -69,6 +70,8 @@ Route::middleware(['role:gestor'])->group(function () {
     Route::get('/gestor/dashboard', [GestorDashboardController::class, 'index']);
     Route::get('/gestor/incidencias', [GestorIncidenciaController::class, 'index']);
     Route::get('/gestor/incidencias/{id}', [GestorIncidenciaController::class, 'show']);
+    Route::get('/gestor/propiedades', [GestorPropiedadController::class, 'index']);
+    Route::get('/gestor/propiedades/{id}', [GestorPropiedadController::class, 'show']);
     Route::post('/gestor/incidencias/{id}/iniciar', [GestorIncidenciaController::class, 'iniciarGestion']);
     Route::post('/gestor/incidencias/{id}/estado', [GestorIncidenciaController::class, 'cambiarEstado']);
     Route::post('/gestor/incidencias/{id}/espera', [GestorIncidenciaController::class, 'marcarEspera']);

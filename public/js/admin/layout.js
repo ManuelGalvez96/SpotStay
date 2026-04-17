@@ -1,4 +1,5 @@
-var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
 
 window.onload = function() {
     asignarEventosAdmin();
@@ -8,6 +9,16 @@ var asignarEventosAdmin = function() {
     var adminContainer = document.getElementById('adminContainer');
     var adminDropdown = document.getElementById('adminDropdown');
     var btnLogout = document.getElementById('btnLogout');
+    var botonesNav = document.querySelectorAll('.btn-nav-icon');
+
+    for (var i = 0; i < botonesNav.length; i++) {
+        botonesNav[i].onclick = function() {
+            var ruta = this.getAttribute('data-ruta');
+            if (ruta && ruta.trim() !== '') {
+                window.location.href = ruta;
+            }
+        };
+    }
     
     if (!adminContainer || !adminDropdown) return;
     

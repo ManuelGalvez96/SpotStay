@@ -85,153 +85,161 @@
 </div>
 
 <div class="solicitudes-grid">
+    
+    <div class="columna-izquierda-sol">
+        <div class="card-admin">
+            <div class="card-header-admin">
+                <span>Solicitudes</span>
+                <span class="badge-contador">{{ $solicitudesPendientes->total() }}</span>
+            </div>
 
-    <div class="card-admin">
-        <div class="card-header-admin">
-            <span>Solicitudes pendientes</span>
-            <span class="badge-contador">{{ $solicitudesPendientes->total() }}</span>
-        </div>
+            <div class="tabla-contenedor">
+                <table class="tabla-admin tabla-solicitudes">
+                    <thead>
+                        <tr>
+                            <th>SOLICITANTE</th>
+                            <th>CIUDAD</th>
+                            <th>PROPIEDAD</th>
+                            <th>FECHA</th>
+                            <th>ESTADO</th>
+                            <th>ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaSolicitudes">
+                        @forelse($solicitudesPendientes as $solicitud)
+                            @php
+                                $datos = json_decode($solicitud->datos_solicitud_arrendador);
+                                $partes = explode(' ', $solicitud->nombre_usuario);
+                                $iniciales = strtoupper(substr($partes[0],0,1)) . strtoupper(substr($partes[1]??'',0,1));
+                                $colores = ['#B8CCE4','#A8D5BF','#F9E4A0','#FFD5CC','#D7EAF9','#EDE7F6','#D5F5E3','#FAD7D7'];
+                                $color = $colores[$solicitud->id_solicitud_arrendador % 8];
+                                $fecha = \Carbon\Carbon::parse($solicitud->creado_solicitud_arrendador)->format('d/m/Y');
+                            @endphp
+                            <tr class="fila-solicitud" data-id="{{ $solicitud->id_solicitud_arrendador }}">
+                                <td>
+                                    <div class="usuario-celda">
+                                        <div class="avatar-tabla" style="background:{{ $color }}">{{ $iniciales }}</div>
+                                        <div class="usuario-info-tabla">
+                                            <span class="usuario-nombre-tabla">{{ $solicitud->nombre_usuario }}</span>
+                                            <span class="usuario-email-tabla">{{ $solicitud->email_usuario }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ $datos->ciudad ?? '—' }}</td>
+                                <td>{{ $datos->direccion ?? '—' }}</td>
+                                <td>{{ $fecha }}</td>
+                                <td>
+                                    <span class="badge-estado badge-pendiente">Pendiente</span>
+                                </td>
+                                <td>
+                                    <div class="acciones-tabla">
+                                        <button class="btn-icono btn-ver-sol" data-id="{{ $solicitud->id_solicitud_arrendador }}" title="Ver detalles">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button class="btn-icono btn-aprobar-sol" data-id="{{ $solicitud->id_solicitud_arrendador }}" title="Aprobar">
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                        <button class="btn-icono btn-rechazar-sol" data-id="{{ $solicitud->id_solicitud_arrendador }}" title="Rechazar">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="sin-resultados">No hay solicitudes pendientes</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-        <div id="listaSolicitudes">
-            @forelse($solicitudesPendientes as $solicitud)
-                @php
-                    $datos = json_decode($solicitud->datos_solicitud_arrendador);
-                    $partes = explode(' ', $solicitud->nombre_usuario);
-                    $iniciales = strtoupper(substr($partes[0],0,1)) . strtoupper(substr($partes[1]??'',0,1));
-                    $colores = ['#B8CCE4','#A8D5BF','#F9E4A0','#FFD5CC','#D7EAF9','#EDE7F6','#D5F5E3','#FAD7D7'];
-                    $color = $colores[$solicitud->id_solicitud_arrendador % 8];
-                @endphp
+            <div class="tabla-footer">
+                <span class="info-paginacion">Mostrando {{ $solicitudesPendientes->firstItem() ?? 0 }}-{{ $solicitudesPendientes->lastItem() ?? 0 }} de {{ $solicitudesPendientes->total() }} solicitudes</span>
+                <div class="paginacion-links" id="paginacionSolicitudes">
+                    @if ($solicitudesPendientes->onFirstPage())
+                        <span class="btn-paginacion deshabilitado"><i class="bi bi-chevron-left"></i></span>
+                    @else
+                        <button class="btn-paginacion" data-page="{{ $solicitudesPendientes->currentPage() - 1 }}"><i class="bi bi-chevron-left"></i></button>
+                    @endif
 
-                <div class="solicitud-card" data-id="{{ $solicitud->id_solicitud_arrendador }}">
-                    <div class="solicitud-card-top">
-                        <div class="solicitud-persona">
-                            <div class="solicitud-avatar" style="background:{{ $color }}">{{ $iniciales }}</div>
-                            <div class="solicitud-info">
-                                <p class="solicitud-nombre">{{ $solicitud->nombre_usuario }}</p>
-                                <p class="solicitud-email">{{ $solicitud->email_usuario }}</p>
-                                <p class="solicitud-ciudad">
-                                    <i class="bi bi-geo-alt"></i>
-                                    {{ $datos->ciudad ?? '' }}
-                                </p>
-                            </div>
-                        </div>
-                        <div class="solicitud-meta-derecha">
-                            <span class="solicitud-tiempo">{{ \Carbon\Carbon::parse($solicitud->creado_solicitud_arrendador)->diffForHumans() }}</span>
-                            <span class="badge-estado badge-pendiente">Pendiente</span>
-                        </div>
-                    </div>
+                    @foreach ($solicitudesPendientes->getUrlRange(1, $solicitudesPendientes->lastPage()) as $page => $url)
+                        @if ($page == $solicitudesPendientes->currentPage())
+                            <span class="btn-paginacion activo">{{ $page }}</span>
+                        @else
+                            <button class="btn-paginacion" data-page="{{ $page }}">{{ $page }}</button>
+                        @endif
+                    @endforeach
 
-                    <div class="propiedad-solicitada">
-                        <span class="seccion-label">PROPIEDAD SOLICITADA</span>
-                        <div class="propiedad-resumen-grid">
-                            <div class="dato-resumen">
-                                <span class="dato-resumen-label">Dirección</span>
-                                <span class="dato-resumen-valor">{{ $datos->direccion ?? '' }}</span>
-                            </div>
-                            <div class="dato-resumen">
-                                <span class="dato-resumen-label">Tipo</span>
-                                <span class="dato-resumen-valor">{{ $datos->tipo ?? '' }}</span>
-                            </div>
-                            <div class="dato-resumen">
-                                <span class="dato-resumen-label">Precio est.</span>
-                                <span class="dato-resumen-valor">${{ $datos->precio_estimado ?? '' }}/mes</span>
-                            </div>
-                            <div class="dato-resumen">
-                                <span class="dato-resumen-label">Habitaciones</span>
-                                <span class="dato-resumen-valor">{{ $datos->habitaciones ?? '' }}</span>
-                            </div>
-                            <div class="dato-resumen">
-                                <span class="dato-resumen-label">Baños</span>
-                                <span class="dato-resumen-valor">{{ $datos->banos ?? '' }}</span>
-                            </div>
-                            <div class="dato-resumen">
-                                <span class="dato-resumen-label">Tamaño</span>
-                                <span class="dato-resumen-valor">{{ $datos->tamano ?? '' }} m²</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="solicitud-acciones">
-                        <button class="btn-aprobar-sol" data-id="{{ $solicitud->id_solicitud_arrendador }}">
-                            <i class="bi bi-check-circle"></i>
-                            <span>Aprobar solicitud</span>
-                        </button>
-                        <button class="btn-rechazar-sol" data-id="{{ $solicitud->id_solicitud_arrendador }}">
-                            <i class="bi bi-x-circle"></i>
-                            <span>Rechazar</span>
-                        </button>
-                        <button class="btn-ver-sol" data-id="{{ $solicitud->id_solicitud_arrendador }}">
-                            <i class="bi bi-eye"></i>
-                            <span>Ver detalles</span>
-                        </button>
-                    </div>
+                    @if ($solicitudesPendientes->hasMorePages())
+                        <button class="btn-paginacion" data-page="{{ $solicitudesPendientes->currentPage() + 1 }}"><i class="bi bi-chevron-right"></i></button>
+                    @else
+                        <span class="btn-paginacion deshabilitado"><i class="bi bi-chevron-right"></i></span>
+                    @endif
                 </div>
-            @empty
-                <div class="sin-resultados">No hay solicitudes pendientes</div>
-            @endforelse
-        </div>
-
-        <div class="tabla-footer">
-            Mostrando {{ $solicitudesPendientes->firstItem() ?? 0 }}-{{ $solicitudesPendientes->lastItem() ?? 0 }} de {{ $solicitudesPendientes->total() }} solicitudes
+            </div>
         </div>
     </div>
 
-    <div>
-        <div class="card-admin card-con-franja">
-            <div class="card-franja"></div>
+    <div class="columna-derecha-sol">
+        
+        <div class="card-admin card-estadisticas">
             <div class="card-header-admin">
-                <span>Aprobadas recientemente</span>
+                <span>Aprobadas este mes</span>
                 <span class="badge-contador-verde">{{ $aprobadas }}</span>
             </div>
-            @foreach($ultimasAprobadas as $aprobada)
-                @php
-                    $partesA = explode(' ', $aprobada->nombre_usuario);
-                    $inicialesA = strtoupper(substr($partesA[0],0,1)) . strtoupper(substr($partesA[1]??'',0,1));
-                    $colorA = $colores[$aprobada->id_solicitud_arrendador % 8];
-                    $datosA = json_decode($aprobada->datos_solicitud_arrendador);
-                @endphp
-                <div class="historial-item">
-                    <div class="solicitud-avatar-mini" style="background:{{ $colorA }}">{{ $inicialesA }}</div>
-                    <div class="historial-info">
-                        <span class="historial-nombre">{{ $aprobada->nombre_usuario }}</span>
-                        <span class="historial-ciudad">{{ $datosA->ciudad ?? '' }}</span>
-                    </div>
-                    <div class="historial-meta">
+            <div class="historial-lista">
+                @forelse($ultimasAprobadas as $aprobada)
+                    @php
+                        $partesA = explode(' ', $aprobada->nombre_usuario);
+                        $inicialesA = strtoupper(substr($partesA[0],0,1)) . strtoupper(substr($partesA[1]??'',0,1));
+                        $colorA = $colores[$aprobada->id_solicitud_arrendador % 8];
+                        $datosA = json_decode($aprobada->datos_solicitud_arrendador);
+                    @endphp
+                    <div class="historial-item">
+                        <div class="solicitud-avatar-mini" style="background:{{ $colorA }}">{{ $inicialesA }}</div>
+                        <div class="historial-info">
+                            <span class="historial-nombre">{{ $aprobada->nombre_usuario }}</span>
+                            <span class="historial-ciudad">{{ $datosA->ciudad ?? '' }}</span>
+                        </div>
                         <span class="badge-estado badge-activo">Aprobada</span>
-                        <span class="historial-tiempo">{{ \Carbon\Carbon::parse($aprobada->actualizado_solicitud_arrendador)->diffForHumans() }}</span>
                     </div>
-                </div>
-            @endforeach
+                @empty
+                    <div class="sin-items">No hay solicitudes aprobadas aún</div>
+                @endforelse
+            </div>
         </div>
 
-        <div class="card-admin card-con-franja card-franja-roja">
-            <div class="card-franja-roja-el"></div>
+        <div class="card-admin card-estadisticas">
             <div class="card-header-admin">
-                <span>Rechazadas recientemente</span>
+                <span>Rechazadas este mes</span>
                 <span class="badge-contador-rojo">{{ $rechazadas }}</span>
             </div>
-            @foreach($ultimasRechazadas as $rechazada)
-                @php
-                    $partesR = explode(' ', $rechazada->nombre_usuario);
-                    $inicialesR = strtoupper(substr($partesR[0],0,1)) . strtoupper(substr($partesR[1]??'',0,1));
-                @endphp
-                <div class="historial-item">
-                    <div class="solicitud-avatar-mini">{{ $inicialesR }}</div>
-                    <div class="historial-info">
-                        <span class="historial-nombre">{{ $rechazada->nombre_usuario }}</span>
-                        <span class="historial-motivo">{{ $rechazada->notas_solicitud_arrendador ?? '' }}</span>
-                    </div>
-                    <div class="historial-meta">
+            <div class="historial-lista">
+                @forelse($ultimasRechazadas as $rechazada)
+                    @php
+                        $partesR = explode(' ', $rechazada->nombre_usuario);
+                        $inicialesR = strtoupper(substr($partesR[0],0,1)) . strtoupper(substr($partesR[1]??'',0,1));
+                        $colorR = $colores[$rechazada->id_solicitud_arrendador % 8];
+                    @endphp
+                    <div class="historial-item">
+                        <div class="solicitud-avatar-mini" style="background:{{ $colorR }}">{{ $inicialesR }}</div>
+                        <div class="historial-info">
+                            <span class="historial-nombre">{{ $rechazada->nombre_usuario }}</span>
+                            <span class="historial-motivo">{{ Str::limit($rechazada->notas_solicitud_arrendador ?? 'Sin motivo', 30) }}</span>
+                        </div>
                         <span class="badge-estado badge-inactivo">Rechazada</span>
                     </div>
-                </div>
-            @endforeach
+                @empty
+                    <div class="sin-items">No hay solicitudes rechazadas aún</div>
+                @endforelse
+            </div>
         </div>
 
-        <div class="card-admin card-con-franja">
-            <div class="card-franja"></div>
+        <div class="card-admin card-tiempo-medio">
             <div class="tiempo-medio-centro">
-                <span class="tiempo-medio-numero">{{ $tiempoMedio }}h</span>
+                <span class="tiempo-medio-numero">{{ $tiempoMedio }}</span>
+                <span class="tiempo-medio-unit">horas</span>
                 <span class="tiempo-medio-label">tiempo medio de aprobación</span>
             </div>
             <div class="tiempo-medio-stats">
@@ -240,15 +248,12 @@
                     <span class="stat-label">Pendientes</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-numero">{{ $aprobadas }}</span>
-                    <span class="stat-label">Este mes</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-numero">94%</span>
-                    <span class="stat-label">Tasa aprobación</span>
+                    <span class="stat-numero">{{ $totalSolicitudes }}</span>
+                    <span class="stat-label">Total</span>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 
@@ -269,7 +274,6 @@
             <div class="modal-persona-info">
                 <h2 id="modalNombre"></h2>
                 <p id="modalEmail"></p>
-                <p id="modalTelefono"></p>
                 <p id="modalCiudad"><i class="bi bi-geo-alt"></i></p>
             </div>
         </div>
@@ -277,28 +281,7 @@
         <div class="modal-separador"></div>
 
         <span class="seccion-label">PROPIEDAD SOLICITADA</span>
-        <div class="modal-grid-2" id="modalDatosPropiedad"></div>
-
-        <div class="modal-separador"></div>
-
-        <span class="seccion-label">DOCUMENTACIÓN APORTADA</span>
-        <div class="docs-lista">
-            <div class="doc-item">
-                <i class="bi bi-file-pdf"></i>
-                <span>DNI escaneado.pdf</span>
-                <a href="#" class="link-accion">Descargar</a>
-            </div>
-            <div class="doc-item">
-                <i class="bi bi-file-pdf"></i>
-                <span>Nómina marzo 2025.pdf</span>
-                <a href="#" class="link-accion">Descargar</a>
-            </div>
-            <div class="doc-item">
-                <i class="bi bi-file-image"></i>
-                <span>Foto propiedad.jpg</span>
-                <a href="#" class="link-accion">Ver</a>
-            </div>
-        </div>
+        <div class="modal-grid-datos" id="modalDatosPropiedad"></div>
 
         <div class="modal-separador"></div>
 

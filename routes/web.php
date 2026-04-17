@@ -9,6 +9,8 @@ use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\Admin\PropiedadController;
 use App\Http\Controllers\Admin\SolicitudController;
 use App\Http\Controllers\Admin\IncidenciaController;
+use App\Http\Controllers\Admin\AlquilerController;
+use App\Http\Controllers\Admin\SuscripcionController;
 
 // Rutas Públicas
 Route::get('/', function () {
@@ -58,9 +60,26 @@ Route::middleware(['role:admin'])->group(function () {
     // Incidencias
     Route::get('/admin/incidencias', [IncidenciaController::class, 'index']);
     Route::get('/admin/incidencias/filtrar', [IncidenciaController::class, 'filtrar']);
+    Route::post('/admin/incidencias/crear', [IncidenciaController::class, 'crear']);
     Route::get('/admin/incidencias/{id}', [IncidenciaController::class, 'show']);
     Route::post('/admin/incidencias/{id}/estado', [IncidenciaController::class, 'cambiarEstado']);
     Route::post('/admin/incidencias/{id}/asignar', [IncidenciaController::class, 'asignar']);
+
+    // Alquileres
+    Route::get('/admin/alquileres', [AlquilerController::class, 'index']);
+    Route::get('/admin/alquileres/filtrar', [AlquilerController::class, 'filtrar']);
+    Route::post('/admin/alquileres/crear', [AlquilerController::class, 'crear']);
+    Route::get('/admin/alquileres/{id}', [AlquilerController::class, 'show']);
+    Route::post('/admin/alquiler/{id}/aprobar', [AlquilerController::class, 'aprobar']);
+    Route::post('/admin/alquiler/{id}/rechazar', [AlquilerController::class, 'rechazar']);
+
+    // Suscripciones
+    Route::get('/admin/suscripciones', [SuscripcionController::class, 'index']);
+    Route::get('/admin/suscripciones/filtrar', [SuscripcionController::class, 'filtrar']);
+    Route::get('/admin/suscripciones/exportar', [SuscripcionController::class, 'exportar']);
+    Route::get('/admin/suscripciones/{id}', [SuscripcionController::class, 'show']);
+    Route::post('/admin/suscripciones/{id}/editar', [SuscripcionController::class, 'editar']);
+    Route::post('/admin/suscripciones/{id}/cancelar', [SuscripcionController::class, 'cancelar']);
 });
 
 Route::get('/miembro/inicio', [HomeController::class, 'index']);

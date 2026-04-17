@@ -103,10 +103,21 @@
                     </a>
                 </th>
                 <th>ARRENDADOR</th>
-                <th>
+                <th class="th-salud">
                     <a class="th-sort {{ $sort === 'incidencias_criticas' ? 'activo' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'incidencias_criticas', 'dir' => $sort === 'incidencias_criticas' ? $nextDir : 'desc']) }}">
                         SALUD
                     </a>
+                    <span class="salud-help-wrap">
+                        <button type="button" class="salud-help-square" aria-label="Mostrar leyenda del indicador de salud">
+                            i
+                        </button>
+                        <span class="salud-legend-box" role="tooltip">
+                            <strong>Leyenda de salud</strong>
+                            <span class="salud-legend-row"><b class="salud-legend-tag salud-legend-verde">Verde:</b> sin incidencias activas</span>
+                            <span class="salud-legend-row"><b class="salud-legend-tag salud-legend-amarillo">Amarillo:</b> con incidencias activas</span>
+                            <span class="salud-legend-row"><b class="salud-legend-tag salud-legend-rojo">Rojo:</b> con incidencias criticas</span>
+                        </span>
+                    </span>
                 </th>
                 <th>ESTADO</th>
                 <th>

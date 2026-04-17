@@ -153,23 +153,23 @@ function formatearPrecio(valor) {
 	return texto + " &euro;";
 }
 
-function dibujarPoligonoEjemplo() {
-	var coordenadas = [
-		[41.3706, 2.0932],
-		[41.3792, 2.1216],
-		[41.3722, 2.1527],
-		[41.3509, 2.1514],
-		[41.3402, 2.1204],
-		[41.3503, 2.0944],
-	];
+// function dibujarPoligonoEjemplo() {
+// 	var coordenadas = [
+// 		[41.3706, 2.0932],
+// 		[41.3792, 2.1216],
+// 		[41.3722, 2.1527],
+// 		[41.3509, 2.1514],
+// 		[41.3402, 2.1204],
+// 		[41.3503, 2.0944],
+// 	];
 
-	var poligono = L.polygon(coordenadas, {
-		color: "#2b62a8",
-		weight: 2,
-		fillColor: "#2b62a8",
-		fillOpacity: 0.15,
-	});
+// 	var poligono = L.polygon(coordenadas, {
+// 		color: "#2b62a8",
+// 		weight: 2,
+// 		fillColor: "#2b62a8",
+// 		fillOpacity: 0.15,
+// 	});
 
-	poligono.addTo(capaPoligonos);
-}
+// 	poligono.addTo(capaPoligonos);
+// }
 

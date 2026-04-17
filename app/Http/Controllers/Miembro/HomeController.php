@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Miembro;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
@@ -19,6 +20,7 @@ class HomeController extends Controller
                 'precio_propiedad',
                 'estado_propiedad'
             )
+            ->where('estado_propiedad', 'publicada')
             ->orderByDesc('id_propiedad')
             // ->limit(6)
             ->get();

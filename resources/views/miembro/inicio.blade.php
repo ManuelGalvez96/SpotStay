@@ -2,8 +2,9 @@
 <html lang="es">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>SpotStay | Inicio miembro</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}" />
@@ -150,6 +151,61 @@
                         @endforelse
                     </div>
                 </div>
+                <div class="grupo-filtro">
+                    <label class="etiqueta-filtro" for="tipo-inmueble">Tipo de inmueble</label>
+                    <select id="tipo-inmueble" class="campo-filtro">
+                        <option value="">Todos</option>
+                        <option value="piso">Piso</option>
+                        <option value="casa">Casa</option>
+                        <option value="estudio">Estudio</option>
+                        <option value="atico">Atico</option>
+                    </select>
+                </div>
+                <div class="grupo-filtro">
+                    <label class="etiqueta-filtro" for="numero-habitaciones">Numero de habitaciones</label>
+                    <select id="numero-habitaciones" class="campo-filtro">
+                        <option value="">Todas</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4+</option>
+                    </select>
+                </div>
+                <button class="boton-aplicar" type="button">Aplicar filtros</button>
+            </div>
+            </aside>
+
+            <div class="listado-propiedades">
+                <div class="cabecera-listado">
+                    <h2 class="titulo-listado">Propiedades para ti</h2>
+                    <span class="contador-propiedades">
+                        {{ $totalPropiedades }} resultados
+                    </span>
+                </div>
+
+                <div class="grid-propiedades">
+                    @forelse ($propiedades as $propiedad)
+                    <a class="link-propiedad" href="{{ route('miembro.detalle_propiedad', ['id' => $propiedad->id_propiedad]) }}">
+                        <article class="tarjeta-propiedad">
+                            <div class="imagen-propiedad">
+                                <span class="etiqueta-precio-tarjeta">
+                                    {{ number_format($propiedad->precio_propiedad, 0, ',', '.') }} €
+                                </span>
+                            </div>
+                            <div class="contenido-propiedad">
+                                <h3 class="titulo-propiedad">{{ $propiedad->titulo_propiedad }}</h3>
+                                <p class="ubicacion-propiedad">{{ $propiedad->ciudad_propiedad }} · {{ $propiedad->direccion_propiedad }}</p>
+                                <p class="precio-propiedad">{{ number_format($propiedad->precio_propiedad, 0, ',', '.') }} € / mes</p>
+                            </div>
+                        </article>
+                    </a>
+                    @empty
+                    <div class="estado-vacio">
+                        <p>No hay propiedades disponibles en este momento.</p>
+                    </div>
+                    @endforelse
+                </div>
+            </div>
             </div>
         </section>
     </main>

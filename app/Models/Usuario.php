@@ -3,7 +3,8 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,8 +16,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * Tabla de usuarios del sistema - registra todos los usuarios que acceden a la plataforma
  * (administradores, arrendadores, inquilinos, gestores, etc.)
  */
-class Usuario extends Model
+class Usuario extends Authenticatable
 {
+    use Notifiable;
+
     protected $table = 'tbl_usuario';
     protected $primaryKey = 'id_usuario';
     public $incrementing = true;
@@ -48,7 +51,19 @@ class Usuario extends Model
         'actualizado_usuario' => 'datetime',
     ];
 
+    /**
+     * Indica a Laravel que la contraseña está en la columna contrasena_usuario.
+     */
+    public function getAuthPassword()
+    {
+        return $this->contrasena_usuario;
+    }
+
+
+
     // Roles asignados al usuario (relación many-to-many)
+
+
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(

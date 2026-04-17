@@ -67,6 +67,8 @@ Route::post('/admin/alquiler/{id}/rechazar', [AlquilerController::class, 'rechaz
 Route::get('/admin/suscripciones', [SuscripcionController::class, 'index']);
 Route::get('/admin/suscripciones/filtrar', [SuscripcionController::class, 'filtrar']);
 Route::get('/admin/suscripciones/exportar', [SuscripcionController::class, 'exportar']);
+Route::get('/admin/planes/datos', [SuscripcionController::class, 'datosPlanesModal']);
+Route::post('/admin/planes/guardar', [SuscripcionController::class, 'guardarPlanes']);
 Route::get('/admin/suscripciones/{id}', [SuscripcionController::class, 'show']);
 Route::post('/admin/suscripciones/{id}/editar', [SuscripcionController::class, 'editar']);
 Route::post('/admin/suscripciones/{id}/cancelar', [SuscripcionController::class, 'cancelar']);

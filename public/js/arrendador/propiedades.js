@@ -1,46 +1,83 @@
 function obtenerTokenCsrf() {
-  var meta = document.querySelector('meta[name="csrf-token"]');
-  return meta ? meta.getAttribute('content') : '';
+  var etiquetaCsrf = document.querySelector('meta[name="csrf-token"]');
+  return etiquetaCsrf ? etiquetaCsrf.getAttribute('content') : '';
 }
 
 function mostrarMensaje(texto, esError) {
-  var existing = document.querySelector('.fetch-toast');
-  if (existing) {
-    existing.remove();
+  var mensajeActual = document.querySelector('.fetch-toast');
+  if (mensajeActual) {
+    mensajeActual.remove();
   }
 
-  var toast = document.createElement('div');
-  toast.className = 'fetch-toast ' + (esError ? 'fetch-toast-error' : 'fetch-toast-success');
-  toast.textContent = texto;
-  document.body.appendChild(toast);
+  var aviso = document.createElement('div');
+  aviso.className = 'fetch-toast ' + (esError ? 'fetch-toast-error' : 'fetch-toast-success');
+  aviso.textContent = texto;
+  document.body.appendChild(aviso);
 
   setTimeout(function () {
-    toast.classList.add('is-visible');
+    aviso.classList.add('is-visible');
   }, 10);
 
   setTimeout(function () {
-    toast.classList.remove('is-visible');
+    aviso.classList.remove('is-visible');
     setTimeout(function () {
-      if (toast.parentNode) {
-        toast.parentNode.removeChild(toast);
+      if (aviso.parentNode) {
+        aviso.parentNode.removeChild(aviso);
       }
     }, 220);
   }, 2200);
 }
 
+function extraerMensajeError(datosRespuesta) {
+  if (!datosRespuesta) {
+    return 'Error al procesar la solicitud.';
+  }
+
+  if (datosRespuesta.message) {
+    return datosRespuesta.message;
+  }
+
+  if (datosRespuesta.errors) {
+    var campos = Object.keys(datosRespuesta.errors);
+    if (campos.length > 0 && datosRespuesta.errors[campos[0]] && datosRespuesta.errors[campos[0]].length > 0) {
+      return datosRespuesta.errors[campos[0]][0];
+    }
+  }
+
+  return 'Error al procesar la solicitud.';
+}
+
+function actualizarEstadoEnTarjeta(formulario, nuevoEstado) {
+  var tarjeta = formulario.closest('.property-card');
+  if (!tarjeta) {
+    return;
+  }
+
+  var insignia = tarjeta.querySelector('.badge');
+  if (insignia) {
+    insignia.className = 'badge badge-' + nuevoEstado;
+    insignia.textContent = nuevoEstado.charAt(0).toUpperCase() + nuevoEstado.slice(1);
+  }
+
+  var boton = formulario.querySelector('[data-state-button="true"]');
+  if (boton) {
+    boton.textContent = nuevoEstado === 'publicada' ? 'Inactivar' : 'Publicar';
+  }
+}
+
 function enviarFormularioConFetch(formulario) {
-  formulario.onsubmit = function (event) {
-    event.preventDefault();
+  formulario.onsubmit = function (evento) {
+    evento.preventDefault();
 
-    var submitButton = formulario.querySelector('button[type="submit"]');
-    var originalText = submitButton ? submitButton.textContent : '';
+    var botonEnviar = formulario.querySelector('button[type="submit"]');
+    var textoOriginal = botonEnviar ? botonEnviar.textContent : '';
 
-    if (submitButton) {
-      submitButton.disabled = true;
-      submitButton.textContent = 'Guardando...';
+    if (botonEnviar) {
+      botonEnviar.disabled = true;
+      botonEnviar.textContent = 'Guardando...';
     }
 
-    var formData = new FormData(formulario);
+    var datosFormulario = new FormData(formulario);
 
     fetch(formulario.action, {
       method: 'POST',
@@ -49,29 +86,36 @@ function enviarFormularioConFetch(formulario) {
         'X-CSRF-TOKEN': obtenerTokenCsrf(),
         'Accept': 'application/json'
       },
-      body: formData,
+      body: datosFormulario,
       credentials: 'same-origin'
     })
-      .then(function (response) {
-        return response.json().then(function (payload) {
-          return { ok: response.ok, payload: payload };
+      .then(function (respuesta) {
+        return respuesta.json().catch(function () {
+          return {};
+        }).then(function (datosRespuesta) {
+          return { ok: respuesta.ok, datosRespuesta: datosRespuesta };
         });
       })
-      .then(function (result) {
-        if (!result.ok || !result.payload.success) {
-          throw new Error(result.payload.message || 'No se pudo guardar la propiedad.');
+      .then(function (resultado) {
+        if (!resultado.ok || !resultado.datosRespuesta.success) {
+          throw new Error(extraerMensajeError(resultado.datosRespuesta));
         }
  
-        mostrarMensaje(result.payload.message || 'Cambio aplicado correctamente.', false);
+        mostrarMensaje(resultado.datosRespuesta.message || 'Cambio aplicado correctamente.', false);
+
+        if (formulario.dataset.ajaxStateForm === 'true' && resultado.datosRespuesta.estado) {
+          actualizarEstadoEnTarjeta(formulario, resultado.datosRespuesta.estado);
+        }
+
         window.location.reload();
       })
       .catch(function (error) {
         mostrarMensaje(error.message || 'Error al procesar la solicitud.', true);
       })
       .finally(function () {
-        if (submitButton) {
-          submitButton.disabled = false;
-          submitButton.textContent = originalText;
+        if (botonEnviar) {
+          botonEnviar.disabled = false;
+          botonEnviar.textContent = textoOriginal;
         }
       });
   };

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Schema;
 
 class MensajeController extends Controller
 {
-    public function index(Request $request)
+    public function inicio(Request $request)
     {
         $arrendadorId = $this->obtenerIdArrendador($request);
 
@@ -23,8 +23,8 @@ class MensajeController extends Controller
         [$columnaRemitente, $columnaCuerpo] = $this->obtenerColumnasMensaje();
 
         $conversaciones = DB::table('tbl_conversacion_usuario as cu_arr')
-            ->join('tbl_conversacion_usuario as cu_otro', function ($join) use ($arrendadorId) {
-                $join->on('cu_otro.id_conversacion_fk', '=', 'cu_arr.id_conversacion_fk')
+            ->join('tbl_conversacion_usuario as cu_otro', function ($union) use ($arrendadorId) {
+                $union->on('cu_otro.id_conversacion_fk', '=', 'cu_arr.id_conversacion_fk')
                     ->where('cu_otro.id_usuario_fk', '!=', $arrendadorId);
             })
             ->join('tbl_usuario as u', 'u.id_usuario', '=', 'cu_otro.id_usuario_fk')
@@ -168,8 +168,8 @@ class MensajeController extends Controller
 
         $arrendadorConActividad = DB::table('tbl_usuario as u')
             ->join('tbl_propiedad as p', 'p.id_arrendador_fk', '=', 'u.id_usuario')
-            ->leftJoin('tbl_alquiler as a', function ($join) {
-                $join->on('a.id_propiedad_fk', '=', 'p.id_propiedad')
+            ->leftJoin('tbl_alquiler as a', function ($union) {
+                $union->on('a.id_propiedad_fk', '=', 'p.id_propiedad')
                     ->where('a.estado_alquiler', '=', 'activo');
             })
             ->where('u.activo_usuario', true)

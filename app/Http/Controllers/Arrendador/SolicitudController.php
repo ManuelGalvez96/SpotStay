@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class SolicitudController extends Controller
 {
-    public function index(Request $request)
+    public function inicio(Request $request)
     {
         $arrendadorId = $this->obtenerIdArrendador($request);
 
@@ -100,18 +100,18 @@ class SolicitudController extends Controller
             ], 404);
         }
 
-        $payload = [
+        $datosEstado = [
             'estado_alquiler' => $estado,
             'actualizado_alquiler' => Carbon::now(),
         ];
 
         if ($estado === 'activo') {
-            $payload['aprobado_alquiler'] = Carbon::now();
+            $datosEstado['aprobado_alquiler'] = Carbon::now();
         }
 
         DB::table('tbl_alquiler')
             ->where('id_alquiler', $id)
-            ->update($payload);
+            ->update($datosEstado);
 
         return response()->json([
             'success' => true,

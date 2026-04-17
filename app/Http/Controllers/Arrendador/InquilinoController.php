@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class InquilinoController extends Controller
 {
-    public function index(Request $request)
+    public function inicio(Request $request)
     {
         $arrendadorId = $this->obtenerIdArrendador($request);
 

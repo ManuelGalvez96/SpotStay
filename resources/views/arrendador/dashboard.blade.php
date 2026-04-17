@@ -154,7 +154,7 @@
                         Genera, firma y descarga contratos de alquiler en formato digital.
                     </p>
                     <div class="card-footer">
-                        <button class="btn btn-outline btn-sm">Gestionar Contratos</button>
+                        <a class="btn btn-outline btn-sm" href="{{ route('arrendador.contratos', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Gestionar Contratos</a>
                     </div>
                 </div>
 

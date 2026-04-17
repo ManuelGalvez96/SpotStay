@@ -1,20 +1,20 @@
 function obtenerTokenCsrf() {
-  var meta = document.querySelector('meta[name="csrf-token"]');
-  return meta ? meta.getAttribute('content') : '';
+  var etiquetaCsrf = document.querySelector('meta[name="csrf-token"]');
+  return etiquetaCsrf ? etiquetaCsrf.getAttribute('content') : '';
 }
 
 function mostrarToast(mensaje, tipo) {
-  var toast = document.getElementById('toastPrecios');
-  if (!toast) {
+  var aviso = document.getElementById('toastPrecios');
+  if (!aviso) {
     return;
   }
 
-  toast.textContent = mensaje;
-  toast.className = 'toast ' + (tipo || 'ok');
-  toast.hidden = false;
+  aviso.textContent = mensaje;
+  aviso.className = 'toast ' + (tipo || 'ok');
+  aviso.hidden = false;
 
   window.setTimeout(function () {
-    toast.hidden = true;
+    aviso.hidden = true;
   }, 2200);
 }
 
@@ -36,12 +36,12 @@ function parsearGastos(texto) {
   }
 
   try {
-    var json = JSON.parse(limpio);
+    var datosJson = JSON.parse(limpio);
     var total = 0;
 
-    if (Array.isArray(json)) {
-      json.forEach(function (item) {
-        var valor = Number(item);
+    if (Array.isArray(datosJson)) {
+      datosJson.forEach(function (importe) {
+        var valor = Number(importe);
         if (!isNaN(valor)) {
           total += valor;
         }
@@ -49,9 +49,9 @@ function parsearGastos(texto) {
       return { valido: true, total: total, descripcion: 'Gastos JSON en array.' };
     }
 
-    if (json && typeof json === 'object') {
-      Object.keys(json).forEach(function (clave) {
-        var valor = Number(json[clave]);
+    if (datosJson && typeof datosJson === 'object') {
+      Object.keys(datosJson).forEach(function (clave) {
+        var valor = Number(datosJson[clave]);
         if (!isNaN(valor)) {
           total += valor;
         }
@@ -60,7 +60,7 @@ function parsearGastos(texto) {
     }
 
     return { valido: false, total: 0, descripcion: 'Formato de gastos no compatible.' };
-  } catch (error) {
+  } catch (errorCapturado) {
     return { valido: false, total: 0, descripcion: 'Gastos no validos para calculo automatico.' };
   }
 }
@@ -116,17 +116,17 @@ function enviarFormularioConFetch(formulario) {
       gastos_propiedad: gastos ? gastos.value : ''
     })
   })
-    .then(function (response) {
-      return response.json().then(function (payload) {
-        return { ok: response.ok, payload: payload };
+    .then(function (respuesta) {
+      return respuesta.json().then(function (datosRespuesta) {
+        return { ok: respuesta.ok, datosRespuesta: datosRespuesta };
       });
     })
     .then(function (resultado) {
-      if (!resultado.ok || !resultado.payload.success) {
-        throw new Error(resultado.payload.message || 'No se pudo guardar.');
+      if (!resultado.ok || !resultado.datosRespuesta.success) {
+        throw new Error(resultado.datosRespuesta.message || 'No se pudo guardar.');
       }
 
-      mostrarToast(resultado.payload.message || 'Guardado correctamente.', 'ok');
+      mostrarToast(resultado.datosRespuesta.message || 'Guardado correctamente.', 'ok');
     })
     .catch(function (error) {
       mostrarToast(error.message || 'No se pudo guardar.', 'error');

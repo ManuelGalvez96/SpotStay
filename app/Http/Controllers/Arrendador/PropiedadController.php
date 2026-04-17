@@ -11,7 +11,7 @@ use Illuminate\View\View;
 
 class PropiedadController extends Controller
 {
-    public function index(Request $request): View
+    public function inicio(Request $request): View
     {
         $arrendadorId = $this->obtenerIdArrendador($request);
         $propiedadIdEditar = (int) $request->query('editar', 0);
@@ -40,6 +40,7 @@ class PropiedadController extends Controller
     {
         $arrendadorId = $this->obtenerIdArrendador($request);
         $propiedadId = (int) $request->input('id_propiedad', 0);
+        $columnaPrecio = $this->obtenerColumnaPrecioPropiedad();
 
         $datos = $request->validate([
             'titulo_propiedad' => ['required', 'string', 'max:150'],
@@ -56,7 +57,7 @@ class PropiedadController extends Controller
 
         $gastos = $this->normalizarGastos($datos['gastos_propiedad'] ?? null);
 
-        $payload = [
+        $datosPropiedad = [
             'id_arrendador_fk' => $arrendadorId,
             'id_gestor_fk' => $arrendadorId,
             'titulo_propiedad' => $datos['titulo_propiedad'],
@@ -66,20 +67,38 @@ class PropiedadController extends Controller
             'latitud_propiedad' => $datos['latitud_propiedad'] ?? null,
             'longitud_propiedad' => $datos['longitud_propiedad'] ?? null,
             'descripcion_propiedad' => $datos['descripcion_propiedad'] ?? null,
-            'precio_propiedad' => $datos['precio_propiedad'],
+            $columnaPrecio => $datos['precio_propiedad'],
             'gastos_propiedad' => $gastos,
             'estado_propiedad' => $datos['estado_propiedad'],
             'actualizado_propiedad' => Carbon::now(),
         ];
 
         if ($propiedadId > 0) {
+            $existe = DB::table('tbl_propiedad')
+                ->where('id_propiedad', $propiedadId)
+                ->where('id_arrendador_fk', $arrendadorId)
+                ->exists();
+
+            if (!$existe) {
+                if ($request->expectsJson() || $request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No se encontró la propiedad para editar.',
+                    ], 404);
+                }
+
+                return redirect()
+                    ->route('arrendador.propiedades', ['arrendador_id' => $arrendadorId])
+                    ->with('error', 'No se encontró la propiedad para editar.');
+            }
+
             DB::table('tbl_propiedad')
                 ->where('id_propiedad', $propiedadId)
                 ->where('id_arrendador_fk', $arrendadorId)
-                ->update($payload);
+                ->update($datosPropiedad);
         } else {
-            $payload['creado_propiedad'] = Carbon::now();
-            DB::table('tbl_propiedad')->insert($payload);
+            $datosPropiedad['creado_propiedad'] = Carbon::now();
+            DB::table('tbl_propiedad')->insert($datosPropiedad);
         }
 
         $mensaje = $propiedadId > 0 ? 'Propiedad actualizada correctamente.' : 'Propiedad creada correctamente.';
@@ -280,9 +299,9 @@ class PropiedadController extends Controller
             return null;
         }
 
-        $decoded = json_decode($gastos, true);
+        $decodificado = json_decode($gastos, true);
         if (json_last_error() === JSON_ERROR_NONE) {
-            return json_encode($decoded);
+            return json_encode($decodificado);
         }
 
         return $gastos;

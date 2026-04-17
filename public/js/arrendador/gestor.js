@@ -1,29 +1,29 @@
 function obtenerTokenCsrf() {
-  var meta = document.querySelector('meta[name="csrf-token"]');
-  return meta ? meta.getAttribute('content') : '';
+  var etiquetaCsrf = document.querySelector('meta[name="csrf-token"]');
+  return etiquetaCsrf ? etiquetaCsrf.getAttribute('content') : '';
 }
 
 function mostrarToast(mensaje, tipo) {
-  var toast = document.getElementById('toastGestor');
-  if (!toast) {
+  var aviso = document.getElementById('toastGestor');
+  if (!aviso) {
     return;
   }
 
-  toast.textContent = mensaje;
-  toast.className = 'toast ' + (tipo || 'ok');
-  toast.hidden = false;
+  aviso.textContent = mensaje;
+  aviso.className = 'toast ' + (tipo || 'ok');
+  aviso.hidden = false;
 
   window.setTimeout(function () {
-    toast.hidden = true;
+    aviso.hidden = true;
   }, 2200);
 }
 
 function enviarFormularioConFetch(formulario) {
-  var selector = formulario.querySelector('select[name="id_gestor_fk"]');
+  var selectorGestor = formulario.querySelector('select[name="id_gestor_fk"]');
   var boton = formulario.querySelector('.btn-guardar');
   var textoBoton = formulario.querySelector('.texto-boton');
 
-  if (!selector) {
+  if (!selectorGestor) {
     return;
   }
 
@@ -44,26 +44,26 @@ function enviarFormularioConFetch(formulario) {
     },
     credentials: 'same-origin',
     body: JSON.stringify({
-      id_gestor_fk: selector.value
+      id_gestor_fk: selectorGestor.value
     })
   })
-    .then(function (response) {
-      return response.json().then(function (payload) {
-        return { ok: response.ok, payload: payload };
+    .then(function (respuesta) {
+      return respuesta.json().then(function (datosRespuesta) {
+        return { ok: respuesta.ok, datosRespuesta: datosRespuesta };
       });
     })
     .then(function (resultado) {
-      if (!resultado.ok || !resultado.payload.success) {
-        throw new Error(resultado.payload.message || 'No se pudo guardar.');
+      if (!resultado.ok || !resultado.datosRespuesta.success) {
+        throw new Error(resultado.datosRespuesta.message || 'No se pudo guardar.');
       }
 
       var fila = formulario.closest('tr');
       var nombreActual = fila ? fila.querySelector('[data-nombre-gestor]') : null;
       if (nombreActual) {
-        nombreActual.textContent = selector.options[selector.selectedIndex].text.split(' - ')[0];
+        nombreActual.textContent = selectorGestor.options[selectorGestor.selectedIndex].text.split(' - ')[0];
       }
 
-      mostrarToast(resultado.payload.message || 'Gestor actualizado.', 'ok');
+      mostrarToast(resultado.datosRespuesta.message || 'Gestor actualizado.', 'ok');
     })
     .catch(function (error) {
       mostrarToast(error.message || 'No se pudo guardar.', 'error');

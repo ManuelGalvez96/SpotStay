@@ -4,16 +4,16 @@ function obtenerArrendadorId() {
 }
 
 function obtenerTokenCsrf() {
-  var meta = document.querySelector('meta[name="csrf-token"]');
-  return meta ? meta.getAttribute('content') : '';
+  var etiquetaCsrf = document.querySelector('meta[name="csrf-token"]');
+  return etiquetaCsrf ? etiquetaCsrf.getAttribute('content') : '';
 }
 
 function marcarConversacionActiva(idConversacion) {
-  document.querySelectorAll('[data-conversacion-id]').forEach(function (item) {
-    if (item.getAttribute('data-conversacion-id') === String(idConversacion)) {
-      item.classList.add('activo');
+  document.querySelectorAll('[data-conversacion-id]').forEach(function (elemento) {
+    if (elemento.getAttribute('data-conversacion-id') === String(idConversacion)) {
+      elemento.classList.add('activo');
     } else {
-      item.classList.remove('activo');
+      elemento.classList.remove('activo');
     }
   });
 }
@@ -42,17 +42,17 @@ function renderizarMensajes(mensajes, arrendadorId) {
     return;
   }
 
-  var html = '';
+  var contenidoHtml = '';
   mensajes.forEach(function (mensaje) {
     var clase = String(mensaje.id_remitente) === String(arrendadorId) ? 'burbuja arrendador' : 'burbuja';
-    html += '<div class="' + clase + '">';
-    html += '<strong>' + (mensaje.nombre_remitente || 'Usuario') + '</strong>';
-    html += '<div>' + (mensaje.cuerpo_mensaje || '') + '</div>';
-    html += '<small>' + formatearFecha(mensaje.creado_mensaje) + '</small>';
-    html += '</div>';
+    contenidoHtml += '<div class="' + clase + '">';
+    contenidoHtml += '<strong>' + (mensaje.nombre_remitente || 'Usuario') + '</strong>';
+    contenidoHtml += '<div>' + (mensaje.cuerpo_mensaje || '') + '</div>';
+    contenidoHtml += '<small>' + formatearFecha(mensaje.creado_mensaje) + '</small>';
+    contenidoHtml += '</div>';
   });
 
-  lista.innerHTML = html;
+  lista.innerHTML = contenidoHtml;
   lista.scrollTop = lista.scrollHeight;
 }
 
@@ -68,17 +68,17 @@ function cargarConversacion(idConversacion) {
     },
     credentials: 'same-origin'
   })
-    .then(function (response) {
-      return response.json().then(function (payload) {
-        return { ok: response.ok, payload: payload };
+    .then(function (respuesta) {
+      return respuesta.json().then(function (datosRespuesta) {
+        return { ok: respuesta.ok, datosRespuesta: datosRespuesta };
       });
     })
     .then(function (resultado) {
-      if (!resultado.ok || !resultado.payload.success) {
-        throw new Error(resultado.payload.message || 'No se pudo cargar la conversación.');
+      if (!resultado.ok || !resultado.datosRespuesta.success) {
+        throw new Error(resultado.datosRespuesta.message || 'No se pudo cargar la conversación.');
       }
 
-      var conversacion = resultado.payload.conversacion;
+      var conversacion = resultado.datosRespuesta.conversacion;
       var titulo = document.getElementById('tituloHilo');
       var subtitulo = document.getElementById('subtituloHilo');
       var inputId = document.getElementById('idConversacionSeleccionada');
@@ -136,14 +136,14 @@ function enviarMensajeConFetch(evento) {
     credentials: 'same-origin',
     body: JSON.stringify({ texto: texto })
   })
-    .then(function (response) {
-      return response.json().then(function (payload) {
-        return { ok: response.ok, payload: payload };
+    .then(function (respuesta) {
+      return respuesta.json().then(function (datosRespuesta) {
+        return { ok: respuesta.ok, datosRespuesta: datosRespuesta };
       });
     })
     .then(function (resultado) {
-      if (!resultado.ok || !resultado.payload.success) {
-        throw new Error(resultado.payload.message || 'No se pudo enviar el mensaje.');
+      if (!resultado.ok || !resultado.datosRespuesta.success) {
+        throw new Error(resultado.datosRespuesta.message || 'No se pudo enviar el mensaje.');
       }
 
       textarea.value = '';

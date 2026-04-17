@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Schema;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request)
+    public function inicio(Request $request)
     {
         $arrendadorId = $this->obtenerIdArrendador($request);
 
@@ -29,7 +29,7 @@ class DashboardController extends Controller
                 ->where('id_usuario', $arrendadorId)
                 ->first();
 
-            $precioColumna = $this->obtenerColumnaPrecioPropiedad();
+            $columnaPrecio = $this->obtenerColumnaPrecioPropiedad();
             [$mensajeRemitenteColumna, $mensajeCuerpoColumna] = $this->obtenerColumnasMensaje();
 
             $propiedadesActivas = DB::table('tbl_propiedad')
@@ -52,7 +52,7 @@ class DashboardController extends Controller
                 ->where('p.id_arrendador_fk', $arrendadorId)
                 ->where('a.estado_alquiler', 'activo')
                 ->whereBetween(DB::raw('DATE(COALESCE(a.aprobado_alquiler, a.creado_alquiler))'), [$inicioMes, $finMes])
-                ->sum("p.{$precioColumna}");
+                ->sum("p.{$columnaPrecio}");
 
             $solicitudesPendientes = DB::table('tbl_alquiler as a')
                 ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'a.id_propiedad_fk')
@@ -97,7 +97,7 @@ class DashboardController extends Controller
                     'p.titulo_propiedad',
                     'p.direccion_propiedad',
                     'p.ciudad_propiedad',
-                    DB::raw("p.{$precioColumna} as precio_propiedad"),
+                    DB::raw("p.{$columnaPrecio} as precio_propiedad"),
                     'p.estado_propiedad',
                     DB::raw("(
                         SELECT u.nombre_usuario
@@ -129,16 +129,16 @@ class DashboardController extends Controller
 
     private function obtenerIdArrendador(Request $request): ?int
     {
-        $arrendadorIdEnQuery = (int) $request->query('arrendador_id', 0);
-        if ($arrendadorIdEnQuery > 0) {
-            return $arrendadorIdEnQuery;
+        $arrendadorIdEnConsulta = (int) $request->query('arrendador_id', 0);
+        if ($arrendadorIdEnConsulta > 0) {
+            return $arrendadorIdEnConsulta;
         }
 
         // Prioriza usuarios con actividad real como arrendador en propiedades/alquileres.
         $arrendadorConActividad = DB::table('tbl_usuario as u')
             ->join('tbl_propiedad as p', 'p.id_arrendador_fk', '=', 'u.id_usuario')
-            ->leftJoin('tbl_alquiler as a', function ($join) {
-                $join->on('a.id_propiedad_fk', '=', 'p.id_propiedad')
+            ->leftJoin('tbl_alquiler as a', function ($union) {
+                $union->on('a.id_propiedad_fk', '=', 'p.id_propiedad')
                     ->where('a.estado_alquiler', '=', 'activo');
             })
             ->where('u.activo_usuario', true)

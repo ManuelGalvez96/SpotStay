@@ -12,7 +12,7 @@ use Illuminate\View\View;
 
 class PrecioGastoController extends Controller
 {
-    public function index(Request $request): View
+    public function inicio(Request $request): View
     {
         $arrendadorId = $this->obtenerIdArrendador($request);
         $columnaPrecio = $this->obtenerColumnaPrecioPropiedad();

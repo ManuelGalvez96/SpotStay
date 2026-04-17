@@ -13,15 +13,16 @@ use App\Http\Controllers\Arrendador\InquilinoController as ArrendadorInquilinoCo
 use App\Http\Controllers\Arrendador\MensajeController as ArrendadorMensajeController;
 use App\Http\Controllers\Arrendador\PrecioGastoController as ArrendadorPrecioGastoController;
 use App\Http\Controllers\Arrendador\GestorController as ArrendadorGestorController;
+use App\Http\Controllers\Arrendador\ContratoController as ArrendadorContratoController;
 
 Route::get('/', function () {
     return view('inicio');
 });
 
 // Arrendador
-Route::get('/arrendador/dashboard', [ArrendadorDashboardController::class, 'index'])
+Route::get('/arrendador/dashboard', [ArrendadorDashboardController::class, 'inicio'])
     ->name('arrendador.dashboard');
-Route::get('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'index'])
+Route::get('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'inicio'])
     ->name('arrendador.propiedades');
 Route::post('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'guardar'])
     ->name('arrendador.propiedades.store');
@@ -29,30 +30,34 @@ Route::post('/arrendador/propiedades/{id}/estado', [ArrendadorPropiedadControlle
     ->name('arrendador.propiedades.estado');
 Route::get('/arrendador/propiedades/{id}', [ArrendadorPropiedadController::class, 'mostrar'])
     ->name('arrendador.propiedades.show');
-Route::get('/arrendador/solicitudes', [ArrendadorSolicitudController::class, 'index'])
+Route::get('/arrendador/solicitudes', [ArrendadorSolicitudController::class, 'inicio'])
     ->name('arrendador.solicitudes');
 Route::post('/arrendador/solicitudes/{id}/aprobar', [ArrendadorSolicitudController::class, 'aprobar'])
     ->name('arrendador.solicitudes.aprobar');
 Route::post('/arrendador/solicitudes/{id}/rechazar', [ArrendadorSolicitudController::class, 'rechazar'])
     ->name('arrendador.solicitudes.rechazar');
-Route::get('/arrendador/inquilinos', [ArrendadorInquilinoController::class, 'index'])
+Route::get('/arrendador/inquilinos', [ArrendadorInquilinoController::class, 'inicio'])
     ->name('arrendador.inquilinos');
 Route::get('/arrendador/inquilinos/{id}', [ArrendadorInquilinoController::class, 'mostrar'])
     ->name('arrendador.inquilinos.mostrar');
-Route::get('/arrendador/mensajes', [ArrendadorMensajeController::class, 'index'])
+Route::get('/arrendador/mensajes', [ArrendadorMensajeController::class, 'inicio'])
     ->name('arrendador.mensajes');
 Route::get('/arrendador/mensajes/{id}', [ArrendadorMensajeController::class, 'mostrar'])
     ->name('arrendador.mensajes.mostrar');
 Route::post('/arrendador/mensajes/{id}/enviar', [ArrendadorMensajeController::class, 'enviar'])
     ->name('arrendador.mensajes.enviar');
-Route::get('/arrendador/precios-gastos', [ArrendadorPrecioGastoController::class, 'index'])
+Route::get('/arrendador/precios-gastos', [ArrendadorPrecioGastoController::class, 'inicio'])
     ->name('arrendador.precios-gastos');
 Route::post('/arrendador/precios-gastos/{id}', [ArrendadorPrecioGastoController::class, 'actualizar'])
     ->name('arrendador.precios-gastos.actualizar');
-Route::get('/arrendador/gestor', [ArrendadorGestorController::class, 'index'])
+Route::get('/arrendador/gestor', [ArrendadorGestorController::class, 'inicio'])
     ->name('arrendador.gestor');
 Route::post('/arrendador/gestor/{id}', [ArrendadorGestorController::class, 'actualizar'])
     ->name('arrendador.gestor.actualizar');
+Route::get('/arrendador/contratos', [ArrendadorContratoController::class, 'inicio'])
+    ->name('arrendador.contratos');
+Route::post('/arrendador/contratos/{id}/firmar-arrendador', [ArrendadorContratoController::class, 'firmarArrendador'])
+    ->name('arrendador.contratos.firmar-arrendador');
 
 // Logout
 Route::post('/logout', function () {

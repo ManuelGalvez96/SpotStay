@@ -1,6 +1,6 @@
 function obtenerTokenCsrf() {
-  var meta = document.querySelector('meta[name="csrf-token"]');
-  return meta ? meta.getAttribute('content') : '';
+  var etiquetaCsrf = document.querySelector('meta[name="csrf-token"]');
+  return etiquetaCsrf ? etiquetaCsrf.getAttribute('content') : '';
 }
 
 function mostrarToast(texto) {
@@ -9,17 +9,17 @@ function mostrarToast(texto) {
     anterior.remove();
   }
 
-  var toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.textContent = texto;
-  document.body.appendChild(toast);
+  var aviso = document.createElement('div');
+  aviso.className = 'toast';
+  aviso.textContent = texto;
+  document.body.appendChild(aviso);
 
-  setTimeout(function () { toast.classList.add('visible'); }, 10);
+  setTimeout(function () { aviso.classList.add('visible'); }, 10);
   setTimeout(function () {
-    toast.classList.remove('visible');
+    aviso.classList.remove('visible');
     setTimeout(function () {
-      if (toast.parentNode) {
-        toast.parentNode.removeChild(toast);
+      if (aviso.parentNode) {
+        aviso.parentNode.removeChild(aviso);
       }
     }, 200);
   }, 1800);
@@ -52,18 +52,18 @@ function enviarCambio(id, arrendadorId, accion) {
     body: new URLSearchParams({ arrendador_id: arrendadorId }),
     credentials: 'same-origin'
   })
-    .then(function (response) {
-      return response.json().then(function (payload) {
-        return { ok: response.ok, payload: payload };
+    .then(function (respuesta) {
+      return respuesta.json().then(function (datosRespuesta) {
+        return { ok: respuesta.ok, datosRespuesta: datosRespuesta };
       });
     })
     .then(function (resultado) {
-      if (!resultado.ok || !resultado.payload.success) {
-        throw new Error(resultado.payload.message || 'No se pudo cambiar el estado.');
+      if (!resultado.ok || !resultado.datosRespuesta.success) {
+        throw new Error(resultado.datosRespuesta.message || 'No se pudo cambiar el estado.');
       }
 
-      actualizarFila(id, resultado.payload.estado);
-      mostrarToast(resultado.payload.message || 'Cambio aplicado.');
+      actualizarFila(id, resultado.datosRespuesta.estado);
+      mostrarToast(resultado.datosRespuesta.message || 'Cambio aplicado.');
     })
     .catch(function (error) {
       mostrarToast(error.message || 'Error al procesar la solicitud.');

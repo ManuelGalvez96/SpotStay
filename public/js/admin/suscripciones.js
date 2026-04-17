@@ -7,6 +7,31 @@ var csrfToken = '';
 var suscripcionIdActual = null;
 var planActualModal = '';
 var paginaActual = 1;
+var planesCache = null;
+
+/* ── Obtener configuración de planes (cached) ── */
+var obtenerPlanes = function(callback) {
+    if (planesCache) {
+        callback(planesCache);
+        return;
+    }
+    
+    fetch('/admin/planes')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            planesCache = data.plans;
+            callback(planesCache);
+        })
+        .catch(function(e) {
+            console.error('Error al cargar planes:', e);
+            // Usar valores por defecto si falla
+            callback({
+                'gratuito': { price: 0, max_properties: 1 },
+                'basico': { price: 9.99, max_properties: 3 },
+                'pro': { price: 29.99, max_properties: 10 }
+            });
+        });
+};
 
 window.onload = function() {
     csrfToken = document.querySelector('meta[name=csrf-token]').content;
@@ -97,28 +122,31 @@ var abrirModal = function(id) {
 };
 
 var rellenarModal = function(data) {
-    var sus = data.suscripcion;
-    var props = data.propiedades || [];
-    var colores = ['#B8CCE4','#A8D5BF','#F9E4A0','#FFD5CC','#D7EAF9','#EDE7F6','#D5F5E3','#FAD7D7','#CCE5FF','#FDE8C8'];
-    var color = colores[(sus.id_usuario_fk || 0) % 10];
-    var partes = (sus.nombre_usuario || '').split(' ');
-    var iniciales = (partes[0] ? partes[0][0] : '').toUpperCase() + (partes[1] ? partes[1][0] : '').toUpperCase();
+    obtenerPlanes(function(planes) {
+        var sus = data.suscripcion;
+        var props = data.propiedades || [];
+        var colores = ['#B8CCE4','#A8D5BF','#F9E4A0','#FFD5CC','#D7EAF9','#EDE7F6','#D5F5E3','#FAD7D7','#CCE5FF','#FDE8C8'];
+        var color = colores[(sus.id_usuario_fk || 0) % 10];
+        var partes = (sus.nombre_usuario || '').split(' ');
+        var iniciales = (partes[0] ? partes[0][0] : '').toUpperCase() + (partes[1] ? partes[1][0] : '').toUpperCase();
 
-    /* Avatar y datos */
-    document.getElementById('modalAvatarSus').textContent = iniciales;
-    document.getElementById('modalAvatarSus').style.background = color;
-    document.getElementById('modalNombreSus').textContent = sus.nombre_usuario || '';
-    document.getElementById('modalEmailSus').textContent = sus.email_usuario || '';
-    document.getElementById('modalTelefonoSus').textContent = sus.telefono_usuario || '';
+        /* Avatar y datos */
+        document.getElementById('modalAvatarSus').textContent = iniciales;
+        document.getElementById('modalAvatarSus').style.background = color;
+        document.getElementById('modalNombreSus').textContent = sus.nombre_usuario || '';
+        document.getElementById('modalEmailSus').textContent = sus.email_usuario || '';
+        document.getElementById('modalTelefonoSus').textContent = sus.telefono_usuario || '';
 
-    /* Badges header */
-    document.getElementById('modalBadgePlanSus').textContent = sus.plan_suscripcion ? sus.plan_suscripcion.charAt(0).toUpperCase() + sus.plan_suscripcion.slice(1) : '';
-    document.getElementById('modalBadgePlanSus').className = 'badge-plan badge-plan-' + (sus.plan_suscripcion || '');
-    document.getElementById('modalBadgeEstadoSus').textContent = sus.estado_suscripcion ? sus.estado_suscripcion.charAt(0).toUpperCase() + sus.estado_suscripcion.slice(1) : '';
-    document.getElementById('modalBadgeEstadoSus').className = 'badge-estado badge-sus-' + (sus.estado_suscripcion || '');
+        /* Badges header */
+        document.getElementById('modalBadgePlanSus').textContent = sus.plan_suscripcion ? sus.plan_suscripcion.charAt(0).toUpperCase() + sus.plan_suscripcion.slice(1) : '';
+        document.getElementById('modalBadgePlanSus').className = 'badge-plan badge-plan-' + (sus.plan_suscripcion || '');
+        document.getElementById('modalBadgeEstadoSus').textContent = sus.estado_suscripcion ? sus.estado_suscripcion.charAt(0).toUpperCase() + sus.estado_suscripcion.slice(1) : '';
+        document.getElementById('modalBadgeEstadoSus').className = 'badge-estado badge-sus-' + (sus.estado_suscripcion || '');
 
-    var maxProps = sus.plan_suscripcion === 'pro' ? 10 : sus.plan_suscripcion === 'basico' ? 3 : 1;
-    var precio = sus.plan_suscripcion === 'pro' ? 29.99 : sus.plan_suscripcion === 'basico' ? 9.99 : 0;
+        /* Obtener datos del plan desde la configuración fetched */
+        var planData = planes[sus.plan_suscripcion] || {price: 0, max_properties: 1};
+        var maxProps = planData.max_properties;
+        var precio = planData.price;
 
     /* Datos plan grid */
     document.getElementById('dataPlanSus').textContent = sus.plan_suscripcion ? sus.plan_suscripcion.charAt(0).toUpperCase() + sus.plan_suscripcion.slice(1) : '';
@@ -184,6 +212,7 @@ var rellenarModal = function(data) {
     document.getElementById('editInicioSus').value = sus.inicio_suscripcion ? sus.inicio_suscripcion.substring(0, 10) : '';
     document.getElementById('editFinSus').value = sus.fin_suscripcion ? sus.fin_suscripcion.substring(0, 10) : '';
     document.getElementById('editNotasSus').value = '';
+    });
 };
 
 

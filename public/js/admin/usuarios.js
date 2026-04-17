@@ -7,19 +7,153 @@
 var csrfToken = null;
 var paginaActual = 1;
 
-/* ── Objeto con datos de usuarios hardcodeados ── */
-var usuariosData = {
-    1: { nombre: 'Carlos García', email: 'carlos.garcia@email.com', telefono: '+34 612 345 678', rol: 'arrendador', estado: 'Activo', registro: '12 ene 2025', propiedades: 3, acceso: 'hace 2h', alquileres: 5, suscripcion: 'Premium', avatar: '#B8CCE4', avatarText: 'CG' },
-    2: { nombre: 'Laura Martínez', email: 'laura.martinez@email.com', telefono: '+34 623 456 789', rol: 'inquilino', estado: 'Activo', registro: '08 ene 2025', propiedades: 0, acceso: 'hace 1h', alquileres: 2, suscripcion: 'Estándar', avatar: '#A8D5BF', avatarText: 'LM' },
-    3: { nombre: 'Sofía Rodríguez', email: 'sofia.rodriguez@email.com', telefono: '+34 634 567 890', rol: 'arrendador', estado: 'Inactivo', registro: '15 dic 2024', propiedades: 1, acceso: 'hace 5 días', alquileres: 1, suscripcion: 'Básico', avatar: '#F9E4A0', avatarText: 'SR' },
-    4: { nombre: 'Pedro Molina', email: 'pedro.molina@email.com', telefono: '+34 645 678 901', rol: 'gestor', estado: 'Activo', registro: '20 dic 2024', propiedades: 0, acceso: 'hace 30min', alquileres: 0, suscripcion: 'Gestor', avatar: '#E8D5F0', avatarText: 'PM' },
-    5: { nombre: 'Ana Torres', email: 'ana.torres@email.com', telefono: '+34 656 789 012', rol: 'miembro', estado: 'Activo', registro: '03 ene 2025', propiedades: 0, acceso: 'hace 3h', alquileres: 0, suscripcion: 'Estándar', avatar: '#FFD5CC', avatarText: 'AT' },
-    6: { nombre: 'Miguel Fernández', email: 'miguel.fernandez@email.com', telefono: '+34 667 890 123', rol: 'admin', estado: 'Activo', registro: '01 ene 2025', propiedades: 0, acceso: 'hace 15min', alquileres: 0, suscripcion: 'Admin', avatar: '#CCE5FF', avatarText: 'MF' },
-    7: { nombre: 'Elena Vargas', email: 'elena.vargas@email.com', telefono: '+34 678 901 234', rol: 'arrendador', estado: 'Activo', registro: '18 nov 2024', propiedades: 2, acceso: 'hace 1 día', alquileres: 3, suscripcion: 'Premium', avatar: '#D5F5E3', avatarText: 'EV' },
-    8: { nombre: 'Javier Ruiz', email: 'javier.ruiz@email.com', telefono: '+34 689 012 345', rol: 'inquilino', estado: 'Inactivo', registro: '05 dic 2024', propiedades: 0, acceso: 'hace 1 mes', alquileres: 1, suscripcion: 'Básico', avatar: '#FAD7D7', avatarText: 'JR' },
-    9: { nombre: 'Carmen López', email: 'carmen.lopez@email.com', telefono: '+34 690 123 456', rol: 'miembro', estado: 'Activo', registro: '10 ene 2025', propiedades: 0, acceso: 'hace 4h', alquileres: 0, suscripcion: 'Estándar', avatar: '#D7EAF9', avatarText: 'CL' },
-    10: { nombre: 'Roberto Mora', email: 'roberto.mora@email.com', telefono: '+34 601 234 567', rol: 'arrendador', estado: 'Activo', registro: '22 oct 2024', propiedades: 5, acceso: 'ayer', alquileres: 8, suscripcion: 'Premium', avatar: '#FDE8C8', avatarText: 'RM' }
+/* ── FUNCIONES DE VALIDACIÓN ── */
+
+/* Validar formato de email */
+var validarEmail = function(email) {
+    var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return email !== '' && regex.test(email);
 };
+
+/* Validar nombre (mínimo 3 caracteres) */
+var validarNombre = function(nombre) {
+    return nombre !== '' && nombre.length >= 3;
+};
+
+/* Validar teléfono (opcional, pero si está, mínimo 9 caracteres) */
+var validarTelefono = function(telefono) {
+    if (telefono === '') return true; // Opcional
+    return telefono.length >= 9;
+};
+
+/* Validar contraseña (mínimo 6 caracteres) */
+var validarPassword = function(password) {
+    return password !== '' && password.length >= 6;
+};
+
+/* ── FUNCIONES DE SWEET ALERTS CON OSO ── */
+
+/* SVG del oso idéntico al login con cartel dinámico */
+var crearOsoExito = function() {
+    return `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 120px; height: 120px;">
+        <!-- Oso igual que login -->
+        <circle class="yeti-part" cx="62" cy="52" r="14" />
+        <circle class="yeti-part" cx="138" cy="52" r="14" />
+        <path class="yeti-part" d="M40,200 Q40,55 100,55 Q160,55 160,200 Z" />
+        <path class="suit-jacket" d="M30,200 L170,200 L160,152 Q100,132 40,152 Z" />
+        <path class="suit-shirt" d="M100,140 L120,168 L100,200 L80,168 Z" />
+        <path class="suit-tie" d="M100,150 L110,168 L100,192 L90,168 Z" />
+        <g id="face-group">
+            <circle cx="82" cy="105" r="5" fill="#000" />
+            <circle cx="118" cy="105" r="5" fill="#000" />
+            <path d="M92 128 Q100 133 108 128" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        </g>
+        <circle class="hand hand-l" cx="48" cy="180" r="19" />
+        <circle class="hand hand-r" cx="152" cy="180" r="19" />
+        
+        <!-- Cartel éxito sostenido por las manos -->
+        <rect x="55" y="130" width="90" height="45" rx="5" fill="#90EE90" stroke="#228B22" stroke-width="2.5"/>
+        <text x="100" y="160" font-size="32" font-weight="bold" text-anchor="middle" fill="#228B22">✓</text>
+    </svg>
+    `;
+};
+
+/* SVG del oso con cartel de error */
+var crearOsoError = function() {
+    return `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 120px; height: 120px;">
+        <!-- Oso igual que login -->
+        <circle class="yeti-part" cx="62" cy="52" r="14" />
+        <circle class="yeti-part" cx="138" cy="52" r="14" />
+        <path class="yeti-part" d="M40,200 Q40,55 100,55 Q160,55 160,200 Z" />
+        <path class="suit-jacket" d="M30,200 L170,200 L160,152 Q100,132 40,152 Z" />
+        <path class="suit-shirt" d="M100,140 L120,168 L100,200 L80,168 Z" />
+        <path class="suit-tie" d="M100,150 L110,168 L100,192 L90,168 Z" />
+        <g id="face-group">
+            <circle cx="82" cy="105" r="5" fill="#000" />
+            <circle cx="118" cy="105" r="5" fill="#000" />
+            <path d="M92 135 Q100 128 108 135" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        </g>
+        <circle class="hand hand-l" cx="48" cy="180" r="19" />
+        <circle class="hand hand-r" cx="152" cy="180" r="19" />
+        
+        <!-- Cartel error sostenido por las manos -->
+        <rect x="55" y="130" width="90" height="45" rx="5" fill="#FFB6C1" stroke="#DC143C" stroke-width="2.5"/>
+        <text x="100" y="160" font-size="32" font-weight="bold" text-anchor="middle" fill="#DC143C">✗</text>
+    </svg>
+    `;
+};
+
+/* SVG del oso con cartel de validación */
+var crearOsoValidacion = function() {
+    return `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 120px; height: 120px;">
+        <!-- Oso igual que login -->
+        <circle class="yeti-part" cx="62" cy="52" r="14" />
+        <circle class="yeti-part" cx="138" cy="52" r="14" />
+        <path class="yeti-part" d="M40,200 Q40,55 100,55 Q160,55 160,200 Z" />
+        <path class="suit-jacket" d="M30,200 L170,200 L160,152 Q100,132 40,152 Z" />
+        <path class="suit-shirt" d="M100,140 L120,168 L100,200 L80,168 Z" />
+        <path class="suit-tie" d="M100,150 L110,168 L100,192 L90,168 Z" />
+        <g id="face-group">
+            <circle cx="82" cy="105" r="5" fill="#000" />
+            <circle cx="118" cy="105" r="5" fill="#000" />
+            <path d="M85 105 L115 105" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        </g>
+        <circle class="hand hand-l" cx="48" cy="180" r="19" />
+        <circle class="hand hand-r" cx="152" cy="180" r="19" />
+        
+        <!-- Cartel validación sostenido por las manos -->
+        <rect x="55" y="130" width="90" height="45" rx="5" fill="#FFE4B5" stroke="#FF8C00" stroke-width="2.5"/>
+        <text x="100" y="160" font-size="32" font-weight="bold" text-anchor="middle" fill="#FF8C00">!</text>
+    </svg>
+    `;
+};
+
+/* Alert de éxito con oso */
+var mostrarAlertaExito = function(titulo, mensaje) {
+    Swal.fire({
+        title: titulo,
+        html: mensaje,
+        iconHtml: crearOsoExito(),
+        customClass: {
+            icon: 'oso-icon'
+        },
+        confirmButtonText: 'Ok',
+        confirmButtonColor: '#035498'
+    });
+};
+
+/* Alert de error con oso */
+var mostrarAlertaError = function(titulo, mensaje) {
+    Swal.fire({
+        title: titulo,
+        html: mensaje,
+        iconHtml: crearOsoError(),
+        customClass: {
+            icon: 'oso-icon'
+        },
+        confirmButtonText: 'Ok',
+        confirmButtonColor: '#d9534f'
+    });
+};
+
+/* Alert de validación fallida */
+var mostrarAlertaValidacion = function(mensaje) {
+    Swal.fire({
+        title: 'Validación',
+        html: mensaje,
+        iconHtml: crearOsoValidacion(),
+        customClass: {
+            icon: 'oso-icon'
+        },
+        confirmButtonText: 'Ok',
+        confirmButtonColor: '#f0ad4e'
+    });
+};
+
+
 
 /* ── window.onload ── */
 window.onload = function() {
@@ -42,25 +176,23 @@ function asignarEventosFiltros() {
     
     if (selectRol) {
         selectRol.onchange = function() {
+            paginaActual = 1;
             filtrarUsuarios();
         };
     }
     
     if (selectEstado) {
         selectEstado.onchange = function() {
+            paginaActual = 1;
             filtrarUsuarios();
         };
     }
     
     if (buscadorUsuarios) {
-        buscadorUsuarios.onblur = function() {
-            filtrarUsuarios();
-        };
-        
+        // Filtrado en vivo: busca con cada keystroke para LIKE% matching
         buscadorUsuarios.onkeyup = function() {
-            if (this.value.length === 0) {
-                filtrarUsuarios();
-            }
+            paginaActual = 1;
+            filtrarUsuarios();
         };
     }
 }
@@ -80,7 +212,8 @@ var filtrarUsuarios = function() {
     
     var url = '/admin/usuarios/filtrar?rol=' + encodeURIComponent(rol) +
               '&estado=' + encodeURIComponent(estado) +
-              '&q=' + encodeURIComponent(busqueda);
+              '&q=' + encodeURIComponent(busqueda) +
+              '&page=' + paginaActual;
     
     fetch(url, {
         method: 'GET',
@@ -93,6 +226,14 @@ var filtrarUsuarios = function() {
     })
     .then(function(data) {
         actualizarTabla(data);
+        
+        // Actualizar visualmente los botones de paginación
+        if (data.currentPage && data.totalPages) {
+            actualizarPaginacion(data.currentPage, data.totalPages);
+        }
+        
+        // Re-vincular los eventos de paginación
+        asignarEventosPaginacion();
     })
     .catch(function(error) {
         console.error('Error en fetch filtrar:', error);
@@ -120,6 +261,12 @@ var actualizarTabla = function(data) {
             var activo = usuario.estado === 'activo' ? '1' : '0';
             var inactivaClass = activo === '0' ? 'class="fila-inactiva"' : '';
             
+            var rolLabel = usuario.rolLabel || 'Sin rol';
+            var rolSlug = usuario.rol || 'usuario';
+            var estadoLabel = usuario.estado === 'activo' ? 'Activo' : 'Inactivo';
+            var estadoClass = activo === '1' ? 'activo' : 'inactivo';
+            var propiedades = usuario.propiedades > 0 ? usuario.propiedades : '—';
+            
             var html = '<tr data-id="' + usuario.id + '" data-activo="' + activo + '" ' + inactivaClass + '>' +
                 '<td>' +
                     '<div class="usuario-celda">' +
@@ -130,9 +277,9 @@ var actualizarTabla = function(data) {
                         '</div>' +
                     '</div>' +
                 '</td>' +
-                '<td><span class="badge-rol badge-' + usuario.rol + '">' + usuario.rolLabel + '</span></td>' +
-                '<td><span class="badge-estado badge-' + (usuario.estado === 'activo' ? 'activo' : 'inactivo') + '">' + (usuario.estado === 'activo' ? 'Activo' : 'Inactivo') + '</span></td>' +
-                '<td>' + (usuario.propiedades > 0 ? usuario.propiedades : '—') + '</td>' +
+                '<td><span class="badge-rol badge-' + rolSlug + '">' + rolLabel + '</span></td>' +
+                '<td><span class="badge-estado badge-' + estadoClass + '">' + estadoLabel + '</span></td>' +
+                '<td>' + propiedades + '</td>' +
                 '<td>' + usuario.fechaRegistro + '</td>' +
                 '<td>' +
                     '<div class="acciones-tabla">' +
@@ -157,6 +304,13 @@ var actualizarTabla = function(data) {
     var contadorResultados = document.getElementById('contadorResultados');
     if (contadorResultados) {
         contadorResultados.textContent = data.total + ' usuarios encontrados';
+    }
+    
+    // Actualizar footer con información de paginación
+    var tablaFooter = document.getElementById('tablaFooter');
+    if (tablaFooter && data.from && data.to) {
+        var footerText = 'Mostrando ' + data.from + '-' + data.to + ' de ' + data.total + ' usuarios';
+        tablaFooter.innerHTML = '<span>' + footerText + '</span>';
     }
     
     // Reasignar eventos a los nuevos botones
@@ -205,48 +359,69 @@ function asignarEventosTabla() {
 
 /* ================================================
    FUNCIÓN: abrirModal
-   Abre el modal con los datos del usuario
+   Abre el modal con los datos del usuario del backend
    ================================================ */
 var abrirModal = function(id) {
-    var usuario = usuariosData[id];
+    var url = '/admin/usuarios/' + id;
     
-    if (!usuario) {
-        console.error('Usuario no encontrado:', id);
-        return;
-    }
-    
-    // Rellenar datos del modal
-    document.getElementById('modalAvatar').innerHTML = usuario.avatarText;
-    document.getElementById('modalAvatar').style.background = usuario.avatar;
-    document.getElementById('modalNombre').textContent = usuario.nombre;
-    document.getElementById('modalEmail').textContent = usuario.email;
-    document.getElementById('modalTelefono').textContent = usuario.telefono;
-    
-    // Badge rol
-    var badgeRol = document.getElementById('modalBadgeRol');
-    var rolLabel = usuario.rol.charAt(0).toUpperCase() + usuario.rol.slice(1);
-    badgeRol.textContent = rolLabel;
-    badgeRol.className = 'badge-rol badge-' + usuario.rol;
-    
-    // Badge estado
-    var badgeEstado = document.getElementById('modalBadgeEstado');
-    badgeEstado.textContent = usuario.estado;
-    badgeEstado.className = 'badge-estado badge-' + (usuario.estado === 'Activo' ? 'activo' : 'inactivo');
-    
-    // Datos
-    document.getElementById('dataTelefono').textContent = usuario.telefono;
-    document.getElementById('dataRegistro').textContent = usuario.registro;
-    document.getElementById('dataPropiedades').textContent = usuario.propiedades > 0 ? usuario.propiedades : '—';
-    document.getElementById('dataAcceso').textContent = usuario.acceso;
-    document.getElementById('dataAlquileres').textContent = usuario.alquileres > 0 ? usuario.alquileres : '—';
-    document.getElementById('dataSuscripcion').textContent = usuario.suscripcion;
-    
-    // Mostrar modal
-    document.getElementById('modalOverlay').classList.add('visible');
-    document.getElementById('modalPerfil').classList.add('visible');
-    
-    // Guardar ID actual para botones del modal
-    document.getElementById('btnDesactivarUsuario').setAttribute('data-id', id);
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken
+        }
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(usuario) {
+        if (!usuario) {
+            console.error('Usuario no encontrado');
+            return;
+        }
+        
+        // Generar avatar
+        var nombre = usuario.nombre_usuario || 'Usuario';
+        var partes = nombre.split(' ');
+        var avatarText = partes[0].charAt(0).toUpperCase() + (partes[1] ? partes[1].charAt(0).toUpperCase() : '');
+        
+        // Rellenar datos del modal
+        document.getElementById('modalAvatar').innerHTML = avatarText;
+        document.getElementById('modalAvatar').style.background = '#B8CCE4';
+        document.getElementById('modalNombre').textContent = nombre;
+        document.getElementById('modalEmail').textContent = usuario.email_usuario || '';
+        document.getElementById('modalTelefono').textContent = usuario.telefono_usuario || 'N/A';
+        
+        // Badge rol
+        var badgeRol = document.getElementById('modalBadgeRol');
+        var rolLabel = usuario.nombre_rol || 'Sin rol';
+        badgeRol.textContent = rolLabel;
+        badgeRol.className = 'badge-rol badge-usuario';
+        
+        // Badge estado
+        var badgeEstado = document.getElementById('modalBadgeEstado');
+        var estadoLabel = usuario.activo_usuario ? 'Activo' : 'Inactivo';
+        badgeEstado.textContent = estadoLabel;
+        badgeEstado.className = 'badge-estado badge-' + (usuario.activo_usuario ? 'activo' : 'inactivo');
+        
+        // Datos
+        document.getElementById('dataTelefono').textContent = usuario.telefono_usuario || 'N/A';
+        document.getElementById('dataRegistro').textContent = usuario.creado_usuario ? usuario.creado_usuario.substr(0, 10) : 'N/A';
+        document.getElementById('dataPropiedades').textContent = '0';
+        document.getElementById('dataAcceso').textContent = 'N/A';
+        document.getElementById('dataAlquileres').textContent = '0';
+        document.getElementById('dataSuscripcion').textContent = 'Estándar';
+        
+        // Mostrar modal
+        document.getElementById('modalOverlay').classList.add('visible');
+        document.getElementById('modalPerfil').classList.add('visible');
+        
+        // Guardar ID actual para botones del modal
+        document.getElementById('btnDesactivarUsuario').setAttribute('data-id', usuario.id_usuario);
+    })
+    .catch(function(error) {
+        console.error('Error en fetch abrirModal:', error);
+        alert('Error al cargar datos del usuario');
+    });
 };
 
 /* ================================================
@@ -277,41 +452,44 @@ var toggleEstado = function(id) {
     })
     .then(function(data) {
         if (data.success) {
-            // Obtener la fila
+            /* Obtener la fila */
             var tr = document.querySelector('tr[data-id="' + id + '"]');
             
             if (tr) {
-                // Alternar clase activo del toggle
+                /* Alternar clase activo del toggle */
                 var toggle = tr.querySelector('.toggle-switch');
                 if (toggle) {
                     toggle.classList.toggle('activo');
                 }
                 
-                // Actualizar data-activo
+                /* Actualizar data-activo */
                 var nuevoActivo = tr.getAttribute('data-activo') === '1' ? '0' : '1';
                 tr.setAttribute('data-activo', nuevoActivo);
                 
-                // Actualizar badge de estado
+                /* Actualizar badge de estado */
                 var badge = tr.querySelector('.badge-estado');
                 if (badge) {
                     if (nuevoActivo === '1') {
                         badge.textContent = 'Activo';
                         badge.className = 'badge-estado badge-activo';
+                        mostrarAlertaExito('¡Éxito!', 'El usuario ha sido activado');
                     } else {
                         badge.textContent = 'Inactivo';
                         badge.className = 'badge-estado badge-inactivo';
+                        mostrarAlertaExito('¡Éxito!', 'El usuario ha sido desactivado');
                     }
                 }
                 
-                // Alternar clase fila-inactiva
+                /* Alternar clase fila-inactiva */
                 tr.classList.toggle('fila-inactiva');
             }
         } else {
-            console.error('Error al cambiar estado:', data.message);
+            mostrarAlertaError('Error', data.message || 'No se pudo cambiar el estado del usuario');
         }
     })
     .catch(function(error) {
         console.error('Error en fetch toggle-estado:', error);
+        mostrarAlertaError('Error', 'No se pudo cambiar el estado del usuario');
     });
 };
 
@@ -363,12 +541,48 @@ function asignarEventosModal() {
 
 /* ================================================
    FUNCIÓN: editarUsuario
-   Placeholder para edición de usuario
+   Abre el modal de formulario para editar usuario
    ================================================ */
 var editarUsuario = function(id) {
-    console.log('Abrir formulario de edición para usuario:', id);
-    // Aquí iría la lógica para editar el usuario
-    // O redirigir a una página de edición
+    var url = '/admin/usuarios/' + id;
+    
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken
+        }
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(usuario) {
+        if (!usuario) {
+            mostrarAlertaError('Error', 'Usuario no encontrado');
+            return;
+        }
+        
+        /* Rellenar formulario con datos del usuario */
+        document.getElementById('modalFormTitulo').textContent = 'Editar usuario';
+        document.getElementById('inputNombre').value = usuario.nombre_usuario || '';
+        document.getElementById('inputEmail').value = usuario.email_usuario || '';
+        document.getElementById('inputTelefono').value = usuario.telefono_usuario || '';
+        document.getElementById('selectRolForm').value = usuario.slug_rol || '';
+        document.getElementById('inputPassword').value = '';
+        document.getElementById('inputPassword').placeholder = 'Dejar vacío para no cambiar';
+        
+        /* Guardar ID del usuario en el formulario */
+        document.getElementById('formUsuario').setAttribute('data-usuario-id', usuario.id_usuario);
+        
+        /* Mostrar modal de formulario */
+        abrirModalFormUsuario();
+        
+        /* Cerrar modal de perfil */
+        cerrarModal();
+    })
+    .catch(function(error) {
+        console.error('Error en fetch editarUsuario:', error);
+        mostrarAlertaError('Error', 'No se pudieron cargar los datos del usuario');
+    });
 };
 
 /* ================================================
@@ -416,7 +630,19 @@ function asignarEventosPaginacion() {
 var cambiarPagina = function(numeroPagina) {
     paginaActual = numeroPagina;
     
-    var url = '/admin/usuarios?pagina=' + paginaActual;
+    // Obtener los valores de filtros actuales
+    var selectRol = document.getElementById('selectRol');
+    var selectEstado = document.getElementById('selectEstado');
+    var buscadorUsuarios = document.getElementById('buscadorUsuarios');
+    
+    var rol = selectRol ? selectRol.value : '';
+    var estado = selectEstado ? selectEstado.value : '';
+    var busqueda = buscadorUsuarios ? buscadorUsuarios.value : '';
+    
+    var url = '/admin/usuarios/filtrar?rol=' + encodeURIComponent(rol) +
+              '&estado=' + encodeURIComponent(estado) +
+              '&q=' + encodeURIComponent(busqueda) +
+              '&page=' + numeroPagina;
     
     fetch(url, {
         method: 'GET',
@@ -429,7 +655,14 @@ var cambiarPagina = function(numeroPagina) {
     })
     .then(function(data) {
         actualizarTabla(data);
-        actualizarPaginacion(data.paginaActual, data.totalPaginas);
+        
+        // Actualizar visualmente cuál botón de página está activo
+        if (data.currentPage && data.totalPages) {
+            actualizarPaginacion(data.currentPage, data.totalPages);
+        }
+        
+        // Re-vincular los eventos de paginación después de actualizar
+        asignarEventosPaginacion();
         
         // Hacer scroll al top de la tabla
         var tabla = document.getElementById('tablaUsuarios');
@@ -476,7 +709,171 @@ var btnNuevoUsuario = document.getElementById('btnNuevoUsuario');
 if (btnNuevoUsuario) {
     btnNuevoUsuario.onclick = function(event) {
         event.preventDefault();
-        console.log('Abrir formulario nuevo usuario');
-        // Aquí iría la lógica para crear un nuevo usuario
+        // Limpiar formulario
+        document.getElementById('formUsuario').reset();
+        document.getElementById('formUsuario').removeAttribute('data-usuario-id');
+        document.getElementById('modalFormTitulo').textContent = 'Nuevo usuario';
+        document.getElementById('inputPassword').placeholder = 'Contraseña';
+        
+        // Mostrar modal de formulario
+        abrirModalFormUsuario();
+    };
+}
+
+/* ================================================
+   FUNCIÓN: abrirModalFormUsuario
+   Abre la modal de crear/editar usuario
+   ================================================ */
+var abrirModalFormUsuario = function() {
+    document.getElementById('modalOverlayFormUsuario').classList.add('visible');
+    document.getElementById('modalFormUsuario').classList.add('visible');
+};
+
+/* ================================================
+   FUNCIÓN: cerrarModalFormUsuario
+   Cierra la modal de crear/editar usuario
+   ================================================ */
+var cerrarModalFormUsuario = function() {
+    document.getElementById('modalOverlayFormUsuario').classList.remove('visible');
+    document.getElementById('modalFormUsuario').classList.remove('visible');
+    document.getElementById('formUsuario').reset();
+};
+
+/* ================================================
+   FUNCIÓN: guardarUsuario
+   Guarda o actualiza un usuario con validaciones
+   ================================================ */
+var guardarUsuario = function() {
+    var form = document.getElementById('formUsuario');
+    var nombre = document.getElementById('inputNombre').value.trim();
+    var email = document.getElementById('inputEmail').value.trim();
+    var telefono = document.getElementById('inputTelefono').value.trim();
+    var rol = document.getElementById('selectRolForm').value;
+    var password = document.getElementById('inputPassword').value.trim();
+    var usuarioId = form.getAttribute('data-usuario-id');
+    
+    /* Validaciones de nombre */
+    if (!validarNombre(nombre)) {
+        mostrarAlertaValidacion('El nombre es obligatorio y debe tener mínimo 3 caracteres');
+        return;
+    }
+    
+    /* Validaciones de email */
+    if (!validarEmail(email)) {
+        mostrarAlertaValidacion('Por favor introduce un correo electrónico válido');
+        return;
+    }
+    
+    /* Validaciones de teléfono */
+    if (!validarTelefono(telefono)) {
+        mostrarAlertaValidacion('El teléfono debe tener mínimo 9 caracteres');
+        return;
+    }
+    
+    /* Validaciones de rol */
+    if (!rol || rol === '') {
+        mostrarAlertaValidacion('Por favor selecciona un rol');
+        return;
+    }
+    
+    /* Si es crear, password es obligatorio */
+    if (!usuarioId && !validarPassword(password)) {
+        mostrarAlertaValidacion('La contraseña es obligatoria y debe tener mínimo 6 caracteres');
+        return;
+    }
+    
+    /* Si es editar y password tiene valor, validar que cumpla requisito mínimo */
+    if (usuarioId && password !== '' && !validarPassword(password)) {
+        mostrarAlertaValidacion('La contraseña debe tener mínimo 6 caracteres');
+        return;
+    }
+    
+    /* Determinar si es crear o editar */
+    var url = usuarioId ? '/admin/usuarios/' + usuarioId + '/editar' : '/admin/usuarios/crear';
+    
+    var datos = {
+        nombre: nombre,
+        email: email,
+        telefono: telefono,
+        rol: rol
+    };
+    
+    /* Solo incluir password si no está vacío */
+    if (password && password.length > 0) {
+        datos.password = password;
+    }
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: JSON.stringify(datos)
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        if (data.success) {
+            /* Cerrar modal */
+            cerrarModalFormUsuario();
+            
+            /* Recargar tabla */
+            filtrarUsuarios();
+            
+            /* Mostrar alerta de éxito */
+            var mensaje = usuarioId ? 'El usuario ha sido actualizado correctamente' : 'El nuevo usuario ha sido creado correctamente';
+            mostrarAlertaExito('¡Éxito!', mensaje);
+        } else {
+            var errorMsg = data.message || 'No se pudo guardar el usuario';
+            if (data.errors) {
+                errorMsg = '';
+                for (var campo in data.errors) {
+                    if (data.errors.hasOwnProperty(campo)) {
+                        errorMsg += data.errors[campo][0] + '<br>';
+                    }
+                }
+            }
+            mostrarAlertaError('Error', errorMsg);
+        }
+    })
+    .catch(function(error) {
+        console.error('Error en fetch guardarUsuario:', error);
+        mostrarAlertaError('Error', 'No se pudo guardar el usuario. Intenta de nuevo.');
+    });
+};
+
+/* ================================================
+   EVENTOS MODAL FORMULARIO USUARIO
+   ================================================ */
+var btnCerrarFormUsuario = document.getElementById('btnCerrarFormUsuario');
+if (btnCerrarFormUsuario) {
+    btnCerrarFormUsuario.onclick = function() {
+        cerrarModalFormUsuario();
+    };
+}
+
+var btnCancelarFormUsuario = document.getElementById('btnCancelarFormUsuario');
+if (btnCancelarFormUsuario) {
+    btnCancelarFormUsuario.onclick = function() {
+        cerrarModalFormUsuario();
+    };
+}
+
+var btnGuardarUsuario = document.getElementById('btnGuardarUsuario');
+if (btnGuardarUsuario) {
+    btnGuardarUsuario.onclick = function(event) {
+        event.preventDefault();
+        guardarUsuario();
+    };
+}
+
+var modalOverlayFormUsuario = document.getElementById('modalOverlayFormUsuario');
+if (modalOverlayFormUsuario) {
+    modalOverlayFormUsuario.onclick = function(event) {
+        if (event.target === this) {
+            cerrarModalFormUsuario();
+        }
     };
 }

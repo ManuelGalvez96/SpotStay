@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -59,7 +60,7 @@ class UsuarioController extends Controller
         }
 
         if ($request->input('estado')) {
-            $activo = $request->input('estado') === 'activo' ? true : false;
+            $activo = $request->input('estado') === 'activo' ? 1 : 0;
             $query->where('tbl_usuario.activo_usuario', $activo);
         }
 
@@ -71,13 +72,40 @@ class UsuarioController extends Controller
             });
         }
 
-        $usuarios = $query->select('tbl_usuario.*', 'tbl_rol.nombre_rol', 'tbl_rol.slug_rol')
-            ->get();
-        $total = $usuarios->count();
+        $usuariosPaginados = $query->select('tbl_usuario.*', 'tbl_rol.nombre_rol', 'tbl_rol.slug_rol')
+            ->paginate(10);
+        
+        // Procesar los datos para el frontend
+        $usuarios = $usuariosPaginados->map(function($u) {
+            $nombre = $u->nombre_usuario ?? 'Usuario';
+            $partes = explode(' ', $nombre);
+            $avatarText = strtoupper(substr($partes[0], 0, 1)) . 
+                         strtoupper(substr($partes[1] ?? '', 0, 1));
+            
+            return [
+                'id' => $u->id_usuario,
+                'id_usuario' => $u->id_usuario,
+                'nombre' => $nombre,
+                'email' => $u->email_usuario,
+                'telefono' => $u->telefono_usuario ?? '',
+                'rol' => strtolower($u->slug_rol ?? 'usuario'),
+                'rolLabel' => $u->nombre_rol ?? 'Sin rol',
+                'estado' => $u->activo_usuario ? 'activo' : 'inactivo',
+                'propiedades' => 0,
+                'fechaRegistro' => $u->creado_usuario ? substr($u->creado_usuario, 0, 10) : 'N/A',
+                'avatarText' => $avatarText,
+                'avatarColor' => '#B8CCE4'
+            ];
+        });
 
         return response()->json([
             'usuarios' => $usuarios,
-            'total' => $total
+            'total' => $usuariosPaginados->total(),
+            'currentPage' => $usuariosPaginados->currentPage(),
+            'totalPages' => $usuariosPaginados->lastPage(),
+            'perPage' => $usuariosPaginados->perPage(),
+            'from' => $usuariosPaginados->firstItem(),
+            'to' => $usuariosPaginados->lastItem()
         ]);
     }
 
@@ -90,9 +118,13 @@ class UsuarioController extends Controller
             ->leftJoin('tbl_rol',
               'tbl_rol.id_rol', '=',
               'tbl_rol_usuario.id_rol_fk')
-            ->select('tbl_usuario.*', 'tbl_rol.nombre_rol')
+            ->select('tbl_usuario.*', 'tbl_rol.nombre_rol', 'tbl_rol.slug_rol')
             ->where('tbl_usuario.id_usuario', $id)
             ->first();
+
+        if (!$usuario) {
+            return response()->json(null, 404);
+        }
 
         return response()->json($usuario);
     }
@@ -130,5 +162,109 @@ class UsuarioController extends Controller
             ->get();
 
         return response()->json($usuarios);
+    }
+
+    public function crear(Request $request)
+    {
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'email' => 'required|email|unique:tbl_usuario,email_usuario',
+            'telefono' => 'nullable|string|max:20',
+            'rol' => 'required|string|exists:tbl_rol,slug_rol',
+            'password' => 'required|string|min:6'
+        ]);
+
+        try {
+            // Crear usuario
+            $usuarioId = DB::table('tbl_usuario')->insertGetId([
+                'nombre_usuario' => $validated['nombre'],
+                'email_usuario' => $validated['email'],
+                'telefono_usuario' => $validated['telefono'] ?? '',
+                'contrasena_usuario' => Hash::make($validated['password']),
+                'activo_usuario' => true,
+                'creado_usuario' => Carbon::now(),
+                'actualizado_usuario' => Carbon::now()
+            ]);
+
+            // Asignar rol
+            $rolId = DB::table('tbl_rol')
+                ->where('slug_rol', $validated['rol'])
+                ->value('id_rol');
+
+            if ($rolId) {
+                DB::table('tbl_rol_usuario')->insert([
+                    'id_usuario_fk' => $usuarioId,
+                    'id_rol_fk' => $rolId,
+                    'asignado_rol_usuario' => Carbon::now()
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Usuario creado correctamente',
+                'id' => $usuarioId
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear usuario: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function editar(Request $request, $id)
+    {
+        $rules = [
+            'nombre' => 'required|string|max:255',
+            'email' => 'required|email|unique:tbl_usuario,email_usuario,' . $id . ',id_usuario',
+            'telefono' => 'nullable|string|max:20',
+            'rol' => 'required|string|exists:tbl_rol,slug_rol'
+        ];
+        
+        // Password es opcional en edición, pero si se proporciona debe tener mínimo 6 caracteres
+        if ($request->filled('password')) {
+            $rules['password'] = 'string|min:6';
+        }
+        
+        $validated = $request->validate($rules);
+
+        try {
+            // Actualizar usuario
+            $updateData = [
+                'nombre_usuario' => $validated['nombre'],
+                'email_usuario' => $validated['email'],
+                'telefono_usuario' => $validated['telefono'] ?? '',
+                'actualizado_usuario' => Carbon::now()
+            ];
+
+            if (isset($validated['password']) && $validated['password']) {
+                $updateData['contrasena_usuario'] = Hash::make($validated['password']);
+            }
+
+            DB::table('tbl_usuario')
+                ->where('id_usuario', $id)
+                ->update($updateData);
+
+            // Actualizar rol
+            $rolId = DB::table('tbl_rol')
+                ->where('slug_rol', $validated['rol'])
+                ->value('id_rol');
+
+            if ($rolId) {
+                DB::table('tbl_rol_usuario')
+                    ->where('id_usuario_fk', $id)
+                    ->update(['id_rol_fk' => $rolId]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Usuario actualizado correctamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar usuario: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -296,4 +296,30 @@ class SuscripcionController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    /**
+     * Obtener configuración de planes en formato JSON
+     */
+    public function plans()
+    {
+        return response()->json([
+            'plans' => [
+                'gratuito' => [
+                    'name' => 'Gratuito',
+                    'price' => 0,
+                    'max_properties' => 1
+                ],
+                'basico' => [
+                    'name' => 'Básico',
+                    'price' => 9.99,
+                    'max_properties' => 3
+                ],
+                'pro' => [
+                    'name' => 'Pro',
+                    'price' => 29.99,
+                    'max_properties' => 10
+                ]
+            ]
+        ]);
+    }
 }

@@ -207,3 +207,22 @@ body {
     background: #F0F4F8;
     min-height: calc(100vh - 56px);
 }
+
+/* =============================================
+   MODALES — Z-INDEX GLOBAL
+   ============================================= */
+.modal-overlay,
+#modalOverlay,
+#modalOverlayPlanes,
+.modal-container,
+[id*="modalOverlay"],
+[class*="modal-overlay"] {
+    z-index: 10000 !important;
+}
+
+/* Asegurar que los modales estén encima del topbar (z-index: 1000) */
+.modal,
+[class*="modal"],
+[id*="modal"] {
+    z-index: 10000 !important;
+}

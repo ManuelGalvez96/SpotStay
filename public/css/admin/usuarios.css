@@ -304,11 +304,21 @@ body {
     gap: 12px;
 }
 
+/* ── Contenedor de números de página ── */
+#paginas {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
 /* ── Paginación ── */
 .paginacion {
     display: flex;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    gap: 12px;
 }
 
 .btn-pag {
@@ -759,6 +769,62 @@ body {
     color: #DC2626;
 }
 
+/* ── Formulario Usuario ── */
+.form-grupo {
+    margin-bottom: 16px;
+}
+
+.form-grupo label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 6px;
+}
+
+.form-grupo input,
+.form-grupo select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    background: white;
+    color: #111827;
+    transition: border-color 0.2s ease;
+}
+
+.form-grupo input:focus,
+.form-grupo select:focus {
+    outline: none;
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
+}
+
+.form-grupo input::placeholder {
+    color: #9CA3AF;
+}
+
+.btn-secundario {
+    padding: 10px 24px;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    background: white;
+    color: #6B7280;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-secundario:hover {
+    background: #F3F4F6;
+    color: #111827;
+    border-color: #D1D5DB;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1024px) {
     .kpi-grid-pequeno {
@@ -830,4 +896,87 @@ body {
     .modal-footer-admin button {
         width: 100%;
     }
+}
+
+/* ── SweetAlert2 con Oso ── */
+.oso-icon {
+    width: 120px !important;
+    height: 120px !important;
+    position: relative;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto !important;
+}
+
+.oso-icon svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Estilos del oso para sweet alert (idéntico a login.css) */
+.oso-icon .yeti-part {
+    fill: #fff;
+    stroke: #000000;
+    stroke-width: 3.5;
+    stroke-linecap: round;
+}
+
+.oso-icon .suit-jacket {
+    fill: #035498;
+    stroke: #000000;
+    stroke-width: 3.5;
+}
+
+.oso-icon .suit-shirt {
+    fill: #fff;
+    stroke: #000000;
+    stroke-width: 2.5;
+}
+
+.oso-icon .suit-tie {
+    fill: #1AA068;
+    stroke: #000000;
+    stroke-width: 2.5;
+}
+
+.oso-icon #face-group {
+    transition: transform 0.2s ease-out;
+}
+
+.oso-icon .hand {
+    fill: #fff;
+    stroke: #000000;
+    stroke-width: 3.5;
+}
+
+/* Estilos adicionales para sweet alert */
+.swal2-popup {
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    padding: 30px 20px;
+}
+
+.swal2-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 16px;
+    margin-top: 16px;
+}
+
+.swal2-html-container {
+    font-size: 15px;
+    color: #6B7280;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.swal2-confirm {
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 12px 36px;
+    font-size: 15px;
+    min-width: 100px;
 }

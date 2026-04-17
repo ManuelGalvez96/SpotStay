@@ -41,7 +41,7 @@ class PropiedadSeeder extends Seeder
                 'estado' => 'alquilada',
             ],
             [
-                'arrendador_email' => 'arrendador@spotstay.com',
+                'arrendador_email' => 'inquilino@spotstay.com',
                 'gestor_email' => 'admin@spotstay.com',
                 'titulo' => 'Estudio Fuencarral',
                 'direccion' => 'Calle Fuencarral 22',

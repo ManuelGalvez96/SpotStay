@@ -15,6 +15,15 @@ class AlquilerSeeder extends Seeder
             ->value('id_usuario');
 
         $alquileres = [
+            // Alquiler de prueba para Gestión: María García (inquilino@spotstay.com)
+            [
+                'propiedad_direccion' => 'Calle Mayor 14',
+                'inquilino_email' => 'inquilino@spotstay.com',
+                'fecha_inicio' => '2025-01-01',
+                'fecha_fin' => '2026-06-01',
+                'estado' => 'activo',
+                'aprobado' => '2024-12-31 12:00:00',
+            ],
             // Alquiler 1: Calle Mayor 14 - Laura
             [
                 'propiedad_direccion' => 'Calle Mayor 14',

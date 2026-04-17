@@ -41,7 +41,8 @@ class PropiedadController extends Controller
             ->leftJoinSub($subIncidenciasCriticas, 'inc_criticas', function ($join) {
                 $join->on('inc_criticas.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad');
             })
-            ->where('tbl_propiedad.id_gestor_fk', $gestorId);
+            ->where('tbl_propiedad.id_gestor_fk', $gestorId)
+            ->where('tbl_propiedad.estado_propiedad', '!=', 'borrador');
 
         $query = clone $baseQuery;
 
@@ -116,7 +117,6 @@ class PropiedadController extends Controller
         $totalAsignadas = (clone $baseQuery)->count();
         $totalPublicadas = (clone $baseQuery)->where('tbl_propiedad.estado_propiedad', 'publicada')->count();
         $totalAlquiladas = (clone $baseQuery)->where('tbl_propiedad.estado_propiedad', 'alquilada')->count();
-        $totalBorrador = (clone $baseQuery)->where('tbl_propiedad.estado_propiedad', 'borrador')->count();
         $totalConCriticas = (clone $baseQuery)
             ->whereRaw('COALESCE(inc_criticas.total_incidencias_criticas, 0) > 0')
             ->count();
@@ -129,7 +129,6 @@ class PropiedadController extends Controller
             'totalAsignadas',
             'totalPublicadas',
             'totalAlquiladas',
-            'totalBorrador',
             'totalConCriticas',
             'totalSinAlquiler',
             'q',

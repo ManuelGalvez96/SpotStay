@@ -18,47 +18,42 @@
     <div class="hero-deco hero-deco-3"></div>
 </div>
 
-<div class="kpi-grid-pequeno gestor-kpis" id="propiedadesKpiGrid">
-    <div class="kpi-mini kpi-clickable" data-filter-key="estado" data-filter-value="">
-        <div class="kpi-mini-icono kpi-mini-azul"><i class="bi bi-house"></i></div>
-        <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ $totalAsignadas }}</span>
-            <span class="kpi-mini-label">Asignadas</span>
-        </div>
+<div class="resumen-kpis-gestor">
+    <div class="resumen-kpis-label">
+        <strong>{{ $totalAsignadas }}</strong> propiedades asignadas
     </div>
-    <div class="kpi-mini kpi-clickable" data-filter-key="estado" data-filter-value="publicada">
-        <div class="kpi-mini-icono kpi-mini-verde"><i class="bi bi-megaphone"></i></div>
-        <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ $totalPublicadas }}</span>
-            <span class="kpi-mini-label">Publicadas</span>
+
+    <div class="kpi-grid-pequeno gestor-kpis" id="propiedadesKpiGrid">
+        <div class="kpi-mini kpi-clickable" data-filter-key="estado" data-filter-value="publicada">
+            <div class="kpi-mini-icono kpi-mini-verde"><i class="bi bi-megaphone"></i></div>
+            <div class="kpi-mini-datos">
+                <span class="kpi-mini-numero">{{ $totalPublicadas }}</span>
+                <span class="kpi-mini-label">Publicadas</span>
+            </div>
         </div>
-    </div>
-    <div class="kpi-mini kpi-clickable" data-filter-key="estado" data-filter-value="alquilada">
-        <div class="kpi-mini-icono kpi-mini-naranja"><i class="bi bi-key"></i></div>
-        <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ $totalAlquiladas }}</span>
-            <span class="kpi-mini-label">Alquiladas</span>
+
+        <div class="kpi-mini kpi-clickable" data-filter-key="estado" data-filter-value="alquilada">
+            <div class="kpi-mini-icono kpi-mini-naranja"><i class="bi bi-key"></i></div>
+            <div class="kpi-mini-datos">
+                <span class="kpi-mini-numero">{{ $totalAlquiladas }}</span>
+                <span class="kpi-mini-label">Alquiladas</span>
+            </div>
         </div>
-    </div>
-    <div class="kpi-mini kpi-clickable" data-filter-key="estado" data-filter-value="borrador">
-        <div class="kpi-mini-icono kpi-mini-rojo"><i class="bi bi-pencil-square"></i></div>
-        <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ $totalBorrador }}</span>
-            <span class="kpi-mini-label">Borrador</span>
+
+        <div class="kpi-mini kpi-clickable" data-filter-key="operativo" data-filter-value="criticas">
+            <div class="kpi-mini-icono kpi-mini-rojo"><i class="bi bi-exclamation-triangle"></i></div>
+            <div class="kpi-mini-datos">
+                <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ $totalConCriticas }}</span>
+                <span class="kpi-mini-label">Con incidencias críticas</span>
+            </div>
         </div>
-    </div>
-    <div class="kpi-mini kpi-clickable" data-filter-key="operativo" data-filter-value="criticas">
-        <div class="kpi-mini-icono kpi-mini-rojo"><i class="bi bi-exclamation-triangle"></i></div>
-        <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ $totalConCriticas }}</span>
-            <span class="kpi-mini-label">Con incidencias críticas</span>
-        </div>
-    </div>
-    <div class="kpi-mini kpi-clickable" data-filter-key="operativo" data-filter-value="sin_alquiler">
-        <div class="kpi-mini-icono kpi-mini-azul"><i class="bi bi-person-x"></i></div>
-        <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ $totalSinAlquiler }}</span>
-            <span class="kpi-mini-label">Sin alquiler activo</span>
+
+        <div class="kpi-mini kpi-clickable" data-filter-key="operativo" data-filter-value="sin_alquiler">
+            <div class="kpi-mini-icono kpi-mini-azul"><i class="bi bi-person-x"></i></div>
+            <div class="kpi-mini-datos">
+                <span class="kpi-mini-numero">{{ $totalSinAlquiler }}</span>
+                <span class="kpi-mini-label">Sin alquiler activo</span>
+            </div>
         </div>
     </div>
 </div>
@@ -75,7 +70,6 @@
             <option value="">Todos los estados</option>
             <option value="publicada" {{ $estado === 'publicada' ? 'selected' : '' }}>Publicada</option>
             <option value="alquilada" {{ $estado === 'alquilada' ? 'selected' : '' }}>Alquilada</option>
-            <option value="borrador" {{ $estado === 'borrador' ? 'selected' : '' }}>Borrador</option>
             <option value="inactiva" {{ $estado === 'inactiva' ? 'selected' : '' }}>Inactiva</option>
         </select>
 
@@ -139,7 +133,6 @@
                     $badgeEstado = match($propiedad->estado_propiedad) {
                         'publicada' => 'pendiente',
                         'alquilada' => 'activo',
-                        'borrador' => 'rechazado',
                         'inactiva' => 'rechazado',
                         default => 'pendiente'
                     };

@@ -230,11 +230,14 @@ class PropiedadSeeder extends Seeder
                 ->where('email_usuario', $prop['arrendador_email'])
                 ->value('id_usuario');
 
-            $idGestor = DB::table('tbl_usuario')
-                ->where('email_usuario', $prop['gestor_email'])
-                ->value('id_usuario');
+            $idGestor = null;
+            if (($prop['estado'] ?? '') !== 'borrador') {
+                $idGestor = DB::table('tbl_usuario')
+                    ->where('email_usuario', $prop['gestor_email'])
+                    ->value('id_usuario');
+            }
 
-            if (!$idArrendador || !$idGestor) {
+            if (!$idArrendador || (($prop['estado'] ?? '') !== 'borrador' && !$idGestor)) {
                 throw new \RuntimeException('Seeder inconsistente: arrendador o gestor no encontrado para ' . $prop['direccion']);
             }
 

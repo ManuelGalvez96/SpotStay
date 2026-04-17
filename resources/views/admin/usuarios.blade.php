@@ -186,151 +186,141 @@
     </div>
 </div>
 
-<!-- MODAL PERFIL DE USUARIO -->
-<div class="modal-overlay" id="modalOverlay"></div>
-<div class="modal-admin" id="modalPerfil">
-    <div class="modal-header-admin">
-        <div class="modal-titulo-grupo">
-            <span class="modal-titulo">Perfil de usuario</span>
-            <span class="badge-estado badge-activo" id="modalBadgeEstado">Activo</span>
-        </div>
-        <button id="btnCerrarModal" class="btn-cerrar-modal">
-            <i class="bi bi-x"></i>
-        </button>
-    </div>
-    
-    <div class="modal-cuerpo">
-        <div class="modal-usuario-header">
-            <div class="modal-avatar" id="modalAvatar">CG</div>
-            <div class="modal-usuario-info">
-                <h2 id="modalNombre">Carlos García</h2>
-                <p id="modalEmail">carlos.garcia@email.com</p>
-                <p id="modalTelefono">+34 612 345 678</p>
-                <div class="modal-badges">
-                    <span class="badge-rol badge-arrendador" id="modalBadgeRol">Arrendador</span>
+<!-- MODAL PERFIL DE USUARIO (Bootstrap 5) -->
+<div class="modal fade" id="modalPerfil" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="d-flex align-items-center gap-3" style="flex: 1;">
+                    <h5 class="modal-title mb-0">Perfil de usuario</h5>
+                    <span class="badge bg-success" id="modalBadgeEstado">Activo</span>
                 </div>
-            </div>
-        </div>
-        
-        <div class="modal-separador"></div>
-        
-        <div class="modal-grid-datos">
-            <div class="dato-item">
-                <span class="dato-label">Teléfono</span>
-                <span class="dato-valor" id="dataTelefono">+34 612 345 678</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Registro</span>
-                <span class="dato-valor" id="dataRegistro">12 ene 2025</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Propiedades</span>
-                <span class="dato-valor" id="dataPropiedades">3</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Último acceso</span>
-                <span class="dato-valor" id="dataAcceso">hace 2h</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Alquileres</span>
-                <span class="dato-valor" id="dataAlquileres">5</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Suscripción</span>
-                <span class="dato-valor" id="dataSuscripcion">Premium</span>
-            </div>
-        </div>
-        
-        <div class="modal-separador"></div>
-        
-        <div class="modal-propiedades-lista">
-            <span class="dato-label" style="display: block; margin-bottom: 12px;">PROPIEDADES DEL USUARIO</span>
-            
-            <div class="propiedad-mini-item">
-                <div>
-                    <p style="font-weight: 600; font-size: 14px; margin: 0;">Calle Mayor 14, Madrid</p>
-                </div>
-                <span class="badge-estado badge-activo">Alquilada</span>
-                <span style="font-weight: 600; color: #111827;">$1.200/mes</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             
-            <div class="propiedad-mini-item">
-                <div>
-                    <p style="font-weight: 600; font-size: 14px; margin: 0;">Gran Vía 22, Barcelona</p>
+            <div class="modal-body">
+                <!-- Header usuario -->
+                <div class="d-flex gap-3 mb-4">
+                    <div class="avatar-modal" id="modalAvatar" style="width: 80px; height: 80px; background: #B8CCE4;">CG</div>
+                    <div class="flex-grow-1">
+                        <h6 id="modalNombre" class="fw-bold mb-1">Carlos García</h6>
+                        <p id="modalEmail" class="text-muted mb-2">carlos.garcia@email.com</p>
+                        <p id="modalTelefono" class="text-muted mb-2">+34 612 345 678</p>
+                        <span class="badge bg-info" id="modalBadgeRol">Arrendador</span>
+                    </div>
                 </div>
-                <span class="badge-estado badge-activo">Alquilada</span>
-                <span style="font-weight: 600; color: #111827;">$1.500/mes</span>
+                
+                <hr>
+                
+                <!-- Grid de datos -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Teléfono</small>
+                        <p id="dataTelefono" class="fw-500">+34 612 345 678</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Registro</small>
+                        <p id="dataRegistro" class="fw-500">12 ene 2025</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Propiedades</small>
+                        <p id="dataPropiedades" class="fw-500">3</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Último acceso</small>
+                        <p id="dataAcceso" class="fw-500">hace 2h</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Alquileres</small>
+                        <p id="dataAlquileres" class="fw-500">5</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Suscripción</small>
+                        <p id="dataSuscripcion" class="fw-500">Premium</p>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <!-- Propiedades -->
+                <h6 class="mb-3">Propiedades del Usuario</h6>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item">
+                        <p class="fw-bold mb-1">Calle Mayor 14, Madrid</p>
+                        <span class="badge bg-success">Alquilada</span>
+                        <span class="fw-bold float-end">$1.200/mes</span>
+                    </div>
+                    <div class="list-group-item">
+                        <p class="fw-bold mb-1">Gran Vía 22, Barcelona</p>
+                        <span class="badge bg-success">Alquilada</span>
+                        <span class="fw-bold float-end">$1.500/mes</span>
+                    </div>
+                    <div class="list-group-item">
+                        <p class="fw-bold mb-1">Av. Diagonal 88, BCN</p>
+                        <span class="badge bg-warning">Disponible</span>
+                        <span class="fw-bold float-end">$1.800/mes</span>
+                    </div>
+                </div>
             </div>
             
-            <div class="propiedad-mini-item">
-                <div>
-                    <p style="font-weight: 600; font-size: 14px; margin: 0;">Av. Diagonal 88, BCN</p>
-                </div>
-                <span class="badge-estado badge-activo">Disponible</span>
-                <span style="font-weight: 600; color: #111827;">$1.800/mes</span>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="btnDesactivarUsuario">Desactivar cuenta</button>
+                <button type="button" class="btn btn-primary" id="btnEditarUsuario">Editar usuario</button>
             </div>
         </div>
-    </div>
-    
-    <div class="modal-footer-admin">
-        <button id="btnDesactivarUsuario" class="btn-desactivar">
-            Desactivar cuenta
-        </button>
-        <button id="btnEditarUsuario" class="btn-primario">
-            Editar usuario
-        </button>
     </div>
 </div>
 
-<!-- MODAL CREAR/EDITAR USUARIO -->
-<div class="modal-overlay" id="modalOverlayFormUsuario"></div>
-<div class="modal-admin" id="modalFormUsuario">
-    <div class="modal-header-admin">
-        <span class="modal-titulo" id="modalFormTitulo">Nuevo usuario</span>
-        <button id="btnCerrarFormUsuario" class="btn-cerrar-modal">
-            <i class="bi bi-x"></i>
-        </button>
-    </div>
-    
-    <div class="modal-cuerpo">
-        <form id="formUsuario">
-            <div class="form-grupo">
-                <label for="inputNombre">Nombre completo</label>
-                <input type="text" id="inputNombre" name="nombre" placeholder="Ej. Juan García" required>
+<!-- MODAL CREAR/EDITAR USUARIO (Bootstrap 5) -->
+<div class="modal fade" id="modalFormUsuario" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalFormTitulo">Nuevo usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             
-            <div class="form-grupo">
-                <label for="inputEmail">Correo electrónico</label>
-                <input type="email" id="inputEmail" name="email" placeholder="juan@example.com" required>
+            <div class="modal-body">
+                <form id="formUsuario">
+                    <div class="mb-3">
+                        <label for="inputNombre" class="form-label">Nombre completo</label>
+                        <input type="text" class="form-control" id="inputNombre" name="nombre" placeholder="Ej. Juan García" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="inputEmail" class="form-label">Correo electrónico</label>
+                        <input type="email" class="form-control" id="inputEmail" name="email" placeholder="juan@example.com" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="inputTelefono" class="form-label">Teléfono</label>
+                        <input type="tel" class="form-control" id="inputTelefono" name="telefono" placeholder="+34 612 345 678">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="selectRolForm" class="form-label">Rol</label>
+                        <select class="form-select" id="selectRolForm" name="rol" required>
+                            <option value="">Selecciona un rol</option>
+                            <option value="admin">Admin</option>
+                            <option value="arrendador">Arrendador</option>
+                            <option value="inquilino">Inquilino</option>
+                            <option value="gestor">Gestor</option>
+                            <option value="miembro">Miembro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="inputPassword" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" id="inputPassword" name="password" placeholder="Contraseña">
+                    </div>
+                </form>
             </div>
             
-            <div class="form-grupo">
-                <label for="inputTelefono">Teléfono</label>
-                <input type="tel" id="inputTelefono" name="telefono" placeholder="+34 612 345 678">
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnCancelarFormUsuario" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarUsuario">Guardar usuario</button>
             </div>
-            
-            <div class="form-grupo">
-                <label for="selectRolForm">Rol</label>
-                <select id="selectRolForm" name="rol" required>
-                    <option value="">Selecciona un rol</option>
-                    <option value="admin">Admin</option>
-                    <option value="arrendador">Arrendador</option>
-                    <option value="inquilino">Inquilino</option>
-                    <option value="gestor">Gestor</option>
-                    <option value="miembro">Miembro</option>
-                </select>
-            </div>
-            
-            <div class="form-grupo">
-                <label for="inputPassword">Contraseña</label>
-                <input type="password" id="inputPassword" name="password" placeholder="Contraseña" id="inputPasswordForm">
-            </div>
-        </form>
-    </div>
-    
-    <div class="modal-footer-admin">
-        <button id="btnCancelarFormUsuario" class="btn-secundario">Cancelar</button>
-        <button id="btnGuardarUsuario" class="btn-primario">Guardar usuario</button>
+        </div>
     </div>
 </div>
 

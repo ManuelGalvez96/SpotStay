@@ -155,9 +155,17 @@ var mostrarAlertaValidacion = function(mensaje) {
 
 
 
+/* ── Variables globales para modales Bootstrap ── */
+var modalPerfil = null;
+var modalFormUsuario = null;
+
 /* ── window.onload ── */
 window.onload = function() {
     csrfToken = document.querySelector('meta[name=csrf-token]').content;
+    
+    /* Inicializar instancias de Bootstrap Modal */
+    modalPerfil = new bootstrap.Modal(document.getElementById('modalPerfil'));
+    modalFormUsuario = new bootstrap.Modal(document.getElementById('modalFormUsuario'));
     
     asignarEventosFiltros();
     asignarEventosTabla();
@@ -395,13 +403,13 @@ var abrirModal = function(id) {
         var badgeRol = document.getElementById('modalBadgeRol');
         var rolLabel = usuario.nombre_rol || 'Sin rol';
         badgeRol.textContent = rolLabel;
-        badgeRol.className = 'badge-rol badge-usuario';
+        badgeRol.className = 'badge bg-info';
         
         // Badge estado
         var badgeEstado = document.getElementById('modalBadgeEstado');
         var estadoLabel = usuario.activo_usuario ? 'Activo' : 'Inactivo';
         badgeEstado.textContent = estadoLabel;
-        badgeEstado.className = 'badge-estado badge-' + (usuario.activo_usuario ? 'activo' : 'inactivo');
+        badgeEstado.className = 'badge ' + (usuario.activo_usuario ? 'bg-success' : 'bg-secondary');
         
         // Datos
         document.getElementById('dataTelefono').textContent = usuario.telefono_usuario || 'N/A';
@@ -411,9 +419,8 @@ var abrirModal = function(id) {
         document.getElementById('dataAlquileres').textContent = '0';
         document.getElementById('dataSuscripcion').textContent = 'Estándar';
         
-        // Mostrar modal
-        document.getElementById('modalOverlay').classList.add('visible');
-        document.getElementById('modalPerfil').classList.add('visible');
+        // Mostrar modal Bootstrap
+        modalPerfil.show();
         
         // Guardar ID actual para botones del modal
         document.getElementById('btnDesactivarUsuario').setAttribute('data-id', usuario.id_usuario);
@@ -429,8 +436,7 @@ var abrirModal = function(id) {
    Cierra el modal de usuario
    ================================================ */
 var cerrarModal = function() {
-    document.getElementById('modalOverlay').classList.remove('visible');
-    document.getElementById('modalPerfil').classList.remove('visible');
+    modalPerfil.hide();
 };
 
 /* ================================================
@@ -498,26 +504,8 @@ var toggleEstado = function(id) {
    Asigna eventos a los botones del modal
    ================================================ */
 function asignarEventosModal() {
-    var btnCerrarModal = document.getElementById('btnCerrarModal');
-    var modalOverlay = document.getElementById('modalOverlay');
     var btnDesactivarUsuario = document.getElementById('btnDesactivarUsuario');
     var btnEditarUsuario = document.getElementById('btnEditarUsuario');
-    
-    // Botón cerrar modal
-    if (btnCerrarModal) {
-        btnCerrarModal.onclick = function() {
-            cerrarModal();
-        };
-    }
-    
-    // Cerrar al hacer click en el overlay
-    if (modalOverlay) {
-        modalOverlay.onclick = function(event) {
-            if (event.target === this) {
-                cerrarModal();
-            }
-        };
-    }
     
     // Botón desactivar usuario
     if (btnDesactivarUsuario) {
@@ -722,20 +710,22 @@ if (btnNuevoUsuario) {
 
 /* ================================================
    FUNCIÓN: abrirModalFormUsuario
-   Abre la modal de crear/editar usuario
+   Abre la modal de crear/editar usuario (Bootstrap)
    ================================================ */
 var abrirModalFormUsuario = function() {
-    document.getElementById('modalOverlayFormUsuario').classList.add('visible');
-    document.getElementById('modalFormUsuario').classList.add('visible');
+    if (!modalFormUsuario) {
+        console.error('Error: modalFormUsuario no está inicializado');
+        return;
+    }
+    modalFormUsuario.show();
 };
 
 /* ================================================
    FUNCIÓN: cerrarModalFormUsuario
-   Cierra la modal de crear/editar usuario
+   Cierra la modal de crear/editar usuario (Bootstrap)
    ================================================ */
 var cerrarModalFormUsuario = function() {
-    document.getElementById('modalOverlayFormUsuario').classList.remove('visible');
-    document.getElementById('modalFormUsuario').classList.remove('visible');
+    modalFormUsuario.hide();
     document.getElementById('formUsuario').reset();
 };
 
@@ -847,13 +837,6 @@ var guardarUsuario = function() {
 /* ================================================
    EVENTOS MODAL FORMULARIO USUARIO
    ================================================ */
-var btnCerrarFormUsuario = document.getElementById('btnCerrarFormUsuario');
-if (btnCerrarFormUsuario) {
-    btnCerrarFormUsuario.onclick = function() {
-        cerrarModalFormUsuario();
-    };
-}
-
 var btnCancelarFormUsuario = document.getElementById('btnCancelarFormUsuario');
 if (btnCancelarFormUsuario) {
     btnCancelarFormUsuario.onclick = function() {
@@ -866,14 +849,5 @@ if (btnGuardarUsuario) {
     btnGuardarUsuario.onclick = function(event) {
         event.preventDefault();
         guardarUsuario();
-    };
-}
-
-var modalOverlayFormUsuario = document.getElementById('modalOverlayFormUsuario');
-if (modalOverlayFormUsuario) {
-    modalOverlayFormUsuario.onclick = function(event) {
-        if (event.target === this) {
-            cerrarModalFormUsuario();
-        }
     };
 }

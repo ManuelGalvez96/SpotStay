@@ -1,7 +1,7 @@
 # SpotStay — Gestión de Usuarios 👥
 
-## Resumen v2.0
-Vista completa de gestión de usuarios para el panel administrativo de SpotStay, con **validaciones robustas**, **SweetAlert2 integrado** con mascota personalizada (oso), y **filtrado en tiempo real**. Construida con **Laravel**, **Blade**, **Bootstrap 5.3.8** y **Vanilla JavaScript**.
+## Resumen v3.0
+Vista completa de gestión de usuarios para el panel administrativo de SpotStay, con **validaciones robustas**, **SweetAlert2 integrado** con mascota personalizada (oso), **modales de Bootstrap 5.3.8**, y **filtrado en tiempo real**. Construida con **Laravel**, **Blade**, **Bootstrap 5.3.8** y **Vanilla JavaScript**.
 
 ---
 
@@ -9,9 +9,9 @@ Vista completa de gestión de usuarios para el panel administrativo de SpotStay,
 
 | Archivo | Ruta | Propósito |
 |---------|------|----------|
-| **Vista Usuarios** | `resources/views/admin/usuarios.blade.php` | HTML con tabla, filtros, paginación y modales |
+| **Vista Usuarios** | `resources/views/admin/usuarios.blade.php` | HTML con tabla, filtros, paginación y modales Bootstrap |
 | **Controlador** | `app/Http/Controllers/Admin/UsuarioController.php` | CRUD + filtrado + paginación |
-| **Estilos** | `public/css/admin/usuarios.css` | CSS + estilos SweetAlert2 |
+| **Estilos** | `public/css/admin/usuarios.css` | CSS para Bootstrap modals + SweetAlert2 |
 | **Scripts** | `public/js/admin/usuarios.js` | JS con validaciones, AJAX y alerts |
 | **Layout** | `resources/views/layouts/admin.blade.php` | Agregado SweetAlert2 CDN |
 | **Rutas** | `routes/web.php` | Rutas protegidas con `role:admin` |
@@ -46,6 +46,50 @@ var validarNombre = function(nombre) { ... }        // Mínimo 3
 var validarTelefono = function(telefono) { ... }    // Mínimo 9
 var validarPassword = function(password) { ... }    // Mínimo 6
 ```
+
+---
+
+## 🎯 Modales de Bootstrap 5.3.8
+
+### Cambio v3.0: De Custom CSS a Bootstrap Modals
+Se reemplazaron los modales custom con **Bootstrap 5.3.8** para:
+- ✅ Menos código CSS (se usaron clases preexistentes de Bootstrap)
+- ✅ Consistencia con el framework
+- ✅ Mejor mantenibilidad
+- ✅ Funcionalidad nativa de Bootstrap
+
+### Estructura
+**Dos modales principales:**
+
+1. **Modal de Perfil** (`#modalPerfil`)
+   - Muestra datos del usuario
+   - Botones: Editar usuario, Desactivar cuenta
+   - Abre al hacer click en botón "Ver perfil"
+
+2. **Modal de Crear/Editar** (`#modalFormUsuario`)
+   - Formulario con validaciones
+   - Campos: Nombre, Email, Teléfono, Rol, Contraseña
+   - Abre al hacer click en "Nuevo usuario" o "Editar"
+
+### Implementación en JavaScript
+```javascript
+/* Inicializar modales Bootstrap en window.onload */
+modalPerfil = new bootstrap.Modal(document.getElementById('modalPerfil'));
+modalFormUsuario = new bootstrap.Modal(document.getElementById('modalFormUsuario'));
+
+/* Abrir modal */
+modalPerfil.show();
+
+/* Cerrar modal */
+modalPerfil.hide();
+```
+
+### Estilos Personalizados
+Mantenidos en `public/css/admin/usuarios.css`:
+- `.avatar-modal`: Avatar circular en modal
+- `.badge`: Badges personalizados para estado y rol
+- `.form-control`, `.form-select`: Inputs & selects con estilos custom
+- `.btn-primary`, `.btn-danger`, `.btn-secondary`: Botones consistentes
 
 ---
 

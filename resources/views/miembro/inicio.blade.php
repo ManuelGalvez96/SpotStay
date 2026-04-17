@@ -1,8 +1,9 @@
 <!doctype html>
 <html lang="es">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>SpotStay | Inicio miembro</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}" />
@@ -103,6 +104,7 @@
 
                 <div class="grid-propiedades">
                 @forelse ($propiedades as $propiedad)
+                <a class="link-propiedad" href="{{ route('miembro.detalle_propiedad', ['id' => $propiedad->id_propiedad]) }}">
                     <article class="tarjeta-propiedad">
                         <div class="imagen-propiedad">
                             <span class="etiqueta-precio-tarjeta">
@@ -115,6 +117,7 @@
                             <p class="precio-propiedad">{{ number_format($propiedad->precio_propiedad, 0, ',', '.') }} € / mes</p>
                         </div>
                     </article>
+                </a>
                 @empty
                     <div class="estado-vacio">
                         <p>No hay propiedades disponibles en este momento.</p>

@@ -74,6 +74,13 @@
     margin-top: 18px;
 }
 
+.card-header-acciones {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
 .mensaje-estado {
     margin: 14px 24px 0;
     border-radius: 8px;

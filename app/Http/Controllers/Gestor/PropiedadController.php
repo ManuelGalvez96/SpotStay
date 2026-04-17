@@ -165,188 +165,12 @@ class PropiedadController extends Controller
         if (!$propiedad) {
             abort(404);
         }
-
-        $gastosHabilitados = Schema::hasTable('tbl_gasto')
-            && Schema::hasTable('tbl_gasto_cuota')
-            && Schema::hasTable('tbl_gasto_cuota_detalle');
-
-        $resumenGastos = [
-            'mensual_estimado' => 0,
-            'pendientes_mes' => 0,
-            'atrasados' => 0,
-            'pagados_mes' => 0,
-        ];
-        $pagosPrincipales = [
-            'alquiler' => ['label' => 'Alquiler', 'importe' => (float) $propiedad->precio_propiedad, 'estado' => 'pendiente'],
-            'luz' => ['label' => 'Luz', 'importe' => 0.0, 'estado' => 'sin_dato'],
-            'agua' => ['label' => 'Agua', 'importe' => 0.0, 'estado' => 'sin_dato'],
-            'gas' => ['label' => 'Gas', 'importe' => 0.0, 'estado' => 'sin_dato'],
-            'internet' => ['label' => 'Internet', 'importe' => 0.0, 'estado' => 'sin_dato'],
-            'comunidad' => ['label' => 'Comunidad', 'importe' => 0.0, 'estado' => 'sin_dato'],
-        ];
-        $cuotasGasto = collect();
-        $cuotasDetallePorId = collect();
-
-        if ($gastosHabilitados) {
-            $this->sincronizarGastosBaseDePropiedad($propiedad, (int) $gestorId);
-            $this->ensureCuotasMensualesGeneradas($id, (int) $gestorId);
-
-            $hoy = Carbon::today()->toDateString();
-            $mesActual = Carbon::today()->startOfMonth()->toDateString();
-            $inicioMes = Carbon::today()->startOfMonth()->toDateString();
-            $finMes = Carbon::today()->endOfMonth()->toDateString();
-
-            $resumenGastos = [
-                'mensual_estimado' => (float) DB::table('tbl_gasto')
-                    ->where('id_propiedad_fk', $id)
-                    ->where('estado_gasto', 'activo')
-                    ->sum('importe_gasto'),
-                'pendientes_mes' => DB::table('tbl_gasto_cuota')
-                    ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
-                    ->where('tbl_gasto.id_propiedad_fk', $id)
-                    ->where('tbl_gasto_cuota.mes_cuota', $mesActual)
-                    ->whereIn('tbl_gasto_cuota.estado_cuota', ['pendiente', 'parcial'])
-                    ->count(),
-                'atrasados' => DB::table('tbl_gasto_cuota')
-                    ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
-                    ->where('tbl_gasto.id_propiedad_fk', $id)
-                    ->whereIn('tbl_gasto_cuota.estado_cuota', ['pendiente', 'parcial'])
-                    ->where('tbl_gasto_cuota.vencimiento_cuota', '<', $hoy)
-                    ->count(),
-                'pagados_mes' => DB::table('tbl_gasto_cuota')
-                    ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
-                    ->where('tbl_gasto.id_propiedad_fk', $id)
-                    ->where('tbl_gasto_cuota.mes_cuota', $mesActual)
-                    ->where('tbl_gasto_cuota.estado_cuota', 'pagado')
-                    ->count(),
-            ];
-
-            $cuotasPrincipalesMes = DB::table('tbl_gasto_cuota')
-                ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
-                ->where('tbl_gasto.id_propiedad_fk', $id)
-                ->where('tbl_gasto_cuota.mes_cuota', $mesActual)
-                ->select(
-                    'tbl_gasto.concepto_gasto',
-                    'tbl_gasto_cuota.importe_total_cuota',
-                    'tbl_gasto_cuota.estado_cuota'
-                )
-                ->get();
-
-            foreach ($cuotasPrincipalesMes as $cuotaPrincipal) {
-                $clave = $this->normalizarConceptoPrincipal((string) $cuotaPrincipal->concepto_gasto);
-                if (!$clave || !array_key_exists($clave, $pagosPrincipales) || $clave === 'alquiler') {
-                    continue;
-                }
-
-                $pagosPrincipales[$clave]['importe'] += (float) $cuotaPrincipal->importe_total_cuota;
-
-                $estadoActual = (string) $pagosPrincipales[$clave]['estado'];
-                $estadoCuota = (string) $cuotaPrincipal->estado_cuota;
-
-                if ($estadoActual === 'sin_dato') {
-                    $pagosPrincipales[$clave]['estado'] = $estadoCuota;
-                } elseif ($estadoActual !== 'atrasado' && $estadoCuota === 'atrasado') {
-                    $pagosPrincipales[$clave]['estado'] = 'atrasado';
-                } elseif ($estadoActual === 'pagado' && in_array($estadoCuota, ['pendiente', 'parcial'], true)) {
-                    $pagosPrincipales[$clave]['estado'] = $estadoCuota;
-                }
-            }
-
-            $alquileresIds = DB::table('tbl_alquiler')
-                ->where('id_propiedad_fk', $id)
-                ->where('estado_alquiler', 'activo')
-                ->pluck('id_alquiler')
-                ->all();
-
-            if (empty($alquileresIds)) {
-                $pagosPrincipales['alquiler']['estado'] = 'sin_dato';
-            } else {
-                $pagosMes = DB::table('tbl_pago')
-                    ->whereIn('id_alquiler_fk', $alquileresIds)
-                    ->where('tipo_pago', 'mensualidad')
-                    ->whereBetween('mes_pago', [$inicioMes, $finMes])
-                    ->select('id_alquiler_fk', 'estado_pago')
-                    ->get();
-
-                $atrasadosPrevios = DB::table('tbl_pago')
-                    ->whereIn('id_alquiler_fk', $alquileresIds)
-                    ->where('tipo_pago', 'mensualidad')
-                    ->where('mes_pago', '<', $inicioMes)
-                    ->where('estado_pago', '!=', 'confirmado')
-                    ->exists();
-
-                if ($atrasadosPrevios) {
-                    $pagosPrincipales['alquiler']['estado'] = 'atrasado';
-                } elseif ($pagosMes->isEmpty()) {
-                    $pagosPrincipales['alquiler']['estado'] = 'pendiente';
-                } else {
-                    $confirmados = $pagosMes->where('estado_pago', 'confirmado')->pluck('id_alquiler_fk')->unique()->count();
-                    $totalAlquileresActivos = count($alquileresIds);
-
-                    if ($confirmados === $totalAlquileresActivos) {
-                        $pagosPrincipales['alquiler']['estado'] = 'pagado';
-                    } elseif ($confirmados > 0) {
-                        $pagosPrincipales['alquiler']['estado'] = 'parcial';
-                    } else {
-                        $pagosPrincipales['alquiler']['estado'] = 'pendiente';
-                    }
-                }
-            }
-
-            foreach ($pagosPrincipales as $clave => $pagoPrincipal) {
-                if ($clave === 'alquiler') {
-                    continue;
-                }
-
-                if ((float) $pagoPrincipal['importe'] <= 0 && $pagoPrincipal['estado'] !== 'sin_dato') {
-                    $pagosPrincipales[$clave]['estado'] = 'sin_dato';
-                }
-
-                $pagosPrincipales[$clave]['importe'] = round((float) $pagosPrincipales[$clave]['importe'], 2);
-            }
-
-            $cuotasGasto = DB::table('tbl_gasto_cuota')
-                ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
-                ->where('tbl_gasto.id_propiedad_fk', $id)
-                ->select(
-                    'tbl_gasto_cuota.id_gasto_cuota',
-                    'tbl_gasto_cuota.id_gasto_fk',
-                    'tbl_gasto_cuota.mes_cuota',
-                    'tbl_gasto_cuota.vencimiento_cuota',
-                    'tbl_gasto_cuota.importe_total_cuota',
-                    'tbl_gasto_cuota.estado_cuota',
-                    'tbl_gasto_cuota.pagado_cuota',
-                    'tbl_gasto.concepto_gasto',
-                    'tbl_gasto.categoria_gasto',
-                    'tbl_gasto.pagador_gasto'
-                )
-                ->orderBy('tbl_gasto_cuota.mes_cuota', 'desc')
-                ->orderBy('tbl_gasto_cuota.vencimiento_cuota', 'asc')
-                ->limit(24)
-                ->get();
-
-            $cuotaIds = $cuotasGasto->pluck('id_gasto_cuota')->all();
-            $detalles = collect();
-
-            if (!empty($cuotaIds)) {
-                $detalles = DB::table('tbl_gasto_cuota_detalle')
-                    ->join('tbl_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_gasto_cuota_detalle.id_pagador_fk')
-                    ->whereIn('tbl_gasto_cuota_detalle.id_gasto_cuota_fk', $cuotaIds)
-                    ->select(
-                        'tbl_gasto_cuota_detalle.id_gasto_cuota_detalle',
-                        'tbl_gasto_cuota_detalle.id_gasto_cuota_fk',
-                        'tbl_gasto_cuota_detalle.id_pagador_fk',
-                        'tbl_gasto_cuota_detalle.importe_detalle',
-                        'tbl_gasto_cuota_detalle.estado_detalle',
-                        'tbl_gasto_cuota_detalle.pagado_detalle',
-                        'tbl_usuario.nombre_usuario'
-                    )
-                    ->orderBy('tbl_gasto_cuota_detalle.id_gasto_cuota_detalle')
-                    ->get();
-            }
-
-            $cuotasDetallePorId = $detalles->groupBy('id_gasto_cuota_fk');
-        }
+        $gastosData = $this->obtenerDatosGastosPropiedad($propiedad, (int) $gestorId);
+        $gastosHabilitados = $gastosData['gastosHabilitados'];
+        $resumenGastos = $gastosData['resumenGastos'];
+        $pagosPrincipales = $gastosData['pagosPrincipales'];
+        $cuotasGasto = $gastosData['cuotasGasto'];
+        $cuotasDetallePorId = $gastosData['cuotasDetallePorId'];
 
         $alquileresActivos = DB::table('tbl_alquiler')
             ->join('tbl_usuario as inquilino', 'inquilino.id_usuario', '=', 'tbl_alquiler.id_inquilino_fk')
@@ -392,6 +216,41 @@ class PropiedadController extends Controller
             'cuotasGasto',
             'cuotasDetallePorId'
         ));
+    }
+
+    public function gastos(int $id)
+    {
+        $gestor = Auth::user();
+        $gestorId = (int) ($gestor?->id_usuario ?? 0);
+
+        $propiedad = DB::table('tbl_propiedad')
+            ->join('tbl_usuario as arrendador', 'arrendador.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
+            ->join('tbl_usuario as gestor', 'gestor.id_usuario', '=', 'tbl_propiedad.id_gestor_fk')
+            ->where('tbl_propiedad.id_propiedad', $id)
+            ->where('tbl_propiedad.id_gestor_fk', $gestorId)
+            ->select(
+                'tbl_propiedad.*',
+                'arrendador.nombre_usuario as nombre_arrendador',
+                'arrendador.email_usuario as email_arrendador',
+                'arrendador.telefono_usuario as telefono_arrendador',
+                'gestor.nombre_usuario as nombre_gestor'
+            )
+            ->first();
+
+        if (!$propiedad) {
+            abort(404);
+        }
+
+        $gastosData = $this->obtenerDatosGastosPropiedad($propiedad, $gestorId);
+
+        return view('gestor.propiedad-gastos', [
+            'propiedad' => $propiedad,
+            'gastosHabilitados' => $gastosData['gastosHabilitados'],
+            'resumenGastos' => $gastosData['resumenGastos'],
+            'pagosPrincipales' => $gastosData['pagosPrincipales'],
+            'cuotasGasto' => $gastosData['cuotasGasto'],
+            'cuotasDetallePorId' => $gastosData['cuotasDetallePorId'],
+        ]);
     }
 
     public function storeGasto(Request $request, int $id)
@@ -523,15 +382,9 @@ class PropiedadController extends Controller
 
     private function getInquilinosActivosIds(int $propiedadId)
     {
-        $hoy = Carbon::today()->toDateString();
-
         return DB::table('tbl_alquiler')
             ->where('id_propiedad_fk', $propiedadId)
             ->where('estado_alquiler', 'activo')
-            ->where(function ($query) use ($hoy) {
-                $query->whereNull('fecha_fin_alquiler')
-                    ->orWhere('fecha_fin_alquiler', '>=', $hoy);
-            })
             ->distinct()
             ->pluck('id_inquilino_fk');
     }
@@ -763,5 +616,199 @@ class PropiedadController extends Controller
         }
 
         return null;
+    }
+
+    private function obtenerDatosGastosPropiedad(object $propiedad, int $gestorId): array
+    {
+        $gastosHabilitados = Schema::hasTable('tbl_gasto')
+            && Schema::hasTable('tbl_gasto_cuota')
+            && Schema::hasTable('tbl_gasto_cuota_detalle');
+
+        $resumenGastos = [
+            'mensual_estimado' => 0,
+            'pendientes_mes' => 0,
+            'atrasados' => 0,
+            'pagados_mes' => 0,
+        ];
+        $pagosPrincipales = [
+            'alquiler' => ['label' => 'Alquiler', 'importe' => (float) $propiedad->precio_propiedad, 'estado' => 'pendiente'],
+            'luz' => ['label' => 'Luz', 'importe' => 0.0, 'estado' => 'sin_dato'],
+            'agua' => ['label' => 'Agua', 'importe' => 0.0, 'estado' => 'sin_dato'],
+            'gas' => ['label' => 'Gas', 'importe' => 0.0, 'estado' => 'sin_dato'],
+            'internet' => ['label' => 'Internet', 'importe' => 0.0, 'estado' => 'sin_dato'],
+            'comunidad' => ['label' => 'Comunidad', 'importe' => 0.0, 'estado' => 'sin_dato'],
+        ];
+        $cuotasGasto = collect();
+        $cuotasDetallePorId = collect();
+
+        if ($gastosHabilitados) {
+            $propiedadId = (int) $propiedad->id_propiedad;
+            $this->sincronizarGastosBaseDePropiedad($propiedad, $gestorId);
+            $this->ensureCuotasMensualesGeneradas($propiedadId, $gestorId);
+
+            $hoy = Carbon::today()->toDateString();
+            $mesActual = Carbon::today()->startOfMonth()->toDateString();
+            $inicioMes = Carbon::today()->startOfMonth()->toDateString();
+            $finMes = Carbon::today()->endOfMonth()->toDateString();
+
+            $resumenGastos = [
+                'mensual_estimado' => (float) DB::table('tbl_gasto')
+                    ->where('id_propiedad_fk', $propiedadId)
+                    ->where('estado_gasto', 'activo')
+                    ->sum('importe_gasto'),
+                'pendientes_mes' => DB::table('tbl_gasto_cuota')
+                    ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+                    ->where('tbl_gasto.id_propiedad_fk', $propiedadId)
+                    ->where('tbl_gasto_cuota.mes_cuota', $mesActual)
+                    ->whereIn('tbl_gasto_cuota.estado_cuota', ['pendiente', 'parcial'])
+                    ->count(),
+                'atrasados' => DB::table('tbl_gasto_cuota')
+                    ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+                    ->where('tbl_gasto.id_propiedad_fk', $propiedadId)
+                    ->whereIn('tbl_gasto_cuota.estado_cuota', ['pendiente', 'parcial'])
+                    ->where('tbl_gasto_cuota.vencimiento_cuota', '<', $hoy)
+                    ->count(),
+                'pagados_mes' => DB::table('tbl_gasto_cuota')
+                    ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+                    ->where('tbl_gasto.id_propiedad_fk', $propiedadId)
+                    ->where('tbl_gasto_cuota.mes_cuota', $mesActual)
+                    ->where('tbl_gasto_cuota.estado_cuota', 'pagado')
+                    ->count(),
+            ];
+
+            $cuotasPrincipalesMes = DB::table('tbl_gasto_cuota')
+                ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+                ->where('tbl_gasto.id_propiedad_fk', $propiedadId)
+                ->where('tbl_gasto_cuota.mes_cuota', $mesActual)
+                ->select(
+                    'tbl_gasto.concepto_gasto',
+                    'tbl_gasto_cuota.importe_total_cuota',
+                    'tbl_gasto_cuota.estado_cuota'
+                )
+                ->get();
+
+            foreach ($cuotasPrincipalesMes as $cuotaPrincipal) {
+                $clave = $this->normalizarConceptoPrincipal((string) $cuotaPrincipal->concepto_gasto);
+                if (!$clave || !array_key_exists($clave, $pagosPrincipales) || $clave === 'alquiler') {
+                    continue;
+                }
+
+                $pagosPrincipales[$clave]['importe'] += (float) $cuotaPrincipal->importe_total_cuota;
+
+                $estadoActual = (string) $pagosPrincipales[$clave]['estado'];
+                $estadoCuota = (string) $cuotaPrincipal->estado_cuota;
+
+                if ($estadoActual === 'sin_dato') {
+                    $pagosPrincipales[$clave]['estado'] = $estadoCuota;
+                } elseif ($estadoActual !== 'atrasado' && $estadoCuota === 'atrasado') {
+                    $pagosPrincipales[$clave]['estado'] = 'atrasado';
+                } elseif ($estadoActual === 'pagado' && in_array($estadoCuota, ['pendiente', 'parcial'], true)) {
+                    $pagosPrincipales[$clave]['estado'] = $estadoCuota;
+                }
+            }
+
+            $alquileresIds = DB::table('tbl_alquiler')
+                ->where('id_propiedad_fk', $propiedadId)
+                ->where('estado_alquiler', 'activo')
+                ->pluck('id_alquiler')
+                ->all();
+
+            if (empty($alquileresIds)) {
+                $pagosPrincipales['alquiler']['estado'] = 'sin_dato';
+            } else {
+                $pagosMes = DB::table('tbl_pago')
+                    ->whereIn('id_alquiler_fk', $alquileresIds)
+                    ->where('tipo_pago', 'mensualidad')
+                    ->whereBetween('mes_pago', [$inicioMes, $finMes])
+                    ->select('id_alquiler_fk', 'estado_pago')
+                    ->get();
+
+                $atrasadosPrevios = DB::table('tbl_pago')
+                    ->whereIn('id_alquiler_fk', $alquileresIds)
+                    ->where('tipo_pago', 'mensualidad')
+                    ->where('mes_pago', '<', $inicioMes)
+                    ->where('estado_pago', '!=', 'confirmado')
+                    ->exists();
+
+                if ($atrasadosPrevios) {
+                    $pagosPrincipales['alquiler']['estado'] = 'atrasado';
+                } elseif ($pagosMes->isEmpty()) {
+                    $pagosPrincipales['alquiler']['estado'] = 'pendiente';
+                } else {
+                    $confirmados = $pagosMes->where('estado_pago', 'confirmado')->pluck('id_alquiler_fk')->unique()->count();
+                    $totalAlquileresActivos = count($alquileresIds);
+
+                    if ($confirmados === $totalAlquileresActivos) {
+                        $pagosPrincipales['alquiler']['estado'] = 'pagado';
+                    } elseif ($confirmados > 0) {
+                        $pagosPrincipales['alquiler']['estado'] = 'parcial';
+                    } else {
+                        $pagosPrincipales['alquiler']['estado'] = 'pendiente';
+                    }
+                }
+            }
+
+            foreach ($pagosPrincipales as $clave => $pagoPrincipal) {
+                if ($clave === 'alquiler') {
+                    continue;
+                }
+
+                if ((float) $pagoPrincipal['importe'] <= 0 && $pagoPrincipal['estado'] !== 'sin_dato') {
+                    $pagosPrincipales[$clave]['estado'] = 'sin_dato';
+                }
+
+                $pagosPrincipales[$clave]['importe'] = round((float) $pagosPrincipales[$clave]['importe'], 2);
+            }
+
+            $cuotasGasto = DB::table('tbl_gasto_cuota')
+                ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+                ->where('tbl_gasto.id_propiedad_fk', $propiedadId)
+                ->select(
+                    'tbl_gasto_cuota.id_gasto_cuota',
+                    'tbl_gasto_cuota.id_gasto_fk',
+                    'tbl_gasto_cuota.mes_cuota',
+                    'tbl_gasto_cuota.vencimiento_cuota',
+                    'tbl_gasto_cuota.importe_total_cuota',
+                    'tbl_gasto_cuota.estado_cuota',
+                    'tbl_gasto_cuota.pagado_cuota',
+                    'tbl_gasto.concepto_gasto',
+                    'tbl_gasto.categoria_gasto',
+                    'tbl_gasto.pagador_gasto'
+                )
+                ->orderBy('tbl_gasto_cuota.mes_cuota', 'desc')
+                ->orderBy('tbl_gasto_cuota.vencimiento_cuota', 'asc')
+                ->limit(24)
+                ->get();
+
+            $cuotaIds = $cuotasGasto->pluck('id_gasto_cuota')->all();
+            $detalles = collect();
+
+            if (!empty($cuotaIds)) {
+                $detalles = DB::table('tbl_gasto_cuota_detalle')
+                    ->join('tbl_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_gasto_cuota_detalle.id_pagador_fk')
+                    ->whereIn('tbl_gasto_cuota_detalle.id_gasto_cuota_fk', $cuotaIds)
+                    ->select(
+                        'tbl_gasto_cuota_detalle.id_gasto_cuota_detalle',
+                        'tbl_gasto_cuota_detalle.id_gasto_cuota_fk',
+                        'tbl_gasto_cuota_detalle.id_pagador_fk',
+                        'tbl_gasto_cuota_detalle.importe_detalle',
+                        'tbl_gasto_cuota_detalle.estado_detalle',
+                        'tbl_gasto_cuota_detalle.pagado_detalle',
+                        'tbl_usuario.nombre_usuario'
+                    )
+                    ->orderBy('tbl_gasto_cuota_detalle.id_gasto_cuota_detalle')
+                    ->get();
+            }
+
+            $cuotasDetallePorId = $detalles->groupBy('id_gasto_cuota_fk');
+        }
+
+        return [
+            'gastosHabilitados' => $gastosHabilitados,
+            'resumenGastos' => $resumenGastos,
+            'pagosPrincipales' => $pagosPrincipales,
+            'cuotasGasto' => $cuotasGasto,
+            'cuotasDetallePorId' => $cuotasDetallePorId,
+        ];
     }
 }

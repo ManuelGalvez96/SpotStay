@@ -11,10 +11,10 @@ class PropiedadSeeder extends Seeder
     public function run(): void
     {
         $propiedades = [
-            // Arrendador 1
+            // Cartera principal de Miguel (gestor)
             [
                 'arrendador_email' => 'arrendador@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
+                'gestor_email' => 'miguel@spotstay.com',
                 'titulo' => 'Piso en Calle Mayor',
                 'direccion' => 'Calle Mayor 14',
                 'ciudad' => 'Madrid',
@@ -27,8 +27,8 @@ class PropiedadSeeder extends Seeder
                 'estado' => 'alquilada',
             ],
             [
-                'arrendador_email' => 'arrendador@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
+                'arrendador_email' => 'carlos@spotstay.com',
+                'gestor_email' => 'miguel@spotstay.com',
                 'titulo' => 'Piso Calle Serrano',
                 'direccion' => 'Calle Serrano 47',
                 'ciudad' => 'Madrid',
@@ -42,7 +42,7 @@ class PropiedadSeeder extends Seeder
             ],
             [
                 'arrendador_email' => 'arrendador@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
+                'gestor_email' => 'miguel@spotstay.com',
                 'titulo' => 'Estudio Fuencarral',
                 'direccion' => 'Calle Fuencarral 22',
                 'ciudad' => 'Madrid',
@@ -54,10 +54,9 @@ class PropiedadSeeder extends Seeder
                 'gastos' => json_encode(['agua' => 25, 'luz' => 40, 'comunidad' => 30]),
                 'estado' => 'publicada',
             ],
-            // Arrendador 2
             [
-                'arrendador_email' => 'admin@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
+                'arrendador_email' => 'elena@spotstay.com',
+                'gestor_email' => 'miguel@spotstay.com',
                 'titulo' => 'Piso Av. Diagonal',
                 'direccion' => 'Av. Diagonal 88',
                 'ciudad' => 'Barcelona',
@@ -70,8 +69,8 @@ class PropiedadSeeder extends Seeder
                 'estado' => 'alquilada',
             ],
             [
-                'arrendador_email' => 'admin@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
+                'arrendador_email' => 'roberto.mora@spotstay.com',
+                'gestor_email' => 'miguel@spotstay.com',
                 'titulo' => 'Piso Calle Pelai',
                 'direccion' => 'Calle Pelai 12',
                 'ciudad' => 'Barcelona',
@@ -83,10 +82,9 @@ class PropiedadSeeder extends Seeder
                 'gastos' => json_encode(['agua' => 28, 'luz' => 48, 'comunidad' => 38]),
                 'estado' => 'alquilada',
             ],
-            // Arrendador 1
             [
                 'arrendador_email' => 'arrendador@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
+                'gestor_email' => 'miguel@spotstay.com',
                 'titulo' => 'Lujo Paseo de Gracia',
                 'direccion' => 'Paseo de Gracia 5',
                 'ciudad' => 'Barcelona',
@@ -99,8 +97,8 @@ class PropiedadSeeder extends Seeder
                 'estado' => 'publicada',
             ],
             [
-                'arrendador_email' => 'arrendador@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
+                'arrendador_email' => 'roberto.diaz@email.com',
+                'gestor_email' => 'miguel@spotstay.com',
                 'titulo' => 'Piso Centro Málaga',
                 'direccion' => 'Calle Larios 7',
                 'ciudad' => 'Málaga',
@@ -113,8 +111,8 @@ class PropiedadSeeder extends Seeder
                 'estado' => 'publicada',
             ],
             [
-                'arrendador_email' => 'admin@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
+                'arrendador_email' => 'elena@spotstay.com',
+                'gestor_email' => 'miguel@spotstay.com',
                 'titulo' => 'Piso Historic Sevilla',
                 'direccion' => 'Alameda de Hércules 3',
                 'ciudad' => 'Sevilla',
@@ -126,10 +124,9 @@ class PropiedadSeeder extends Seeder
                 'gastos' => json_encode(['agua' => 20, 'luz' => 38, 'comunidad' => 28]),
                 'estado' => 'publicada',
             ],
-            // Arrendador 2
             [
-                'arrendador_email' => 'admin@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
+                'arrendador_email' => 'roberto.mora@spotstay.com',
+                'gestor_email' => 'miguel@spotstay.com',
                 'titulo' => 'Piso Valencia',
                 'direccion' => 'Calle Colón 8',
                 'ciudad' => 'Valencia',
@@ -143,7 +140,7 @@ class PropiedadSeeder extends Seeder
             ],
             [
                 'arrendador_email' => 'arrendador@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
+                'gestor_email' => 'miguel@spotstay.com',
                 'titulo' => 'Piso Gran Vía',
                 'direccion' => 'Gran Vía 45',
                 'ciudad' => 'Bilbao',
@@ -155,10 +152,10 @@ class PropiedadSeeder extends Seeder
                 'gastos' => json_encode(['agua' => 28, 'luz' => 50, 'comunidad' => 40]),
                 'estado' => 'inactiva',
             ],
-            // Propiedades adicionales (11-15)
+            // Propiedades adicionales para pruebas
             [
-                'arrendador_email' => 'admin@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
+                'arrendador_email' => 'carlos@spotstay.com',
+                'gestor_email' => 'miguel@spotstay.com',
                 'titulo' => 'Piso Zaragoza',
                 'direccion' => 'Calle Coso 15',
                 'ciudad' => 'Zaragoza',
@@ -172,7 +169,7 @@ class PropiedadSeeder extends Seeder
             ],
             [
                 'arrendador_email' => 'arrendador@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
+                'gestor_email' => 'miguel@spotstay.com',
                 'titulo' => 'Piso Alicante',
                 'direccion' => 'Paseo de la Explanada 3',
                 'ciudad' => 'Alicante',
@@ -185,8 +182,8 @@ class PropiedadSeeder extends Seeder
                 'estado' => 'publicada',
             ],
             [
-                'arrendador_email' => 'admin@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
+                'arrendador_email' => 'roberto.diaz@email.com',
+                'gestor_email' => 'miguel@spotstay.com',
                 'titulo' => 'Piso Granada',
                 'direccion' => 'Calle Reyes Católicos 12',
                 'ciudad' => 'Granada',
@@ -200,7 +197,7 @@ class PropiedadSeeder extends Seeder
             ],
             [
                 'arrendador_email' => 'arrendador@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
+                'gestor_email' => 'miguel@spotstay.com',
                 'titulo' => 'Piso Murcia',
                 'direccion' => 'Plaza de las Flores 7',
                 'ciudad' => 'Murcia',
@@ -213,8 +210,8 @@ class PropiedadSeeder extends Seeder
                 'estado' => 'inactiva',
             ],
             [
-                'arrendador_email' => 'admin@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
+                'arrendador_email' => 'elena@spotstay.com',
+                'gestor_email' => 'miguel@spotstay.com',
                 'titulo' => 'Piso Valladolid',
                 'direccion' => 'Calle Miguel Íscar 15',
                 'ciudad' => 'Valladolid',
@@ -236,6 +233,10 @@ class PropiedadSeeder extends Seeder
             $idGestor = DB::table('tbl_usuario')
                 ->where('email_usuario', $prop['gestor_email'])
                 ->value('id_usuario');
+
+            if (!$idArrendador || !$idGestor) {
+                throw new \RuntimeException('Seeder inconsistente: arrendador o gestor no encontrado para ' . $prop['direccion']);
+            }
 
             unset($prop['arrendador_email'], $prop['gestor_email']);
 

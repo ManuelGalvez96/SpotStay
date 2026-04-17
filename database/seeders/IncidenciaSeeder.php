@@ -66,7 +66,7 @@ class IncidenciaSeeder extends Seeder
             ],
             [
                 'propiedad_direccion' => 'Calle Pelai 12',
-                'reporta_email' => 'carmen.iglesias@email.com',
+                'reporta_email' => 'ana@spotstay.com',
                 'titulo' => 'Humedad en pared del salón',
                 'descripcion' => 'Hay una mancha de humedad que va creciendo',
                 'categoria' => 'otro',
@@ -133,7 +133,7 @@ class IncidenciaSeeder extends Seeder
             ],
             [
                 'propiedad_direccion' => 'Calle Pelai 12',
-                'reporta_email' => 'carmen.iglesias@email.com',
+                'reporta_email' => 'ana@spotstay.com',
                 'titulo' => 'Puerta de entrada difícil de cerrar',
                 'descripcion' => 'La puerta principal cuesta mucho cerrar',
                 'categoria' => 'otro',
@@ -178,7 +178,7 @@ class IncidenciaSeeder extends Seeder
             ],
             [
                 'propiedad_direccion' => 'Calle Pelai 12',
-                'reporta_email' => 'carmen.iglesias@email.com',
+                'reporta_email' => 'ana@spotstay.com',
                 'titulo' => 'Sin agua caliente',
                 'descripcion' => 'No hay agua caliente en ninguna parte de la casa',
                 'categoria' => 'otro',

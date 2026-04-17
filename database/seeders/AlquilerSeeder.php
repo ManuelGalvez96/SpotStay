@@ -42,10 +42,10 @@ class AlquilerSeeder extends Seeder
                 'estado' => 'activo',
                 'aprobado' => '2025-01-19 09:00:00',
             ],
-            // Alquiler 4: Calle Pelai 12 - Carmen
+            // Alquiler 4: Calle Pelai 12 - Ana
             [
                 'propiedad_direccion' => 'Calle Pelai 12',
-                'inquilino_email' => 'carmen.iglesias@email.com',
+                'inquilino_email' => 'ana@spotstay.com',
                 'fecha_inicio' => '2025-03-01',
                 'fecha_fin' => '2026-03-01',
                 'estado' => 'activo',

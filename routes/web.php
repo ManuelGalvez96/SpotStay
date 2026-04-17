@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\Admin\PropiedadController;
@@ -84,6 +85,7 @@ Route::get('/admin/propiedades', [PropiedadController::class, 'index']);
 Route::get('/admin/propiedades/filtrar', [PropiedadController::class, 'filtrar']);
 Route::get('/admin/propiedades/{id}', [PropiedadController::class, 'show']);
 Route::post('/admin/propiedades/{id}/desactivar', [PropiedadController::class, 'desactivar']);
+Route::delete('/admin/propiedades/{id}', [AdminController::class, 'eliminarPropiedad']);
 Route::get('/admin/propiedades/exportar', [PropiedadController::class, 'exportar']);
 
 // Solicitudes

@@ -72,6 +72,8 @@ Route::middleware(['role:gestor'])->group(function () {
     Route::get('/gestor/incidencias/{id}', [GestorIncidenciaController::class, 'show']);
     Route::get('/gestor/propiedades', [GestorPropiedadController::class, 'index']);
     Route::get('/gestor/propiedades/{id}', [GestorPropiedadController::class, 'show']);
+    Route::post('/gestor/propiedades/{id}/gastos', [GestorPropiedadController::class, 'storeGasto']);
+    Route::post('/gestor/propiedades/{id}/gastos/cuotas/{cuotaId}/pagos/{detalleId}', [GestorPropiedadController::class, 'marcarPagoGasto']);
     Route::post('/gestor/incidencias/{id}/iniciar', [GestorIncidenciaController::class, 'iniciarGestion']);
     Route::post('/gestor/incidencias/{id}/estado', [GestorIncidenciaController::class, 'cambiarEstado']);
     Route::post('/gestor/incidencias/{id}/espera', [GestorIncidenciaController::class, 'marcarEspera']);

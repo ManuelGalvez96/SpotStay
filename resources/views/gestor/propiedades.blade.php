@@ -115,7 +115,7 @@
                             <strong>Leyenda de salud</strong>
                             <span class="salud-legend-row"><b class="salud-legend-tag salud-legend-verde">Verde:</b> sin incidencias activas</span>
                             <span class="salud-legend-row"><b class="salud-legend-tag salud-legend-amarillo">Amarillo:</b> con incidencias activas</span>
-                            <span class="salud-legend-row"><b class="salud-legend-tag salud-legend-rojo">Rojo:</b> con incidencias criticas</span>
+                            <span class="salud-legend-row"><b class="salud-legend-tag salud-legend-rojo">Rojo:</b> con incidencias urgentes</span>
                         </span>
                     </span>
                 </th>

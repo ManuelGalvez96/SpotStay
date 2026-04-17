@@ -11,6 +11,63 @@ use Illuminate\Support\Facades\Storage;
 
 class IncidenciaController extends Controller
 {
+    public function index(Request $request)
+    {
+        $query = DB::table('tbl_incidencia')
+            ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_incidencia.id_propiedad_fk')
+            ->select(
+                'tbl_incidencia.id_incidencia',
+                'tbl_incidencia.titulo_incidencia',
+                'tbl_incidencia.estado_incidencia',
+                'tbl_incidencia.prioridad_incidencia',
+                'tbl_incidencia.creado_incidencia',
+                'tbl_propiedad.titulo_propiedad',
+                'tbl_propiedad.direccion_propiedad',
+                'tbl_propiedad.ciudad_propiedad'
+            );
+
+        $titulo = trim((string) $request->query('titulo', ''));
+        $propiedad = trim((string) $request->query('propiedad', ''));
+        $estado = (string) $request->query('estado', '');
+        $prioridad = (string) $request->query('prioridad', '');
+        $fecha = (string) $request->query('fecha', '');
+
+        if ($titulo !== '') {
+            $query->where('tbl_incidencia.titulo_incidencia', 'like', '%' . $titulo . '%');
+        }
+
+        if ($propiedad !== '') {
+            $query->where(function ($sub) use ($propiedad) {
+                $sub->where('tbl_propiedad.titulo_propiedad', 'like', '%' . $propiedad . '%')
+                    ->orWhere('tbl_propiedad.direccion_propiedad', 'like', '%' . $propiedad . '%')
+                    ->orWhere('tbl_propiedad.ciudad_propiedad', 'like', '%' . $propiedad . '%');
+            });
+        }
+
+        if (in_array($estado, ['abierta', 'en_proceso', 'esperando', 'resuelta'], true)) {
+            $query->where('tbl_incidencia.estado_incidencia', $estado);
+        }
+
+        if (in_array($prioridad, ['alta', 'media', 'baja', 'urgente'], true)) {
+            if ($prioridad === 'alta') {
+                $query->whereIn('tbl_incidencia.prioridad_incidencia', ['alta', 'urgente']);
+            } else {
+                $query->where('tbl_incidencia.prioridad_incidencia', $prioridad);
+            }
+        }
+
+        if ($fecha !== '') {
+            $query->whereDate('tbl_incidencia.creado_incidencia', $fecha);
+        }
+
+        $incidencias = $query
+            ->orderBy('tbl_incidencia.creado_incidencia', 'desc')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('gestor.incidencias', compact('incidencias', 'titulo', 'propiedad', 'estado', 'prioridad', 'fecha'));
+    }
+
     public function show(int $id)
     {
         $incidencia = DB::table('tbl_incidencia')
@@ -100,7 +157,9 @@ class IncidenciaController extends Controller
         $accionActual = 'iniciar';
 
         if ($incidencia->estado_incidencia === 'esperando') {
-            $accionActual = 'reanudar';
+            $accionActual = $incidencia->esperando_de_incidencia === 'arrendador'
+                ? 'esperando_arrendador'
+                : 'reanudar';
         } elseif ($incidencia->estado_incidencia === 'resuelta') {
             $accionActual = 'reabrir';
         } elseif ($incidencia->estado_incidencia !== 'abierta') {

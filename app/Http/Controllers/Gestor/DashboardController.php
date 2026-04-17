@@ -26,11 +26,7 @@ class DashboardController extends Controller
             ->count();
 
         $incidenciasEsperandoAccion = DB::table('tbl_incidencia')
-            ->whereIn('estado_incidencia', ['abierta', 'en_proceso'])
-            ->where(function ($query) {
-                $query->whereIn('prioridad_incidencia', ['alta', 'urgente'])
-                    ->orWhere('creado_incidencia', '<=', Carbon::now()->subDays(2));
-            })
+            ->where('estado_incidencia', 'esperando')
             ->count();
 
         $incidenciasRecientes = DB::table('tbl_incidencia')
@@ -93,23 +89,16 @@ class DashboardController extends Controller
             ->limit(6)
             ->get();
 
-        $esperandoArrendador = DB::table('tbl_historial_incidencia')
-            ->join('tbl_incidencia', 'tbl_incidencia.id_incidencia', '=', 'tbl_historial_incidencia.id_incidencia_fk')
-            ->whereIn('tbl_incidencia.estado_incidencia', ['abierta', 'en_proceso'])
-            ->where('tbl_historial_incidencia.comentario_historial', 'like', '%arrendador%')
-            ->count();
+        $esperasDetalle = DB::table('tbl_incidencia')
+            ->selectRaw("SUM(CASE WHEN esperando_de_incidencia = 'arrendador' THEN 1 ELSE 0 END) as esperando_arrendador")
+            ->selectRaw("SUM(CASE WHEN esperando_de_incidencia = 'empresa' THEN 1 ELSE 0 END) as esperando_empresa")
+            ->selectRaw("SUM(CASE WHEN esperando_de_incidencia = 'inquilino' THEN 1 ELSE 0 END) as esperando_inquilino")
+            ->where('estado_incidencia', 'esperando')
+            ->first();
 
-        $esperandoEmpresa = DB::table('tbl_historial_incidencia')
-            ->join('tbl_incidencia', 'tbl_incidencia.id_incidencia', '=', 'tbl_historial_incidencia.id_incidencia_fk')
-            ->whereIn('tbl_incidencia.estado_incidencia', ['abierta', 'en_proceso'])
-            ->where('tbl_historial_incidencia.comentario_historial', 'like', '%empresa%')
-            ->count();
-
-        $esperandoInquilino = DB::table('tbl_historial_incidencia')
-            ->join('tbl_incidencia', 'tbl_incidencia.id_incidencia', '=', 'tbl_historial_incidencia.id_incidencia_fk')
-            ->whereIn('tbl_incidencia.estado_incidencia', ['abierta', 'en_proceso'])
-            ->where('tbl_historial_incidencia.comentario_historial', 'like', '%inquilino%')
-            ->count();
+        $esperandoArrendador = (int) ($esperasDetalle->esperando_arrendador ?? 0);
+        $esperandoEmpresa = (int) ($esperasDetalle->esperando_empresa ?? 0);
+        $esperandoInquilino = (int) ($esperasDetalle->esperando_inquilino ?? 0);
 
         $totalEsperandoDetalle = max(1, $esperandoArrendador + $esperandoEmpresa + $esperandoInquilino);
 
@@ -125,7 +114,7 @@ class DashboardController extends Controller
         $resumenEstados = [
             'abierta' => DB::table('tbl_incidencia')->where('estado_incidencia', 'abierta')->count(),
             'en_proceso' => DB::table('tbl_incidencia')->where('estado_incidencia', 'en_proceso')->count(),
-            'resuelta' => DB::table('tbl_incidencia')->where('estado_incidencia', 'resuelta')->count(),
+            'esperando' => DB::table('tbl_incidencia')->where('estado_incidencia', 'esperando')->count(),
         ];
 
         return view('gestor.dashboard', compact(

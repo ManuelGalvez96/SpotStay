@@ -8,38 +8,32 @@
             <h1>Panel operativo del gestor</h1>
             <p>Prioriza incidencias activas y desbloquea tareas pendientes en tus propiedades asignadas.</p>
         </div>
-        <div class="filtros-top">
-            <label class="search-wrap" for="busquedaIncidencias">
-                <i class="bi bi-search"></i>
-                <input id="busquedaIncidencias" type="text" placeholder="Buscar incidencia o propiedad...">
-            </label>
-            <select id="filtroEstado" aria-label="Filtrar por estado">
-                <option value="todos">Todos los estados</option>
-                <option value="abierta">Nuevas</option>
-                <option value="en_proceso">En proceso</option>
-                <option value="esperando">Esperando acción</option>
-            </select>
-        </div>
     </section>
 
     <section class="kpi-grid reveal">
+        <a class="kpi-link" href="{{ url('/gestor/incidencias?estado=abierta') }}">
         <article class="kpi-card kpi-nuevas">
             <div class="kpi-icono"><i class="bi bi-tools"></i></div>
             <p class="kpi-titulo">Incidencias nuevas</p>
             <p class="kpi-numero">{{ $incidenciasNuevas }}</p>
         </article>
+        </a>
 
+        <a class="kpi-link" href="{{ url('/gestor/incidencias?estado=en_proceso') }}">
         <article class="kpi-card kpi-proceso">
             <div class="kpi-icono"><i class="bi bi-hourglass-split"></i></div>
             <p class="kpi-titulo">En proceso</p>
             <p class="kpi-numero">{{ $incidenciasEnProceso }}</p>
         </article>
+        </a>
 
+        <a class="kpi-link" href="{{ url('/gestor/incidencias?estado=esperando') }}">
         <article class="kpi-card kpi-espera">
             <div class="kpi-icono"><i class="bi bi-exclamation-octagon"></i></div>
             <p class="kpi-titulo">Esperando acción</p>
             <p class="kpi-numero">{{ $incidenciasEsperandoAccion }}</p>
         </article>
+        </a>
     </section>
 
     <section class="layout-principal">
@@ -47,7 +41,7 @@
             <article class="card-saas reveal">
                 <header class="card-head">
                     <h2>Incidencias recientes</h2>
-                    <span>{{ $incidenciasRecientes->count() }} registros</span>
+                    <a class="link-ver-mas" href="{{ url('/gestor/incidencias') }}">Ver más</a>
                 </header>
 
                 <div class="tabla-wrap">
@@ -74,7 +68,7 @@
 
                                     $prioridadNormalizada = strtolower($incidencia->prioridad_incidencia) === 'urgente' ? 'alta' : strtolower($incidencia->prioridad_incidencia);
                                 @endphp
-                                <tr data-estado="{{ $incidencia->estado_incidencia }}" data-prioridad="{{ $prioridadNormalizada }}">
+                                <tr>
                                     <td class="titulo-col">{{ $incidencia->titulo_incidencia }}</td>
                                     <td>{{ $incidencia->direccion_propiedad }}</td>
                                     <td><span class="{{ $estadoBadge }}">{{ str_replace('_', ' ', ucfirst($incidencia->estado_incidencia)) }}</span></td>
@@ -190,9 +184,9 @@
                         <strong>{{ $resumenEstados['en_proceso'] }}</strong>
                     </div>
                     <div class="estado-barra">
-                        <span>Resueltas</span>
-                        <div class="barra"><span class="progress-fill" data-value="{{ round(($resumenEstados['resuelta'] / $maxEstado) * 100) }}"></span></div>
-                        <strong>{{ $resumenEstados['resuelta'] }}</strong>
+                        <span>Esperando</span>
+                        <div class="barra"><span class="progress-fill" data-value="{{ round(($resumenEstados['esperando'] / $maxEstado) * 100) }}"></span></div>
+                        <strong>{{ $resumenEstados['esperando'] }}</strong>
                     </div>
                 </div>
             </article>

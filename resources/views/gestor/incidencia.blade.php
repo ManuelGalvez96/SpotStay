@@ -132,6 +132,11 @@
                         <textarea name="comentario" placeholder="Comentario del cambio (opcional)"></textarea>
                         <button type="submit" class="btn-principal">Actualizar estado</button>
                     </form>
+                @elseif($accionActual === 'esperando_arrendador')
+                    <div class="bloque-accion bloque-unico">
+                        <h3>Incidencia en espera del arrendador</h3>
+                        <p>El presupuesto está pendiente de revisión por parte del arrendador. No hay acciones disponibles hasta su respuesta.</p>
+                    </div>
                 @elseif($accionActual === 'reanudar')
                     <form method="POST" action="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia . '/estado') }}" class="bloque-accion bloque-unico">
                         @csrf

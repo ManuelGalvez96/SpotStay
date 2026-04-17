@@ -28,6 +28,7 @@ Route::post('/admin/alquiler/{id}/rechazar', [DashboardController::class, 'recha
 
 // Rutas Gestor
 Route::get('/gestor/dashboard', [GestorDashboardController::class, 'index']);
+Route::get('/gestor/incidencias', [GestorIncidenciaController::class, 'index']);
 Route::get('/gestor/incidencias/{id}', [GestorIncidenciaController::class, 'show']);
 Route::post('/gestor/incidencias/{id}/iniciar', [GestorIncidenciaController::class, 'iniciarGestion']);
 Route::post('/gestor/incidencias/{id}/estado', [GestorIncidenciaController::class, 'cambiarEstado']);

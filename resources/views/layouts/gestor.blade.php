@@ -22,7 +22,7 @@
 
         <nav class="gestor-nav">
             <a href="{{ url('/gestor/dashboard') }}" class="item-nav {{ request()->is('gestor/dashboard') ? 'activo' : '' }}">Dashboard</a>
-            <a href="{{ url('/admin/incidencias') }}" class="item-nav">Incidencias</a>
+            <a href="{{ url('/gestor/incidencias') }}" class="item-nav {{ request()->is('gestor/incidencias*') ? 'activo' : '' }}">Incidencias</a>
             <a href="{{ url('/admin/propiedades') }}" class="item-nav">Propiedades</a>
         </nav>
 

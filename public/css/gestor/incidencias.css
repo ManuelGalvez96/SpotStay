@@ -1,0 +1,130 @@
+.incidencias-shell {
+    display: grid;
+    gap: 16px;
+}
+
+.incidencias-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 20px;
+}
+
+.incidencias-head h1 {
+    margin: 0;
+    font-size: 30px;
+    line-height: 1.15;
+    font-family: 'Sora', sans-serif;
+}
+
+.incidencias-head p {
+    margin: 8px 0 0;
+    color: #5b667d;
+}
+
+.btn-volver {
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    color: #224a9f;
+    border: 1px solid #dbe3f3;
+    border-radius: 10px;
+    padding: 8px 12px;
+    background: #f4f8ff;
+}
+
+.filtros-card {
+    padding: 14px;
+}
+
+.filtros-form {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.filtros-form input,
+.filtros-form select {
+    border: 1px solid #dfe5f0;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+    background: #fff;
+    color: #182131;
+}
+
+.acciones-filtros {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-aplicar,
+.btn-limpiar {
+    border: 1px solid #dbe3f3;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-aplicar {
+    background: #275ecc;
+    color: #fff;
+    border-color: #275ecc;
+}
+
+.btn-limpiar {
+    color: #35527f;
+    background: #f5f8ff;
+}
+
+.link-ver-mas {
+    text-decoration: none;
+    color: #224a9f;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.paginacion-simple {
+    padding: 14px;
+    border-top: 1px solid #edf1f7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagina-btn {
+    text-decoration: none;
+    border: 1px solid #dbe3f3;
+    border-radius: 10px;
+    padding: 7px 11px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #224a9f;
+    background: #f4f8ff;
+}
+
+.pagina-btn.disabled {
+    color: #97a4bd;
+    border-color: #e7edf7;
+    background: #fafcff;
+}
+
+.pagina-info {
+    font-size: 12px;
+    color: #6c7891;
+}
+
+@media (max-width: 960px) {
+    .filtros-form {
+        grid-template-columns: 1fr;
+    }
+
+    .incidencias-head {
+        flex-direction: column;
+    }
+}

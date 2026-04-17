@@ -18,7 +18,16 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (Auth::check()) {
-            return redirect('/admin/dashboard');
+            $user = Auth::user();
+            if ($user->roles()->where('slug_rol', 'admin')->exists()) {
+                return redirect('/admin/dashboard');
+            }
+
+            if ($user->roles()->whereIn('slug_rol', ['miembro', 'inquilino'])->exists()) {
+                return redirect('/miembro/inicio');
+            }
+
+            return redirect('/');
         }
         return view('login');
     }
@@ -39,26 +48,28 @@ class AuthController extends Controller
         ]);
 
         // 2. Intentar autenticar al usuario
-        // Nota: Laravel usará 'email_usuario' para buscar el registro y 
-        // comparará la contraseña usando el método getAuthPassword() que definimos en el modelo.
         if (Auth::attempt([
             'email_usuario' => $credentials['email'],
             'password' => $credentials['password']
         ])) {
 
-
-            // Si tiene éxito, regenerar la sesión para evitar ataques de fijación de sesión
             $request->session()->regenerate();
 
+            $user = Auth::user();
+
             // Redirigir según el rol del usuario
-            if (Auth::user()->roles()->where('slug_rol', 'admin')->exists()) {
+            if ($user->roles()->where('slug_rol', 'admin')->exists()) {
                 return redirect()->intended('/admin/dashboard');
             }
 
-            if (Auth::user()->roles()->where('slug_rol', 'miembro')->exists()) {
+            if ($user->roles()->whereIn('slug_rol', ['miembro', 'inquilino'])->exists()) {
                 return redirect()->intended('/miembro/inicio');
             }
+
+            // Fallback por si no tiene roles asignados
+            return redirect()->intended('/');
         }
+
 
         // 3. Si la autenticación falla, volver con error
         return back()->withErrors([
@@ -110,7 +121,7 @@ class AuthController extends Controller
         ]);
 
         // 3. Asignación automática del rol "miembro"
-        $rolMiembro = Rol::where('slug_rol', 'miembro')->first();
+        $rolMiembro = Rol::where('slug_rol', 'miembro', 'inquilino')->first();
         if ($rolMiembro) {
             $usuario->roles()->attach($rolMiembro->id_rol, [
                 'asignado_rol_usuario' => Carbon::now()
@@ -118,7 +129,7 @@ class AuthController extends Controller
         }
 
         // 4. Redirigir al inicio o dashboard
-        return redirect('/login')->with('status', '¡Bienvenido a SpotStay! Tu cuenta ha sido creada con éxito.');
+        return redirect('/login')->with('status', '¡Bienvenido a SpotStay! <br>Tu cuenta ha sido creada con éxito.');
     }
 
     /**

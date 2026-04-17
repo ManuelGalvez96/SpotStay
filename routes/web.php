@@ -68,7 +68,7 @@ Route::get('/miembro/mapa', function () {
     return view('miembro.mapa');
 });
 
-Route::middleware(['role:miembro'])->group(function () {
+Route::middleware(['role:miembro,inquilino'])->group(function () {
     Route::get('/miembro/inicio', [HomeController::class, 'index']);
     Route::get('/miembro/mapa', function () {
         return view('miembro.mapa');

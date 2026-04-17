@@ -10,14 +10,14 @@ use Symfony\Component\HttpFoundation\Response;
 class CheckRole
 {
     /**
-     * Maneja una solicitud entrante y verifica si el usuario tiene el rol necesario.
+     * Maneja una solicitud entrante y verifica si el usuario tiene al menos uno de los roles necesarios.
      * De lo contrario, cierra la sesión e informa del error.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
-     * @param  string  $role El slug del rol requerido (ej: 'admin', 'arrendador')
+     * @param  string  ...$roles Los slugs de los roles permitidos (ej: 'admin', 'miembro', 'inquilino')
      */
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, ...$roles): Response
     {
         // 1. Si el usuario no está logueado, lo mandamos al login estándar
         if (!Auth::check()) {
@@ -25,9 +25,9 @@ class CheckRole
         }
 
 
-        // 2. Si está logueado pero NO tiene el rol específico requerido
+        // 2. Si está logueado pero NO tiene ninguno de los roles requeridos
         $user = Auth::user();
-        if (!$user->roles()->where('slug_rol', $role)->exists()) {
+        if (!$user->roles()->whereIn('slug_rol', $roles)->exists()) {
 
             // Acción radical de seguridad solicitada por el usuario:
             // Expulsar al usuario completamente del sistema
@@ -35,7 +35,8 @@ class CheckRole
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect('/login')->with('error', "Acceso denegado:<br>Tu cuenta no tiene permisos para la sección de $role.");
+            $rolesRequeridos = implode(' o ', $roles);
+            return redirect('/login')->with('error', "Acceso denegado:<br>Tu cuenta no tiene permisos suficientes <br>(Se requiere: $rolesRequeridos)");
         }
 
         return $next($request);

@@ -8,6 +8,88 @@ var incidenciaIdActual;
 var estadoActualModal;
 var buscadorTimeout;
 var paginaActualInc = 1;
+var modalIncidencia = null;
+var modalNuevaIncidencia = null;
+
+/* ============================================
+   SWEET ALERT FUNCTIONS WITH OSO
+   ============================================ */
+
+var crearOsoExito = function() {
+    return `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 120px; height: 120px;">
+        <!-- Oso igual que login -->
+        <circle class="yeti-part" cx="62" cy="52" r="14" />
+        <circle class="yeti-part" cx="138" cy="52" r="14" />
+        <path class="yeti-part" d="M40,200 Q40,55 100,55 Q160,55 160,200 Z" />
+        <path class="suit-jacket" d="M30,200 L170,200 L160,152 Q100,132 40,152 Z" />
+        <path class="suit-shirt" d="M100,140 L120,168 L100,200 L80,168 Z" />
+        <path class="suit-tie" d="M100,150 L110,168 L100,192 L90,168 Z" />
+        <g id="face-group">
+            <circle cx="82" cy="105" r="5" fill="#000" />
+            <circle cx="118" cy="105" r="5" fill="#000" />
+            <path d="M92 128 Q100 133 108 128" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        </g>
+        <circle class="hand hand-l" cx="48" cy="180" r="19" />
+        <circle class="hand hand-r" cx="152" cy="180" r="19" />
+        
+        <!-- Cartel éxito sostenido por las manos -->
+        <rect x="55" y="130" width="90" height="45" rx="5" fill="#90EE90" stroke="#228B22" stroke-width="2.5"/>
+        <text x="100" y="160" font-size="32" font-weight="bold" text-anchor="middle" fill="#228B22">✓</text>
+    </svg>
+    `;
+};
+
+var crearOsoError = function() {
+    return `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 120px; height: 120px;">
+        <!-- Oso igual que login -->
+        <circle class="yeti-part" cx="62" cy="52" r="14" />
+        <circle class="yeti-part" cx="138" cy="52" r="14" />
+        <path class="yeti-part" d="M40,200 Q40,55 100,55 Q160,55 160,200 Z" />
+        <path class="suit-jacket" d="M30,200 L170,200 L160,152 Q100,132 40,152 Z" />
+        <path class="suit-shirt" d="M100,140 L120,168 L100,200 L80,168 Z" />
+        <path class="suit-tie" d="M100,150 L110,168 L100,192 L90,168 Z" />
+        <g id="face-group">
+            <circle cx="82" cy="105" r="5" fill="#000" />
+            <circle cx="118" cy="105" r="5" fill="#000" />
+            <path d="M92 135 Q100 128 108 135" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        </g>
+        <circle class="hand hand-l" cx="48" cy="180" r="19" />
+        <circle class="hand hand-r" cx="152" cy="180" r="19" />
+        
+        <!-- Cartel error sostenido por las manos -->
+        <rect x="55" y="130" width="90" height="45" rx="5" fill="#FFB6C1" stroke="#DC143C" stroke-width="2.5"/>
+        <text x="100" y="160" font-size="32" font-weight="bold" text-anchor="middle" fill="#DC143C">✗</text>
+    </svg>
+    `;
+};
+
+var mostrarAlertaExito = function(titulo, mensaje) {
+    Swal.fire({
+        title: titulo,
+        html: mensaje,
+        iconHtml: crearOsoExito(),
+        customClass: {
+            icon: 'oso-icon'
+        },
+        confirmButtonText: 'Ok',
+        confirmButtonColor: '#035498'
+    });
+};
+
+var mostrarAlertaError = function(titulo, mensaje) {
+    Swal.fire({
+        title: titulo,
+        html: mensaje,
+        iconHtml: crearOsoError(),
+        customClass: {
+            icon: 'oso-icon'
+        },
+        confirmButtonText: 'Ok',
+        confirmButtonColor: '#d9534f'
+    });
+};
 
 /* ============================================
    INITIALIZATION
@@ -15,6 +97,8 @@ var paginaActualInc = 1;
 
 window.onload = function() {
     csrfToken = document.querySelector('meta[name=csrf-token]').content;
+    modalIncidencia = new bootstrap.Modal(document.getElementById('modalIncidencia'));
+    modalNuevaIncidencia = new bootstrap.Modal(document.getElementById('modalNuevaIncidencia'));
     asignarEventosFiltros();
     asignarEventosTarjetas();
     asignarEventosModal();
@@ -87,26 +171,10 @@ var asignarEventosTarjetas = function() {
 };
 
 var asignarEventosModal = function() {
-    var btnCerrar = document.getElementById('btnCerrarModal');
     var btnAsignar = document.getElementById('btnAsignar');
     var btnGuardar = document.getElementById('btnGuardarCambios');
     var btnCerrarInc = document.getElementById('btnCerrarInc');
-    var bgModal = document.getElementById('modalOverlay');
     var botonesEstado = document.querySelectorAll('.btn-estado');
-
-    if (btnCerrar) {
-        btnCerrar.onclick = function() {
-            cerrarModal();
-        };
-    }
-
-    if (bgModal) {
-        bgModal.onclick = function(e) {
-            if (e.target === this) {
-                cerrarModal();
-            }
-        };
-    }
 
     var i;
     for (i = 0; i < botonesEstado.length; i++) {
@@ -121,7 +189,7 @@ var asignarEventosModal = function() {
             var selectGestor = document.getElementById('selectGestorModal');
             var idGestor = selectGestor ? selectGestor.value : '';
             if (!idGestor) {
-                alert('Selecciona un gestor para asignar');
+                mostrarAlertaError('Error', 'Selecciona un gestor para asignar');
                 return;
             }
             asignarGestor(incidenciaIdActual, idGestor);
@@ -170,34 +238,12 @@ var asignarEventosVista = function() {
 
 var asignarEventosNuevaIncidencia = function() {
     var btnNueva = document.getElementById('btnNuevaIncidencia');
-    var btnCancelar = document.getElementById('btnCancelarNueva');
     var btnGuardar = document.getElementById('btnGuardarNueva');
-    var btnCerrar = document.getElementById('btnCerrarModalNueva');
-    var overlayNueva = document.getElementById('modalOverlayNueva');
 
     if (btnNueva) {
         btnNueva.onclick = function() {
-            abrirModalNueva();
-        };
-    }
-
-    if (btnCancelar) {
-        btnCancelar.onclick = function() {
-            cerrarModalNueva();
-        };
-    }
-
-    if (btnCerrar) {
-        btnCerrar.onclick = function() {
-            cerrarModalNueva();
-        };
-    }
-
-    if (overlayNueva) {
-        overlayNueva.onclick = function(e) {
-            if (e.target === this) {
-                cerrarModalNueva();
-            }
+            document.getElementById('formNuevaIncidencia').reset();
+            modalNuevaIncidencia.show();
         };
     }
 
@@ -511,7 +557,7 @@ var abrirModal = function(id) {
         })
         .catch(function(error) {
             console.error('Error al abrir modal:', error);
-            alert('Error al cargar la incidencia');
+            mostrarAlertaError('Error', 'No se pudo cargar la incidencia');
         });
 };
 
@@ -524,7 +570,7 @@ var rellenarModal = function(inc) {
     var inquilino = document.getElementById('modalInquilinoInc');
     var categoria = document.getElementById('modalCategoriaInc');
     var badgePrioridad = document.getElementById('modalBadgePrioridad');
-    var imagenTexto = document.getElementById('modalImagenTexto');
+    var badgeCategoria = document.getElementById('modalBadgeCategoria');
 
     if (titulo) { titulo.textContent = inc.titulo_incidencia || ''; }
     if (desc) { desc.textContent = inc.descripcion_incidencia || ''; }
@@ -535,9 +581,17 @@ var rellenarModal = function(inc) {
     if (categoria) { categoria.textContent = inc.categoria_incidencia || ''; }
     if (badgePrioridad) {
         badgePrioridad.textContent = inc.prioridad_incidencia || '';
-        badgePrioridad.className = 'badge-prioridad badge-prioridad-' + (inc.prioridad_incidencia || 'media');
+        badgePrioridad.className = 'badge';
+        switch(inc.prioridad_incidencia) {
+            case 'urgente': badgePrioridad.classList.add('bg-danger'); break;
+            case 'alta': badgePrioridad.classList.add('bg-warning', 'text-dark'); break;
+            case 'media': badgePrioridad.classList.add('bg-secondary'); break;
+            case 'baja': badgePrioridad.classList.add('bg-success'); break;
+        }
     }
-    if (imagenTexto) { imagenTexto.textContent = inc.direccion_propiedad || ''; }
+    if (badgeCategoria) {
+        badgeCategoria.textContent = inc.categoria_incidencia || '';
+    }
 };
 
 var rellenarHistorial = function(historial) {
@@ -595,27 +649,25 @@ var marcarEstadoActivo = function(estado) {
     var botones = document.querySelectorAll('.btn-estado');
     var i;
     for (i = 0; i < botones.length; i++) {
-        botones[i].classList.remove('activo');
+        botones[i].classList.remove('active');
         if (botones[i].getAttribute('data-estado') === estado) {
-            botones[i].classList.add('activo');
+            botones[i].classList.add('active');
         }
     }
 };
 
 var mostrarModal = function() {
-    var overlay = document.getElementById('modalOverlay');
-    var modal = document.getElementById('modalIncidencia');
-    if (overlay) { overlay.classList.add('active'); }
-    if (modal) { modal.classList.add('active'); }
+    if (modalIncidencia) {
+        modalIncidencia.show();
+    }
 };
 
 var cerrarModal = function() {
-    var overlay = document.getElementById('modalOverlay');
-    var modal = document.getElementById('modalIncidencia');
-    if (overlay) { overlay.classList.remove('active'); }
-    if (modal) { modal.classList.remove('active'); }
     incidenciaIdActual = null;
     estadoActualModal = null;
+    if (modalIncidencia) {
+        modalIncidencia.hide();
+    }
 };
 
 /* ============================================
@@ -637,15 +689,16 @@ var cambiarEstado = function(id, estado, comentario) {
     .then(function(response) { return response.json(); })
     .then(function(data) {
         if (data.success) {
+            mostrarAlertaExito('¡Éxito!', 'Estado actualizado correctamente');
             cerrarModal();
             filtrarIncidencias();
         } else {
-            alert('Error al cambiar estado: ' + (data.error || 'Error desconocido'));
+            mostrarAlertaError('Error', data.error || 'Error desconocido');
         }
     })
     .catch(function(error) {
         console.error('Error:', error);
-        alert('Error al cambiar el estado de la incidencia');
+        mostrarAlertaError('Error', 'No se pudo cambiar el estado de la incidencia');
     });
 };
 
@@ -661,44 +714,22 @@ var asignarGestor = function(id, idGestor) {
     .then(function(response) { return response.json(); })
     .then(function(data) {
         if (data.success) {
-            alert('Gestor asignado correctamente');
+            mostrarAlertaExito('¡Éxito!', 'Gestor asignado correctamente');
             cerrarModal();
             filtrarIncidencias();
         } else {
-            alert('Error al asignar gestor: ' + (data.error || 'Error desconocido'));
+            mostrarAlertaError('Error', data.error || 'Error desconocido');
         }
     })
     .catch(function(error) {
         console.error('Error:', error);
-        alert('Error al asignar el gestor');
+        mostrarAlertaError('Error', 'No se pudo asignar el gestor');
     });
 };
 
 /* ============================================
    CREATE NEW INCIDENT
    ============================================ */
-
-var abrirModalNueva = function() {
-    var modal = document.getElementById('modalNuevaIncidencia');
-    var overlay = document.getElementById('modalOverlayNueva');
-    if (modal) {
-        modal.classList.add('active');
-    }
-    if (overlay) {
-        overlay.classList.add('active');
-    }
-};
-
-var cerrarModalNueva = function() {
-    var modal = document.getElementById('modalNuevaIncidencia');
-    var overlay = document.getElementById('modalOverlayNueva');
-    if (modal) {
-        modal.classList.remove('active');
-    }
-    if (overlay) {
-        overlay.classList.remove('active');
-    }
-};
 
 var crearIncidencia = function() {
     var propiedad = document.getElementById('nuevaPropiedadId');
@@ -716,7 +747,7 @@ var crearIncidencia = function() {
     var prioridadVal = prioridad ? prioridad.value : '';
 
     if (!idPropiedad || !idInquilino || !tituloVal || !descripcionVal || !categoriaVal || !prioridadVal) {
-        alert('Por favor completa todos los campos');
+        mostrarAlertaError('Error', 'Por favor completa todos los campos');
         return;
     }
 
@@ -738,16 +769,16 @@ var crearIncidencia = function() {
     .then(function(response) { return response.json(); })
     .then(function(data) {
         if (data.success) {
-            alert('Incidencia creada correctamente');
-            cerrarModalNueva();
+            mostrarAlertaExito('¡Éxito!', 'Incidencia creada correctamente');
+            modalNuevaIncidencia.hide();
             filtrarIncidencias();
         } else {
-            alert('Error al crear la incidencia: ' + (data.error || 'Error desconocido'));
+            mostrarAlertaError('Error', data.error || 'Error desconocido');
         }
     })
     .catch(function(error) {
         console.error('Error:', error);
-        alert('Error al crear la incidencia');
+        mostrarAlertaError('Error', 'No se pudo crear la incidencia');
     });
 };
 

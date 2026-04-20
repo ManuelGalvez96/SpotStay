@@ -1441,6 +1441,32 @@
     color: #D97706;
 }
 
+/* Button estado styles */
+.btn-estado {
+    font-size: 0.875rem;
+}
+
+.btn-estado.active {
+    background-color: #035498 !important;
+    color: white !important;
+    border-color: #035498 !important;
+}
+
+.seccion-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #111827;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 6px;
+    margin-top: 12px;
+}
+
+.seccion-label:first-child {
+    margin-top: 0;
+}
+
 /* ============================================
    PAGINATION STYLES
    ============================================ */

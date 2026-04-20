@@ -18,6 +18,7 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (Auth::check()) {
+            /** @var Usuario $user */
             $user = Auth::user();
             if ($user->roles()->where('slug_rol', 'admin')->exists()) {
                 return redirect('/admin/dashboard');
@@ -64,11 +65,16 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
+            /** @var Usuario $user */
             $user = Auth::user();
 
             // Redirigir según el rol del usuario
             if ($user->roles()->where('slug_rol', 'admin')->exists()) {
                 return redirect()->intended('/admin/dashboard');
+            }
+
+            if ($user->roles()->where('slug_rol', 'gestor')->exists()) {
+                return redirect()->intended('/gestor/dashboard');
             }
 
             if ($user->roles()->whereIn('slug_rol', ['miembro', 'inquilino'])->exists()) {

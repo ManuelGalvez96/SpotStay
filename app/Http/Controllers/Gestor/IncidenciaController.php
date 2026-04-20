@@ -28,9 +28,14 @@ class IncidenciaController extends Controller
 
         $titulo = trim((string) $request->query('titulo', ''));
         $propiedad = trim((string) $request->query('propiedad', ''));
+        $propiedadId = (int) $request->query('propiedad_id', 0);
         $estado = (string) $request->query('estado', '');
         $prioridad = (string) $request->query('prioridad', '');
         $fecha = (string) $request->query('fecha', '');
+
+        if ($propiedadId > 0) {
+            $query->where('tbl_propiedad.id_propiedad', $propiedadId);
+        }
 
         if ($titulo !== '') {
             $query->where('tbl_incidencia.titulo_incidencia', 'like', '%' . $titulo . '%');
@@ -65,7 +70,7 @@ class IncidenciaController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return view('gestor.incidencias', compact('incidencias', 'titulo', 'propiedad', 'estado', 'prioridad', 'fecha'));
+        return view('gestor.incidencias', compact('incidencias', 'titulo', 'propiedad', 'propiedadId', 'estado', 'prioridad', 'fecha'));
     }
 
     public function show(int $id)

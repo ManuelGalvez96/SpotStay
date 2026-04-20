@@ -45,6 +45,8 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/usuarios', [UsuarioController::class, 'index']);
     Route::get('/admin/usuarios/filtrar', [UsuarioController::class, 'filtrar']);
     Route::get('/admin/usuarios/{id}', [UsuarioController::class, 'show']);
+    Route::post('/admin/usuarios/crear', [UsuarioController::class, 'crear']);
+    Route::post('/admin/usuarios/{id}/editar', [UsuarioController::class, 'editar']);
     Route::post('/admin/usuarios/{id}/toggle-estado', [UsuarioController::class, 'toggleEstado']);
     Route::get('/admin/usuarios/exportar', [UsuarioController::class, 'exportar']);
 
@@ -68,6 +70,19 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/incidencias/{id}', [IncidenciaController::class, 'show']);
     Route::post('/admin/incidencias/{id}/estado', [IncidenciaController::class, 'cambiarEstado']);
     Route::post('/admin/incidencias/{id}/asignar', [IncidenciaController::class, 'asignar']);
+
+    // Alquileres
+    Route::get('/admin/alquileres', [AlquilerController::class, 'index']);
+    Route::get('/admin/alquileres/filtrar', [AlquilerController::class, 'filtrar']);
+    Route::get('/admin/alquileres/{id}', [AlquilerController::class, 'show']);
+
+    // Suscripciones
+    Route::get('/admin/suscripciones', [SuscripcionController::class, 'index']);
+    Route::get('/admin/suscripciones/filtrar', [SuscripcionController::class, 'filtrar']);
+    Route::get('/admin/suscripciones/{id}', [SuscripcionController::class, 'show']);
+    Route::post('/admin/suscripciones/{id}/editar', [SuscripcionController::class, 'editar']);
+    Route::post('/admin/suscripciones/{id}/cancelar', [SuscripcionController::class, 'cancelar']);
+    Route::get('/admin/suscripciones/exportar', [SuscripcionController::class, 'exportar']);
 });
 
 // Rutas Gestor

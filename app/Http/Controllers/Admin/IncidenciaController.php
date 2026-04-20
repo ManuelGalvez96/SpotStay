@@ -72,7 +72,9 @@ class IncidenciaController extends Controller
             ->get();
 
         $propiedades = DB::table('tbl_propiedad')
-            ->select('id_propiedad','titulo_propiedad','direccion_propiedad','ciudad_propiedad')
+            ->select('id_propiedad','titulo_propiedad',
+                DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', calle_propiedad, numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
+                'ciudad_propiedad')
             ->orderBy('titulo_propiedad','asc')
             ->get();
 

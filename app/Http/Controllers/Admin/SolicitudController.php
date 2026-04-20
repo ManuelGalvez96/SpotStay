@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\SolicitudArrendador;
 
 class SolicitudController extends Controller
 {
@@ -154,57 +155,80 @@ class SolicitudController extends Controller
 
     public function show($id)
     {
-        $solicitud = DB::table('tbl_solicitud_arrendador')
-            ->join('tbl_usuario',
-              'tbl_usuario.id_usuario','=',
-              'tbl_solicitud_arrendador.id_usuario_fk')
-            ->where('tbl_solicitud_arrendador.id_solicitud_arrendador', $id)
-            ->select(
-              'tbl_solicitud_arrendador.*',
-              'tbl_usuario.nombre_usuario',
-              'tbl_usuario.email_usuario',
-              'tbl_usuario.telefono_usuario',
-              'tbl_usuario.creado_usuario'
-            )
+        $solicitud = SolicitudArrendador::with('usuario:id_usuario,nombre_usuario,email_usuario,telefono_usuario,creado_usuario')
+            ->where('id_solicitud_arrendador', $id)
             ->first();
 
-        return response()->json($solicitud);
+        if (!$solicitud) {
+            return response()->json(['error' => 'Solicitud no encontrada'], 404);
+        }
+
+        return response()->json([
+            'id_solicitud_arrendador' => $solicitud->id_solicitud_arrendador,
+            'id_usuario_fk' => $solicitud->id_usuario_fk,
+            'datos_solicitud_arrendador' => $solicitud->datos_solicitud_arrendador,
+            'estado_solicitud_arrendador' => $solicitud->estado_solicitud_arrendador,
+            'notas_solicitud_arrendador' => $solicitud->notas_solicitud_arrendador,
+            'creado_solicitud_arrendador' => $solicitud->creado_solicitud_arrendador,
+            'actualizado_solicitud_arrendador' => $solicitud->actualizado_solicitud_arrendador,
+            'nombre_usuario' => $solicitud->usuario?->nombre_usuario ?? '—',
+            'email_usuario' => $solicitud->usuario?->email_usuario ?? '—',
+            'telefono_usuario' => $solicitud->usuario?->telefono_usuario ?? '—',
+        ]);
     }
 
     public function filtrar(Request $request)
     {
-        $query = DB::table('tbl_solicitud_arrendador')
-            ->join('tbl_usuario',
-              'tbl_usuario.id_usuario','=',
-              'tbl_solicitud_arrendador.id_usuario_fk')
-            ->select(
-              'tbl_solicitud_arrendador.*',
-              'tbl_usuario.nombre_usuario',
-              'tbl_usuario.email_usuario'
-            );
+        $query = SolicitudArrendador::with('usuario:id_usuario,nombre_usuario,email_usuario')
+            ->select('tbl_solicitud_arrendador.*');
 
         if ($request->estado) {
-            $query->where('estado_solicitud_arrendador',
-              $request->estado);
+            $query->where('estado_solicitud_arrendador', $request->estado);
         }
 
         if ($request->ciudad) {
-            $query->where('datos_solicitud_arrendador','like',
-              '%"ciudad":"' . $request->ciudad . '"%');
+            $query->whereJsonContains('datos_solicitud_arrendador->ciudad', $request->ciudad);
         }
 
         if ($request->q) {
-            $query->where('tbl_usuario.nombre_usuario','like',
-              '%' . $request->q . '%');
+            $query->whereHas('usuario', function ($q) use ($request) {
+                $q->where('nombre_usuario', 'like', '%' . $request->q . '%');
+            });
         }
 
-        $solicitudes = $query
-            ->orderBy('tbl_solicitud_arrendador.creado_solicitud_arrendador','desc')
-            ->get();
+        $solicitudesPaginadas = $query
+            ->orderBy('creado_solicitud_arrendador', 'desc')
+            ->paginate(6);
+
+        /* Transformar datos para incluir nombre_usuario y email_usuario */
+        $items = $solicitudesPaginadas->items();
+        $data = array_map(function($solicitud) {
+            /* Asegurar que datos_solicitud_arrendador es un array, no una cadena JSON */
+            $datos = $solicitud->datos_solicitud_arrendador;
+            if (is_string($datos)) {
+                $datos = json_decode($datos, true) ?? [];
+            }
+            
+            return [
+                'id_solicitud_arrendador' => $solicitud->id_solicitud_arrendador,
+                'id_usuario_fk' => $solicitud->id_usuario_fk,
+                'datos_solicitud_arrendador' => $datos,
+                'estado_solicitud_arrendador' => $solicitud->estado_solicitud_arrendador,
+                'creado_solicitud_arrendador' => $solicitud->creado_solicitud_arrendador,
+                'actualizado_solicitud_arrendador' => $solicitud->actualizado_solicitud_arrendador,
+                'nombre_usuario' => $solicitud->usuario?->nombre_usuario ?? '—',
+                'email_usuario' => $solicitud->usuario?->email_usuario ?? '—',
+            ];
+        }, $items);
 
         return response()->json([
-            'solicitudes' => $solicitudes,
-            'total' => $solicitudes->count()
+            'data' => $data,
+            'total' => $solicitudesPaginadas->total(),
+            'current_page' => $solicitudesPaginadas->currentPage(),
+            'last_page' => $solicitudesPaginadas->lastPage(),
+            'per_page' => $solicitudesPaginadas->perPage(),
+            'from' => $solicitudesPaginadas->firstItem(),
+            'to' => $solicitudesPaginadas->lastItem()
         ]);
     }
 }

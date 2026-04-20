@@ -222,12 +222,156 @@ var filtrarIncidencias = function() {
     fetch(url)
         .then(function(response) { return response.json(); })
         .then(function(data) {
-            console.log('Incidencias filtradas: ' + data.total);
-            location.reload();
+            renderizarKanban(data);
+            asignarEventosTarjetas();
         })
         .catch(function(error) {
             console.error('Error al filtrar:', error);
         });
+};
+
+var renderizarKanban = function(data) {
+    // Actualizar badges de totales en headers
+    actualizarBadgesKanban(data);
+    
+    // Renderizar columna Abierta
+    renderizarColumnaKanban('kanban-col-abierta', data.abiertas);
+    
+    // Renderizar columna En proceso
+    renderizarColumnaKanban('kanban-col-proceso', data.enProceso);
+    
+    // Renderizar columna Resuelta
+    renderizarColumnaKanban('kanban-col-resuelta', data.resueltas);
+    
+    // Renderizar columna Cerrada
+    renderizarColumnaKanban('kanban-col-cerrada', data.cerradas);
+};
+
+var actualizarBadgesKanban = function(data) {
+    var badgeAbierta = document.querySelector('.kanban-col-abierta .badge-kanban');
+    var badgeProceso = document.querySelector('.kanban-col-proceso .badge-kanban');
+    var badgeResuelta = document.querySelector('.kanban-col-resuelta .badge-kanban');
+    var badgeCerrada = document.querySelector('.kanban-col-cerrada .badge-kanban');
+    
+    if (badgeAbierta) { badgeAbierta.textContent = data.totalAbiertas; }
+    if (badgeProceso) { badgeProceso.textContent = data.totalEnProceso; }
+    if (badgeResuelta) { badgeResuelta.textContent = data.totalResueltas; }
+    if (badgeCerrada) { badgeCerrada.textContent = data.totalCerradas; }
+};
+
+var renderizarColumnaKanban = function(className, incidencias) {
+    var columna = document.querySelector('.' + className + ' .kanban-col-body');
+    if (!columna) { return; }
+    
+    columna.innerHTML = '';
+    
+    if (!incidencias || incidencias.length === 0) {
+        var mensaje = document.createElement('p');
+        mensaje.className = 'kanban-vacio';
+        mensaje.textContent = 'Sin incidencias';
+        columna.appendChild(mensaje);
+        return;
+    }
+    
+    var i;
+    for (i = 0; i < incidencias.length; i++) {
+        var inc = incidencias[i];
+        var tarjeta = crearTarjetaIncidencia(inc);
+        columna.appendChild(tarjeta);
+    }
+};
+
+var crearTarjetaIncidencia = function(inc) {
+    var bordeColor = '#6B7280';
+    switch(inc.prioridad_incidencia) {
+        case 'urgente': bordeColor = '#EF4444'; break;
+        case 'alta': bordeColor = '#D97706'; break;
+        case 'media': bordeColor = '#6B7280'; break;
+        case 'baja': bordeColor = '#1AA068'; break;
+    }
+    
+    var iconoCat = 'bi-wrench';
+    switch(inc.categoria_incidencia) {
+        case 'fontaneria': iconoCat = 'bi-droplet'; break;
+        case 'electricidad': iconoCat = 'bi-lightning'; break;
+        case 'calefaccion': iconoCat = 'bi-thermometer'; break;
+        case 'climatizacion': iconoCat = 'bi-fan'; break;
+        case 'humedades': iconoCat = 'bi-cloud-rain'; break;
+        case 'cerrajeria': iconoCat = 'bi-key'; break;
+    }
+    
+    var partes = (inc.nombre_inquilino || '').split(' ');
+    var inicial1 = partes[0] ? partes[0].substring(0, 1).toUpperCase() : '';
+    var inicial2 = partes[1] ? partes[1].substring(0, 1).toUpperCase() : '';
+    var iniciales = inicial1 + inicial2;
+    
+    var nombreInquilino = (partes[0] || '') + ' ' + (partes[1] ? partes[1].substring(0, 1).toUpperCase() + '.' : '');
+    
+    var tarjeta = document.createElement('div');
+    tarjeta.className = 'tarjeta-inc';
+    tarjeta.setAttribute('data-id', inc.id_incidencia);
+    tarjeta.style.borderLeft = '3px solid ' + bordeColor;
+    
+    var tiempoCreacion = calcularTiempoTranscurrido(inc.creado_incidencia);
+    
+    var html = '<div class="tarjeta-inc-top">' +
+               '<span class="badge-prioridad badge-prioridad-' + inc.prioridad_incidencia + '">' + inc.prioridad_incidencia.charAt(0).toUpperCase() + inc.prioridad_incidencia.slice(1) + '</span>' +
+               '<span class="tarjeta-tiempo">' + tiempoCreacion + '</span>' +
+               '</div>' +
+               '<p class="tarjeta-titulo">' + (inc.titulo_incidencia || '') + '</p>' +
+               '<p class="tarjeta-desc">' + truncarTexto(inc.descripcion_incidencia || '', 60) + '</p>' +
+               '<div class="tarjeta-inc-bottom">' +
+               '<span class="tarjeta-propiedad">' + truncarTexto(inc.direccion_propiedad || '', 15) + '</span>' +
+               '<div class="tarjeta-inquilino">' +
+               '<div class="avatar-mini">' + iniciales + '</div>' +
+               '<span>' + nombreInquilino + '</span>' +
+               '</div>' +
+               '</div>' +
+               '<div class="tarjeta-categoria">' +
+               '<i class="bi ' + iconoCat + '"></i>' +
+               '<span>' + (inc.categoria_incidencia || '').charAt(0).toUpperCase() + (inc.categoria_incidencia || '').slice(1) + '</span>' +
+               '</div>';
+    
+    if (inc.nombre_gestor && (inc.estado_incidencia === 'en_proceso' || inc.estado_incidencia === 'resuelta')) {
+        html += '<div class="tarjeta-gestor">' +
+                '<span class="gestor-label">Asignado a:</span>' +
+                '<div class="avatar-mini avatar-mini-gestor">MG</div>' +
+                '<span class="gestor-nombre">' + (inc.nombre_gestor || '') + ' (gestor)</span>' +
+                '</div>';
+    }
+    
+    tarjeta.innerHTML = html;
+    return tarjeta;
+};
+
+var truncarTexto = function(texto, longitud) {
+    if (texto.length > longitud) {
+        return texto.substring(0, longitud) + '...';
+    }
+    return texto;
+};
+
+var calcularTiempoTranscurrido = function(fecha) {
+    // Formato esperado: "2024-04-20 10:30:45"
+    var ahora = new Date();
+    var fechaObj = new Date(fecha);
+    var diferencia = Math.floor((ahora - fechaObj) / 1000); // segundos
+    
+    if (diferencia < 60) {
+        return 'hace segundos';
+    } else if (diferencia < 3600) {
+        var minutos = Math.floor(diferencia / 60);
+        return 'hace ' + minutos + ' min';
+    } else if (diferencia < 86400) {
+        var horas = Math.floor(diferencia / 3600);
+        return 'hace ' + horas + ' h';
+    } else if (diferencia < 604800) {
+        var dias = Math.floor(diferencia / 86400);
+        return 'hace ' + dias + ' d';
+    } else {
+        var semanas = Math.floor(diferencia / 604800);
+        return 'hace ' + semanas + ' sem';
+    }
 };
 
 /* ============================================
@@ -374,7 +518,7 @@ var cambiarEstado = function(id, estado, comentario) {
     .then(function(data) {
         if (data.success) {
             cerrarModal();
-            location.reload();
+            filtrarIncidencias();
         } else {
             alert('Error al cambiar estado: ' + (data.error || 'Error desconocido'));
         }
@@ -399,7 +543,7 @@ var asignarGestor = function(id, idGestor) {
         if (data.success) {
             alert('Gestor asignado correctamente');
             cerrarModal();
-            location.reload();
+            filtrarIncidencias();
         } else {
             alert('Error al asignar gestor: ' + (data.error || 'Error desconocido'));
         }
@@ -476,7 +620,7 @@ var crearIncidencia = function() {
         if (data.success) {
             alert('Incidencia creada correctamente');
             cerrarModalNueva();
-            location.reload();
+            filtrarIncidencias();
         } else {
             alert('Error al crear la incidencia: ' + (data.error || 'Error desconocido'));
         }

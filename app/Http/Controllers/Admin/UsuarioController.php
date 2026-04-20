@@ -53,7 +53,9 @@ class UsuarioController extends Controller
               'tbl_rol_usuario.id_usuario_fk')
             ->leftJoin('tbl_rol',
               'tbl_rol.id_rol', '=',
-              'tbl_rol_usuario.id_rol_fk');
+              'tbl_rol_usuario.id_rol_fk')
+            ->leftJoin(DB::raw('(SELECT id_arrendador_fk, COUNT(*) as total FROM tbl_propiedad GROUP BY id_arrendador_fk) as props'),
+              'props.id_arrendador_fk', '=', 'tbl_usuario.id_usuario');
 
         if ($request->input('rol')) {
             $query->where('tbl_rol.slug_rol', $request->input('rol'));
@@ -72,7 +74,7 @@ class UsuarioController extends Controller
             });
         }
 
-        $usuariosPaginados = $query->select('tbl_usuario.*', 'tbl_rol.nombre_rol', 'tbl_rol.slug_rol')
+        $usuariosPaginados = $query->select('tbl_usuario.*', 'tbl_rol.nombre_rol', 'tbl_rol.slug_rol', 'props.total as total_propiedades')
             ->paginate(10);
         
         // Procesar los datos para el frontend
@@ -91,7 +93,7 @@ class UsuarioController extends Controller
                 'rol' => strtolower($u->slug_rol ?? 'usuario'),
                 'rolLabel' => $u->nombre_rol ?? 'Sin rol',
                 'estado' => $u->activo_usuario ? 'activo' : 'inactivo',
-                'propiedades' => 0,
+                'propiedades' => $u->total_propiedades ?? 0,
                 'fechaRegistro' => $u->creado_usuario ? substr($u->creado_usuario, 0, 10) : 'N/A',
                 'avatarText' => $avatarText,
                 'avatarColor' => '#B8CCE4'

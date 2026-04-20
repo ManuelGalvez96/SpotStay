@@ -19,19 +19,19 @@ class AlquilerSeeder extends Seeder
             ['propiedad' => 'Av. Diagonal 88', 'inquilino' => 'sofia@spotstay.com', 'estado' => 'activo', 'fecha_inicio' => '2025-01-20'],
             ['propiedad' => 'Calle Pelai 12', 'inquilino' => 'carmen.iglesias@email.com', 'estado' => 'activo', 'fecha_inicio' => '2025-03-01'],
             ['propiedad' => 'Calle Mayor 14', 'inquilino' => 'andres.molina@email.com', 'estado' => 'activo', 'fecha_inicio' => '2025-04-01'],
-            ['propiedad' => 'Calle Fuencarral 22', 'inquilino' => 'patricia.vega@email.com', 'estado' => 'pendiente', 'fecha_inicio' => '2025-05-01'],
-            ['propiedad' => 'Paseo de Gracia 5', 'inquilino' => 'javier.moya@email.com', 'estado' => 'pendiente', 'fecha_inicio' => '2025-05-15'],
-            ['propiedad' => 'Alameda de Hércules 3', 'inquilino' => 'lucia.serrano@email.com', 'estado' => 'pendiente', 'fecha_inicio' => '2025-06-01'],
+            ['propiedad' => 'Calle Fuencarral 22', 'inquilino' => 'patricia.vega@email.com', 'estado' => 'activo', 'fecha_inicio' => '2025-05-01'],
+            ['propiedad' => 'Paseo de Gracia 5', 'inquilino' => 'javier.moya@email.com', 'estado' => 'activo', 'fecha_inicio' => '2025-05-15'],
+            ['propiedad' => 'Alameda de Hércules 3', 'inquilino' => 'lucia.serrano@email.com', 'estado' => 'activo', 'fecha_inicio' => '2025-06-01'],
             
             // Alquileres de David
-            ['propiedad' => 'Calle Mayor 14', 'inquilino' => 'inquilino1@example.com', 'estado' => 'aprobado', 'fecha_inicio' => '2024-01-15'],
+            ['propiedad' => 'Calle Mayor 14', 'inquilino' => 'inquilino1@example.com', 'estado' => 'activo', 'fecha_inicio' => '2024-01-15'],
             ['propiedad' => 'Calle Serrano 47', 'inquilino' => 'inquilino2@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-12-01'],
             ['propiedad' => 'Calle Fuencarral 22', 'inquilino' => 'inquilino3@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-11-20'],
             ['propiedad' => 'Av. Diagonal 88', 'inquilino' => 'inquilino4@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-10-15'],
             ['propiedad' => 'Calle Pelai 12', 'inquilino' => 'inquilino5@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-09-01'],
             ['propiedad' => 'Paseo de Gracia 5', 'inquilino' => 'inquilino6@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-08-10'],
             ['propiedad' => 'Calle Larios 7', 'inquilino' => 'inquilino7@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-07-25'],
-            ['propiedad' => 'Alameda de Hércules 3', 'inquilino' => 'inquilino8@example.com', 'estado' => 'aprobado', 'fecha_inicio' => '2024-02-01'],
+            ['propiedad' => 'Alameda de Hércules 3', 'inquilino' => 'inquilino8@example.com', 'estado' => 'activo', 'fecha_inicio' => '2024-02-01'],
             ['propiedad' => 'Calle Colón 8', 'inquilino' => 'inquilino1@example.com', 'estado' => 'pendiente', 'fecha_inicio' => '2024-03-01'],
             ['propiedad' => 'Gran Vía 45', 'inquilino' => 'inquilino2@example.com', 'estado' => 'cancelado', 'fecha_inicio' => '2023-06-15'],
             ['propiedad' => 'Calle Coso 15', 'inquilino' => 'inquilino3@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-05-20'],
@@ -44,6 +44,11 @@ class AlquilerSeeder extends Seeder
             ['propiedad' => 'Calle Fuencarral 22', 'inquilino' => 'inquilino2@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-01-30'],
             ['propiedad' => 'Av. Diagonal 88', 'inquilino' => 'inquilino3@example.com', 'estado' => 'finalizado', 'fecha_inicio' => '2022-11-15'],
             ['propiedad' => 'Calle Pelai 12', 'inquilino' => 'inquilino4@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-02-28'],
+            
+            // Nuevos alquileres para cubrir requerimientos del seeder (todos inquilinos activos y un arrendador pagando)
+            ['propiedad' => 'Calle Larios 7', 'inquilino' => 'test1@example.com', 'estado' => 'activo', 'fecha_inicio' => '2024-05-01'],
+            ['propiedad' => 'Paseo de la Explanada 3', 'inquilino' => 'elena@spotstay.com', 'estado' => 'activo', 'fecha_inicio' => '2024-04-10'], // elena es arrendadora
+            ['propiedad' => 'Calle Miguel Íscar 15', 'inquilino' => 'test2@example.com', 'estado' => 'activo', 'fecha_inicio' => '2024-06-01'], // test2 es arrendador
         ];
 
         $propiedades = Propiedad::all();

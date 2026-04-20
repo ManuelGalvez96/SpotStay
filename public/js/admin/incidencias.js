@@ -7,6 +7,7 @@ var csrfToken;
 var incidenciaIdActual;
 var estadoActualModal;
 var buscadorTimeout;
+var paginaActualInc = 1;
 
 /* ============================================
    INITIALIZATION
@@ -19,6 +20,8 @@ window.onload = function() {
     asignarEventosModal();
     asignarEventosVista();
     asignarEventosNuevaIncidencia();
+    asignarEventosPaginacion();
+    filtrarIncidencias();
 };
 
 /* ============================================
@@ -35,6 +38,7 @@ var asignarEventosFiltros = function() {
         buscador.onkeyup = function() {
             clearTimeout(buscadorTimeout);
             buscadorTimeout = setTimeout(function() {
+                paginaActualInc = 1;
                 filtrarIncidencias();
             }, 300);
         };
@@ -42,18 +46,21 @@ var asignarEventosFiltros = function() {
 
     if (selectCategoria) {
         selectCategoria.onchange = function() {
+            paginaActualInc = 1;
             filtrarIncidencias();
         };
     }
 
     if (selectPrioridad) {
         selectPrioridad.onchange = function() {
+            paginaActualInc = 1;
             filtrarIncidencias();
         };
     }
 
     if (selectPropiedad) {
         selectPropiedad.onchange = function() {
+            paginaActualInc = 1;
             filtrarIncidencias();
         };
     }
@@ -64,6 +71,15 @@ var asignarEventosTarjetas = function() {
     var i;
     for (i = 0; i < tarjetas.length; i++) {
         tarjetas[i].onclick = function() {
+            var id = this.getAttribute('data-id');
+            abrirModal(id);
+        };
+    }
+    
+    // Asignar evento a botones de ver en la tabla
+    var botonesVer = document.querySelectorAll('.tabla-admin .btn-ver');
+    for (i = 0; i < botonesVer.length; i++) {
+        botonesVer[i].onclick = function() {
             var id = this.getAttribute('data-id');
             abrirModal(id);
         };
@@ -130,13 +146,13 @@ var asignarEventosModal = function() {
 var asignarEventosVista = function() {
     var btnKanban = document.getElementById('btnVistaKanban');
     var btnLista = document.getElementById('btnVistaLista');
+    var kanban = document.getElementById('kanbanBoard');
+    var tabla = document.getElementById('vistaLista');
 
     if (btnKanban) {
         btnKanban.onclick = function() {
-            var kanban = document.getElementById('kanbanBoard');
-            if (kanban) {
-                kanban.style.display = 'grid';
-            }
+            if (kanban) { kanban.style.display = 'grid'; }
+            if (tabla) { tabla.style.display = 'none'; }
             if (btnKanban) { btnKanban.classList.add('activo'); }
             if (btnLista) { btnLista.classList.remove('activo'); }
         };
@@ -144,10 +160,8 @@ var asignarEventosVista = function() {
 
     if (btnLista) {
         btnLista.onclick = function() {
-            var kanban = document.getElementById('kanbanBoard');
-            if (kanban) {
-                kanban.style.display = 'none';
-            }
+            if (kanban) { kanban.style.display = 'none'; }
+            if (tabla) { tabla.style.display = 'block'; }
             if (btnLista) { btnLista.classList.add('activo'); }
             if (btnKanban) { btnKanban.classList.remove('activo'); }
         };
@@ -217,13 +231,18 @@ var filtrarIncidencias = function() {
     var url = '/admin/incidencias/filtrar?q=' + encodeURIComponent(q)
             + '&categoria=' + encodeURIComponent(categoria)
             + '&prioridad=' + encodeURIComponent(prioridad)
-            + '&propiedad=' + encodeURIComponent(propiedad);
+            + '&propiedad=' + encodeURIComponent(propiedad)
+            + '&page=' + paginaActualInc;
 
     fetch(url)
         .then(function(response) { return response.json(); })
         .then(function(data) {
             renderizarKanban(data);
             asignarEventosTarjetas();
+            if (data.currentPage && data.totalPages) {
+                actualizarPaginacion(data.currentPage, data.totalPages);
+            }
+            asignarEventosPaginacion();
         })
         .catch(function(error) {
             console.error('Error al filtrar:', error);
@@ -245,6 +264,9 @@ var renderizarKanban = function(data) {
     
     // Renderizar columna Cerrada
     renderizarColumnaKanban('kanban-col-cerrada', data.cerradas);
+    
+    // Renderizar tabla de lista
+    renderizarTablaIncidencias(data);
 };
 
 var actualizarBadgesKanban = function(data) {
@@ -372,6 +394,104 @@ var calcularTiempoTranscurrido = function(fecha) {
         var semanas = Math.floor(diferencia / 604800);
         return 'hace ' + semanas + ' sem';
     }
+};
+
+/* ============================================
+   TABLE VIEW RENDERING
+   ============================================ */
+
+var renderizarTablaIncidencias = function(data) {
+    console.log('→ Renderizando tabla incidencias...');
+    var tbody = document.getElementById('tbodyIncidencias');
+    var contador = document.getElementById('contadorResultados');
+    
+    if (!tbody) { 
+        console.error('✗ ERROR: no se encontró elemento tbodyIncidencias');
+        return; 
+    }
+    console.log('✓ tbody encontrado');
+    
+    tbody.innerHTML = '';
+    
+    // Usar datos paginados si están disponibles, sino usar todos
+    var todasIncidencias = data.tabla || [];
+    
+    if (todasIncidencias.length === 0) {
+        todasIncidencias = [];
+        if (data.abiertas) {
+            var i;
+            for (i = 0; i < data.abiertas.length; i++) {
+                todasIncidencias.push(data.abiertas[i]);
+            }
+        }
+        if (data.enProceso) {
+            var i;
+            for (i = 0; i < data.enProceso.length; i++) {
+                todasIncidencias.push(data.enProceso[i]);
+            }
+        }
+        if (data.resueltas) {
+            var i;
+            for (i = 0; i < data.resueltas.length; i++) {
+                todasIncidencias.push(data.resueltas[i]);
+            }
+        }
+        if (data.cerradas) {
+            var i;
+            for (i = 0; i < data.cerradas.length; i++) {
+                todasIncidencias.push(data.cerradas[i]);
+            }
+        }
+    }
+    
+    var totalIncidencias = data.total || todasIncidencias.length;
+    
+    console.log('Total incidencias encontradas: ' + totalIncidencias);
+    
+    if (contador) {
+        contador.textContent = totalIncidencias + ' incidencias encontradas';
+    }
+    
+    if (todasIncidencias.length === 0) {
+        console.log('⚠ Sin incidencias para mostrar');
+        var fila = document.createElement('tr');
+        fila.innerHTML = '<td colspan="7" style="text-align: center; color: #9CA3AF; padding: 20px;">Sin incidencias</td>';
+        tbody.appendChild(fila);
+        return;
+    }
+    
+    console.log('✓ Iniciando renderizado de ' + todasIncidencias.length + ' filas...');
+    var i;
+    for (i = 0; i < todasIncidencias.length; i++) {
+        var fila = crearFilaIncidencia(todasIncidencias[i]);
+        tbody.appendChild(fila);
+    }
+    
+    console.log('✓ Tabla renderizada con ' + todasIncidencias.length + ' filas');
+};
+
+var crearFilaIncidencia = function(inc) {
+    var fila = document.createElement('tr');
+    
+    var estadoBadgeClass = 'badge-' + inc.estado_incidencia;
+    var estadoLabel = inc.estado_incidencia.charAt(0).toUpperCase() + inc.estado_incidencia.slice(1);
+    if (inc.estado_incidencia === 'en_proceso') {
+        estadoLabel = 'En proceso';
+    }
+    
+    var prioridadLabel = inc.prioridad_incidencia.charAt(0).toUpperCase() + inc.prioridad_incidencia.slice(1);
+    var categoriaLabel = inc.categoria_incidencia.charAt(0).toUpperCase() + inc.categoria_incidencia.slice(1);
+    
+    fila.className = (inc.estado_incidencia === 'cerrada') ? 'fila-inactiva' : '';
+    fila.innerHTML = '<td><strong>' + (inc.titulo_incidencia || '') + '</strong></td>' +
+                     '<td>' + truncarTexto(inc.direccion_propiedad || '', 30) + '</td>' +
+                     '<td>' + categoriaLabel + '</td>' +
+                     '<td><span class="badge-prioridad badge-prioridad-' + inc.prioridad_incidencia + '">' + prioridadLabel + '</span></td>' +
+                     '<td><span id="estadoBadge-' + inc.id_incidencia + '" class="badge-estado ' + estadoBadgeClass + '">' + estadoLabel + '</span></td>' +
+                     '<td>' + (inc.nombre_inquilino || '') + '</td>' +
+                     '<td><button class="btn-accion btn-ver" data-id="' + inc.id_incidencia + '" title="Ver detalles"><i class="bi bi-eye"></i></button></td>';
+    
+    return fila;
 };
 
 /* ============================================
@@ -629,4 +749,65 @@ var crearIncidencia = function() {
         console.error('Error:', error);
         alert('Error al crear la incidencia');
     });
+};
+
+/* ============================================
+   PAGINATION FUNCTIONS
+   ============================================ */
+
+var asignarEventosPaginacion = function() {
+    var btnAnterior = document.getElementById('btnAnteriorInc');
+    var btnSiguiente = document.getElementById('btnSiguienteInc');
+    var contenedor = document.getElementById('paginasInc');
+    var botonesNumero = contenedor ? contenedor.querySelectorAll('.pag-numero') : [];
+    
+    // Botón anterior
+    if (btnAnterior) {
+        btnAnterior.onclick = function(event) {
+            event.preventDefault();
+            if (paginaActualInc > 1) {
+                cambiarPaginaInc(paginaActualInc - 1);
+            }
+        };
+    }
+    
+    // Botón siguiente
+    if (btnSiguiente) {
+        btnSiguiente.onclick = function(event) {
+            event.preventDefault();
+            cambiarPaginaInc(paginaActualInc + 1);
+        };
+    }
+    
+    // Botones número de página
+    for (var i = 0; i < botonesNumero.length; i++) {
+        var btnNum = botonesNumero[i];
+        btnNum.onclick = function(event) {
+            event.preventDefault();
+            var pagina = parseInt(this.getAttribute('data-pagina'));
+            cambiarPaginaInc(pagina);
+        };
+    }
+};
+
+var cambiarPaginaInc = function(numeroPagina) {
+    paginaActualInc = numeroPagina;
+    filtrarIncidencias();
+};
+
+var actualizarPaginacion = function(paginaActual, totalPaginas) {
+    var contenedor = document.getElementById('paginasInc');
+    if (!contenedor) return;
+    
+    // Limpiar los botones anteriores
+    contenedor.innerHTML = '';
+    
+    // Generar los botones de página
+    for (var i = 1; i <= totalPaginas; i++) {
+        var btn = document.createElement('button');
+        btn.className = 'pag-numero' + (i === paginaActual ? ' activo' : '');
+        btn.setAttribute('data-pagina', i);
+        btn.textContent = i;
+        contenedor.appendChild(btn);
+    }
 };

@@ -229,6 +229,9 @@ class IncidenciaController extends Controller
 
     public function filtrar(Request $request)
     {
+        $perPage = 10;
+        $page = $request->input('page', 1);
+        
         $queryBase = DB::table('tbl_incidencia')
             ->join('tbl_propiedad',
               'tbl_propiedad.id_propiedad','=',
@@ -261,7 +264,7 @@ class IncidenciaController extends Controller
             $queryBase->where('titulo_incidencia','like','%' . $request->q . '%');
         }
 
-        // Separar por estado
+        // Obtener totales por estado para badges
         $abiertas = (clone $queryBase)
             ->where('tbl_incidencia.estado_incidencia','abierta')
             ->orderBy('tbl_incidencia.creado_incidencia','desc')
@@ -282,6 +285,10 @@ class IncidenciaController extends Controller
             ->orderBy('tbl_incidencia.creado_incidencia','desc')
             ->get();
 
+        // Paginar la tabla combinada
+        $allIncidencias = $queryBase->orderBy('tbl_incidencia.creado_incidencia','desc')
+            ->paginate($perPage);
+
         return response()->json([
             'abiertas' => $abiertas,
             'enProceso' => $enProceso,
@@ -290,7 +297,14 @@ class IncidenciaController extends Controller
             'totalAbiertas' => $abiertas->count(),
             'totalEnProceso' => $enProceso->count(),
             'totalResueltas' => $resueltas->count(),
-            'totalCerradas' => $cerradas->count()
+            'totalCerradas' => $cerradas->count(),
+            'tabla' => $allIncidencias->items(),
+            'currentPage' => $allIncidencias->currentPage(),
+            'totalPages' => $allIncidencias->lastPage(),
+            'total' => $allIncidencias->total(),
+            'perPage' => $allIncidencias->perPage(),
+            'from' => $allIncidencias->firstItem(),
+            'to' => $allIncidencias->lastItem()
         ]);
     }
 

@@ -266,6 +266,34 @@
 
 </div>
 
+<!-- Vista de Lista -->
+<div class="card-admin" id="vistaLista" style="display: none;">
+    <div class="tabla-header">
+        <span id="contadorResultados">0 incidencias encontradas</span>
+        <div class="paginacion">
+            <button id="btnAnteriorInc" class="btn-pag">← Anterior</button>
+            <span id="paginasInc">
+            </span>
+            <button id="btnSiguienteInc" class="btn-pag">Siguiente →</button>
+        </div>
+    </div>
+    <table class="tabla-admin" id="tablaIncidencias">
+        <thead>
+            <tr>
+                <th>TÍTULO</th>
+                <th>PROPIEDAD</th>
+                <th>CATEGORÍA</th>
+                <th>PRIORIDAD</th>
+                <th>ESTADO</th>
+                <th>REPORTADA POR</th>
+                <th>ACCIONES</th>
+            </tr>
+        </thead>
+        <tbody id="tbodyIncidencias">
+        </tbody>
+    </table>
+</div>
+
 <div class="modal-overlay" id="modalOverlay"></div>
 <div class="modal-admin modal-ancho" id="modalIncidencia">
     <div class="modal-header-admin">

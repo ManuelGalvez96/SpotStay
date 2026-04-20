@@ -1314,6 +1314,188 @@
     color: #475569;
 }
 
+/* ============================================
+   TABLE VIEW STYLES
+   ============================================ */
+
+.card-admin {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #E5E7EB;
+    overflow: hidden;
+    margin-top: 16px;
+}
+
+.tabla-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #E5E7EB;
+    background: #F9FAFB;
+    font-size: 13px;
+    color: #6B7280;
+    gap: 24px;
+}
+
+.tabla-admin {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-admin thead th {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #9CA3AF;
+    letter-spacing: 0.8px;
+    padding: 12px 20px;
+    text-align: left;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+}
+
+.tabla-admin tbody tr {
+    border-bottom: 1px solid #F3F4F6;
+    transition: background-color 0.2s ease;
+}
+
+.tabla-admin tbody tr:hover {
+    background: #F9FAFB;
+}
+
+.tabla-admin tbody td {
+    padding: 14px 20px;
+    font-size: 14px;
+    color: #111827;
+    border: none;
+    vertical-align: middle;
+}
+
+.fila-inactiva {
+    opacity: 0.65;
+}
+
+/* Badges estado en tabla */
+.badge-estado {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.badge-estado.badge-abierta {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.badge-estado.badge-en_proceso {
+    background: #FEF3C7;
+    color: #92400e;
+}
+
+.badge-estado.badge-resuelta {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.badge-estado.badge-cerrada {
+    background: #F1F5F9;
+    color: #475569;
+}
+
+/* Botones de acciones en tabla */
+.acciones-tabla {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-accion {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    background: white;
+    color: #6B7280;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.btn-accion:hover {
+    background: #F3F4F6;
+    color: #035498;
+    border-color: #035498;
+}
+
+.btn-ver {
+    color: #035498;
+}
+
+.btn-editar {
+    color: #D97706;
+}
+
+/* ============================================
+   PAGINATION STYLES
+   ============================================ */
+
+.paginacion {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.btn-pag {
+    background: transparent;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: #6B7280;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.btn-pag:hover {
+    border-color: #035498;
+    color: #035498;
+    background: #EEF4FF;
+}
+
+.pag-numero {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: #6B7280;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.pag-numero:hover {
+    background: #E5E7EB;
+    color: #111827;
+}
+
+.pag-numero.activo {
+    background: #035498;
+    color: white;
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
     .kanban-board {

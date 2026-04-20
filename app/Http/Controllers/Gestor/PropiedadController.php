@@ -59,7 +59,7 @@ class PropiedadController extends Controller
         if ($q !== '') {
             $query->where(function ($sub) use ($q) {
                 $sub->where('tbl_propiedad.titulo_propiedad', 'like', '%' . $q . '%')
-                    ->orWhere('tbl_propiedad.direccion_propiedad', 'like', '%' . $q . '%')
+                    ->orWhereRaw("CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad, tbl_propiedad.piso_propiedad, tbl_propiedad.puerta_propiedad) like ?", ['%' . $q . '%'])
                     ->orWhere('arrendador.nombre_usuario', 'like', '%' . $q . '%');
             });
         }
@@ -101,7 +101,7 @@ class PropiedadController extends Controller
             ->select(
                 'tbl_propiedad.id_propiedad',
                 'tbl_propiedad.titulo_propiedad',
-                'tbl_propiedad.direccion_propiedad',
+                DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
                 'tbl_propiedad.ciudad_propiedad',
                 'tbl_propiedad.codigo_postal_propiedad',
                 'tbl_propiedad.estado_propiedad',
@@ -155,6 +155,7 @@ class PropiedadController extends Controller
             ->where('tbl_propiedad.id_gestor_fk', $gestorId)
             ->select(
                 'tbl_propiedad.*',
+                DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
                 'arrendador.nombre_usuario as nombre_arrendador',
                 'arrendador.email_usuario as email_arrendador',
                 'arrendador.telefono_usuario as telefono_arrendador',
@@ -230,6 +231,7 @@ class PropiedadController extends Controller
             ->where('tbl_propiedad.id_gestor_fk', $gestorId)
             ->select(
                 'tbl_propiedad.*',
+                DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
                 'arrendador.nombre_usuario as nombre_arrendador',
                 'arrendador.email_usuario as email_arrendador',
                 'arrendador.telefono_usuario as telefono_arrendador',

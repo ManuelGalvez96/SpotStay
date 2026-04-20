@@ -22,7 +22,7 @@ class IncidenciaController extends Controller
                 'tbl_incidencia.prioridad_incidencia',
                 'tbl_incidencia.creado_incidencia',
                 'tbl_propiedad.titulo_propiedad',
-                'tbl_propiedad.direccion_propiedad',
+                DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
                 'tbl_propiedad.ciudad_propiedad'
             );
 
@@ -44,7 +44,7 @@ class IncidenciaController extends Controller
         if ($propiedad !== '') {
             $query->where(function ($sub) use ($propiedad) {
                 $sub->where('tbl_propiedad.titulo_propiedad', 'like', '%' . $propiedad . '%')
-                    ->orWhere('tbl_propiedad.direccion_propiedad', 'like', '%' . $propiedad . '%')
+                    ->orWhereRaw("CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad, tbl_propiedad.piso_propiedad, tbl_propiedad.puerta_propiedad) like ?", ['%' . $propiedad . '%'])
                     ->orWhere('tbl_propiedad.ciudad_propiedad', 'like', '%' . $propiedad . '%');
             });
         }
@@ -85,7 +85,7 @@ class IncidenciaController extends Controller
                 'tbl_incidencia.*',
                 'tbl_propiedad.id_propiedad',
                 'tbl_propiedad.titulo_propiedad',
-                'tbl_propiedad.direccion_propiedad',
+                DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
                 'tbl_propiedad.ciudad_propiedad',
                 'reporta.nombre_usuario as nombre_reporta',
                 'reporta.email_usuario as email_reporta',

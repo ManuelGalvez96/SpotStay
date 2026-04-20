@@ -15,7 +15,10 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_arrendador_fk');
             $table->unsignedBigInteger('id_gestor_fk')->nullable();
             $table->string('titulo_propiedad', 150);
-            $table->string('direccion_propiedad');
+            $table->string('calle_propiedad', 150);
+            $table->string('numero_propiedad', 20);
+            $table->string('piso_propiedad', 20)->nullable();
+            $table->string('puerta_propiedad', 20)->nullable();
             $table->string('ciudad_propiedad', 100);
             $table->string('codigo_postal_propiedad', 10);
             $table->decimal('latitud_propiedad', 10, 7)->nullable();

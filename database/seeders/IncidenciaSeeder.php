@@ -34,11 +34,10 @@ class IncidenciaSeeder extends Seeder
             ['titulo' => 'Mampara ducha rota', 'descripcion' => 'La puerta de la ducha está rota', 'categoria' => 'danos', 'prioridad' => 'media', 'estado' => 'resuelto'],
         ];
 
-        $propiedades = Propiedad::all();
-        $usuarios = Usuario::all();
-        $gestores = Usuario::whereHas('roles', function ($q) {
-            $q->where('nombre_rol', 'gestor');
-        })->get();
+        foreach ($incidencias as $inc) {
+            $idPropiedad = DB::table('tbl_propiedad')
+                ->whereRaw("TRIM(CONCAT_WS(' ', calle_propiedad, numero_propiedad)) = ?", [$inc['propiedad_direccion']])
+                ->value('id_propiedad');
 
         $propiedadIndex = 0;
 

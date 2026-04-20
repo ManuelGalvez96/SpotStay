@@ -35,10 +35,38 @@ class ConversacionSeeder extends Seeder
 
         $propiedades = Propiedad::pluck('id_propiedad')->toArray();
 
-        foreach ($conversaciones as $data) {
-            $propiedadId = null;
-            if ($data['propiedad_id'] && isset($propiedades[$data['propiedad_id'] - 1])) {
-                $propiedadId = $propiedades[$data['propiedad_id'] - 1];
+        // 2 conversaciones miembro-arrendador
+        $conversacionesMiembro = [
+            [
+                'tipo' => 'directa',
+                'propiedad_direccion' => null,
+                'usuarios' => [
+                    'ana@spotstay.com',
+                    'carlos@spotstay.com',
+                ]
+            ],
+            [
+                'tipo' => 'directa',
+                'propiedad_direccion' => null,
+                'usuarios' => [
+                    'roberto.diaz@email.com',
+                    'elena@spotstay.com',
+                ]
+            ],
+        ];
+
+        $todasConversaciones = array_merge(
+            $conversacionesDirectas,
+            $conversacionesGrupo,
+            $conversacionesMiembro
+        );
+
+        foreach ($todasConversaciones as $conv) {
+            $idPropiedad = null;
+            if ($conv['propiedad_direccion']) {
+                $idPropiedad = DB::table('tbl_propiedad')
+                    ->whereRaw("TRIM(CONCAT_WS(' ', calle_propiedad, numero_propiedad)) = ?", [$conv['propiedad_direccion']])
+                    ->value('id_propiedad');
             }
 
             Conversacion::firstOrCreate(

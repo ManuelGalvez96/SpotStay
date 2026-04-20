@@ -38,7 +38,7 @@ class DashboardController extends Controller
             ->select(
               'tbl_alquiler.id_alquiler',
               'tbl_propiedad.titulo_propiedad',
-              'tbl_propiedad.direccion_propiedad',
+              DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
               'tbl_propiedad.ciudad_propiedad',
               'inquilino.nombre_usuario as nombre_inquilino',
               'arrendador.nombre_usuario as nombre_arrendador',

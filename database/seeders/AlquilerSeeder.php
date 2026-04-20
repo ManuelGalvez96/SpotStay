@@ -34,6 +34,7 @@ class AlquilerSeeder extends Seeder
             ['propiedad' => 'Avenida Malvarrosa 30', 'inquilino' => 'inquilino4@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-02-28'],
         ];
 
+<<<<<<< HEAD
         foreach ($alquileres as $data) {
             $propiedad = Propiedad::where('direccion_propiedad', $data['propiedad'])->first();
             $inquilino = Usuario::where('email_usuario', $data['inquilino'])->first();
@@ -42,6 +43,12 @@ class AlquilerSeeder extends Seeder
                 $q->where('nombre_rol', 'admin');
             })->get();
             $admin = $admins->isNotEmpty() ? $admins->random() : null;
+=======
+        foreach ($alquileres as $alq) {
+            $idPropiedad = DB::table('tbl_propiedad')
+                ->whereRaw("TRIM(CONCAT_WS(' ', calle_propiedad, numero_propiedad)) = ?", [$alq['propiedad_direccion']])
+                ->value('id_propiedad');
+>>>>>>> e7c642bfb4db8c6d85f022be9d7f170ded781794
 
             if ($propiedad && $inquilino) {
                 Alquiler::firstOrCreate(

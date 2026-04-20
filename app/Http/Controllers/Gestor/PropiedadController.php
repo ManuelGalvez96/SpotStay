@@ -286,22 +286,24 @@ class PropiedadController extends Controller
             ]);
         }
 
-        $inquilinos = $this->getInquilinosActivosIds($id);
-        if ($inquilinos->isEmpty()) {
+        $alquileresActivos = $this->getAlquileresActivos($id);
+        if ($alquileresActivos->isEmpty()) {
             throw ValidationException::withMessages([
                 'concepto_gasto' => 'No hay inquilinos activos para repartir este gasto.',
             ]);
         }
 
-        DB::transaction(function () use ($id, $gestorId, $validated, $inicio, $hoy, $inquilinos) {
+        DB::transaction(function () use ($id, $gestorId, $validated, $inicio, $hoy, $alquileresActivos) {
             $ahora = now();
             $gastoId = DB::table('tbl_gasto')->insertGetId([
                 'id_propiedad_fk' => $id,
+                'id_alquiler_fk' => null,
                 'id_gestor_fk' => $gestorId,
                 'concepto_gasto' => trim($validated['concepto_gasto']),
                 'categoria_gasto' => trim((string) ($validated['categoria_gasto'] ?? '')) !== '' ? trim((string) $validated['categoria_gasto']) : null,
                 'importe_gasto' => round((float) $validated['importe_gasto'], 2),
-                'pagador_gasto' => 'inquilinos',
+                'ambito_gasto' => 'propiedad',
+                'pagador_gasto' => 'inquilino',
                 'periodicidad_gasto' => 'mensual',
                 'dia_vencimiento' => (int) $validated['dia_vencimiento'],
                 'fecha_inicio_gasto' => $inicio->toDateString(),
@@ -318,9 +320,8 @@ class PropiedadController extends Controller
                     $cursor->copy(),
                     round((float) $validated['importe_gasto'], 2),
                     (int) $validated['dia_vencimiento'],
-                    'inquilinos',
-                    $gestorId,
-                    $inquilinos
+                    'inquilino',
+                    $alquileresActivos
                 );
                 $cursor->addMonth();
             }
@@ -381,13 +382,14 @@ class PropiedadController extends Controller
             ->first();
     }
 
-    private function getInquilinosActivosIds(int $propiedadId)
+    private function getAlquileresActivos(int $propiedadId)
     {
         return DB::table('tbl_alquiler')
             ->where('id_propiedad_fk', $propiedadId)
             ->where('estado_alquiler', 'activo')
-            ->distinct()
-            ->pluck('id_inquilino_fk');
+            ->select('id_alquiler', 'id_inquilino_fk')
+            ->orderBy('id_alquiler')
+            ->get();
     }
 
     private function ensureCuotasMensualesGeneradas(int $propiedadId, int $gestorId): void
@@ -400,7 +402,7 @@ class PropiedadController extends Controller
             ->where('estado_gasto', 'activo')
             ->get();
 
-        $inquilinos = $this->getInquilinosActivosIds($propiedadId);
+        $alquileresActivos = $this->getAlquileresActivos($propiedadId);
 
         foreach ($gastos as $gasto) {
             $inicio = Carbon::parse($gasto->fecha_inicio_gasto)->startOfMonth();
@@ -430,8 +432,7 @@ class PropiedadController extends Controller
                         (float) $gasto->importe_gasto,
                         (int) $gasto->dia_vencimiento,
                         (string) $gasto->pagador_gasto,
-                        $gestorId,
-                        $inquilinos
+                        $alquileresActivos
                     );
                 }
 
@@ -480,11 +481,13 @@ class PropiedadController extends Controller
 
             DB::table('tbl_gasto')->insert([
                 'id_propiedad_fk' => (int) $propiedad->id_propiedad,
+                'id_alquiler_fk' => null,
                 'id_gestor_fk' => $gestorId,
                 'concepto_gasto' => ucfirst($conceptoTexto),
                 'categoria_gasto' => 'base_propiedad',
                 'importe_gasto' => round($importeNormalizado, 2),
-                'pagador_gasto' => 'inquilinos',
+                'ambito_gasto' => 'propiedad',
+                'pagador_gasto' => 'inquilino',
                 'periodicidad_gasto' => 'mensual',
                 'dia_vencimiento' => 5,
                 'fecha_inicio_gasto' => $inicioBase,
@@ -502,8 +505,7 @@ class PropiedadController extends Controller
         float $importeTotal,
         int $diaVencimiento,
         string $pagadorGasto,
-        int $gestorId,
-        $inquilinos
+        $alquileresActivos
     ): void {
         $mesBase = $mes->copy()->startOfMonth();
         $ultimoDia = (int) $mesBase->copy()->endOfMonth()->day;
@@ -521,10 +523,16 @@ class PropiedadController extends Controller
             'actualizado_cuota' => now(),
         ]);
 
-        if ($pagadorGasto === 'gestor' || $inquilinos->isEmpty()) {
+        if ($alquileresActivos->isEmpty()) {
+            return;
+        }
+
+        if ($pagadorGasto === 'arrendador') {
+            $alquilerRef = $alquileresActivos->first();
             DB::table('tbl_gasto_cuota_detalle')->insert([
                 'id_gasto_cuota_fk' => $cuotaId,
-                'id_pagador_fk' => $gestorId,
+                'id_alquiler_fk' => (int) $alquilerRef->id_alquiler,
+                'id_pagador_fk' => (int) $alquilerRef->id_inquilino_fk,
                 'importe_detalle' => round($importeTotal, 2),
                 'estado_detalle' => 'pendiente',
                 'pagado_detalle' => null,
@@ -535,12 +543,12 @@ class PropiedadController extends Controller
             return;
         }
 
-        $totalInquilinos = max(1, (int) $inquilinos->count());
-        $base = floor((($importeTotal / $totalInquilinos) * 100)) / 100;
+        $totalAlquileres = max(1, (int) $alquileresActivos->count());
+        $base = floor((($importeTotal / $totalAlquileres) * 100)) / 100;
         $acumulado = 0.0;
 
-        foreach ($inquilinos->values() as $index => $idInquilino) {
-            $importeDetalle = $index === $totalInquilinos - 1
+        foreach ($alquileresActivos->values() as $index => $alquiler) {
+            $importeDetalle = $index === $totalAlquileres - 1
                 ? round($importeTotal - $acumulado, 2)
                 : round($base, 2);
 
@@ -548,7 +556,8 @@ class PropiedadController extends Controller
 
             DB::table('tbl_gasto_cuota_detalle')->insert([
                 'id_gasto_cuota_fk' => $cuotaId,
-                'id_pagador_fk' => (int) $idInquilino,
+                'id_alquiler_fk' => (int) $alquiler->id_alquiler,
+                'id_pagador_fk' => (int) $alquiler->id_inquilino_fk,
                 'importe_detalle' => $importeDetalle,
                 'estado_detalle' => 'pendiente',
                 'pagado_detalle' => null,
@@ -727,14 +736,14 @@ class PropiedadController extends Controller
             } else {
                 $pagosMes = DB::table('tbl_pago')
                     ->whereIn('id_alquiler_fk', $alquileresIds)
-                    ->where('tipo_pago', 'mensualidad')
+                    ->where('tipo_pago', 'alquiler')
                     ->whereBetween('mes_pago', [$inicioMes, $finMes])
                     ->select('id_alquiler_fk', 'estado_pago')
                     ->get();
 
                 $atrasadosPrevios = DB::table('tbl_pago')
                     ->whereIn('id_alquiler_fk', $alquileresIds)
-                    ->where('tipo_pago', 'mensualidad')
+                    ->where('tipo_pago', 'alquiler')
                     ->where('mes_pago', '<', $inicioMes)
                     ->where('estado_pago', '!=', 'confirmado')
                     ->exists();
@@ -826,14 +835,14 @@ class PropiedadController extends Controller
         DB::table('tbl_gasto')
             ->where('id_propiedad_fk', $propiedadId)
             ->where('id_gestor_fk', $gestorId)
-            ->where('pagador_gasto', '!=', 'inquilinos')
+            ->where('pagador_gasto', '!=', 'inquilino')
             ->update([
-                'pagador_gasto' => 'inquilinos',
+                'pagador_gasto' => 'inquilino',
                 'actualizado_gasto' => now(),
             ]);
 
-        $inquilinos = $this->getInquilinosActivosIds($propiedadId);
-        if ($inquilinos->isEmpty()) {
+        $alquileresActivos = $this->getAlquileresActivos($propiedadId);
+        if ($alquileresActivos->isEmpty()) {
             return;
         }
 
@@ -847,18 +856,18 @@ class PropiedadController extends Controller
             ->get();
 
         foreach ($cuotasConGestor as $cuota) {
-            DB::transaction(function () use ($cuota, $inquilinos) {
+            DB::transaction(function () use ($cuota, $alquileresActivos) {
                 DB::table('tbl_gasto_cuota_detalle')
                     ->where('id_gasto_cuota_fk', $cuota->id_gasto_cuota)
                     ->delete();
 
-                $totalInquilinos = max(1, (int) $inquilinos->count());
+                $totalAlquileres = max(1, (int) $alquileresActivos->count());
                 $importeTotal = (float) $cuota->importe_total_cuota;
-                $base = floor((($importeTotal / $totalInquilinos) * 100)) / 100;
+                $base = floor((($importeTotal / $totalAlquileres) * 100)) / 100;
                 $acumulado = 0.0;
 
-                foreach ($inquilinos->values() as $index => $idInquilino) {
-                    $importeDetalle = $index === $totalInquilinos - 1
+                foreach ($alquileresActivos->values() as $index => $alquiler) {
+                    $importeDetalle = $index === $totalAlquileres - 1
                         ? round($importeTotal - $acumulado, 2)
                         : round($base, 2);
 
@@ -866,7 +875,8 @@ class PropiedadController extends Controller
 
                     DB::table('tbl_gasto_cuota_detalle')->insert([
                         'id_gasto_cuota_fk' => (int) $cuota->id_gasto_cuota,
-                        'id_pagador_fk' => (int) $idInquilino,
+                        'id_alquiler_fk' => (int) $alquiler->id_alquiler,
+                        'id_pagador_fk' => (int) $alquiler->id_inquilino_fk,
                         'importe_detalle' => $importeDetalle,
                         'estado_detalle' => 'pendiente',
                         'pagado_detalle' => null,

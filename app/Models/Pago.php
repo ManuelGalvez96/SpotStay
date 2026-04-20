@@ -22,6 +22,8 @@ class Pago extends Model
     protected $fillable = [
         'id_alquiler_fk',
         'id_pagador_fk',
+        'id_gasto_cuota_detalle_fk',
+        'id_gasto_cuota_fk',
         'tipo_pago',
         'concepto_pago',
         'importe_pago',

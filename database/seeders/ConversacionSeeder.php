@@ -10,68 +10,35 @@ class ConversacionSeeder extends Seeder
 {
     public function run(): void
     {
+        $propiedades = Propiedad::all();
+
+        if ($propiedades->isEmpty()) {
+            return;
+        }
+
         $conversaciones = [
-            ['tipo' => 'directa', 'propiedad_id' => null],
-            ['tipo' => 'directa', 'propiedad_id' => null],
-            ['tipo' => 'directa', 'propiedad_id' => null],
-            ['tipo' => 'directa', 'propiedad_id' => null],
-            ['tipo' => 'directa', 'propiedad_id' => null],
-            ['tipo' => 'grupo', 'propiedad_id' => 1],
-            ['tipo' => 'grupo', 'propiedad_id' => 2],
-            ['tipo' => 'grupo', 'propiedad_id' => 3],
-            ['tipo' => 'directa', 'propiedad_id' => null],
-            ['tipo' => 'directa', 'propiedad_id' => null],
-            ['tipo' => 'grupo', 'propiedad_id' => 4],
-            ['tipo' => 'directa', 'propiedad_id' => null],
-            ['tipo' => 'grupo', 'propiedad_id' => 5],
-            ['tipo' => 'directa', 'propiedad_id' => null],
-            ['tipo' => 'grupo', 'propiedad_id' => 6],
-            ['tipo' => 'directa', 'propiedad_id' => null],
-            ['tipo' => 'grupo', 'propiedad_id' => 7],
-            ['tipo' => 'directa', 'propiedad_id' => null],
-            ['tipo' => 'grupo', 'propiedad_id' => 8],
-            ['tipo' => 'directa', 'propiedad_id' => null],
+            // Conversaciones directas (sin propiedad)
+            ['tipo_conversacion' => 'directa', 'id_propiedad_fk' => null],
+            ['tipo_conversacion' => 'directa', 'id_propiedad_fk' => null],
+            ['tipo_conversacion' => 'directa', 'id_propiedad_fk' => null],
+            ['tipo_conversacion' => 'directa', 'id_propiedad_fk' => null],
+            ['tipo_conversacion' => 'directa', 'id_propiedad_fk' => null],
         ];
 
-        $propiedades = Propiedad::pluck('id_propiedad')->toArray();
+        // Conversaciones de grupo (asociadas a propiedades)
+        foreach ($propiedades as $propiedad) {
+            $conversaciones[] = [
+                'tipo_conversacion' => 'grupo',
+                'id_propiedad_fk' => $propiedad->id_propiedad,
+            ];
+        }
 
-        // 2 conversaciones miembro-arrendador
-        $conversacionesMiembro = [
-            [
-                'tipo' => 'directa',
-                'propiedad_direccion' => null,
-                'usuarios' => [
-                    'ana@spotstay.com',
-                    'carlos@spotstay.com',
-                ]
-            ],
-            [
-                'tipo' => 'directa',
-                'propiedad_direccion' => null,
-                'usuarios' => [
-                    'roberto.diaz@email.com',
-                    'elena@spotstay.com',
-                ]
-            ],
-        ];
-
-        $todasConversaciones = array_merge(
-            $conversacionesDirectas,
-            $conversacionesGrupo,
-            $conversacionesMiembro
-        );
-
-        foreach ($todasConversaciones as $conv) {
-            $idPropiedad = null;
-            if ($conv['propiedad_direccion']) {
-                $idPropiedad = DB::table('tbl_propiedad')
-                    ->whereRaw("TRIM(CONCAT_WS(' ', calle_propiedad, numero_propiedad)) = ?", [$conv['propiedad_direccion']])
-                    ->value('id_propiedad');
-            }
-
+        foreach ($conversaciones as $data) {
             Conversacion::firstOrCreate(
-                ['id_propiedad_fk' => $propiedadId, 'tipo_conversacion' => $data['tipo']],
+                ['tipo_conversacion' => $data['tipo_conversacion'], 'id_propiedad_fk' => $data['id_propiedad_fk']],
                 [
+                    'tipo_conversacion' => $data['tipo_conversacion'],
+                    'id_propiedad_fk' => $data['id_propiedad_fk'],
                     'creado_conversacion' => now(),
                     'actualizado_conversacion' => now(),
                 ]

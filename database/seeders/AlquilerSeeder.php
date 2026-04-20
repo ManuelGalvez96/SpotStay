@@ -12,43 +12,42 @@ class AlquilerSeeder extends Seeder
     public function run(): void
     {
         $alquileres = [
-            ['propiedad' => 'Calle Gran Vía 1', 'inquilino' => 'inquilino1@example.com', 'estado' => 'aprobado', 'fecha_inicio' => '2024-01-15'],
-            ['propiedad' => 'Calle Alcalá 45', 'inquilino' => 'inquilino2@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-12-01'],
-            ['propiedad' => 'Paseo de Gracia 100', 'inquilino' => 'inquilino3@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-11-20'],
-            ['propiedad' => 'Calle Còrsega 50', 'inquilino' => 'inquilino4@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-10-15'],
-            ['propiedad' => 'Avenida Malvarrosa 30', 'inquilino' => 'inquilino5@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-09-01'],
-            ['propiedad' => 'Calle Serrería 20', 'inquilino' => 'inquilino6@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-08-10'],
-            ['propiedad' => 'Calle Betis 60', 'inquilino' => 'inquilino7@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-07-25'],
-            ['propiedad' => 'Avenida Constitución 15', 'inquilino' => 'inquilino8@example.com', 'estado' => 'aprobado', 'fecha_inicio' => '2024-02-01'],
-            ['propiedad' => 'Calle Ercilla 5', 'inquilino' => 'inquilino1@example.com', 'estado' => 'pendiente', 'fecha_inicio' => '2024-03-01'],
-            ['propiedad' => 'Plaza Zabalburu 8', 'inquilino' => 'inquilino2@example.com', 'estado' => 'cancelado', 'fecha_inicio' => '2023-06-15'],
-            ['propiedad' => 'Avenida de América 10', 'inquilino' => 'inquilino3@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-05-20'],
-            ['propiedad' => 'Calle Muntaner 35', 'inquilino' => 'inquilino4@example.com', 'estado' => 'finalizado', 'fecha_inicio' => '2022-12-01'],
-            ['propiedad' => 'Calle Colón 70', 'inquilino' => 'inquilino5@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-04-10'],
-            ['propiedad' => 'Avenida Lehendakari Aguirre 60', 'inquilino' => 'inquilino6@example.com', 'estado' => 'aprobado', 'fecha_inicio' => '2024-01-01'],
-            ['propiedad' => 'Avenida de la Buhaira 12', 'inquilino' => 'inquilino7@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-03-15'],
-            ['propiedad' => 'Calle Gran Vía 1', 'inquilino' => 'inquilino8@example.com', 'estado' => 'pendiente', 'fecha_inicio' => '2024-02-15'],
-            ['propiedad' => 'Calle Alcalá 45', 'inquilino' => 'inquilino1@example.com', 'estado' => 'cancelado', 'fecha_inicio' => '2023-02-10'],
-            ['propiedad' => 'Paseo de Gracia 100', 'inquilino' => 'inquilino2@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-01-30'],
-            ['propiedad' => 'Calle Còrsega 50', 'inquilino' => 'inquilino3@example.com', 'estado' => 'finalizado', 'fecha_inicio' => '2022-11-15'],
-            ['propiedad' => 'Avenida Malvarrosa 30', 'inquilino' => 'inquilino4@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-02-28'],
+            ['propiedad' => 'Calle Mayor 14', 'inquilino' => 'inquilino1@example.com', 'estado' => 'aprobado', 'fecha_inicio' => '2024-01-15'],
+            ['propiedad' => 'Calle Serrano 47', 'inquilino' => 'inquilino2@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-12-01'],
+            ['propiedad' => 'Calle Fuencarral 22', 'inquilino' => 'inquilino3@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-11-20'],
+            ['propiedad' => 'Av. Diagonal 88', 'inquilino' => 'inquilino4@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-10-15'],
+            ['propiedad' => 'Calle Pelai 12', 'inquilino' => 'inquilino5@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-09-01'],
+            ['propiedad' => 'Paseo de Gracia 5', 'inquilino' => 'inquilino6@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-08-10'],
+            ['propiedad' => 'Calle Larios 7', 'inquilino' => 'inquilino7@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-07-25'],
+            ['propiedad' => 'Alameda de Hércules 3', 'inquilino' => 'inquilino8@example.com', 'estado' => 'aprobado', 'fecha_inicio' => '2024-02-01'],
+            ['propiedad' => 'Calle Colón 8', 'inquilino' => 'inquilino1@example.com', 'estado' => 'pendiente', 'fecha_inicio' => '2024-03-01'],
+            ['propiedad' => 'Gran Vía 45', 'inquilino' => 'inquilino2@example.com', 'estado' => 'cancelado', 'fecha_inicio' => '2023-06-15'],
+            ['propiedad' => 'Calle Coso 15', 'inquilino' => 'inquilino3@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-05-20'],
+            ['propiedad' => 'Paseo de la Explanada 3', 'inquilino' => 'inquilino4@example.com', 'estado' => 'finalizado', 'fecha_inicio' => '2022-12-01'],
+            ['propiedad' => 'Calle Reyes Católicos 12', 'inquilino' => 'inquilino5@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-04-10'],
+            ['propiedad' => 'Plaza de las Flores 7', 'inquilino' => 'inquilino6@example.com', 'estado' => 'aprobado', 'fecha_inicio' => '2024-01-01'],
+            ['propiedad' => 'Calle Miguel Íscar 15', 'inquilino' => 'inquilino7@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-03-15'],
+            ['propiedad' => 'Calle Mayor 14', 'inquilino' => 'inquilino8@example.com', 'estado' => 'pendiente', 'fecha_inicio' => '2024-02-15'],
+            ['propiedad' => 'Calle Serrano 47', 'inquilino' => 'inquilino1@example.com', 'estado' => 'cancelado', 'fecha_inicio' => '2023-02-10'],
+            ['propiedad' => 'Calle Fuencarral 22', 'inquilino' => 'inquilino2@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-01-30'],
+            ['propiedad' => 'Av. Diagonal 88', 'inquilino' => 'inquilino3@example.com', 'estado' => 'finalizado', 'fecha_inicio' => '2022-11-15'],
+            ['propiedad' => 'Calle Pelai 12', 'inquilino' => 'inquilino4@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-02-28'],
         ];
 
-<<<<<<< HEAD
+        $propiedades = Propiedad::all();
+        $usuarios = Usuario::all();
+        $admins = Usuario::whereHas('roles', function ($q) {
+            $q->where('nombre_rol', 'admin');
+        })->get();
+
+        if ($propiedades->isEmpty() || $usuarios->isEmpty()) {
+            return;
+        }
+
         foreach ($alquileres as $data) {
-            $propiedad = Propiedad::where('direccion_propiedad', $data['propiedad'])->first();
-            $inquilino = Usuario::where('email_usuario', $data['inquilino'])->first();
-            
-            $admins = Usuario::whereHas('roles', function ($q) {
-                $q->where('nombre_rol', 'admin');
-            })->get();
+            $propiedad = $propiedades->firstWhere('direccion_propiedad', $data['propiedad']);
+            $inquilino = $usuarios->firstWhere('email_usuario', $data['inquilino']);
             $admin = $admins->isNotEmpty() ? $admins->random() : null;
-=======
-        foreach ($alquileres as $alq) {
-            $idPropiedad = DB::table('tbl_propiedad')
-                ->whereRaw("TRIM(CONCAT_WS(' ', calle_propiedad, numero_propiedad)) = ?", [$alq['propiedad_direccion']])
-                ->value('id_propiedad');
->>>>>>> e7c642bfb4db8c6d85f022be9d7f170ded781794
 
             if ($propiedad && $inquilino) {
                 Alquiler::firstOrCreate(
@@ -56,7 +55,7 @@ class AlquilerSeeder extends Seeder
                     [
                         'estado_alquiler' => $data['estado'],
                         'fecha_inicio_alquiler' => $data['fecha_inicio'],
-                        'fecha_fin_alquiler' => $data['estado'] === 'finalizado' ? now()->subDays(30) : null,
+                        'fecha_fin_alquiler' => $data['estado'] === 'finalizado' ? now()->subDays(30)->format('Y-m-d') : null,
                         'id_admin_aprueba_fk' => $admin?->id_usuario,
                         'aprobado_alquiler' => $data['estado'] !== 'pendiente' ? now()->subDays(5) : null,
                         'creado_alquiler' => now(),

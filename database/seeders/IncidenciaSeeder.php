@@ -46,13 +46,16 @@ class IncidenciaSeeder extends Seeder
             $propiedad = $propiedades->get($propIndex % $propiedades->count());
             $reportador = $usuarios->random();
             $asignado = $usuarios->random();
+            $estado = $this->normalizarEstado((string) $data['estado']);
+            $categoria = $this->inferirCategoria((string) $data['titulo'], (string) $data['descripcion']);
 
             Incidencia::firstOrCreate(
                 ['id_propiedad_fk' => $propiedad->id_propiedad, 'titulo_incidencia' => $data['titulo']],
                 [
                     'descripcion_incidencia' => $data['descripcion'],
+                    'categoria_incidencia' => $categoria,
                     'prioridad_incidencia' => $data['prioridad'],
-                    'estado_incidencia' => $data['estado'],
+                    'estado_incidencia' => $estado,
                     'id_reporta_fk' => $reportador->id_usuario,
                     'id_asignado_fk' => $asignado?->id_usuario,
                     'creado_incidencia' => now()->subDays(rand(1, 30)),
@@ -62,5 +65,33 @@ class IncidenciaSeeder extends Seeder
 
             $propIndex++;
         }
+    }
+
+    private function normalizarEstado(string $estado): string
+    {
+        return match (strtolower(trim($estado))) {
+            'abierto' => 'abierta',
+            'resuelto' => 'resuelta',
+            default => strtolower(trim($estado)),
+        };
+    }
+
+    private function inferirCategoria(string $titulo, string $descripcion): string
+    {
+        $texto = strtolower($titulo . ' ' . $descripcion);
+
+        if (str_contains($texto, 'grifo') || str_contains($texto, 'tuber') || str_contains($texto, 'gotera') || str_contains($texto, 'agua') || str_contains($texto, 'ducha')) {
+            return 'fontaneria';
+        }
+
+        if (str_contains($texto, 'enchufe') || str_contains($texto, 'electr') || str_contains($texto, 'lampara') || str_contains($texto, 'detector')) {
+            return 'electricidad';
+        }
+
+        if (str_contains($texto, 'calefaccion') || str_contains($texto, 'radiador')) {
+            return 'calefaccion';
+        }
+
+        return 'otro';
     }
 }

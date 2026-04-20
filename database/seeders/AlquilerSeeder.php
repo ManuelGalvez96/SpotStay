@@ -45,7 +45,14 @@ class AlquilerSeeder extends Seeder
         }
 
         foreach ($alquileres as $data) {
-            $propiedad = $propiedades->firstWhere('direccion_propiedad', $data['propiedad']);
+            $propiedad = $propiedades->first(function ($item) use ($data) {
+                $direccion = trim(implode(' ', array_filter([
+                    $item->calle_propiedad,
+                    $item->numero_propiedad,
+                ])));
+
+                return $direccion === $data['propiedad'];
+            });
             $inquilino = $usuarios->firstWhere('email_usuario', $data['inquilino']);
             $admin = $admins->isNotEmpty() ? $admins->random() : null;
 

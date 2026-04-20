@@ -2,16 +2,15 @@
 
 namespace Database\Seeders;
 
-use App\Models\Propiedad;
-use App\Models\Usuario;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class PropiedadSeeder extends Seeder
 {
     public function run(): void
     {
         $propiedades = [
-            // Cartera principal de Miguel (gestor)
             [
                 'arrendador_email' => 'arrendador@spotstay.com',
                 'gestor_email' => 'miguel@spotstay.com',
@@ -172,7 +171,6 @@ class PropiedadSeeder extends Seeder
                 'gastos' => json_encode(['agua' => 28, 'luz' => 50, 'comunidad' => 40]),
                 'estado' => 'inactiva',
             ],
-            // Propiedades adicionales para pruebas
             [
                 'arrendador_email' => 'carlos@spotstay.com',
                 'gestor_email' => 'miguel@spotstay.com',
@@ -255,30 +253,62 @@ class PropiedadSeeder extends Seeder
             ],
         ];
 
-        foreach ($propiedades as $data) {
-            $arrendador = Usuario::where('email_usuario', $data['arrendador_email'])->first();
-            $gestor = $data['gestor_email'] ? Usuario::where('email_usuario', $data['gestor_email'])->first() : null;
+        foreach ($propiedades as $prop) {
+            $idArrendador = DB::table('tbl_usuario')
+                ->where('email_usuario', $prop['arrendador_email'])
+                ->value('id_usuario');
 
-            if ($arrendador) {
-                Propiedad::firstOrCreate(
-                    ['direccion_propiedad' => $data['direccion'], 'id_arrendador_fk' => $arrendador->id_usuario],
-                    [
-                        'titulo_propiedad' => $data['titulo'],
-                        'ciudad_propiedad' => $data['ciudad'],
-                        'codigo_postal_propiedad' => $data['cp'],
-                        'latitud_propiedad' => $data['lat'] ?? null,
-                        'longitud_propiedad' => $data['lng'] ?? null,
-                        'descripcion_propiedad' => $data['descripcion'],
-                        'precio_propiedad' => $data['precio'],
-                        'gastos_propiedad' => $data['gastos'] ?? null,
-                        'estado_propiedad' => $data['estado'],
-                        'id_arrendador_fk' => $arrendador->id_usuario,
-                        'id_gestor_fk' => $gestor?->id_usuario,
-                        'creado_propiedad' => now(),
-                        'actualizado_propiedad' => now(),
-                    ]
-                );
+            $idGestor = null;
+            if (($prop['estado'] ?? '') !== 'borrador') {
+                $idGestor = DB::table('tbl_usuario')
+                    ->where('email_usuario', $prop['gestor_email'])
+                    ->value('id_usuario');
             }
+
+            if (!$idArrendador || (($prop['estado'] ?? '') !== 'borrador' && !$idGestor)) {
+                throw new \RuntimeException('Seeder inconsistente: arrendador o gestor no encontrado para ' . $prop['direccion']);
+            }
+
+            [$calle, $numero, $pisoDetectado, $puertaDetectada] = $this->splitDireccion((string) $prop['direccion']);
+            $piso = $prop['piso'] ?? $pisoDetectado;
+            $puerta = $prop['puerta'] ?? $puertaDetectada;
+
+            DB::table('tbl_propiedad')->insert([
+                'titulo_propiedad' => $prop['titulo'],
+                'calle_propiedad' => $calle,
+                'numero_propiedad' => $numero,
+                'piso_propiedad' => $piso,
+                'puerta_propiedad' => $puerta,
+                'ciudad_propiedad' => $prop['ciudad'],
+                'codigo_postal_propiedad' => $prop['cp'],
+                'latitud_propiedad' => $prop['lat'],
+                'longitud_propiedad' => $prop['lng'],
+                'descripcion_propiedad' => $prop['descripcion'],
+                'precio_propiedad' => $prop['precio'],
+                'gastos_propiedad' => $prop['gastos'],
+                'estado_propiedad' => $prop['estado'],
+                'id_arrendador_fk' => $idArrendador,
+                'id_gestor_fk' => $idGestor,
+                'creado_propiedad' => Carbon::now(),
+                'actualizado_propiedad' => Carbon::now(),
+            ]);
         }
+    }
+
+    private function splitDireccion(string $direccion): array
+    {
+        $direccion = trim($direccion);
+
+        if ($direccion === '') {
+            return ['', '', null, null];
+        }
+
+        preg_match('/^(.*?)(\d+\w*)$/u', $direccion, $matches);
+
+        if (count($matches) >= 3) {
+            return [trim($matches[1]), trim($matches[2]), null, null];
+        }
+
+        return [$direccion, '', null, null];
     }
 }

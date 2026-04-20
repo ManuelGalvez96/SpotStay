@@ -55,6 +55,8 @@ Route::middleware(['role:admin'])->group(function () {
 
     // Propiedades
     Route::get('/admin/propiedades', [PropiedadController::class, 'index']);
+    Route::get('/admin/propiedades/nueva', [PropiedadController::class, 'nueva']);
+    Route::post('/admin/propiedades/crear', [PropiedadController::class, 'crear']);
     Route::get('/admin/propiedades/filtrar', [PropiedadController::class, 'filtrar']);
     Route::get('/admin/propiedades/{id}', [PropiedadController::class, 'show']);
     Route::post('/admin/propiedades/{id}/desactivar', [PropiedadController::class, 'desactivar']);

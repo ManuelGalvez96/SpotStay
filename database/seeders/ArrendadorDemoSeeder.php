@@ -15,7 +15,7 @@ class ArrendadorDemoSeeder extends Seeder
         $rolInquilino = DB::table('tbl_rol')->where('slug_rol', 'inquilino')->value('id_rol');
 
         $carlosId = $this->upsertUsuario(
-            'Carlos García',
+            'Carlos Garcia',
             'carlos@spotstay.com',
             '+34 611 222 333'
         );
@@ -33,7 +33,7 @@ class ArrendadorDemoSeeder extends Seeder
         }
 
         $lauraId = $this->upsertUsuario(
-            'Laura Martínez',
+            'Laura Martinez',
             'laura@spotstay.com',
             '+34 622 333 444'
         );
@@ -51,7 +51,7 @@ class ArrendadorDemoSeeder extends Seeder
         }
 
         $pedroId = $this->upsertUsuario(
-            'Pedro Sánchez',
+            'Pedro Sanchez',
             'pedro@spotstay.com',
             '+34 633 444 555'
         );
@@ -72,7 +72,8 @@ class ArrendadorDemoSeeder extends Seeder
             'id_arrendador_fk' => $carlosId,
             'id_gestor_fk' => $carlosId,
             'titulo_propiedad' => 'Piso en Calle Mayor',
-            'direccion_propiedad' => 'Calle Mayor 14',
+            'calle_propiedad' => 'Calle Mayor',
+            'numero_propiedad' => '14',
             'ciudad_propiedad' => 'Madrid',
             'codigo_postal_propiedad' => '28001',
             'latitud_propiedad' => 40.4153,
@@ -87,12 +88,13 @@ class ArrendadorDemoSeeder extends Seeder
             'id_arrendador_fk' => $carlosId,
             'id_gestor_fk' => $carlosId,
             'titulo_propiedad' => 'Estudio Fuencarral',
-            'direccion_propiedad' => 'Calle Fuencarral 22',
+            'calle_propiedad' => 'Calle Fuencarral',
+            'numero_propiedad' => '22',
             'ciudad_propiedad' => 'Madrid',
             'codigo_postal_propiedad' => '28004',
             'latitud_propiedad' => 40.4211,
             'longitud_propiedad' => -3.7043,
-            'descripcion_propiedad' => 'Estudio moderno en zona céntrica',
+            'descripcion_propiedad' => 'Estudio moderno en zona centrica',
             'precio_propiedad' => 800.00,
             'gastos_propiedad' => json_encode(['agua' => 25, 'luz' => 40, 'comunidad' => 30]),
             'estado_propiedad' => 'publicada',
@@ -153,7 +155,8 @@ class ArrendadorDemoSeeder extends Seeder
         DB::table('tbl_propiedad')->updateOrInsert(
             [
                 'id_arrendador_fk' => $data['id_arrendador_fk'],
-                'direccion_propiedad' => $data['direccion_propiedad'],
+                'calle_propiedad' => $data['calle_propiedad'],
+                'numero_propiedad' => $data['numero_propiedad'],
             ],
             [
                 'id_gestor_fk' => $data['id_gestor_fk'],
@@ -173,7 +176,8 @@ class ArrendadorDemoSeeder extends Seeder
 
         return (int) DB::table('tbl_propiedad')
             ->where('id_arrendador_fk', $data['id_arrendador_fk'])
-            ->where('direccion_propiedad', $data['direccion_propiedad'])
+            ->where('calle_propiedad', $data['calle_propiedad'])
+            ->where('numero_propiedad', $data['numero_propiedad'])
             ->value('id_propiedad');
     }
 }

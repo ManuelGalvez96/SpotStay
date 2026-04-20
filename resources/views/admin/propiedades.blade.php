@@ -17,6 +17,10 @@
     <div class="hero-deco hero-deco-3"></div>
 </div>
 
+@if (session('success'))
+    <div class="alert alert-success mb-3">{{ session('success') }}</div>
+@endif
+
 <!-- BARRA DE HERRAMIENTAS -->
 <div class="toolbar-admin">
     <div class="toolbar-izquierda">
@@ -52,10 +56,10 @@
             <i class="bi bi-download"></i>
             <span>Exportar</span>
         </button>
-        <button id="btnAniadirPropiedad" class="btn-primario">
+        <a href="/admin/propiedades/nueva" id="btnAniadirPropiedad" class="btn-primario">
             <i class="bi bi-plus"></i>
             <span>Añadir propiedad</span>
-        </button>
+        </a>
     </div>
 </div>
 
@@ -66,7 +70,7 @@
             <i class="bi bi-house"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">347</span>
+            <span class="kpi-mini-numero">{{ $totalPropiedades }}</span>
             <span class="kpi-mini-label">Total propiedades</span>
         </div>
     </div>
@@ -76,7 +80,7 @@
             <i class="bi bi-check-circle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">198</span>
+            <span class="kpi-mini-numero">{{ $alquiladas }}</span>
             <span class="kpi-mini-label">Alquiladas</span>
         </div>
     </div>
@@ -86,7 +90,7 @@
             <i class="bi bi-megaphone"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-naranja">112</span>
+            <span class="kpi-mini-numero kpi-mini-numero-naranja">{{ $publicadas }}</span>
             <span class="kpi-mini-label">Publicadas</span>
         </div>
     </div>
@@ -96,7 +100,7 @@
             <i class="bi bi-x-circle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-rojo">37</span>
+            <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ $inactivas }}</span>
             <span class="kpi-mini-label">Inactivas</span>
         </div>
     </div>
@@ -105,7 +109,7 @@
 <!-- TABLA DE PROPIEDADES -->
 <div class="card-admin">
     <div class="tabla-header">
-        <span id="contadorPropiedades">347 propiedades encontradas</span>
+        <span id="contadorPropiedades">{{ $totalPropiedades }} propiedades encontradas</span>
         <div class="paginacion">
             <button id="btnAnterior" class="btn-pag">← Anterior</button>
             <span id="paginas">
@@ -482,7 +486,7 @@
     </table>
     
     <div class="tabla-footer">
-        <span>Mostrando 1-10 de 347 propiedades</span>
+        <span>Mostrando {{ $propiedades->firstItem() ?? 0 }}-{{ $propiedades->lastItem() ?? 0 }} de {{ $propiedades->total() }} propiedades</span>
     </div>
 </div>
 

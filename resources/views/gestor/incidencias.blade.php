@@ -77,6 +77,7 @@
                 <tr>
                     <th>TÍTULO</th>
                     <th>PROPIEDAD</th>
+                    <th>ARRENDADOR</th>
                     <th>ESTADO</th>
                     <th>PRIORIDAD</th>
                     <th>FECHA</th>
@@ -97,7 +98,8 @@
                     @endphp
                     <tr>
                         <td>{{ $incidencia->titulo_incidencia }}</td>
-                        <td>{{ $incidencia->titulo_propiedad }} · {{ $incidencia->direccion_propiedad }}</td>
+                        <td>{{ $incidencia->direccion_propiedad }}</td>
+                        <td>{{ $incidencia->nombre_arrendador }}</td>
                         <td><span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span></td>
                         <td><span class="badge-prioridad badge-prioridad-{{ $badgePrioridad }}">{{ ucfirst($prioridad) }}</span></td>
                         <td>{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y') }}</td>
@@ -105,7 +107,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="tabla-vacia">No hay incidencias con los filtros seleccionados.</td>
+                        <td colspan="7" class="tabla-vacia">No hay incidencias con los filtros seleccionados.</td>
                     </tr>
                 @endforelse
             </tbody>

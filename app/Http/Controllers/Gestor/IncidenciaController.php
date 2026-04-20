@@ -15,6 +15,7 @@ class IncidenciaController extends Controller
     {
         $query = DB::table('tbl_incidencia')
             ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_incidencia.id_propiedad_fk')
+            ->join('tbl_usuario as arrendador', 'arrendador.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
             ->select(
                 'tbl_incidencia.id_incidencia',
                 'tbl_incidencia.titulo_incidencia',
@@ -23,7 +24,8 @@ class IncidenciaController extends Controller
                 'tbl_incidencia.creado_incidencia',
                 'tbl_propiedad.titulo_propiedad',
                 DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
-                'tbl_propiedad.ciudad_propiedad'
+                'tbl_propiedad.ciudad_propiedad',
+                'arrendador.nombre_usuario as nombre_arrendador'
             );
 
         $titulo = trim((string) $request->query('titulo', ''));

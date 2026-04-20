@@ -344,6 +344,29 @@
 	color: var(--texto-suave);
 }
 
+.incidencia-acciones {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.btn-resolver {
+	background: none;
+	border: none;
+	color: #059669;
+	font-size: 1.25rem;
+	cursor: pointer;
+	padding: 0;
+	transition: transform 0.2s;
+	display: flex;
+	align-items: center;
+}
+
+.btn-resolver:hover {
+	transform: scale(1.2);
+	color: #047857;
+}
+
 /* Responsive */
 @media (max-width: 992px) {
 	.grid-ver-propiedad {

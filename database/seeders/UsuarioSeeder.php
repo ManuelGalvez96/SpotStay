@@ -9,153 +9,56 @@ use Illuminate\Support\Facades\Hash;
 
 class UsuarioSeeder extends Seeder
 {
-    /**
-     * Inserta un usuario admin de prueba
-     */
     public function run(): void
     {
-        // Crear usuario admin
-        $usuarioAdmin = Usuario::create([
-            'nombre_usuario' => 'Administrador',
-            'email_usuario' => 'admin@spotstay.com',
-            'contrasena_usuario' => Hash::make('password123'),
-            'telefono_usuario' => '+34 600 000 000',
-            'activo_usuario' => true,
-            'creado_usuario' => now(),
-            'actualizado_usuario' => now(),
-        ]);
-
-        // Asignar rol admin al usuario
-        $rolAdmin = Rol::where('slug_rol', 'admin')->first();
-        if ($rolAdmin) {
-            $usuarioAdmin->roles()->attach($rolAdmin->id_rol);
-        }
-
-        // Crear usuario de prueba arrendador
-        $usuarioArrendador = Usuario::create([
-            'nombre_usuario' => 'Juan Pérez',
-            'email_usuario' => 'arrendador@spotstay.com',
-            'contrasena_usuario' => Hash::make('password123'),
-            'telefono_usuario' => '+34 601 111 111',
-            'activo_usuario' => true,
-            'creado_usuario' => now(),
-            'actualizado_usuario' => now(),
-        ]);
-
-        $rolArrendador = Rol::where('slug_rol', 'arrendador')->first();
-        if ($rolArrendador) {
-            $usuarioArrendador->roles()->attach($rolArrendador->id_rol);
-        }
-
-        // Crear usuario de prueba inquilino
-        $usuarioInquilino = Usuario::create([
-            'nombre_usuario' => 'María García',
-            'email_usuario' => 'inquilino@spotstay.com',
-            'contrasena_usuario' => Hash::make('password123'),
-            'telefono_usuario' => '+34 602 222 222',
-            'activo_usuario' => true,
-            'creado_usuario' => now(),
-            'actualizado_usuario' => now(),
-        ]);
-
-        $rolInquilino = Rol::where('slug_rol', 'inquilino')->first();
-        if ($rolInquilino) {
-            $usuarioInquilino->roles()->attach($rolInquilino->id_rol);
-        }
-
-        // Crear usuarios adicionales para alquileres
-        $usuariolaraura = Usuario::create([
-            'nombre_usuario' => 'Laura Martínez',
-            'email_usuario' => 'laura@spotstay.com',
-            'contrasena_usuario' => Hash::make('password123'),
-            'telefono_usuario' => '+34 603 333 333',
-            'activo_usuario' => true,
-            'creado_usuario' => now(),
-            'actualizado_usuario' => now(),
-        ]);
-        if ($rolInquilino) {
-            $usuariolaraura->roles()->attach($rolInquilino->id_rol);
-        }
-
-        $usuarioPedro = Usuario::create([
-            'nombre_usuario' => 'Pedro López',
-            'email_usuario' => 'pedro@spotstay.com',
-            'contrasena_usuario' => Hash::make('password123'),
-            'telefono_usuario' => '+34 604 444 444',
-            'activo_usuario' => true,
-            'creado_usuario' => now(),
-            'actualizado_usuario' => now(),
-        ]);
-        if ($rolInquilino) {
-            $usuarioPedro->roles()->attach($rolInquilino->id_rol);
-        }
-
-        $usuarioSofia = Usuario::create([
-            'nombre_usuario' => 'Sofía Rodríguez',
-            'email_usuario' => 'sofia@spotstay.com',
-            'contrasena_usuario' => Hash::make('password123'),
-            'telefono_usuario' => '+34 605 555 555',
-            'activo_usuario' => true,
-            'creado_usuario' => now(),
-            'actualizado_usuario' => now(),
-        ]);
-        if ($rolInquilino) {
-            $usuarioSofia->roles()->attach($rolInquilino->id_rol);
-        }
-
-        $usuarioCarlos = Usuario::create([
-            'nombre_usuario' => 'Carlos García',
-            'email_usuario' => 'carlos@spotstay.com',
-            'contrasena_usuario' => Hash::make('password123'),
-            'telefono_usuario' => '+34 606 666 666',
-            'activo_usuario' => true,
-            'creado_usuario' => now(),
-            'actualizado_usuario' => now(),
-        ]);
-        if ($rolArrendador) {
-            $usuarioCarlos->roles()->attach($rolArrendador->id_rol);
-        }
-
-        $usuarioMiguel = Usuario::create([
-            'nombre_usuario' => 'Miguel Gestor',
-            'email_usuario' => 'miguel@spotstay.com',
-            'contrasena_usuario' => Hash::make('password123'),
-            'telefono_usuario' => '+34 607 777 777',
-            'activo_usuario' => true,
-            'creado_usuario' => now(),
-            'actualizado_usuario' => now(),
-        ]);
-        $rolGestor = Rol::where('slug_rol', 'gestor')->first();
-        if ($rolGestor) {
-            $usuarioMiguel->roles()->attach($rolGestor->id_rol);
-        }
-
-        // Crear usuarios adicionales para solicitudes y disponibilidad
-        $usuarios_adicionales = [
-            ['nombre' => 'Elena Vargas', 'email' => 'elena@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 614 141 414'],
-            ['nombre' => 'Roberto Mora', 'email' => 'roberto.mora@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 615 151 515'],
-            ['nombre' => 'Ana García', 'email' => 'ana@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 616 161 616'],
-            ['nombre' => 'Roberto Díaz', 'email' => 'roberto.diaz@email.com', 'rol' => 'arrendador', 'tel' => '+34 608 888 888'],
-            ['nombre' => 'Carmen Iglesias', 'email' => 'carmen.iglesias@email.com', 'rol' => 'arrendador', 'tel' => '+34 609 999 999'],
-            ['nombre' => 'Andrés Molina', 'email' => 'andres.molina@email.com', 'rol' => 'inquilino', 'tel' => '+34 610 101 010'],
-            ['nombre' => 'Patricia Vega', 'email' => 'patricia.vega@email.com', 'rol' => 'inquilino', 'tel' => '+34 611 111 111'],
-            ['nombre' => 'Javier Moya', 'email' => 'javier.moya@email.com', 'rol' => 'inquilino', 'tel' => '+34 612 121 212'],
-            ['nombre' => 'Lucía Serrano', 'email' => 'lucia.serrano@email.com', 'rol' => 'inquilino', 'tel' => '+34 613 131 313'],
+        $usuarios = [
+            ['nombre' => 'Admin Principal', 'email' => 'admin@spotstay.com', 'rol' => 'admin', 'tel' => '+34 600 000 001'],
+            ['nombre' => 'María García', 'email' => 'inquilino@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 000'],
+            ['nombre' => 'Laura Martínez', 'email' => 'laura@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 001'],
+            ['nombre' => 'Pedro Jiménez', 'email' => 'pedro@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 002'],
+            ['nombre' => 'Sofía López', 'email' => 'sofia@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 003'],
+            ['nombre' => 'Carmen Iglesias', 'email' => 'carmen.iglesias@email.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 004'],
+            ['nombre' => 'Andrés Molina', 'email' => 'andres.molina@email.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 005'],
+            ['nombre' => 'Patricia Vega', 'email' => 'patricia.vega@email.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 006'],
+            ['nombre' => 'Javier Moya', 'email' => 'javier.moya@email.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 007'],
+            ['nombre' => 'Lucía Serrano', 'email' => 'lucia.serrano@email.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 008'],
+            ['nombre' => 'Admin Secundario', 'email' => 'admin2@spotstay.com', 'rol' => 'admin', 'tel' => '+34 600 000 002'],
+            // Usuarios usados en PropiedadSeeder
+            ['nombre' => 'Arrendador Principal', 'email' => 'arrendador@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 111'],
+            ['nombre' => 'Carlos Garcia', 'email' => 'carlos@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 112'],
+            ['nombre' => 'Elena Vargas', 'email' => 'elena@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 113'],
+            ['nombre' => 'Roberto Mora', 'email' => 'roberto.mora@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 114'],
+            ['nombre' => 'Roberto Diaz', 'email' => 'roberto.diaz@email.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 115'],
+            ['nombre' => 'Inquilino 1', 'email' => 'inquilino1@example.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 111'],
+            ['nombre' => 'Inquilino 2', 'email' => 'inquilino2@example.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 112'],
+            ['nombre' => 'Inquilino 3', 'email' => 'inquilino3@example.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 113'],
+            ['nombre' => 'Inquilino 4', 'email' => 'inquilino4@example.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 114'],
+            ['nombre' => 'Inquilino 5', 'email' => 'inquilino5@example.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 115'],
+            ['nombre' => 'Inquilino 6', 'email' => 'inquilino6@example.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 116'],
+            ['nombre' => 'Inquilino 7', 'email' => 'inquilino7@example.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 117'],
+            ['nombre' => 'Inquilino 8', 'email' => 'inquilino8@example.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 118'],
+            ['nombre' => 'Miguel Gestor', 'email' => 'miguel@spotstay.com', 'rol' => 'gestor', 'tel' => '+34 603 333 111'],
+            ['nombre' => 'Gestor 2', 'email' => 'gestor2@spotstay.com', 'rol' => 'gestor', 'tel' => '+34 603 333 112'],
+            ['nombre' => 'Gestor 3', 'email' => 'gestor3@spotstay.com', 'rol' => 'gestor', 'tel' => '+34 603 333 113'],
+            ['nombre' => 'Usuario Test 1', 'email' => 'test1@example.com', 'rol' => 'inquilino', 'tel' => '+34 604 444 111'],
+            ['nombre' => 'Usuario Test 2', 'email' => 'test2@example.com', 'rol' => 'arrendador', 'tel' => '+34 604 444 112'],
         ];
 
-        foreach ($usuarios_adicionales as $data) {
-            $usuario = Usuario::create([
-                'nombre_usuario' => $data['nombre'],
-                'email_usuario' => $data['email'],
-                'contrasena_usuario' => Hash::make('password123'),
-                'telefono_usuario' => $data['tel'],
-                'activo_usuario' => true,
-                'creado_usuario' => now(),
-                'actualizado_usuario' => now(),
-            ]);
+        foreach ($usuarios as $data) {
+            $usuario = Usuario::firstOrCreate(
+                ['email_usuario' => $data['email']],
+                [
+                    'nombre_usuario' => $data['nombre'],
+                    'contrasena_usuario' => Hash::make('password123'),
+                    'telefono_usuario' => $data['tel'],
+                    'activo_usuario' => true,
+                    'creado_usuario' => now(),
+                    'actualizado_usuario' => now(),
+                ]
+            );
 
-            $rol = $data['rol'] === 'arrendador' ? $rolArrendador : $rolInquilino;
-            if ($rol) {
+            $rol = Rol::where('slug_rol', $data['rol'])->first();
+            if ($rol && !$usuario->roles()->where('id_rol', $rol->id_rol)->exists()) {
                 $usuario->roles()->attach($rol->id_rol);
             }
         }

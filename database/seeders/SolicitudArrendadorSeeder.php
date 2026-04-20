@@ -2,249 +2,65 @@
 
 namespace Database\Seeders;
 
+use App\Models\SolicitudArrendador;
+use App\Models\Usuario;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class SolicitudArrendadorSeeder extends Seeder
 {
     public function run(): void
     {
-        $adminId = DB::table('tbl_usuario')
-            ->where('email_usuario', 'admin@spotstay.com')
-            ->value('id_usuario');
-
-        // Obtén miembros (usuarios con rol miembro)
-        $miembros = DB::table('tbl_rol_usuario')
-            ->join('tbl_rol', 'tbl_rol.id_rol', '=', 'tbl_rol_usuario.id_rol_fk')
-            ->join('tbl_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_rol_usuario.id_usuario_fk')
-            ->where('tbl_rol.slug_rol', 'miembro')
-            ->select('tbl_usuario.id_usuario', 'tbl_usuario.nombre_usuario', 'tbl_usuario.email_usuario')
-            ->get();
-
-        // 9 solicitudes PENDIENTES
-        $solicitudesPendientes = [
-            [
-                'usuario_email' => 'roberto.diaz@email.com',
-                'usuario_nombre' => 'Roberto Díaz',
-                'datos' => [
-                    'direccion' => 'Calle Colón 8',
-                    'ciudad' => 'Valencia',
-                    'codigo_postal' => '46004',
-                    'tipo' => 'Piso',
-                    'precio_estimado' => 950,
-                    'habitaciones' => 2,
-                    'banos' => 1,
-                    'tamano' => 65,
-                    'descripcion' => 'Piso luminoso en el centro de Valencia'
-                ],
-                'creado' => Carbon::now()->subHours(2),
-            ],
-            [
-                'usuario_email' => 'carmen.iglesias@email.com',
-                'usuario_nombre' => 'Carmen Iglesias',
-                'datos' => [
-                    'direccion' => 'Alameda Principal 3',
-                    'ciudad' => 'Sevilla',
-                    'codigo_postal' => '41002',
-                    'tipo' => 'Piso',
-                    'precio_estimado' => 750,
-                    'habitaciones' => 3,
-                    'banos' => 2,
-                    'tamano' => 80,
-                    'descripcion' => 'Piso amplio en zona histórica de Sevilla'
-                ],
-                'creado' => Carbon::now()->subHours(5),
-            ],
-            [
-                'usuario_email' => 'andres.molina@email.com',
-                'usuario_nombre' => 'Andrés Molina',
-                'datos' => [
-                    'direccion' => 'Calle Fuencarral 22',
-                    'ciudad' => 'Madrid',
-                    'codigo_postal' => '28004',
-                    'tipo' => 'Estudio',
-                    'precio_estimado' => 650,
-                    'habitaciones' => 1,
-                    'banos' => 1,
-                    'tamano' => 40,
-                    'descripcion' => 'Estudio moderno en el centro de Madrid'
-                ],
-                'creado' => Carbon::now()->subDay(),
-            ],
-            [
-                'usuario_email' => 'patricia.vega@email.com',
-                'usuario_nombre' => 'Patricia Vega',
-                'datos' => [
-                    'direccion' => 'Gran Vía 45',
-                    'ciudad' => 'Bilbao',
-                    'codigo_postal' => '48001',
-                    'tipo' => 'Ático',
-                    'precio_estimado' => 1200,
-                    'habitaciones' => 3,
-                    'banos' => 2,
-                    'tamano' => 90,
-                    'descripcion' => 'Ático con terraza en el centro de Bilbao'
-                ],
-                'creado' => Carbon::now()->subDay(),
-            ],
+        $solicitudes = [
+            ['usuario' => 'test1@example.com', 'nombre_empresa' => 'Empresa Inmobiliaria A', 'estado' => 'pendiente'],
+            ['usuario' => 'test2@example.com', 'nombre_empresa' => 'Gestiones Llave', 'estado' => 'aprobado'],
+            ['usuario' => 'inquilino1@example.com', 'nombre_empresa' => 'Mi Negocio Inmobiliario', 'estado' => 'rechazado'],
+            ['usuario' => 'inquilino2@example.com', 'nombre_empresa' => 'Alquileres Rápidos', 'estado' => 'pendiente'],
+            ['usuario' => 'inquilino3@example.com', 'nombre_empresa' => 'PropiedadesTOP', 'estado' => 'aprobado'],
+            ['usuario' => 'inquilino4@example.com', 'nombre_empresa' => 'Casa Perfecta', 'estado' => 'pendiente'],
+            ['usuario' => 'inquilino5@example.com', 'nombre_empresa' => 'Viviendas Premium', 'estado' => 'aprobado'],
+            ['usuario' => 'inquilino6@example.com', 'nombre_empresa' => 'Inmobiliaria Express', 'estado' => 'rechazado'],
+            ['usuario' => 'inquilino7@example.com', 'nombre_empresa' => 'Alquileres Seguros', 'estado' => 'pendiente'],
+            ['usuario' => 'inquilino8@example.com', 'nombre_empresa' => 'Gestión Total', 'estado' => 'aprobado'],
+            ['usuario' => 'test1@example.com', 'nombre_empresa' => 'Nueva Inversión', 'estado' => 'pendiente'],
+            ['usuario' => 'test2@example.com', 'nombre_empresa' => 'Soluciones Vivienda', 'estado' => 'aprobado'],
+            ['usuario' => 'inquilino1@example.com', 'nombre_empresa' => 'Casas para Todos', 'estado' => 'pendiente'],
+            ['usuario' => 'inquilino2@example.com', 'nombre_empresa' => 'Propiedades Net', 'estado' => 'rechazado'],
+            ['usuario' => 'inquilino3@example.com', 'nombre_empresa' => 'Smart Alquileres', 'estado' => 'aprobado'],
+            ['usuario' => 'inquilino4@example.com', 'nombre_empresa' => 'Vivienda Digital', 'estado' => 'pendiente'],
+            ['usuario' => 'inquilino5@example.com', 'nombre_empresa' => 'Casa Segura', 'estado' => 'pendiente'],
+            ['usuario' => 'inquilino6@example.com', 'nombre_empresa' => 'Inversión Inteligente', 'estado' => 'aprobado'],
+            ['usuario' => 'inquilino7@example.com', 'nombre_empresa' => 'Alquileres Premium', 'estado' => 'rechazado'],
+            ['usuario' => 'inquilino8@example.com', 'nombre_empresa' => 'Gestión Profesional', 'estado' => 'aprobado'],
         ];
 
-        // Añade 5 más del resto de miembros
-        $ciudades = ['Barcelona', 'Madrid', 'Valencia', 'Málaga', 'Zaragoza'];
-        $miembrosRestantes = $miembros->whereNotIn('email_usuario', [
-            'roberto.diaz@email.com', 'carmen.iglesias@email.com',
-            'andres.molina@email.com', 'patricia.vega@email.com'
-        ])->take(5);
+        $admins = Usuario::whereHas('roles', function ($q) {
+            $q->where('nombre_rol', 'admin');
+        })->get();
 
-        foreach ($miembrosRestantes as $index => $miembro) {
-            $solicitudesPendientes[] = [
-                'usuario_email' => $miembro->email_usuario,
-                'usuario_nombre' => $miembro->nombre_usuario,
-                'datos' => [
-                    'direccion' => 'Calle Principal ' . ($index + 1),
-                    'ciudad' => $ciudades[$index % count($ciudades)],
-                    'codigo_postal' => '28001',
-                    'tipo' => 'Piso',
-                    'precio_estimado' => rand(600, 1100),
-                    'habitaciones' => rand(1, 3),
-                    'banos' => rand(1, 2),
-                    'tamano' => rand(40, 100),
-                    'descripcion' => 'Piso disponible en zona céntrica'
-                ],
-                'creado' => Carbon::now()->subHours(rand(24, 96)),
-            ];
-        }
+        $adminIndex = 0;
 
-        // Inserta pendientes
-        foreach ($solicitudesPendientes as $sol) {
-            $idUsuario = DB::table('tbl_usuario')
-                ->where('email_usuario', $sol['usuario_email'])
-                ->value('id_usuario');
+        foreach ($solicitudes as $data) {
+            $usuario = Usuario::where('email_usuario', $data['usuario'])->first();
+            if ($usuario) {
+                $admin = null;
+                if ($adminIndex < count($admins)) {
+                    $admin = $admins[$adminIndex];
+                    $adminIndex++;
+                }
 
-            DB::table('tbl_solicitud_arrendador')->insert([
-                'id_usuario_fk' => $idUsuario,
-                'datos_solicitud_arrendador' => json_encode($sol['datos']),
-                'estado_solicitud_arrendador' => 'pendiente',
-                'creado_solicitud_arrendador' => $sol['creado'],
-            ]);
-        }
-
-        // 5 APROBADAS
-        $solicitudesAprobadas = [
-            [
-                'datos' => [
-                    'direccion' => 'Calle San Felipe 10',
-                    'ciudad' => 'Barcelona',
-                    'tipo' => 'Piso',
-                    'precio_estimado' => 900
-                ],
-                'notas' => 'Documentación correcta. Solicitud aprobada.',
-                'creado' => Carbon::now()->subWeeks(1),
-            ],
-            [
-                'datos' => [
-                    'direccion' => 'Avenida España 5',
-                    'ciudad' => 'Madrid',
-                    'tipo' => 'Piso',
-                    'precio_estimado' => 1000
-                ],
-                'notas' => 'Documentación correcta. Solicitud aprobada.',
-                'creado' => Carbon::now()->subWeeks(2),
-            ],
-            [
-                'datos' => [
-                    'direccion' => 'Calle Del Puerto 8',
-                    'ciudad' => 'Valencia',
-                    'tipo' => 'Piso',
-                    'precio_estimado' => 800
-                ],
-                'notas' => 'Documentación correcta. Solicitud aprobada.',
-                'creado' => Carbon::now()->subMonth(),
-            ],
-            [
-                'datos' => [
-                    'direccion' => 'Paseo Marítimo 15',
-                    'ciudad' => 'Málaga',
-                    'tipo' => 'Piso',
-                    'precio_estimado' => 1100
-                ],
-                'notas' => 'Documentación correcta. Solicitud aprobada.',
-                'creado' => Carbon::now()->subWeeks(3),
-            ],
-            [
-                'datos' => [
-                    'direccion' => 'Calle Mayor 20',
-                    'ciudad' => 'Zaragoza',
-                    'tipo' => 'Piso',
-                    'precio_estimado' => 700
-                ],
-                'notas' => 'Documentación correcta. Solicitud aprobada.',
-                'creado' => Carbon::now()->subMonth(),
-            ],
-        ];
-
-        $miembrosAprobados = $miembros->slice(0, 5);
-        foreach ($solicitudesAprobadas as $index => $sol) {
-            if (isset($miembrosAprobados[$index])) {
-                DB::table('tbl_solicitud_arrendador')->insert([
-                    'id_usuario_fk' => $miembrosAprobados[$index]->id_usuario,
-                    'datos_solicitud_arrendador' => json_encode($sol['datos']),
-                    'estado_solicitud_arrendador' => 'aprobada',
-                    'id_admin_revisa_fk' => $adminId,
-                    'notas_solicitud_arrendador' => $sol['notas'],
-                    'creado_solicitud_arrendador' => $sol['creado'],
-                    'actualizado_solicitud_arrendador' => $sol['creado'],
-                ]);
-            }
-        }
-
-        // 3 RECHAZADAS
-        $solicitudesRechazadas = [
-            [
-                'datos' => [
-                    'direccion' => 'Calle Falsa 123',
-                    'ciudad' => 'Córdoba',
-                    'tipo' => 'Piso',
-                    'precio_estimado' => 500
-                ],
-                'notas' => 'Documentación incompleta. Por favor adjunte DNI y nómina.',
-                'creado' => Carbon::now()->subDays(3),
-            ],
-            [
-                'datos' => [
-                    'direccion' => 'Avenida Inexistente 99',
-                    'ciudad' => 'Toledo',
-                    'tipo' => 'Piso',
-                    'precio_estimado' => 600
-                ],
-                'notas' => 'Dirección no verificable en nuestro sistema.',
-                'creado' => Carbon::now()->subWeeks(1),
-            ],
-            [
-                'datos' => [
-                    'direccion' => 'Paseo Irreal 55',
-                    'ciudad' => 'Segovia',
-                    'tipo' => 'Piso',
-                    'precio_estimado' => 10000
-                ],
-                'notas' => 'Precio fuera de rango de mercado para esa zona.',
-                'creado' => Carbon::now()->subWeeks(2),
-            ],
-        ];
-
-        $miembrosRechazados = $miembros->slice(5, 3);
-        foreach ($solicitudesRechazadas as $index => $sol) {
-            if (isset($miembrosRechazados[$index])) {
-                DB::table('tbl_solicitud_arrendador')->insert([
-                    'id_usuario_fk' => $miembrosRechazados[$index]->id_usuario,
-                    'datos_solicitud_arrendador' => json_encode($sol['datos']),
-                    'estado_solicitud_arrendador' => 'rechazada',
-                    'id_admin_revisa_fk' => $adminId,
-                    'notas_solicitud_arrendador' => $sol['notas'],
-                    'creado_solicitud_arrendador' => $sol['creado'],
-                    'actualizado_solicitud_arrendador' => $sol['creado'],
-                ]);
+                SolicitudArrendador::firstOrCreate(
+                    ['id_usuario_fk' => $usuario->id_usuario, 'estado_solicitud_arrendador' => $data['estado']],
+                    [
+                        'datos_solicitud_arrendador' => json_encode([
+                            'nombre_empresa' => $data['nombre_empresa'],
+                            'fecha_solicitud' => now()->subDays(5)->toDateString(),
+                        ]),
+                        'id_admin_revisa_fk' => $admin?->id_usuario,
+                        'notas_solicitud_arrendador' => $data['estado'] === 'rechazado' ? 'Documentación incompleta' : null,
+                        'creado_solicitud_arrendador' => now()->subDays(5),
+                        'actualizado_solicitud_arrendador' => now(),
+                    ]
+                );
             }
         }
     }

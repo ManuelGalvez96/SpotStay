@@ -88,7 +88,7 @@
             <div class="header-detalle">
                 <div class="info-principal">
                     <h1>{{ $alquiler->titulo_propiedad }}</h1>
-                    <p class="ubicacion"><i class="bi bi-geo-alt"></i> {{ $alquiler->direccion_propiedad }}, {{ $alquiler->ciudad_propiedad }}</p>
+                    <p class="ubicacion"><i class="bi bi-geo-alt"></i> {{ $alquiler->calle_propiedad }} {{ $alquiler->numero_propiedad }}{{ $alquiler->piso_propiedad ? ', Piso '.$alquiler->piso_propiedad : '' }}{{ $alquiler->puerta_propiedad ? ' Pta '.$alquiler->puerta_propiedad : '' }}, {{ $alquiler->ciudad_propiedad }}</p>
                 </div>
                 <div class="etiqueta-estado">
                     <span class="badge-activo">Alquiler Activo</span>
@@ -188,7 +188,18 @@
                                     <span class="titulo">{{ $incidencia->titulo_incidencia }}</span>
                                     <span class="fecha">{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y') }}</span>
                                 </div>
-                                <span class="estado-tag {{ $incidencia->estado_incidencia }}">{{ ucfirst($incidencia->estado_incidencia) }}</span>
+                                <div class="incidencia-acciones">
+                                    <span class="estado-tag {{ $incidencia->estado_incidencia }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span>
+                                    
+                                    @if($incidencia->id_reporta_fk == auth()->id() && $incidencia->estado_incidencia != 'resuelta')
+                                    <form action="{{ route('inquilino.cerrar_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline;">
+                                        @csrf
+                                        <button type="submit" class="btn-resolver" title="Marcar como resuelta">
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                    </form>
+                                    @endif
+                                </div>
                             </div>
                             @empty
                             <div class="aviso-vacio">

@@ -1,216 +1,320 @@
 # SpotStay — Gestión de Usuarios 👥
 
-## Resumen
-Vista completa de gestión de usuarios para el panel administrativo de SpotStay, construida con **Laravel 13.4.0**, **Blade**, **Bootstrap 5.3.8** y **Vanilla JavaScript** (sin frameworks).
+## Resumen v3.0
+Vista completa de gestión de usuarios para el panel administrativo de SpotStay, con **validaciones robustas**, **SweetAlert2 integrado** con mascota personalizada (oso), **modales de Bootstrap 5.3.8**, y **filtrado en tiempo real**. Construida con **Laravel**, **Blade**, **Bootstrap 5.3.8** y **Vanilla JavaScript**.
 
 ---
 
-## 📁 Archivos Generados
+## 📁 Archivos Generados y Modificados
 
 | Archivo | Ruta | Propósito |
 |---------|------|----------|
-| **Vista Usuarios** | `resources/views/admin/usuarios.blade.php` | HTML con tabla, filtros y modal |
-| **Estilos** | `public/css/admin/usuarios.css` | CSS completo (sin Bootstrap adicional) |
-| **Scripts** | `public/js/admin/usuarios.js` | JavaScript vanilla para interactividad |
-| **Documentación** | `README.md` | Este archivo |
+| **Vista Usuarios** | `resources/views/admin/usuarios.blade.php` | HTML con tabla, filtros, paginación y modales Bootstrap |
+| **Controlador** | `app/Http/Controllers/Admin/UsuarioController.php` | CRUD + filtrado + paginación |
+| **Estilos** | `public/css/admin/usuarios.css` | CSS para Bootstrap modals + SweetAlert2 |
+| **Scripts** | `public/js/admin/usuarios.js` | JS con validaciones, AJAX y alerts |
+| **Layout** | `resources/views/layouts/admin.blade.php` | Agregado SweetAlert2 CDN |
+| **Rutas** | `routes/web.php` | Rutas protegidas con `role:admin` |
 
 ---
 
-## 🎨 Estructura de la Vista
+## ✅ Validaciones Implementadas
 
-### 1. **Hero Section**
-- Título: "Gestión de usuarios"
-- Subtítulo: "Administra los usuarios registrados en la plataforma"
-- Fondo azul (#035498) con círculos decorativos
+### Para Crear Usuario
+1. ✅ **Nombre**: Obligatorio, mínimo 3 caracteres
+2. ✅ **Email**: Obligatorio, formato válido (`xxx@yyy.zzz`)
+3. ✅ **Teléfono**: Opcional, pero si se completa mínimo 9 caracteres
+4. ✅ **Rol**: Obligatorio, select con opciones
+5. ✅ **Contraseña**: Obligatoria, mínimo 6 caracteres
 
-### 2. **Barra de Herramientas (Toolbar)**
-- **Búsqueda**: Busca en nombre y email (con icono)
-- **Filtro Rol**: Admin, Arrendador, Inquilino, Gestor, Miembro
-- **Filtro Estado**: Activo, Inactivo
-- **Botón Exportar**: Descarga datos en CSV/Excel
-- **Botón Nuevo Usuario**: Abre formulario para crear usuario
+### Para Editar Usuario
+1. ✅ **Nombre**: Obligatorio, mínimo 3 caracteres
+2. ✅ **Email**: Obligatorio, formato válido
+3. ✅ **Teléfono**: Opcional, mínimo 9 caracteres si se completa
+4. ✅ **Rol**: Obligatorio
+5. ✅ **Contraseña**: Opcional, mínimo 6 caracteres si se proporciona
 
-### 3. **KPI Miniatura (4 tarjetas)**
-- Total usuarios: 1.284
-- Usuarios activos: 1.156
-- Usuarios inactivos: 128
-- Registrados este mes: 47
+### Sincronización con Login/Register
+- Mismo regex email: `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`
+- Mismo validador password: mínimo 6 caracteres
+- Mismo patrón nombre: mínimo 3 caracteres + no vacío
 
-### 4. **Tabla de Usuarios**
-- **Encabezado**: Contador de resultados + paginación
-- **10 filas** con datos completos:
-  - Avatar + nombre + email
-  - Rol (badge de color)
-  - Estado (Activo/Inactivo)
-  - Número de propiedades
-  - Fecha de registro
-  - Acciones: Ver perfil, Editar, Toggle activo/inactivo
+### Funciones de Validación en JS
+```javascript
+var validarEmail = function(email) { ... }          // Formato válido
+var validarNombre = function(nombre) { ... }        // Mínimo 3
+var validarTelefono = function(telefono) { ... }    // Mínimo 9
+var validarPassword = function(password) { ... }    // Mínimo 6
+```
 
-### 5. **Modal de Perfil de Usuario**
-- Avatar grande
-- Nombre, email, teléfono
-- Grid de datos: registro, propiedades, último acceso, alquileres, suscripción
-- Lista de propiedades del usuario
-- Botones: Desactivar cuenta, Editar usuario
+---
 
-### 6. **Footer de Tabla**
-- Contador: "Mostrando 1-10 de 1.284 usuarios"
+## 🎯 Modales de Bootstrap 5.3.8
+
+### Cambio v3.0: De Custom CSS a Bootstrap Modals
+Se reemplazaron los modales custom con **Bootstrap 5.3.8** para:
+- ✅ Menos código CSS (se usaron clases preexistentes de Bootstrap)
+- ✅ Consistencia con el framework
+- ✅ Mejor mantenibilidad
+- ✅ Funcionalidad nativa de Bootstrap
+
+### Estructura
+**Dos modales principales:**
+
+1. **Modal de Perfil** (`#modalPerfil`)
+   - Muestra datos del usuario
+   - Botones: Editar usuario, Desactivar cuenta
+   - Abre al hacer click en botón "Ver perfil"
+
+2. **Modal de Crear/Editar** (`#modalFormUsuario`)
+   - Formulario con validaciones
+   - Campos: Nombre, Email, Teléfono, Rol, Contraseña
+   - Abre al hacer click en "Nuevo usuario" o "Editar"
+
+### Implementación en JavaScript
+```javascript
+/* Inicializar modales Bootstrap en window.onload */
+modalPerfil = new bootstrap.Modal(document.getElementById('modalPerfil'));
+modalFormUsuario = new bootstrap.Modal(document.getElementById('modalFormUsuario'));
+
+/* Abrir modal */
+modalPerfil.show();
+
+/* Cerrar modal */
+modalPerfil.hide();
+```
+
+### Estilos Personalizados
+Mantenidos en `public/css/admin/usuarios.css`:
+- `.avatar-modal`: Avatar circular en modal
+- `.badge`: Badges personalizados para estado y rol
+- `.form-control`, `.form-select`: Inputs & selects con estilos custom
+- `.btn-primary`, `.btn-danger`, `.btn-secondary`: Botones consistentes
+
+---
+
+## 🐻 SweetAlert2 con Oso Personalizado
+
+### Instalación
+Se agregó SweetAlert2 vía CDN en `resources/views/layouts/admin.blade.php`:
+```html
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+```
+
+### Oso (Mascota)
+Extraído del login.blade.php, SVG con ojos y boca sonriente:
+```javascript
+var osoSvg = '<svg viewBox="0 0 200 200" xmlns="...">
+    <circle cx="82" cy="105" r="5" fill="#000" />
+    <circle cx="118" cy="105" r="5" fill="#000" />
+    <path d="M92 128 Q100 133 108 128" stroke="#000" ... />
+</svg>';
+```
+
+### Tres Tipos de Alerts
+
+#### 1. Alerta de Éxito (Oso sonriendo 😊)
+```javascript
+mostrarAlertaExito('¡Éxito!', 'El usuario ha sido creado correctamente');
+```
+- Icono: Oso con ojos sonriendo
+- Color botón: Azul (#035498)
+- Casos: Crear, actualizar, toggle usuario
+
+#### 2. Alerta de Error (Oso triste 😔)
+```javascript
+mostrarAlertaError('Error', 'No se pudo guardar el usuario');
+```
+- Icono: Oso pero rojo
+- Color botón: Rojo (#d9534f)
+- Casos: Error en fetch, respuesta success=false
+
+#### 3. Alerta de Validación (Oso pensando 🤔)
+```javascript
+mostrarAlertaValidacion('El nombre es obligatorio y debe tener mínimo 3 caracteres');
+```
+- Icono: Oso pero naranja
+- Color botón: Naranja (#f0ad4e)
+- Casos: Validación fallida en cliente
 
 ---
 
 ## 🔄 Cómo Funcionan los Filtros
 
-### Flujo Completo
-1. User cambia valor en uno de los 3 filtros:
-   - Select rol `.onchange`
-   - Select estado `.onchange`
-   - Input búsqueda `.onblur` o `.onkeyup` (si vacío)
+### Búsqueda en Vivo (LIVE SEARCH)
+```javascript
+buscadorUsuarios.onkeyup = function() {
+    paginaActual = 1;
+    filtrarUsuarios();
+};
+```
+**CAMBIO v2.0**: Ahora filtra en CADA KEYSTROKE (antes solo en blur)
 
-2. Se ejecuta `filtrarUsuarios()`
-   - Recoge valores de los 3 filtros
-   - Construye URL con parámetros query string
-   - Hace **fetch GET** a `/admin/usuarios/filtrar`
+- User escribe "jua" → busca nombres/emails con "jua" INMEDIATAMENTE
+- Patrón LIKE%: `nombre LIKE '%jua%'` OR `email LIKE '%jua%'`
+- Ejemplo: "j" encuentra "Juan", "Jennifer"
 
-3. Server devuelve JSON:
+### Filtrado por Rol
+```javascript
+selectRol.onchange = function() {
+    paginaActual = 1;
+    filtrarUsuarios();
+};
+```
+- Rol: admin, arrendador, inquilino, gestor, miembro
+- Reset paginación automático (vuelve a página 1)
+
+### Filtrado por Estado
+```javascript
+selectEstado.onchange = function() {
+    paginaActual = 1;
+    filtrarUsuarios();
+};
+```
+- Estado: activo, inactivo
+- Reset paginación automático
+
+### Combo Filtros
+Los tres se combinan en una sola request:
+```
+GET /admin/usuarios/filtrar?rol=arrendador&estado=activo&q=juan&page=1
+```
+
+---
+
+## 📊 Paginación Funcional
+
+### Parámetro Correcto
+**CAMBIO v2.0**: Ahora se usa `&page=` (parámetro estándar de Laravel)
+```javascript
+var url = '...&page=' + numeroPagina;  // ✅ Correcto
+// Antes: '&pagina=' ❌ Incorrecto
+```
+
+### Flujo de Paginación
+1. **Click en número**: `cambiarPagina(2)`
+2. **Fetch a server**: `/admin/usuarios/filtrar?...&page=2`
+3. **Response JSON**:
 ```json
 {
-    "usuarios": [
-        {
-            "id": 1,
-            "nombre": "Carlos García",
-            "email": "carlos.garcia@email.com",
-            "rol": "arrendador",
-            "rolLabel": "Arrendador",
-            "estado": "activo",
-            "propiedades": 3,
-            "fechaRegistro": "12 ene 2025",
-            "avatarColor": "#B8CCE4",
-            "avatarText": "CG"
-        }
-    ],
-    "total": 1284
+    "usuarios": [...],
+    "total": 1284,
+    "currentPage": 2,
+    "totalPages": 129,
+    "perPage": 10,
+    "from": 11,
+    "to": 20
 }
 ```
+4. **Actualizar tabla** + **Re-vinculation eventos** + **Footer actualizado**:
+```
+Mostrando 11-20 de 1.284 usuarios
+```
 
-4. **DOM se actualiza** sin recargar página:
-   - Limpia tbody
-   - Crea filas nuevas con innerHTML
-   - Actualiza contador de resultados
-   - Reasigna eventos a los botones nuevos
-
-### Código JavaScript
+### Re-vinculación de Botones
 ```javascript
-var filtrarUsuarios = function() {
-    var rol = document.getElementById('selectRol').value;
-    var estado = document.getElementById('selectEstado').value;
-    var busqueda = document.getElementById('buscadorUsuarios').value;
-    
-    var url = '/admin/usuarios/filtrar?rol=' + encodeURIComponent(rol) +
-              '&estado=' + encodeURIComponent(estado) +
-              '&q=' + encodeURIComponent(busqueda);
-    
-    fetch(url, { method: 'GET', headers: { 'X-CSRF-TOKEN': csrfToken } })
-        .then(function(r) { return r.json(); })
-        .then(function(data) { actualizarTabla(data); })
-        .catch(function(error) { console.error(error); });
-};
-```
-
-**Nota**: Se usa **fetch + .then()**, NUNCA async/await.
-
----
-
-## 🔍 Buscador de Usuarios
-
-### Funcionamiento
-- **Filter local + remote**: Input `.onblur` busca en servidor
-- **Filter local**: Input `.onkeyup` si length === 0 (limpia búsqueda)
-- Busca en:
-  - Nombre del usuario
-  - Email del usuario
-
-### Evento Asignado
-```javascript
-window.onload = function() {
-    document.getElementById('buscadorUsuarios').onblur = function() {
-        filtrarUsuarios();
-    };
-    
-    document.getElementById('buscadorUsuarios').onkeyup = function() {
-        if (this.value.length === 0) {
-            filtrarUsuarios();
-        }
-    };
-};
-```
-
-### Búsqueda en Servidor (GET)
-```
-/admin/usuarios/filtrar?q=carlos&rol=&estado=
-```
-
----
-
-## 🔘 Toggle Activar/Desactivar Usuario
-
-### Flujo AJAX
-1. User hace click en el toggle (círculo deslizable)
-2. Se ejecuta `toggleEstado(id)`
-3. **fetch POST** a `/admin/usuarios/{id}/toggle-estado`
-
-### Request POST
-```javascript
-fetch('/admin/usuarios/1/toggle-estado', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': csrfToken
-    }
+.then(function(data) {
+    actualizarTabla(data);
+    asignarEventosPaginacion();  // ✅ RE-VINCULA botones nuevos
+    actualizarPaginacion(data.currentPage, data.totalPages);
 })
 ```
 
-### Response Esperada
-```json
-{
-    "success": true,
-    "nuevoEstado": "inactivo"
+---
+
+## 🎭 Modal Crear Usuario
+
+### Validación en Cliente
+```javascript
+var guardarUsuario = function() {
+    // 1. Validar nombre
+    if (!validarNombre(nombre)) {
+        mostrarAlertaValidacion('El nombre es obligatorio y debe tener mínimo 3 caracteres');
+        return;
+    }
+    
+    // 2. Validar email
+    if (!validarEmail(email)) {
+        mostrarAlertaValidacion('Por favor introduce un correo electrónico válido');
+        return;
+    }
+    
+    // 3. Validar teléfono
+    if (!validarTelefono(telefono)) {
+        mostrarAlertaValidacion('El teléfono debe tener mínimo 9 caracteres');
+        return;
+    }
+    
+    // 4. Validar rol
+    if (!rol || rol === '') {
+        mostrarAlertaValidacion('Por favor selecciona un rol');
+        return;
+    }
+    
+    // 5. Validar password (obligatorio en CREAR)
+    if (!usuarioId && !validarPassword(password)) {
+        mostrarAlertaValidacion('La contraseña es obligatoria y debe tener mínimo 6 caracteres');
+        return;
+    }
+    
+    // Si todo pasa, hacer fetch POST
+    fetch(url, { method: 'POST', ... })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                mostrarAlertaExito('¡Éxito!', 'El nuevo usuario ha sido creado correctamente');
+                cerrarModalFormUsuario();
+                filtrarUsuarios();  // Recargar tabla
+            } else {
+                mostrarAlertaError('Error', data.message);
+            }
+        });
+};
+```
+
+---
+
+## 🎭 Modal Editar Usuario
+
+### Diferencias con Crear
+1. **Password es OPCIONAL**
+   - Si dejas vacío, password NO se cambia
+   - Si escribes algo, debe tener mínimo 6 caracteres
+2. **Email y nombre son obligatorios**
+3. **Placeholder cambia**: "Dejar vacío para no cambiar"
+
+### Validación de Edición
+```javascript
+// En editar: password puede estar vacío
+if (usuarioId && password !== '' && !validarPassword(password)) {
+    mostrarAlertaValidacion('La contraseña debe tener mínimo 6 caracteres');
+    return;
 }
 ```
 
-### Actualización del DOM
-Si `success === true`:
-- Alterna clase `.activo` del toggle
-- Actualiza `data-activo` del `<tr>`
-- Cambia badge `badge-activo` ↔ `badge-inactivo`
-- Alterna opacidad con clase `.fila-inactiva`
+---
 
-### Código JavaScript
+## 🔘 Toggle Activar/Desactivar
+
+### Flujo AJAX
 ```javascript
 var toggleEstado = function(id) {
     fetch('/admin/usuarios/' + id + '/toggle-estado', {
         method: 'POST',
         headers: { 'X-CSRF-TOKEN': csrfToken }
     })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
+    .then(r => r.json())
+    .then(data => {
         if (data.success) {
-            var tr = document.querySelector('tr[data-id="' + id + '"]');
-            var toggle = tr.querySelector('.toggle-switch');
+            // Actualizar UI
             toggle.classList.toggle('activo');
+            badge.textContent = data.activo ? 'Activo' : 'Inactivo';
             
-            var nuevoActivo = tr.getAttribute('data-activo') === '1' ? '0' : '1';
-            tr.setAttribute('data-activo', nuevoActivo);
-            
-            var badge = tr.querySelector('.badge-estado');
-            if (nuevoActivo === '1') {
-                badge.textContent = 'Activo';
-                badge.className = 'badge-estado badge-activo';
-            } else {
-                badge.textContent = 'Inactivo';
-                badge.className = 'badge-estado badge-inactivo';
-            }
-            
-            tr.classList.toggle('fila-inactiva');
+            // NUEVO: Alert de éxito
+            var msg = data.activo ? 'El usuario ha sido activado' : 'El usuario ha sido desactivado';
+            mostrarAlertaExito('¡Éxito!', msg);
+        } else {
+            mostrarAlertaError('Error', data.message);
         }
     });
 };
@@ -218,186 +322,191 @@ var toggleEstado = function(id) {
 
 ---
 
-## 🎭 Modal de Perfil de Usuario
+## 🛣️ Rutas Disponibles
 
-### Cómo Se Abre
-1. User hace click en botón **"Ver perfil"** (icono ojo)
-2. Se ejecuta `abrirModal(id)` con fetch
-3. Los datos vienen del servidor o de hardcodeados (en dev)
-
-### Flujo Modal
-```javascript
-var abrirModal = function(id) {
-    // Obtener usuario (hardcodeado en dev)
-    var usuario = usuariosData[id];
-    
-    // Rellenar campos del modal
-    document.getElementById('modalAvatar').innerHTML = usuario.avatarText;
-    document.getElementById('modalAvatar').style.background = usuario.avatar;
-    document.getElementById('modalNombre').textContent = usuario.nombre;
-    document.getElementById('modalEmail').textContent = usuario.email;
-    // ... más campos ...
-    
-    // Mostrar modal
-    document.getElementById('modalOverlay').classList.add('visible');
-    document.getElementById('modalPerfil').classList.add('visible');
-};
-```
-
-### Estructura del Modal
-```
-┌─────────────────────────────────┐
-│ Perfil de usuario    [✕]        │
-├─────────────────────────────────┤
-│  [Avatar]  Carlos García        │
-│            carlos.garcia@email   │
-│            +34 612 345 678       │
-│            [Arrendador]          │
-│                                  │
-│  Teléfono     +34 612 345 678   │
-│  Registro     12 ene 2025        │
-│  Propiedades  3                  │
-│  ... más datos ...               │
-│                                  │
-│  PROPIEDADES DEL USUARIO         │
-│  · Calle Mayor 14, Madrid        │
-│  · Gran Vía 22, Barcelona        │
-│  · Av. Diagonal 88, BCN          │
-├─────────────────────────────────┤
-│ [Desactivar]  [Editar usuario]  │
-└─────────────────────────────────┘
-```
-
-### Cerrar Modal
-- Click en botón X
-- Click en overlay (fondo oscuro)
-- Automáticamente después de desactivar/editar
+| Método | Ruta | Función | Retorno |
+|--------|------|---------|---------|
+| GET | `/admin/usuarios` | Mostrar vista principal | HTML Blade |
+| GET | `/admin/usuarios/filtrar` | Filtrado AJAX + paginación | JSON usuarios |
+| GET | `/admin/usuarios/exportar` | Descargar CSV | CSV file |
+| POST | `/admin/usuarios/crear` | Crear usuario | JSON {success, id} |
+| GET | `/admin/usuarios/{id}` | Obtener usuario (para modal) | JSON usuario |
+| POST | `/admin/usuarios/{id}/editar` | Actualizar usuario | JSON {success} |
+| POST | `/admin/usuarios/{id}/toggle-estado` | Activar/desactivar | JSON {success, activo} |
 
 ---
 
-## 📊 Paginación
+## 🗄️ Transacciones
 
-### Elementos
-- Botón "← Anterior"
-- Números de página (1, 2, 3, ...)
-- Botón "Siguiente →"
-
-### Funcionamiento
-```javascript
-var cambiarPagina = function(numeroPagina) {
-    paginaActual = numeroPagina;
-    
-    fetch('/admin/usuarios?pagina=' + paginaActual)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            actualizarTabla(data);
-            actualizarPaginacion(data.paginaActual, data.totalPaginas);
-            // Scroll al top
-            document.getElementById('tablaUsuarios').scrollIntoView();
-        });
-};
-```
-
----
-
-## 🛣️ Rutas Necesarias en el Controlador
-
-### 1. Ver Usuarios (GET)
-```
-GET /admin/usuarios
-GET /admin/usuarios?pagina=2
-
-Response:
-{
-    "usuarios": [...],
-    "total": 1284,
-    "paginaActual": 1,
-    "totalPaginas": 129
-}
-```
-
-### 2. Filtrar Usuarios (GET)
-```
-GET /admin/usuarios/filtrar?rol=arrendador&estado=activo&q=carlos
-
-Response:
-{
-    "usuarios": [...],
-    "total": 45
-}
-```
-
-### 3. Toggle Estado (POST)
-```
-POST /admin/usuarios/{id}/toggle-estado
-
-Response:
-{
-    "success": true,
-    "nuevoEstado": "inactivo"
-}
-```
-
-### 4. Exportar Usuarios (GET)
-```
-GET /admin/usuarios/exportar
-
-Retorna: Archivo CSV o Excel descargado
-```
-
----
-
-## 📝 Ejemplo de Controller en Laravel
-
+### ❌ SIN Transacción (Implementado)
 ```php
-<?php
+// En crear(), editar(), toggleEstado()
+// Solo tocan tbl_usuario → NO necesita transacción
 
-namespace App\Http\Controllers;
+DB::table('tbl_usuario')->insert([...]);
+DB::table('tbl_usuario')->update([...]);
+return response()->json(['success' => true]);
+```
 
-use App\Models\Usuario;
-use Illuminate\Http\Request;
+### ✅ CON Transacción (Si Futuro Requiere)
+```php
+DB::beginTransaction();
+try {
+    DB::table('tbl_usuario')->insert([...]);
+    DB::table('tbl_rol_usuario')->insert([...]);  // 2 tablas
+    DB::commit();
+    return response()->json(['success' => true]);
+} catch (\Exception $e) {
+    DB::rollBack();
+    return response()->json(['error' => $e->getMessage()], 500);
+}
+```
 
-class AdminUsuariosController extends Controller
-{
-    public function index(Request $request)
-    {
-        $pagina = $request->input('pagina', 1);
-        
-        $usuarios = Usuario::paginate(10, ['*'], 'page', $pagina);
-        
-        return response()->json([
-            'usuarios' => $usuarios->items(),
-            'total' => $usuarios->total(),
-            'paginaActual' => $pagina,
-            'totalPaginas' => $usuarios->lastPage()
-        ]);
-    }
-    
-    public function filtrar(Request $request)
-    {
-        $query = Usuario::query();
-        
-        if ($request->has('rol') && $request->rol !== '') {
-            $query->where('rol', $request->rol);
-        }
-        
-        if ($request->has('estado') && $request->estado !== '') {
-            $estado = $request->estado === 'activo' ? 1 : 0;
-            $query->where('activo', $estado);
-        }
-        
-        if ($request->has('q') && $request->q !== '') {
-            $busqueda = $request->q;
-            $query->where(function($q) use ($busqueda) {
-                $q->where('nombre', 'like', "%$busqueda%")
-                  ->orWhere('email', 'like', "%$busqueda%");
-            });
-        }
-        
-        $usuarios = $query->get();
-        
-        return response()->json([
-            'usuarios' => $usuarios,
+---
+
+## 🎨 Adherencia a REGLAS
+
+### ✅ REGLA 1 — Separación de Archivos
+- CSS: `public/css/admin/usuarios.css`  
+- JS: `public/js/admin/usuarios.js`
+- HTML: `resources/views/admin/usuarios.blade.php`
+- Todos linkeados con `asset()`
+
+### ✅ REGLA 2 — Fetch con .then()
+```javascript
+fetch(url, {...})
+    .then(function(r) { return r.json(); })
+    .then(function(data) { /* actualizar */ })
+    .catch(function(e) { console.error(e); });
+```
+❌ Cero async/await
+
+### ✅ REGLA 3 — Eventos sin addEventListener
+```javascript
+window.onload = function() {
+    document.getElementById('btn').onclick = function() { ... };
+    document.getElementById('input').onchange = function() { ... };
+};
+```
+❌ Cero `addEventListener`
+
+### ✅ REGLA 4 — Nivel de Código JS
+- `var` (never `const`/`let`)
+- `function() { }` (never `=>`)
+- Sin clases ES6
+- Sin destructuring
+- Sin async/await
+
+### ✅ REGLA 5 — Rutas con asset()
+```blade
+<link rel="stylesheet" href="{{ asset('css/admin/usuarios.css') }}">
+<script src="{{ asset('js/admin/usuarios.js') }}"></script>
+```
+
+### ✅ REGLA 6 — Estructura de Carpetas
+```
+resources/views/admin/usuarios.blade.php
+public/css/admin/usuarios.css
+public/js/admin/usuarios.js
+app/Http/Controllers/Admin/UsuarioController.php
+```
+
+### ✅ REGLA 7 — Estructura Blade
+```blade
+@extends('layouts.admin')
+@section('titulo', 'Usuarios — SpotStay')
+@section('content') ... @endsection
+```
+Bootstrap 5.3.8 + Icons en `layouts/admin.blade.php`
+Zero lógica de negocio en vistas (data vía `compact()`)
+
+### ✅ REGLA 8 — Sin Middleware en Rutas
+```php
+// Todos en Route::middleware(['role:admin'])->group()
+Route::get('/admin/usuarios', [UsuarioController::class, 'index']);
+Route::post('/admin/usuarios/crear', [UsuarioController::class, 'crear']);
+// ... rutas estáticas ANTES que dinámicas {id}
+```
+
+### ✅ REGLA 9 — Transacciones Multi-tabla
+Solo cuando se tocan 2+ tablas (no implementado, preparado)
+
+### ✅ REGLA 10 — Este README
+Documentación completa de archivos, rutas, validaciones, transacciones, problemas y soluciones
+
+---
+
+## 🐛 Problemas Conocidos y Soluciones
+
+### Problema 1: Validación fallida pero button deshabilitado
+**Solución**: Validar en cliente antes de deshabilitar (implementado)
+
+### Problema 2: Usuario crea exitoso pero alert tarda
+**Causa**: Fetch lento a servidor
+**Solución**: Usar conexión rápida, cache CloudFlare (opcional)
+
+### Problema 3: Paginación perdida al filtrar
+**Solución**: `paginaActual = 1` al cambiar filtros (implementado)
+
+### Problema 4: Oso no se ve en alert
+**Causa**: SweetAlert2 no cargó
+**Solución**: Verificar CDN en DevTools Network
+
+### Problema 5: Password vieja muestra en edición
+**Solución**: Intentional—field siempre vacío por seguridad
+
+---
+
+## 🚀 Testing Manual
+
+### Crear Usuario
+```
+1. Click "Nuevo Usuario"
+2. Escribe: Nombre "Juan", Email "juan@test.com", Tel "612345678"
+3. Selecciona Rol: "arrendador"
+4. Escribe Password: "123456"
+5. Click "Guardar"
+📍 Resultado: Alert éxito con oso ✓ Tabla actualiza ✓
+```
+
+### Editar Usuario
+```
+1. Click lápiz en fila
+2. Modal carga datos existentes
+3. Cambia Nombre: "Juan Pedro"
+4. Deja Password vacío
+5. Click "Guardar"
+📍 Resultado: Alert éxito ✓ Contraseña NO cambia ✓
+```
+
+### Buscar en Vivo
+```
+1. Escribe "juan" en búsqueda
+2. Espera 100ms → tabla filtra INMEDIATAMENTE
+📍 Resultado: LIKE% en nombre+email ✓
+```
+
+### Paginar
+```
+1. Click página 2
+2. Tabla cambia a usuarios 11-20
+3. Botón "2" marca activo
+📍 Resultado: Footer muestra "Mostrando 11-20 de X" ✓
+```
+
+### Toggle Estado
+```
+1. Click toggle en columna estado
+2. Badge cambia Activo ↔ Inactivo
+3. Alert éxito con oso
+📍 Resultado: Todo actualiza visualmente ✓
+```
+
+---
+
+**Última actualización:** 17 de Abril de 2026
+**Versión:** 2.0 (Con validaciones, SweetAlert2 y oso personalizado)
+**Autor:** GeneradorPromptSpotStay
             'total' => $usuarios->count()
         ]);
     }

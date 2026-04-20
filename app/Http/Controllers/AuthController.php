@@ -18,6 +18,7 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (Auth::check()) {
+            /** @var Usuario $user */
             $user = Auth::user();
             if ($user->roles()->where('slug_rol', 'admin')->exists()) {
                 return redirect('/admin/dashboard');
@@ -45,19 +46,38 @@ class AuthController extends Controller
             'password.required' => 'La contraseña es obligatoria.',
         ]);
 
-        // 2. Intentar autenticar al usuario
-        if (Auth::attempt([
-            'email_usuario' => $credentials['email'],
-            'password' => $credentials['password']
-        ])) {
+        // 2. Buscar usuario por email
+        $usuario = Usuario::where('email_usuario', $credentials['email'])->first();
+
+        // 3. Verificar si el usuario existe y la contraseña es correcta
+        if ($usuario && Hash::check($credentials['password'], $usuario->contrasena_usuario)) {
+
+            // 4. Si las credenciales son correctas, comprobar si la cuenta está activa
+            if (!$usuario->activo_usuario) {
+                return back()->withErrors([
+                    'email' => 'Esta cuenta está desactivada.<br> Contacta al administrador.',
+                ])->onlyInput('email');
+            }
+
+            // 5. Intentar el login (ya sabemos que las credenciales son correctas)
+            Auth::login($usuario);
+            $request->session()->regenerate();
+
+            /** @var Usuario $user */
+            $user = Auth::user();
 
             $request->session()->regenerate();
 
+            /** @var Usuario $user */
             $user = Auth::user();
 
             // Redirigir según el rol del usuario
             if ($user->roles()->where('slug_rol', 'admin')->exists()) {
                 return redirect()->intended('/admin/dashboard');
+            }
+
+            if ($user->roles()->where('slug_rol', 'gestor')->exists()) {
+                return redirect()->intended('/gestor/dashboard');
             }
 
             if ($user->roles()->whereIn('slug_rol', ['miembro', 'inquilino'])->exists()) {
@@ -69,7 +89,7 @@ class AuthController extends Controller
         }
 
 
-        // 3. Si la autenticación falla, volver con error
+        // 4. Si la autenticación falla, volver con error
         return back()->withErrors([
             'email' => 'El correo electrónico o la contraseña son incorrectos.',
         ])->onlyInput('email');

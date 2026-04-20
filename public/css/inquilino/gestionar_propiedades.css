@@ -9,66 +9,197 @@
 }
 
 .kpi-card-inquilino {
-    background: var(--fondo-panel);
-    border: 1px solid var(--borde);
-    border-radius: var(--radio-md);
-    padding: 20px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
     display: flex;
     align-items: center;
-    gap: 16px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: var(--sombra);
+    gap: 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .kpi-card-inquilino:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 25px -10px rgba(16, 35, 54, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .kpi-icon-inquilino {
-    width: 50px;
-    height: 50px;
-    border-radius: var(--radio);
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     flex-shrink: 0;
 }
 
 .kpi-icon-inquilino.primario {
-    background: #eef3f8;
-    color: var(--primario);
-}
-
-.kpi-icon-inquilino.acento {
-    background: #e8f6f0;
-    color: var(--acento);
+    background: #f0f7ff;
+    color: #1d4ed8;
 }
 
 .kpi-icon-inquilino.advertencia {
-    background: #fff8f1;
-    color: #e67e22;
+    background: #fff7ed;
+    color: #ea580c;
 }
 
 .kpi-datos-inquilino {
     display: flex;
     flex-direction: column;
+    gap: 2px;
 }
 
 .kpi-numero {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--texto);
-    line-height: 1.2;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1;
 }
 
 .kpi-etiqueta {
-    font-size: 0.8rem;
-    color: var(--texto-suave);
+    font-size: 0.75rem;
+    color: #64748b;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.025em;
+    font-weight: 700;
+}
+.cabecera-listado-gestion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.titulo-listado {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--texto);
+    margin: 0;
+}
+
+.filtros-gestion-container {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.grupo-filtro {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    gap: 12px;
+}
+
+.grupo-filtro:focus-within {
+    border-color: #1d4ed8;
+    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.1);
+}
+
+.grupo-filtro i {
+    color: #64748b;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.input-filtro, .select-filtro {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.95rem;
+    color: #0f172a;
+    text-align: left;
+    width: 100%;
+}
+
+.input-filtro {
+    width: 320px;
+}
+
+.custom-select-wrapper {
+    position: relative;
+    user-select: none;
+}
+
+.select-trigger {
+    cursor: pointer;
+    justify-content: space-between;
+    width: 250px;
+}
+
+.selected-value {
+    flex-grow: 1;
+    font-size: 0.95rem;
+    color: #0f172a;
+}
+
+.arrow-icon {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    transition: transform 0.3s ease;
+}
+
+.custom-select-wrapper.active .arrow-icon {
+    transform: rotate(180deg);
+}
+
+.select-options-list {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    list-style: none;
+    padding: 8px;
+    margin: 0;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.custom-select-wrapper.active .select-options-list {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.option-item {
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.option-item:hover {
+    background: #f1f5f9;
+    color: #1d4ed8;
+}
+
+.option-item.selected {
+    background: #eff6ff;
+    color: #1d4ed8;
     font-weight: 600;
+}
+
+.input-filtro::placeholder {
+    color: #94a3b8;
+    text-align: left;
 }
 
 /* LISTADO DE PROPIEDADES */

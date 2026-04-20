@@ -705,12 +705,12 @@ body {
 /* ── Historial Lista ── */
 .historial-lista {
     padding: 12px;
-    max-height: 300px;
+    max-height: 400px;
     overflow-y: auto;
 }
 
-.historial-list::-webkit-scrollbar {
-    width: 6px;
+.historial-lista::-webkit-scrollbar {
+    width: 8px;
 }
 
 .historial-lista::-webkit-scrollbar-track {

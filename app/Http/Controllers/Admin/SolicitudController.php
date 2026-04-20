@@ -58,7 +58,7 @@ class SolicitudController extends Controller
               'tbl_usuario.email_usuario'
             )
             ->orderBy('tbl_solicitud_arrendador.actualizado_solicitud_arrendador','desc')
-            ->limit(5)
+            ->limit(3)
             ->get();
 
         $ultimasRechazadas = DB::table('tbl_solicitud_arrendador')

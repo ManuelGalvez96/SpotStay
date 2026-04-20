@@ -42,6 +42,8 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/usuarios', [UsuarioController::class, 'index']);
     Route::get('/admin/usuarios/filtrar', [UsuarioController::class, 'filtrar']);
     Route::get('/admin/usuarios/{id}', [UsuarioController::class, 'show']);
+    Route::post('/admin/usuarios/crear', [UsuarioController::class, 'crear']);
+    Route::post('/admin/usuarios/{id}/editar', [UsuarioController::class, 'editar']);
     Route::post('/admin/usuarios/{id}/toggle-estado', [UsuarioController::class, 'toggleEstado']);
     Route::get('/admin/usuarios/exportar', [UsuarioController::class, 'exportar']);
 

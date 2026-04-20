@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Miembro\HomeController;
+use App\Http\Controllers\Miembro\DetallePropiedadController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UsuarioController;
@@ -10,6 +12,7 @@ use App\Http\Controllers\Admin\SolicitudController;
 use App\Http\Controllers\Admin\IncidenciaController;
 use App\Http\Controllers\Admin\AlquilerController;
 use App\Http\Controllers\Admin\SuscripcionController;
+use App\Http\Controllers\inquilino\InquilinoController;
 use App\Http\Controllers\Gestor\DashboardController as GestorDashboardController;
 use App\Http\Controllers\Gestor\IncidenciaController as GestorIncidenciaController;
 use App\Http\Controllers\Gestor\PropiedadController as GestorPropiedadController;
@@ -101,9 +104,15 @@ Route::middleware(['role:gestor'])->group(function () {
     Route::post('/gestor/incidencias/{id}/presupuesto', [GestorIncidenciaController::class, 'crearPresupuesto']);
 });
 
-Route::middleware(['role:miembro,inquilino'])->group(function () {
+Route::middleware(['role:miembro,inquilino,propietario'])->group(function () {
     Route::get('/miembro/inicio', [HomeController::class, 'index']);
+    Route::get('/miembro/propiedad/{id}', [DetallePropiedadController::class, 'show'])->name('miembro.detalle_propiedad');
     Route::get('/miembro/mapa', function () {
         return view('miembro.mapa');
     });
+
+    Route::get('/inquilino/gestionar-propiedades', [InquilinoController::class, 'gestionarPropiedades'])->name('gestionar_propiedades');
+    Route::get('/inquilino/propiedad/{id}', [InquilinoController::class, 'verPropiedad'])->name('inquilino.ver_propiedad');
+    Route::post('/inquilino/propiedad/{id}/incidencia', [InquilinoController::class, 'reportarIncidencia'])->name('inquilino.reportar_incidencia');
+    Route::post('/inquilino/incidencia/{id}/cerrar', [InquilinoController::class, 'cerrarIncidencia'])->name('inquilino.cerrar_incidencia');
 });

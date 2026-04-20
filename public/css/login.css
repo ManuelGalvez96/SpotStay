@@ -65,7 +65,8 @@ body {
 .error-mensaje {
   color: #ff4d4d;
   font-size: 0.75rem;
-  margin-top: 4px;
+  margin-top: 5px;
+  margin-left: 12px; /* Alineado con el inicio visual del texto */
   display: block;
   text-align: left;
 }
@@ -201,12 +202,14 @@ input:focus {
 .toggle-pass {
   position: absolute;
   right: 15px;
-  top: 50%;
+  top: 26px; /* Posición fija para que no se mueva con el error */
   transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
   color: #555;
+  display: flex; /* Asegura centrado del SVG */
+  align-items: center;
 }
 
 .btn-submit {

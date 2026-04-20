@@ -13,6 +13,15 @@ class UsuarioSeeder extends Seeder
     {
         $usuarios = [
             ['nombre' => 'Admin Principal', 'email' => 'admin@spotstay.com', 'rol' => 'admin', 'tel' => '+34 600 000 001'],
+            ['nombre' => 'María García', 'email' => 'inquilino@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 000'],
+            ['nombre' => 'Laura Martínez', 'email' => 'laura@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 001'],
+            ['nombre' => 'Pedro Jiménez', 'email' => 'pedro@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 002'],
+            ['nombre' => 'Sofía López', 'email' => 'sofia@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 003'],
+            ['nombre' => 'Carmen Iglesias', 'email' => 'carmen.iglesias@email.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 004'],
+            ['nombre' => 'Andrés Molina', 'email' => 'andres.molina@email.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 005'],
+            ['nombre' => 'Patricia Vega', 'email' => 'patricia.vega@email.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 006'],
+            ['nombre' => 'Javier Moya', 'email' => 'javier.moya@email.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 007'],
+            ['nombre' => 'Lucía Serrano', 'email' => 'lucia.serrano@email.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 008'],
             ['nombre' => 'Admin Secundario', 'email' => 'admin2@spotstay.com', 'rol' => 'admin', 'tel' => '+34 600 000 002'],
             // Usuarios usados en PropiedadSeeder
             ['nombre' => 'Arrendador Principal', 'email' => 'arrendador@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 111'],

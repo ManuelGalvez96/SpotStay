@@ -12,6 +12,18 @@ class AlquilerSeeder extends Seeder
     public function run(): void
     {
         $alquileres = [
+            // Alquiler de prueba para Gestión: María García (inquilino@spotstay.com)
+            ['propiedad' => 'Calle Mayor 14', 'inquilino' => 'inquilino@spotstay.com', 'estado' => 'activo', 'fecha_inicio' => '2025-01-01'],
+            ['propiedad' => 'Calle Mayor 14', 'inquilino' => 'laura@spotstay.com', 'estado' => 'activo', 'fecha_inicio' => '2025-01-15'],
+            ['propiedad' => 'Calle Serrano 47', 'inquilino' => 'pedro@spotstay.com', 'estado' => 'activo', 'fecha_inicio' => '2025-02-01'],
+            ['propiedad' => 'Av. Diagonal 88', 'inquilino' => 'sofia@spotstay.com', 'estado' => 'activo', 'fecha_inicio' => '2025-01-20'],
+            ['propiedad' => 'Calle Pelai 12', 'inquilino' => 'carmen.iglesias@email.com', 'estado' => 'activo', 'fecha_inicio' => '2025-03-01'],
+            ['propiedad' => 'Calle Mayor 14', 'inquilino' => 'andres.molina@email.com', 'estado' => 'activo', 'fecha_inicio' => '2025-04-01'],
+            ['propiedad' => 'Calle Fuencarral 22', 'inquilino' => 'patricia.vega@email.com', 'estado' => 'pendiente', 'fecha_inicio' => '2025-05-01'],
+            ['propiedad' => 'Paseo de Gracia 5', 'inquilino' => 'javier.moya@email.com', 'estado' => 'pendiente', 'fecha_inicio' => '2025-05-15'],
+            ['propiedad' => 'Alameda de Hércules 3', 'inquilino' => 'lucia.serrano@email.com', 'estado' => 'pendiente', 'fecha_inicio' => '2025-06-01'],
+            
+            // Alquileres de David
             ['propiedad' => 'Calle Mayor 14', 'inquilino' => 'inquilino1@example.com', 'estado' => 'aprobado', 'fecha_inicio' => '2024-01-15'],
             ['propiedad' => 'Calle Serrano 47', 'inquilino' => 'inquilino2@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-12-01'],
             ['propiedad' => 'Calle Fuencarral 22', 'inquilino' => 'inquilino3@example.com', 'estado' => 'activo', 'fecha_inicio' => '2023-11-20'],

@@ -110,13 +110,13 @@ class AlquilerController extends Controller
             ->first();
 
         if (!$alquiler) {
-            return response()->json(['error' => 'Not found'], 404);
+            return response()->view('error.404');
         }
 
         // Generar initiales
         $partes = explode(' ', $alquiler->nombre_usuario_inquilino);
         $alquiler->inicialesInq = strtoupper($partes[0][0] . (isset($partes[1]) ? $partes[1][0] : ''));
-        
+
         $partes = explode(' ', $alquiler->nombre_usuario_arrendador);
         $alquiler->inicialesArr = strtoupper($partes[0][0] . (isset($partes[1]) ? $partes[1][0] : ''));
 

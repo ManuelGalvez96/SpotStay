@@ -60,9 +60,9 @@ function iniciarValidacionCrearUsuario() {
 
     const checkState = (input) => {
         if (input.type === "text") {
-            container.classList.add("peek-active");
-        } else {
             container.classList.remove("peek-active");
+        } else {
+            container.classList.add("peek-active");
         }
     };
 
@@ -81,7 +81,7 @@ function iniciarValidacionCrearUsuario() {
         let emailValido = email !== "" && emailFormato.test(email) && emailDisponible;
         let passwordValido = password !== "" && password.length >= 6;
         let passwordConfirmationValido = passwordConfirmation !== "" && password === passwordConfirmation;
-        
+
         // Teléfono OBLIGATORIO: debe cumplir el formato Y estar disponible
         let telefonoValido = telefono !== "" && regexTel.test(telefono) && telefonoDisponible;
 
@@ -285,7 +285,7 @@ function iniciarValidacionCrearUsuario() {
         };
     }
 
-    // Inicialización al cargar (por si Laravel devuelve valores con errored)
+    // Inicialización al cargar
     if (nombreInput.value !== "") comprobarNombre();
     if (emailInput.value !== "") comprobarEmail();
     if (telefonoInput && telefonoInput.value !== "") comprobarTelefono();

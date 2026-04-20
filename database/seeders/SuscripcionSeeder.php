@@ -2,41 +2,56 @@
 
 namespace Database\Seeders;
 
+use App\Models\Suscripcion;
+use App\Models\Usuario;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class SuscripcionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Obtén arrendadores
-        $arrendadores = DB::table('tbl_rol_usuario')
-            ->join('tbl_rol', 'tbl_rol.id_rol', '=', 'tbl_rol_usuario.id_rol_fk')
-            ->where('tbl_rol.slug_rol', 'arrendador')
-            ->pluck('tbl_rol_usuario.id_usuario_fk')
-            ->toArray();
+        $suscripciones = [
+            ['plan' => 'basico', 'max_propiedades' => 3],
+            ['plan' => 'basico', 'max_propiedades' => 3],
+            ['plan' => 'profesional', 'max_propiedades' => 10],
+            ['plan' => 'profesional', 'max_propiedades' => 10],
+            ['plan' => 'profesional', 'max_propiedades' => 10],
+            ['plan' => 'premium', 'max_propiedades' => 30],
+            ['plan' => 'premium', 'max_propiedades' => 30],
+            ['plan' => 'basico', 'max_propiedades' => 3],
+            ['plan' => 'basico', 'max_propiedades' => 3],
+            ['plan' => 'profesional', 'max_propiedades' => 10],
+            ['plan' => 'profesional', 'max_propiedades' => 10],
+            ['plan' => 'premium', 'max_propiedades' => 30],
+            ['plan' => 'premium', 'max_propiedades' => 30],
+            ['plan' => 'basico', 'max_propiedades' => 3],
+            ['plan' => 'profesional', 'max_propiedades' => 10],
+            ['plan' => 'premium', 'max_propiedades' => 30],
+            ['plan' => 'basico', 'max_propiedades' => 3],
+            ['plan' => 'profesional', 'max_propiedades' => 10],
+            ['plan' => 'premium', 'max_propiedades' => 30],
+            ['plan' => 'basico', 'max_propiedades' => 3],
+        ];
 
-        // Emails de los 3 arrendadores principales
-        $principalesEmails = ['carlos@spotstay.com', 'elena@spotstay.com', 'roberto.mora@spotstay.com'];
+        $arrendadores = Usuario::whereHas('roles', function ($query) {
+            $query->where('slug_rol', 'arrendador');
+        })->limit(20)->pluck('id_usuario')->toArray();
 
-        foreach ($arrendadores as $idUsuario) {
-            $email = DB::table('tbl_usuario')
-                ->where('id_usuario', $idUsuario)
-                ->value('email_usuario');
-
-            $plan = in_array($email, $principalesEmails) ? 'pro' : 'basico';
-            $maxPropiedades = $plan === 'pro' ? 10 : 3;
-
-            DB::table('tbl_suscripcion')->insert([
-                'id_usuario_fk' => $idUsuario,
-                'plan_suscripcion' => $plan,
-                'max_propiedades_suscripcion' => $maxPropiedades,
-                'inicio_suscripcion' => Carbon::now()->subMonths(6)->toDateString(),
-                'fin_suscripcion' => Carbon::now()->addMonths(6)->toDateString(),
-                'estado_suscripcion' => 'activa',
-                'creado_suscripcion' => Carbon::now(),
-            ]);
+        foreach ($suscripciones as $index => $data) {
+            if (isset($arrendadores[$index])) {
+                Suscripcion::firstOrCreate(
+                    ['id_usuario_fk' => $arrendadores[$index], 'plan_suscripcion' => $data['plan']],
+                    [
+                        'plan_suscripcion' => $data['plan'],
+                        'max_propiedades_suscripcion' => $data['max_propiedades'],
+                        'inicio_suscripcion' => now()->toDateString(),
+                        'fin_suscripcion' => now()->addYear()->toDateString(),
+                        'estado_suscripcion' => 'activa',
+                        'creado_suscripcion' => now(),
+                        'actualizado_suscripcion' => now(),
+                    ]
+                );
+            }
         }
     }
 }

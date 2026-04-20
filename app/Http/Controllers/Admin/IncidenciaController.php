@@ -71,6 +71,23 @@ class IncidenciaController extends Controller
             ->select('tbl_usuario.id_usuario','tbl_usuario.nombre_usuario')
             ->get();
 
+        $propiedades = DB::table('tbl_propiedad')
+            ->select('id_propiedad','titulo_propiedad','direccion_propiedad','ciudad_propiedad')
+            ->orderBy('titulo_propiedad','asc')
+            ->get();
+
+        $inquilinos = DB::table('tbl_usuario')
+            ->join('tbl_rol_usuario',
+              'tbl_usuario.id_usuario','=',
+              'tbl_rol_usuario.id_usuario_fk')
+            ->join('tbl_rol',
+              'tbl_rol.id_rol','=',
+              'tbl_rol_usuario.id_rol_fk')
+            ->where('tbl_rol.slug_rol','inquilino')
+            ->select('tbl_usuario.id_usuario','tbl_usuario.nombre_usuario','tbl_usuario.email_usuario')
+            ->orderBy('tbl_usuario.nombre_usuario','asc')
+            ->get();
+
         return view('admin.incidencias', compact(
             'abiertas',
             'enProceso',
@@ -81,7 +98,9 @@ class IncidenciaController extends Controller
             'totalResueltas',
             'totalCerradas',
             'urgentes',
-            'gestores'
+            'gestores',
+            'propiedades',
+            'inquilinos'
         ));
     }
 
@@ -245,5 +264,46 @@ class IncidenciaController extends Controller
             'incidencias' => $incidencias,
             'total' => $incidencias->count()
         ]);
+    }
+
+    public function crear(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $idAdmin = DB::table('tbl_usuario')
+                ->where('email_usuario','admin@spotstay.com')
+                ->value('id_usuario');
+
+            $idIncidencia = DB::table('tbl_incidencia')->insertGetId([
+                'id_propiedad_fk' => $request->id_propiedad,
+                'id_reporta_fk' => $request->id_inquilino,
+                'titulo_incidencia' => $request->titulo,
+                'descripcion_incidencia' => $request->descripcion,
+                'categoria_incidencia' => $request->categoria,
+                'prioridad_incidencia' => $request->prioridad,
+                'estado_incidencia' => 'abierta',
+                'creado_incidencia' => Carbon::now(),
+                'actualizado_incidencia' => Carbon::now()
+            ]);
+
+            DB::table('tbl_historial_incidencia')->insert([
+                'id_incidencia_fk' => $idIncidencia,
+                'id_usuario_fk' => $idAdmin,
+                'comentario_historial' => 'Incidencia creada por administrador',
+                'cambio_estado_historial' => 'abierta',
+                'creado_historial' => Carbon::now(),
+                'actualizado_historial' => Carbon::now()
+            ]);
+
+            DB::commit();
+            return response()->json(['success' => true, 'id' => $idIncidencia]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

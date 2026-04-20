@@ -2,226 +2,57 @@
 
 namespace Database\Seeders;
 
+use App\Models\Notificacion;
+use App\Models\Usuario;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class NotificacionSeeder extends Seeder
 {
     public function run(): void
     {
-        $adminId = DB::table('tbl_usuario')->where('email_usuario', 'admin@spotstay.com')->value('id_usuario');
-        $carlosId = DB::table('tbl_usuario')->where('email_usuario', 'carlos@spotstay.com')->value('id_usuario');
-        $lauraId = DB::table('tbl_usuario')->where('email_usuario', 'laura@spotstay.com')->value('id_usuario');
+        $notificaciones = [
+            ['tipo' => 'pago_vencido', 'mensaje' => 'Tu pago de alquiler está vencido'],
+            ['tipo' => 'nuevo_mensaje', 'mensaje' => 'Tienes un nuevo mensaje'],
+            ['tipo' => 'reparacion_urgente', 'mensaje' => 'Reparación urgente solicitada'],
+            ['tipo' => 'propiedad_publicada', 'mensaje' => 'Tu propiedad ha sido publicada'],
+            ['tipo' => 'incidencia_resuelta', 'mensaje' => 'Tu incidencia ha sido resuelta'],
+            ['tipo' => 'contrato_vencimiento', 'mensaje' => 'Tu contrato vence en 30 días'],
+            ['tipo' => 'nuevo_inquilino', 'mensaje' => 'Se aprobó tu solicitud de alquiler'],
+            ['tipo' => 'solicitud_aprobada', 'mensaje' => 'Tu solicitud como arrendador fue aprobada'],
+            ['tipo' => 'cambio_propiedad', 'mensaje' => 'Se realizó cambio en tu propiedad'],
+            ['tipo' => 'inspeccion_programada', 'mensaje' => 'Inspección programada para mañana'],
+            ['tipo' => 'pago_recibido', 'mensaje' => 'Se recibió tu pago correctamente'],
+            ['tipo' => 'documento_requerido', 'mensaje' => 'Se requieren documentos adicionales'],
+            ['tipo' => 'propiedad_alquilada', 'mensaje' => 'Tu propiedad fue alquilada'],
+            ['tipo' => 'actualizacion_propiedad', 'mensaje' => 'Se actualizó la información de tu propiedad'],
+            ['tipo' => 'nuevo_residente', 'mensaje' => 'Bienvenido nuevo residente'],
+            ['tipo' => 'recordatorio_pago', 'mensaje' => 'Recordatorio: tu pago vence en 3 días'],
+            ['tipo' => 'incidencia_reportada', 'mensaje' => 'Nueva incidencia reportada'],
+            ['tipo' => 'contrato_firmado', 'mensaje' => 'Contrato firmado exitosamente'],
+            ['tipo' => 'cancelacion_solicitada', 'mensaje' => 'Cancelación de alquiler solicitada'],
+            ['tipo' => 'renovacion_exitosa', 'mensaje' => 'Contrato renovado exitosamente'],
+        ];
 
-        // 10 notificaciones para admin
-        // 5 de nueva_solicitud
-        DB::table('tbl_notificacion')->insert([
-            'id_usuario_fk' => $adminId,
-            'tipo_notificacion' => 'nueva_solicitud',
-            'datos_notificacion' => json_encode([
-                'titulo' => 'Nueva solicitud de arrendador',
-                'url' => '/admin/solicitudes',
-                'nombre' => 'Roberto Díaz'
-            ]),
-            'leida_notificacion' => false,
-            'creado_notificacion' => Carbon::now()->subHours(2),
-        ]);
+        $usuarios = Usuario::all();
+        $usuarioIndex = 0;
 
-        DB::table('tbl_notificacion')->insert([
-            'id_usuario_fk' => $adminId,
-            'tipo_notificacion' => 'nueva_solicitud',
-            'datos_notificacion' => json_encode([
-                'titulo' => 'Nueva solicitud de arrendador',
-                'url' => '/admin/solicitudes',
-                'nombre' => 'Carmen Iglesias'
-            ]),
-            'leida_notificacion' => false,
-            'creado_notificacion' => Carbon::now()->subHours(5),
-        ]);
-
-        DB::table('tbl_notificacion')->insert([
-            'id_usuario_fk' => $adminId,
-            'tipo_notificacion' => 'nueva_solicitud',
-            'datos_notificacion' => json_encode([
-                'titulo' => 'Nueva solicitud de arrendador',
-                'url' => '/admin/solicitudes',
-                'nombre' => 'Andrés Molina'
-            ]),
-            'leida_notificacion' => false,
-            'creado_notificacion' => Carbon::now()->subDay(),
-        ]);
-
-        DB::table('tbl_notificacion')->insert([
-            'id_usuario_fk' => $adminId,
-            'tipo_notificacion' => 'nueva_solicitud',
-            'datos_notificacion' => json_encode([
-                'titulo' => 'Nueva solicitud de arrendador',
-                'url' => '/admin/solicitudes',
-                'nombre' => 'Patricia Vega'
-            ]),
-            'leida_notificacion' => true,
-            'creado_notificacion' => Carbon::now()->subDay(),
-        ]);
-
-        DB::table('tbl_notificacion')->insert([
-            'id_usuario_fk' => $adminId,
-            'tipo_notificacion' => 'nueva_solicitud',
-            'datos_notificacion' => json_encode([
-                'titulo' => 'Nueva solicitud de arrendador',
-                'url' => '/admin/solicitudes',
-                'nombre' => 'Javier Moya'
-            ]),
-            'leida_notificacion' => true,
-            'creado_notificacion' => Carbon::now()->subDays(2),
-        ]);
-
-        // 5 de alquiler_pendiente
-        DB::table('tbl_notificacion')->insert([
-            'id_usuario_fk' => $adminId,
-            'tipo_notificacion' => 'alquiler_pendiente',
-            'datos_notificacion' => json_encode([
-                'titulo' => 'Alquiler pendiente de aprobación',
-                'url' => '/admin/alquileres',
-                'propiedad' => 'Calle Mayor 14'
-            ]),
-            'leida_notificacion' => false,
-            'creado_notificacion' => Carbon::now()->subHours(3),
-        ]);
-
-        DB::table('tbl_notificacion')->insert([
-            'id_usuario_fk' => $adminId,
-            'tipo_notificacion' => 'alquiler_pendiente',
-            'datos_notificacion' => json_encode([
-                'titulo' => 'Alquiler pendiente de aprobación',
-                'url' => '/admin/alquileres',
-                'propiedad' => 'Calle Fuencarral 22'
-            ]),
-            'leida_notificacion' => false,
-            'creado_notificacion' => Carbon::now()->subHours(8),
-        ]);
-
-        DB::table('tbl_notificacion')->insert([
-            'id_usuario_fk' => $adminId,
-            'tipo_notificacion' => 'alquiler_pendiente',
-            'datos_notificacion' => json_encode([
-                'titulo' => 'Alquiler pendiente de aprobación',
-                'url' => '/admin/alquileres',
-                'propiedad' => 'Paseo de Gracia 5'
-            ]),
-            'leida_notificacion' => true,
-            'creado_notificacion' => Carbon::now()->subDays(1),
-        ]);
-
-        DB::table('tbl_notificacion')->insert([
-            'id_usuario_fk' => $adminId,
-            'tipo_notificacion' => 'alquiler_pendiente',
-            'datos_notificacion' => json_encode([
-                'titulo' => 'Alquiler pendiente de aprobación',
-                'url' => '/admin/alquileres',
-                'propiedad' => 'Alameda de Hércules 3'
-            ]),
-            'leida_notificacion' => true,
-            'creado_notificacion' => Carbon::now()->subDays(2),
-        ]);
-
-        DB::table('tbl_notificacion')->insert([
-            'id_usuario_fk' => $adminId,
-            'tipo_notificacion' => 'alquiler_pendiente',
-            'datos_notificacion' => json_encode([
-                'titulo' => 'Alquiler pendiente de aprobación',
-                'url' => '/admin/alquileres',
-                'propiedad' => 'Calle Mayor 14'
-            ]),
-            'leida_notificacion' => true,
-            'creado_notificacion' => Carbon::now()->subDays(3),
-        ]);
-
-        // 3 notificaciones para Carlos García
-        DB::table('tbl_notificacion')->insert([
-            'id_usuario_fk' => $carlosId,
-            'tipo_notificacion' => 'nueva_incidencia',
-            'datos_notificacion' => json_encode([
-                'titulo' => 'Nueva incidencia en Calle Mayor 14',
-                'propiedad' => 'Calle Mayor 14',
-                'prioridad' => 'urgente'
-            ]),
-            'leida_notificacion' => false,
-            'creado_notificacion' => Carbon::now()->subHours(1),
-        ]);
-
-        DB::table('tbl_notificacion')->insert([
-            'id_usuario_fk' => $carlosId,
-            'tipo_notificacion' => 'mensaje_nuevo',
-            'datos_notificacion' => json_encode([
-                'titulo' => 'Nuevo mensaje de Laura Martínez',
-                'url' => '/chat/1'
-            ]),
-            'leida_notificacion' => false,
-            'creado_notificacion' => Carbon::now()->subHours(2),
-        ]);
-
-        // 4 notificaciones para Laura Martínez
-        DB::table('tbl_notificacion')->insert([
-            'id_usuario_fk' => $lauraId,
-            'tipo_notificacion' => 'alquiler_aprobado',
-            'datos_notificacion' => json_encode([
-                'titulo' => 'Tu alquiler ha sido aprobado',
-                'propiedad' => 'Calle Mayor 14'
-            ]),
-            'leida_notificacion' => true,
-            'creado_notificacion' => Carbon::now()->subDays(2),
-        ]);
-
-        DB::table('tbl_notificacion')->insert([
-            'id_usuario_fk' => $lauraId,
-            'tipo_notificacion' => 'mensaje_nuevo',
-            'datos_notificacion' => json_encode([
-                'titulo' => 'Nuevo mensaje de Carlos García'
-            ]),
-            'leida_notificacion' => false,
-            'creado_notificacion' => Carbon::now()->subHours(1),
-        ]);
-
-        DB::table('tbl_notificacion')->insert([
-            'id_usuario_fk' => $lauraId,
-            'tipo_notificacion' => 'pago_confirmado',
-            'datos_notificacion' => json_encode([
-                'titulo' => 'Pago de alquiler confirmado',
-                'importe' => '1200'
-            ]),
-            'leida_notificacion' => true,
-            'creado_notificacion' => Carbon::now()->subDays(5),
-        ]);
-
-        DB::table('tbl_notificacion')->insert([
-            'id_usuario_fk' => $lauraId,
-            'tipo_notificacion' => 'incidencia_actualizada',
-            'datos_notificacion' => json_encode([
-                'titulo' => 'Tu incidencia ha sido asignada a un gestor'
-            ]),
-            'leida_notificacion' => false,
-            'creado_notificacion' => Carbon::now()->subDays(4),
-        ]);
-
-        // 3 notificaciones para otros usuarios
-        $otrosUsuarios = DB::table('tbl_usuario')
-            ->whereNotIn('email_usuario', ['admin@spotstay.com', 'carlos@spotstay.com', 'laura@spotstay.com'])
-            ->limit(3)
-            ->pluck('id_usuario')
-            ->toArray();
-
-        foreach ($otrosUsuarios as $index => $idUsuario) {
-            $tiposNotif = ['mensaje_nuevo', 'pago_pendiente', 'incidencia_actualizada'];
-            DB::table('tbl_notificacion')->insert([
-                'id_usuario_fk' => $idUsuario,
-                'tipo_notificacion' => $tiposNotif[$index % 3],
-                'datos_notificacion' => json_encode([
-                    'titulo' => 'Tienes una nueva notificación'
-                ]),
-                'leida_notificacion' => false,
-                'creado_notificacion' => Carbon::now()->subHours(rand(1, 12)),
-            ]);
+        foreach ($notificaciones as $data) {
+            if ($usuarioIndex < count($usuarios)) {
+                $usuario = $usuarios[$usuarioIndex];
+                $esLeida = (bool) rand(0, 1);
+                
+                Notificacion::firstOrCreate(
+                    ['id_usuario_fk' => $usuario->id_usuario, 'tipo_notificacion' => $data['tipo']],
+                    [
+                        'datos_notificacion' => json_encode(['mensaje' => $data['mensaje']]),
+                        'leida_notificacion' => $esLeida,
+                        'leida_en_notificacion' => $esLeida ? now()->subDays(rand(1, 7)) : null,
+                        'creado_notificacion' => now()->subDays(rand(1, 7)),
+                        'actualizado_notificacion' => now(),
+                    ]
+                );
+                $usuarioIndex++;
+            }
         }
     }
 }

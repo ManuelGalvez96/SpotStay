@@ -48,7 +48,16 @@ class AuthController extends Controller
             'password.required' => 'La contraseña es obligatoria.',
         ]);
 
-        // 2. Intentar autenticar al usuario
+        // 2. Buscar usuario y verificar si está activo
+        $usuario = Usuario::where('email_usuario', $credentials['email'])->first();
+        
+        if (!$usuario || !$usuario->activo_usuario) {
+            return back()->withErrors([
+                'email' => 'Esta cuenta está desactivada. Contacta al administrador.',
+            ])->onlyInput('email');
+        }
+
+        // 3. Intentar autenticar al usuario
         if (Auth::attempt([
             'email_usuario' => $credentials['email'],
             'password' => $credentials['password']
@@ -77,7 +86,7 @@ class AuthController extends Controller
         }
 
 
-        // 3. Si la autenticación falla, volver con error
+        // 4. Si la autenticación falla, volver con error
         return back()->withErrors([
             'email' => 'El correo electrónico o la contraseña son incorrectos.',
         ])->onlyInput('email');

@@ -29,6 +29,7 @@
                     </div>
                 </div>
                 <div class="user-menu">
+                    <a class="btn btn-outline btn-sm" href="{{ route('logout') }}">Cerrar sesion</a>
                     <span>🔔</span>
                     <div class="user-avatar">{{ $avatarInicial }}</div>
                 </div>

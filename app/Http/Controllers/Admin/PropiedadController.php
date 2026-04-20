@@ -22,6 +22,7 @@ class PropiedadController extends Controller
               'alq.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad')
             ->select(
               'tbl_propiedad.*',
+                            DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
               'arrendador.nombre_usuario as nombre_arrendador',
               'alq.total_inquilinos'
             )
@@ -43,7 +44,11 @@ class PropiedadController extends Controller
 
     public function filtrar(Request $request)
     {
-        $query = DB::table('tbl_propiedad');
+                $query = DB::table('tbl_propiedad')
+                        ->select(
+                            'tbl_propiedad.*',
+                            DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad")
+                        );
 
         if ($request->input('estado')) {
             $query->where('estado_propiedad', $request->input('estado'));
@@ -54,11 +59,11 @@ class PropiedadController extends Controller
         }
 
         if ($request->input('precioMin')) {
-            $query->where('precio_mensual_propiedad', '>=', $request->input('precioMin'));
+            $query->where('precio_propiedad', '>=', $request->input('precioMin'));
         }
 
         if ($request->input('precioMax')) {
-            $query->where('precio_mensual_propiedad', '<=', $request->input('precioMax'));
+            $query->where('precio_propiedad', '<=', $request->input('precioMax'));
         }
 
         $propiedades = $query->get();
@@ -81,6 +86,7 @@ class PropiedadController extends Controller
               'tbl_propiedad.id_gestor_fk')
             ->select(
               'tbl_propiedad.*',
+                            DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
               'arrendador.nombre_usuario as nombre_arrendador',
               'arrendador.email_usuario as email_arrendador',
               'gestor.nombre_usuario as nombre_gestor'
@@ -118,7 +124,11 @@ class PropiedadController extends Controller
             ->join('tbl_usuario as arrendador',
               'arrendador.id_usuario', '=',
               'tbl_propiedad.id_arrendador_fk')
-            ->select('tbl_propiedad.*', 'arrendador.nombre_usuario as nombre_arrendador')
+                        ->select(
+                            'tbl_propiedad.*',
+                            DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
+                            'arrendador.nombre_usuario as nombre_arrendador'
+                        )
             ->get();
 
         return response()->json($propiedades);

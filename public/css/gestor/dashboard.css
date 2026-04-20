@@ -1,0 +1,24 @@
+.kpi-card-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.kpi-card-link:hover {
+    text-decoration: none;
+}
+
+.tabla-vacia,
+.tarjeta-vacia {
+    color: #9CA3AF;
+    text-align: center;
+    padding: 24px;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .card-header-admin {
+        gap: 8px;
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

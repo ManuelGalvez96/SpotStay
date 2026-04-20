@@ -1,0 +1,324 @@
+.hero-actions {
+    position: absolute;
+    right: 24px;
+    top: 24px;
+    z-index: 2;
+}
+
+.btn-volver-propiedades {
+    color: #035498;
+    background: #ffffff;
+    text-decoration: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.detalle-grid {
+    margin-top: 16px;
+}
+
+.detalle-cuerpo {
+    padding: 20px 24px;
+    display: grid;
+    gap: 14px;
+}
+
+.detalle-dato {
+    display: grid;
+    gap: 4px;
+}
+
+.detalle-dato .label {
+    font-size: 12px;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.detalle-dato span {
+    color: #111827;
+}
+
+.detalle-grid-inferior {
+    padding-top: 16px;
+}
+
+.resumen-incidencias {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 16px 24px 0;
+}
+
+.resumen-pill {
+    background: #EEF4FF;
+    color: #1F2937;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.tabla-incidencias-detalle {
+    margin-top: 12px;
+}
+
+.tabla-vacia {
+    text-align: center;
+    color: #9CA3AF;
+    padding: 24px;
+}
+
+.card-gastos {
+    margin-top: 18px;
+}
+
+.card-header-acciones {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.mensaje-estado {
+    margin: 14px 24px 0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+}
+
+.mensaje-ok {
+    background: #ECFDF5;
+    color: #166534;
+    border: 1px solid #A7F3D0;
+}
+
+.mensaje-error {
+    background: #FEF2F2;
+    color: #991B1B;
+    border: 1px solid #FECACA;
+}
+
+.mensaje-info {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border: 1px solid #BFDBFE;
+}
+
+.resumen-gastos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 16px 24px 0;
+}
+
+.pagos-principales-grid {
+    padding: 16px 24px 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.pago-principal-card {
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 14px;
+    background: #FFFFFF;
+    display: grid;
+    gap: 8px;
+}
+
+.pago-principal-titulo {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748B;
+    font-weight: 600;
+}
+
+.pago-principal-importe {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    color: #0F172A;
+}
+
+.pago-principal-estado {
+    display: inline-flex;
+    width: fit-content;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.estado-pagado {
+    background: #ECFDF5;
+    color: #166534;
+}
+
+.estado-pendiente,
+.estado-parcial {
+    background: #FFF7ED;
+    color: #9A3412;
+}
+
+.estado-atrasado {
+    background: #FEF2F2;
+    color: #991B1B;
+}
+
+.estado-sin_dato {
+    background: #F1F5F9;
+    color: #475569;
+}
+
+.pago-principal-pagado {
+    border-color: #BBF7D0;
+    background: #F0FDF4;
+}
+
+.pago-principal-pendiente,
+.pago-principal-parcial {
+    border-color: #FED7AA;
+    background: #FFF7ED;
+}
+
+.pago-principal-atrasado {
+    border-color: #FECACA;
+    background: #FEF2F2;
+}
+
+.pago-principal-sin_dato {
+    border-color: #CBD5E1;
+    background: #F8FAFC;
+}
+
+.resumen-pill-alerta {
+    background: #FFF1F2;
+    color: #9F1239;
+}
+
+.resumen-pill-pendiente {
+    background: #FFF7ED;
+    color: #9A3412;
+}
+
+.total-pendiente-box {
+    margin: 12px 24px 4px;
+    border: 1px solid #FED7AA;
+    background: #FFF7ED;
+    color: #9A3412;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+}
+
+.total-pendiente-box strong {
+    font-size: 1rem;
+}
+
+.form-gasto {
+    padding: 16px 24px 8px;
+    display: grid;
+    gap: 12px;
+}
+
+.fila-form-gasto {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.fila-form-gasto label {
+    display: grid;
+    gap: 6px;
+    font-size: 13px;
+    color: #334155;
+}
+
+.fila-form-gasto input,
+.fila-form-gasto select {
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 9px 10px;
+    font-size: 14px;
+    outline: none;
+}
+
+.fila-form-gasto input:focus,
+.fila-form-gasto select:focus {
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.12);
+}
+
+.acciones-form-gasto {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.tabla-gastos {
+    margin-top: 8px;
+}
+
+.detalle-pagos-lista {
+    display: grid;
+    gap: 8px;
+}
+
+.detalle-pago-item {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.badge-gasto-pendiente,
+.badge-gasto-parcial {
+    background: #FFF7ED;
+    color: #9A3412;
+}
+
+.badge-gasto-pagado {
+    background: #ECFDF5;
+    color: #166534;
+}
+
+.badge-gasto-atrasado {
+    background: #FEF2F2;
+    color: #991B1B;
+}
+
+@media (max-width: 1024px) {
+    .hero-actions {
+        position: static;
+        margin-top: 10px;
+    }
+
+    .detalle-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .detalle-grid-inferior {
+        grid-template-columns: 1fr;
+    }
+
+    .fila-form-gasto {
+        grid-template-columns: 1fr;
+    }
+
+    .pagos-principales-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .detalle-pago-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 640px) {
+    .pagos-principales-grid {
+        grid-template-columns: 1fr;
+    }
+}

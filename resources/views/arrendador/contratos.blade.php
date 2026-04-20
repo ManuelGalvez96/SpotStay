@@ -18,7 +18,10 @@
             <h1>Contratos digitales</h1>
             <p class="subtitulo">Gestiona la firma de tus contratos activos.</p>
         </div>
-        <a class="btn-volver" href="{{ route('arrendador.dashboard', ['arrendador_id' => $arrendadorId]) }}">Volver al dashboard</a>
+        <div class="acciones-cabecera">
+            <a class="btn-volver" href="{{ route('arrendador.dashboard', ['arrendador_id' => $arrendadorId]) }}">Volver al dashboard</a>
+            <a class="btn-volver" href="{{ route('logout') }}">Cerrar sesion</a>
+        </div>
     </header>
 
     <section class="kpis">

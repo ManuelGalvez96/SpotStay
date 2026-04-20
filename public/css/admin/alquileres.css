@@ -1,0 +1,1223 @@
+/* ============================================
+   ALQUILERES CSS - SpotStay Admin Dashboard
+   Gestion de alquileres (rentals)
+   ============================================ */
+
+/* ============================================
+   SHARED PROJECT CLASSES
+   ============================================ */
+
+.hero-admin {
+    position: relative;
+    padding: 32px 32px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+
+.hero-admin::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+}
+
+.hero-admin::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -5%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+}
+
+.hero-admin h1,
+.hero-admin h2 {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+}
+
+.hero-admin p {
+    position: relative;
+    z-index: 1;
+    margin: 8px 0 0;
+    opacity: 0.95;
+    font-size: 14px;
+}
+
+.kpi-grid-pequeno {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.kpi-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    border-left: 4px solid;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    transition: all 0.15s;
+}
+
+.kpi-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.kpi-mini {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    border-left: 4px solid #667eea;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.kpi-mini-rojo {
+    border-left-color: #EF4444;
+}
+
+.kpi-mini-naranja {
+    border-left-color: #D97706;
+}
+
+.kpi-mini-verde {
+    border-left-color: #1AA068;
+}
+
+.kpi-mini-azul {
+    border-left-color: #035498;
+}
+
+.kpi-mini-icono {
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.kpi-mini-icono.kpi-mini-verde {
+    background: #D1FAE5;
+    color: #1AA068;
+}
+
+.kpi-mini-icono.kpi-mini-naranja {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.kpi-mini-icono.kpi-mini-rojo {
+    background: #FEE2E2;
+    color: #EF4444;
+}
+
+.kpi-mini-icono.kpi-mini-azul {
+    background: #E8F0FB;
+    color: #035498;
+}
+
+.kpi-mini-datos {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.kpi-mini-numero {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.kpi-mini-numero-rojo {
+    color: #EF4444;
+}
+
+.kpi-mini-numero-naranja {
+    color: #D97706;
+}
+
+.kpi-mini-numero-verde {
+    color: #1AA068;
+}
+
+.kpi-mini-numero-azul {
+    color: #035498;
+}
+
+.kpi-mini-label {
+    font-size: 12px;
+    color: #9CA3AF;
+}
+
+.toolbar-admin {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin: 24px 0;
+    background: white;
+    padding: 16px 20px;
+    border-radius: 12px;
+    flex-wrap: wrap;
+}
+
+.toolbar-izquierda {
+    display: flex;
+    gap: 12px;
+    flex: 1;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.toolbar-derecha {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.input-busqueda {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 220px;
+    background: #F3F4F6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.input-busqueda i {
+    position: absolute;
+    left: 12px;
+    color: #9CA3AF;
+    pointer-events: none;
+}
+
+.input-busqueda input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 8px 12px 8px 36px;
+    font-size: 14px;
+    color: #111827;
+}
+
+.input-busqueda input:focus {
+    outline: none;
+}
+
+.select-filtro {
+    padding: 8px 12px;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    font-size: 13px;
+    background: white;
+    cursor: pointer;
+    min-width: 140px;
+    color: #111827;
+}
+
+.select-filtro:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.btn-primario {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-primario:hover {
+    background: #5568d3;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-exportar {
+    background: #F3F4F6;
+    color: #111827;
+    border: 1px solid #E5E7EB;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-exportar:hover {
+    background: #E5E7EB;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.15s;
+    z-index: 999;
+}
+
+.modal-overlay.visible {
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-admin {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    display: none;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s;
+}
+
+.modal-admin.visible {
+    display: flex;
+    flex-direction: column;
+    opacity: 1;
+    pointer-events: all;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.modal-header-admin {
+    padding: 20px 24px;
+    border-bottom: 1px solid #E5E7EB;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-titulo {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.modal-cuerpo {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-footer-admin {
+    padding: 16px 24px;
+    border-top: 1px solid #E5E7EB;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.modal-footer-derecha {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.modal-separador {
+    height: 1px;
+    background: #E5E7EB;
+    margin: 16px 0;
+}
+
+.modal-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+}
+
+.modal-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 10px;
+}
+
+.dato-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dato-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dato-valor {
+    font-size: 13px;
+    color: #111827;
+    font-weight: 500;
+}
+
+.seccion-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #111827;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 12px;
+    margin-top: 16px;
+}
+
+.input-label {
+    font-size: 12px;
+    color: #6B7280;
+    display: block;
+    margin-bottom: 2px;
+    font-weight: 500;
+}
+
+.input-full,
+.select-full {
+    width: 100%;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+    color: #111827;
+    outline: none;
+    margin-top: 8px;
+    box-sizing: border-box;
+    background: white;
+    transition: all 0.15s;
+}
+
+.input-full:focus,
+.select-full:focus {
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
+}
+
+.textarea-admin {
+    width: 100%;
+    min-height: 100px;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    color: #111827;
+    resize: vertical;
+    outline: none;
+    transition: all 0.15s;
+}
+
+.textarea-admin:focus {
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
+}
+
+.btn-cerrar-modal {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #9CA3AF;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.btn-cerrar-modal:hover {
+    color: #6B7280;
+}
+
+/* ── Tabla Admin ── */
+.tabla-admin {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-admin thead {
+    background: #F9FAFB;
+}
+
+.tabla-admin th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.tabla-admin td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #F3F4F6;
+    font-size: 13px;
+    color: #111827;
+    vertical-align: middle;
+}
+
+.tabla-admin tbody tr:hover {
+    background: #F9FAFB;
+}
+
+.propiedad-celda {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.propiedad-nombre {
+    font-weight: 600;
+    font-size: 13px;
+    color: #111827;
+    margin: 0;
+}
+
+.propiedad-ciudad {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 0;
+}
+
+.thumb-propiedad {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    display: inline-block;
+}
+
+.avatar-tabla {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 11px;
+}
+
+.badge-estado {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
+    letter-spacing: 0.3px;
+}
+
+.texto-fecha {
+    font-size: 13px;
+    color: #6B7280;
+}
+
+.acciones-tabla {
+    display: flex;
+    gap: 12px;
+}
+
+/* ── Badge atención KPI ── */
+.badge-atencion {
+    display: block;
+    font-size: 10px;
+    background: #FEF3C7;
+    color: #D97706;
+    border-radius: 20px;
+    padding: 2px 8px;
+    margin-top: 4px;
+    width: fit-content;
+}
+
+/* ── Badges estado alquiler ── */
+.badge-estado-activo {
+    background: #D1FAE5;
+    color: #065F46;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.badge-estado-pendiente {
+    background: #FEF3C7;
+    color: #D97706;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.badge-estado-finalizado {
+    background: #F1F5F9;
+    color: #475569;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.badge-estado-rechazado {
+    background: #FEE2E2;
+    color: #991B1B;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+/* ── Fila inactiva ── */
+.fila-inactiva {
+    opacity: 0.65;
+}
+
+/* ── Avatar pequeño ── */
+.avatar-sm {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+}
+
+.usuario-celda-mini {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nombre-mini {
+    font-size: 13px;
+    color: #111827;
+}
+
+/* ── Botones acción tabla ── */
+.btn-aprobar-alq {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #1AA068;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 0;
+    margin-right: 8px;
+    transition: all 0.15s;
+}
+
+.btn-aprobar-alq:hover {
+    text-decoration: underline;
+}
+
+.btn-rechazar-alq {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #EF4444;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 0;
+    transition: all 0.15s;
+}
+
+.btn-rechazar-alq:hover {
+    text-decoration: underline;
+}
+
+.btn-desactivar {
+    background: #FEE2E2;
+    color: #991B1B;
+    border: 1px solid #FCA5A5;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.btn-desactivar:hover {
+    background: #FED7D7;
+}
+
+/* ── Botón aprobar verde modal ── */
+.btn-aprobar-verde {
+    background: #1AA068;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+}
+
+.btn-aprobar-verde:hover {
+    background: #158a5a;
+}
+
+/* ── Modal imagen alquiler ── */
+.modal-imagen-alq {
+    height: 150px;
+    width: 100%;
+    background: linear-gradient(135deg, #8AAAC4, #B8CCE4);
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-imagen-texto {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 14px 24px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.6));
+    color: white;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+/* ── Partes implicadas ── */
+.modal-partes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 10px;
+}
+
+.parte-bloque {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.parte-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #9CA3AF;
+    font-weight: 500;
+}
+
+.parte-persona {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.parte-nombre {
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
+    margin: 0;
+}
+
+.parte-email {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 2px 0 0;
+}
+
+/* ── Propiedad modal ── */
+.propiedad-modal-fila {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.thumb-modal {
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.precio-modal {
+    font-weight: 700;
+    font-size: 14px;
+    color: #035498;
+    margin: 4px 0 0;
+}
+
+/* ── Grid 3 columnas modal ── */
+.modal-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 10px;
+}
+
+/* ── Contrato estado ── */
+.contrato-estado-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.contrato-bloque {
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+
+.contrato-fila {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 13px;
+    color: #111827;
+    border-bottom: 1px solid #F3F4F6;
+}
+
+.contrato-fila:last-child {
+    border-bottom: none;
+}
+
+.pago-importe {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 6px 0 2px;
+}
+
+.pago-referencia {
+    font-size: 11px;
+    color: #9CA3AF;
+    font-family: monospace;
+    margin: 0;
+}
+
+/* ── Timeline alquiler ── */
+.timeline-alq {
+    position: relative;
+    padding: 8px 0 8px 24px;
+    margin-top: 10px;
+}
+
+.timeline-linea-v {
+    position: absolute;
+    left: 5px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #E5E7EB;
+}
+
+.timeline-evento {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.timeline-evento:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-punto-modal {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+    position: relative;
+    z-index: 1;
+}
+
+.timeline-evento-info {
+    flex: 1;
+}
+
+.timeline-evento-texto {
+    font-size: 13px;
+    color: #111827;
+    margin: 0;
+}
+
+.timeline-evento-hora {
+    font-size: 11px;
+    color: #9CA3AF;
+}
+
+/* ── Modal overlay nuevo ── */
+.modal-overlay-nuevo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    display: none;
+}
+
+.modal-overlay-nuevo.visible {
+    display: block;
+}
+
+/* ── Pasos indicador ── */
+.pasos-indicador {
+    display: flex;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #E5E7EB;
+    background: #F9FAFB;
+}
+
+.paso-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+}
+
+.paso-circulo {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #E5E7EB;
+    color: #9CA3AF;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.paso-item span {
+    font-size: 11px;
+    color: #9CA3AF;
+    white-space: nowrap;
+}
+
+.paso-item.paso-activo .paso-circulo {
+    background: #035498;
+    color: white;
+}
+
+.paso-item.paso-activo span {
+    color: #035498;
+    font-weight: 500;
+}
+
+.paso-item.paso-completado .paso-circulo {
+    background: #1AA068;
+    color: white;
+}
+
+.paso-linea {
+    flex: 0.5;
+    height: 2px;
+    background: #E5E7EB;
+    margin-bottom: 14px;
+}
+
+/* ── Badge paso ── */
+.badge-paso {
+    font-size: 11px;
+    background: #E8F0FB;
+    color: #035498;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-weight: 500;
+}
+
+/* ── Paso contenido ── */
+.paso-contenido {
+    padding: 20px 24px;
+}
+
+/* ── Propiedad preview ── */
+.propiedad-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    padding: 12px 16px;
+}
+
+.persona-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    padding: 12px 16px;
+}
+
+/* ── Inputs full ── */
+.select-full {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.input-full {
+    width: 100%;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+    color: #111827;
+    outline: none;
+    margin-top: 8px;
+    box-sizing: border-box;
+    background: white;
+    transition: all 0.15s;
+}
+
+.input-full:focus {
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
+}
+
+.input-label {
+    font-size: 12px;
+    color: #6B7280;
+    display: block;
+    margin-bottom: 2px;
+    font-weight: 500;
+}
+
+/* ── Fechas grid ── */
+.fechas-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+/* ── Precio sugerido ── */
+.texto-sugerido {
+    font-size: 12px;
+    color: #6B7280;
+    margin-top: 6px;
+    font-style: italic;
+}
+
+/* ── Resumen alquiler ── */
+.resumen-alquiler {
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.resumen-fila {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid #F3F4F6;
+    font-size: 13px;
+}
+
+.resumen-fila:last-child {
+    border-bottom: none;
+}
+
+.resumen-label {
+    color: #6B7280;
+}
+
+.resumen-valor {
+    color: #111827;
+    font-weight: 500;
+}
+
+.resumen-precio {
+    color: #035498;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+/* ── Aviso alquiler ── */
+.aviso-alquiler {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: #E8F0FB;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #035498;
+    line-height: 1.5;
+}
+
+/* ── Kpi azul (clases base del proyecto) ── */
+.kpi-mini-azul {
+    border-left-color: #035498 !important;
+}
+
+.kpi-mini-numero-azul {
+    color: #035498 !important;
+}
+
+/* ── Link acción ── */
+.link-accion {
+    font-size: 12px;
+    color: #035498;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.15s;
+}
+
+.link-accion:hover {
+    text-decoration: underline;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+    .kpi-grid-pequeno {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modal-partes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .contrato-estado-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .fechas-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .kpi-grid-pequeno {
+        grid-template-columns: 1fr;
+    }
+
+    .toolbar-admin {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .toolbar-izquierda {
+        flex-direction: column;
+    }
+
+    .toolbar-derecha {
+        flex-direction: column;
+    }
+
+    .toolbar-derecha button {
+        width: 100%;
+    }
+
+    .modal-partes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .contrato-estado-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-grid-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .fechas-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-admin {
+        width: 95%;
+        max-width: none;
+        max-height: 95vh;
+    }
+
+    .modal-footer-admin {
+        flex-direction: column;
+    }
+
+    .modal-footer-derecha {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .modal-footer-derecha button {
+        width: 100%;
+    }
+
+    .modal-footer-admin button {
+        width: 100%;
+    }
+
+    .pasos-indicador {
+        overflow-x: auto;
+        padding: 12px 16px;
+    }
+
+    .paso-item span {
+        font-size: 9px;
+    }
+
+    .paso-linea {
+        flex: 0.3;
+    }
+}

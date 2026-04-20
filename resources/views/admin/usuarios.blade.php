@@ -57,7 +57,7 @@
             <i class="bi bi-people"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">1.284</span>
+            <span class="kpi-mini-numero">{{ number_format($totalUsuarios) }}</span>
             <span class="kpi-mini-label">Total usuarios</span>
         </div>
     </div>
@@ -67,7 +67,7 @@
             <i class="bi bi-check-circle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">1.156</span>
+            <span class="kpi-mini-numero">{{ number_format($activos) }}</span>
             <span class="kpi-mini-label">Activos</span>
         </div>
     </div>
@@ -77,7 +77,7 @@
             <i class="bi bi-x-circle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-rojo">128</span>
+            <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ number_format($inactivos) }}</span>
             <span class="kpi-mini-label">Inactivos</span>
         </div>
     </div>
@@ -87,7 +87,7 @@
             <i class="bi bi-person-plus"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-naranja">47</span>
+            <span class="kpi-mini-numero kpi-mini-numero-naranja">{{ number_format($esteMes) }}</span>
             <span class="kpi-mini-label">Este mes</span>
         </div>
     </div>
@@ -96,13 +96,18 @@
 <!-- TABLA DE USUARIOS -->
 <div class="card-admin">
     <div class="tabla-header">
-        <span id="contadorResultados">1.284 usuarios encontrados</span>
+        <span id="contadorResultados">{{ number_format($totalUsuarios) }} usuarios encontrados</span>
         <div class="paginacion">
             <button id="btnAnterior" class="btn-pag">← Anterior</button>
             <span id="paginas">
-                <button class="pag-numero activo" data-pagina="1">1</button>
-                <button class="pag-numero" data-pagina="2">2</button>
-                <button class="pag-numero" data-pagina="3">3</button>
+                {{-- Generar botones de página dinámicamente --}}
+                @php
+                    $totalPages = $usuarios->lastPage() ?? 1;
+                    $paginaActual = $usuarios->currentPage() ?? 1;
+                @endphp
+                @for($i = 1; $i <= $totalPages; $i++)
+                    <button class="pag-numero {{ $paginaActual === $i ? 'activo' : '' }}" data-pagina="{{ $i }}">{{ $i }}</button>
+                @endfor
             </span>
             <button id="btnSiguiente" class="btn-pag">Siguiente →</button>
         </div>
@@ -120,406 +125,202 @@
             </tr>
         </thead>
         <tbody id="tbodyUsuarios">
-            <!-- Fila 1 -->
-            <tr data-id="1" data-activo="1">
-                <td>
-                    <div class="usuario-celda">
-                        <div class="avatar-tabla" style="background: #B8CCE4;">CG</div>
-                        <div>
-                            <p class="usuario-nombre">Carlos García</p>
-                            <p class="usuario-email">carlos.garcia@email.com</p>
+            @forelse($usuarios as $usuario)
+                @php
+                    $nombre = $usuario->nombre_usuario;
+                    $partes = explode(' ', $nombre);
+                    $avatarText = strtoupper(substr($partes[0], 0, 1));
+                    if (isset($partes[1])) {
+                        $avatarText .= strtoupper(substr($partes[1], 0, 1));
+                    }
+                    $coloresAvatar = ['#B8CCE4', '#A8D5BF', '#F9E4A0', '#E8D5F0', '#FFD5CC', '#CCE5FF', '#D5F5E3', '#FAD7D7', '#D7EAF9', '#FDE8C8'];
+                    $colorIndex = crc32($usuario->email_usuario) % count($coloresAvatar);
+                    $colorAvatar = $coloresAvatar[$colorIndex];
+                    
+                    $activo = $usuario->activo_usuario ? '1' : '0';
+                    $inactivaClass = $activo === '0' ? 'class="fila-inactiva"' : '';
+                    $rolLabel = $usuario->nombre_rol ?? 'Sin rol';
+                    $estadoLabel = $usuario->activo_usuario ? 'Activo' : 'Inactivo';
+                    $estadoClass = $usuario->activo_usuario ? 'activo' : 'inactivo';
+                    $propiedades = $usuario->total_propiedades ?? 0;
+                    $propiedadesText = $propiedades > 0 ? $propiedades : '—';
+                @endphp
+                <tr data-id="{{ $usuario->id_usuario }}" data-activo="{{ $activo }}" {{ $inactivaClass }}>
+                    <td>
+                        <div class="usuario-celda">
+                            <div class="avatar-tabla" style="background: {{ $colorAvatar }};">{{ $avatarText }}</div>
+                            <div>
+                                <p class="usuario-nombre">{{ $nombre }}</p>
+                                <p class="usuario-email">{{ $usuario->email_usuario }}</p>
+                            </div>
                         </div>
-                    </div>
-                </td>
-                <td><span class="badge-rol badge-arrendador">Arrendador</span></td>
-                <td><span class="badge-estado badge-activo">Activo</span></td>
-                <td>3</td>
-                <td>12 ene 2025</td>
-                <td>
-                    <div class="acciones-tabla">
-                        <button class="btn-accion btn-ver" data-id="1" title="Ver perfil">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn-accion btn-editar" data-id="1" title="Editar">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <div class="toggle-switch activo" data-id="1">
-                            <div class="toggle-circulo"></div>
+                    </td>
+                    <td><span class="badge-rol badge-usuario">{{ $rolLabel }}</span></td>
+                    <td><span class="badge-estado badge-{{ $estadoClass }}">{{ $estadoLabel }}</span></td>
+                    <td>{{ $propiedadesText }}</td>
+                    <td>{{ \Carbon\Carbon::parse($usuario->creado_usuario)->format('d M Y') }}</td>
+                    <td>
+                        <div class="acciones-tabla">
+                            <button class="btn-accion btn-ver" data-id="{{ $usuario->id_usuario }}" title="Ver perfil">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn-accion btn-editar" data-id="{{ $usuario->id_usuario }}" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <div class="toggle-switch {{ $activo === '1' ? 'activo' : '' }}" data-id="{{ $usuario->id_usuario }}">
+                                <div class="toggle-circulo"></div>
+                            </div>
                         </div>
-                    </div>
-                </td>
-            </tr>
-            
-            <!-- Fila 2 -->
-            <tr data-id="2" data-activo="1">
-                <td>
-                    <div class="usuario-celda">
-                        <div class="avatar-tabla" style="background: #A8D5BF;">LM</div>
-                        <div>
-                            <p class="usuario-nombre">Laura Martínez</p>
-                            <p class="usuario-email">laura.martinez@email.com</p>
-                        </div>
-                    </div>
-                </td>
-                <td><span class="badge-rol badge-inquilino">Inquilino</span></td>
-                <td><span class="badge-estado badge-activo">Activo</span></td>
-                <td>—</td>
-                <td>08 ene 2025</td>
-                <td>
-                    <div class="acciones-tabla">
-                        <button class="btn-accion btn-ver" data-id="2" title="Ver perfil">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn-accion btn-editar" data-id="2" title="Editar">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <div class="toggle-switch activo" data-id="2">
-                            <div class="toggle-circulo"></div>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            
-            <!-- Fila 3 -->
-            <tr data-id="3" data-activo="0" class="fila-inactiva">
-                <td>
-                    <div class="usuario-celda">
-                        <div class="avatar-tabla" style="background: #F9E4A0;">SR</div>
-                        <div>
-                            <p class="usuario-nombre">Sofía Rodríguez</p>
-                            <p class="usuario-email">sofia.rodriguez@email.com</p>
-                        </div>
-                    </div>
-                </td>
-                <td><span class="badge-rol badge-arrendador">Arrendador</span></td>
-                <td><span class="badge-estado badge-inactivo">Inactivo</span></td>
-                <td>1</td>
-                <td>15 dic 2024</td>
-                <td>
-                    <div class="acciones-tabla">
-                        <button class="btn-accion btn-ver" data-id="3" title="Ver perfil">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn-accion btn-editar" data-id="3" title="Editar">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <div class="toggle-switch" data-id="3">
-                            <div class="toggle-circulo"></div>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            
-            <!-- Fila 4 -->
-            <tr data-id="4" data-activo="1">
-                <td>
-                    <div class="usuario-celda">
-                        <div class="avatar-tabla" style="background: #E8D5F0;">PM</div>
-                        <div>
-                            <p class="usuario-nombre">Pedro Molina</p>
-                            <p class="usuario-email">pedro.molina@email.com</p>
-                        </div>
-                    </div>
-                </td>
-                <td><span class="badge-rol badge-gestor">Gestor</span></td>
-                <td><span class="badge-estado badge-activo">Activo</span></td>
-                <td>—</td>
-                <td>20 dic 2024</td>
-                <td>
-                    <div class="acciones-tabla">
-                        <button class="btn-accion btn-ver" data-id="4" title="Ver perfil">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn-accion btn-editar" data-id="4" title="Editar">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <div class="toggle-switch activo" data-id="4">
-                            <div class="toggle-circulo"></div>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            
-            <!-- Fila 5 -->
-            <tr data-id="5" data-activo="1">
-                <td>
-                    <div class="usuario-celda">
-                        <div class="avatar-tabla" style="background: #FFD5CC;">AT</div>
-                        <div>
-                            <p class="usuario-nombre">Ana Torres</p>
-                            <p class="usuario-email">ana.torres@email.com</p>
-                        </div>
-                    </div>
-                </td>
-                <td><span class="badge-rol badge-miembro">Miembro</span></td>
-                <td><span class="badge-estado badge-activo">Activo</span></td>
-                <td>—</td>
-                <td>03 ene 2025</td>
-                <td>
-                    <div class="acciones-tabla">
-                        <button class="btn-accion btn-ver" data-id="5" title="Ver perfil">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn-accion btn-editar" data-id="5" title="Editar">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <div class="toggle-switch activo" data-id="5">
-                            <div class="toggle-circulo"></div>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            
-            <!-- Fila 6 -->
-            <tr data-id="6" data-activo="1">
-                <td>
-                    <div class="usuario-celda">
-                        <div class="avatar-tabla" style="background: #CCE5FF;">MF</div>
-                        <div>
-                            <p class="usuario-nombre">Miguel Fernández</p>
-                            <p class="usuario-email">miguel.fernandez@email.com</p>
-                        </div>
-                    </div>
-                </td>
-                <td><span class="badge-rol badge-admin">Admin</span></td>
-                <td><span class="badge-estado badge-activo">Activo</span></td>
-                <td>—</td>
-                <td>01 ene 2025</td>
-                <td>
-                    <div class="acciones-tabla">
-                        <button class="btn-accion btn-ver" data-id="6" title="Ver perfil">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn-accion btn-editar" data-id="6" title="Editar">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <div class="toggle-switch activo" data-id="6">
-                            <div class="toggle-circulo"></div>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            
-            <!-- Fila 7 -->
-            <tr data-id="7" data-activo="1">
-                <td>
-                    <div class="usuario-celda">
-                        <div class="avatar-tabla" style="background: #D5F5E3;">EV</div>
-                        <div>
-                            <p class="usuario-nombre">Elena Vargas</p>
-                            <p class="usuario-email">elena.vargas@email.com</p>
-                        </div>
-                    </div>
-                </td>
-                <td><span class="badge-rol badge-arrendador">Arrendador</span></td>
-                <td><span class="badge-estado badge-activo">Activo</span></td>
-                <td>2</td>
-                <td>18 nov 2024</td>
-                <td>
-                    <div class="acciones-tabla">
-                        <button class="btn-accion btn-ver" data-id="7" title="Ver perfil">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn-accion btn-editar" data-id="7" title="Editar">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <div class="toggle-switch activo" data-id="7">
-                            <div class="toggle-circulo"></div>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            
-            <!-- Fila 8 -->
-            <tr data-id="8" data-activo="0" class="fila-inactiva">
-                <td>
-                    <div class="usuario-celda">
-                        <div class="avatar-tabla" style="background: #FAD7D7;">JR</div>
-                        <div>
-                            <p class="usuario-nombre">Javier Ruiz</p>
-                            <p class="usuario-email">javier.ruiz@email.com</p>
-                        </div>
-                    </div>
-                </td>
-                <td><span class="badge-rol badge-inquilino">Inquilino</span></td>
-                <td><span class="badge-estado badge-inactivo">Inactivo</span></td>
-                <td>—</td>
-                <td>05 dic 2024</td>
-                <td>
-                    <div class="acciones-tabla">
-                        <button class="btn-accion btn-ver" data-id="8" title="Ver perfil">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn-accion btn-editar" data-id="8" title="Editar">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <div class="toggle-switch" data-id="8">
-                            <div class="toggle-circulo"></div>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            
-            <!-- Fila 9 -->
-            <tr data-id="9" data-activo="1">
-                <td>
-                    <div class="usuario-celda">
-                        <div class="avatar-tabla" style="background: #D7EAF9;">CL</div>
-                        <div>
-                            <p class="usuario-nombre">Carmen López</p>
-                            <p class="usuario-email">carmen.lopez@email.com</p>
-                        </div>
-                    </div>
-                </td>
-                <td><span class="badge-rol badge-miembro">Miembro</span></td>
-                <td><span class="badge-estado badge-activo">Activo</span></td>
-                <td>—</td>
-                <td>10 ene 2025</td>
-                <td>
-                    <div class="acciones-tabla">
-                        <button class="btn-accion btn-ver" data-id="9" title="Ver perfil">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn-accion btn-editar" data-id="9" title="Editar">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <div class="toggle-switch activo" data-id="9">
-                            <div class="toggle-circulo"></div>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            
-            <!-- Fila 10 -->
-            <tr data-id="10" data-activo="1">
-                <td>
-                    <div class="usuario-celda">
-                        <div class="avatar-tabla" style="background: #FDE8C8;">RM</div>
-                        <div>
-                            <p class="usuario-nombre">Roberto Mora</p>
-                            <p class="usuario-email">roberto.mora@email.com</p>
-                        </div>
-                    </div>
-                </td>
-                <td><span class="badge-rol badge-arrendador">Arrendador</span></td>
-                <td><span class="badge-estado badge-activo">Activo</span></td>
-                <td>5</td>
-                <td>22 oct 2024</td>
-                <td>
-                    <div class="acciones-tabla">
-                        <button class="btn-accion btn-ver" data-id="10" title="Ver perfil">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn-accion btn-editar" data-id="10" title="Editar">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <div class="toggle-switch activo" data-id="10">
-                            <div class="toggle-circulo"></div>
-                        </div>
-                    </div>
-                </td>
-            </tr>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="6" style="text-align: center; color: #999; padding: 20px;">No hay usuarios para mostrar</td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
     
-    <div class="tabla-footer">
-        <span>Mostrando 1-10 de 1.284 usuarios</span>
+    <div class="tabla-footer" id="tablaFooter">
+        <span>Mostrando {{ $usuarios->firstItem() ?? 0 }}-{{ $usuarios->lastItem() ?? 0 }} de {{ $totalUsuarios }} usuarios</span>
     </div>
 </div>
 
-<!-- MODAL PERFIL DE USUARIO -->
-<div class="modal-overlay" id="modalOverlay"></div>
-<div class="modal-admin" id="modalPerfil">
-    <div class="modal-header-admin">
-        <div class="modal-titulo-grupo">
-            <span class="modal-titulo">Perfil de usuario</span>
-            <span class="badge-estado badge-activo" id="modalBadgeEstado">Activo</span>
-        </div>
-        <button id="btnCerrarModal" class="btn-cerrar-modal">
-            <i class="bi bi-x"></i>
-        </button>
-    </div>
-    
-    <div class="modal-cuerpo">
-        <div class="modal-usuario-header">
-            <div class="modal-avatar" id="modalAvatar">CG</div>
-            <div class="modal-usuario-info">
-                <h2 id="modalNombre">Carlos García</h2>
-                <p id="modalEmail">carlos.garcia@email.com</p>
-                <p id="modalTelefono">+34 612 345 678</p>
-                <div class="modal-badges">
-                    <span class="badge-rol badge-arrendador" id="modalBadgeRol">Arrendador</span>
+<!-- MODAL PERFIL DE USUARIO (Bootstrap 5) -->
+<div class="modal fade" id="modalPerfil" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="d-flex align-items-center gap-3" style="flex: 1;">
+                    <h5 class="modal-title mb-0">Perfil de usuario</h5>
+                    <span class="badge bg-success" id="modalBadgeEstado">Activo</span>
                 </div>
-            </div>
-        </div>
-        
-        <div class="modal-separador"></div>
-        
-        <div class="modal-grid-datos">
-            <div class="dato-item">
-                <span class="dato-label">Teléfono</span>
-                <span class="dato-valor" id="dataTelefono">+34 612 345 678</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Registro</span>
-                <span class="dato-valor" id="dataRegistro">12 ene 2025</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Propiedades</span>
-                <span class="dato-valor" id="dataPropiedades">3</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Último acceso</span>
-                <span class="dato-valor" id="dataAcceso">hace 2h</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Alquileres</span>
-                <span class="dato-valor" id="dataAlquileres">5</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Suscripción</span>
-                <span class="dato-valor" id="dataSuscripcion">Premium</span>
-            </div>
-        </div>
-        
-        <div class="modal-separador"></div>
-        
-        <div class="modal-propiedades-lista">
-            <span class="dato-label" style="display: block; margin-bottom: 12px;">PROPIEDADES DEL USUARIO</span>
-            
-            <div class="propiedad-mini-item">
-                <div>
-                    <p style="font-weight: 600; font-size: 14px; margin: 0;">Calle Mayor 14, Madrid</p>
-                </div>
-                <span class="badge-estado badge-activo">Alquilada</span>
-                <span style="font-weight: 600; color: #111827;">$1.200/mes</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             
-            <div class="propiedad-mini-item">
-                <div>
-                    <p style="font-weight: 600; font-size: 14px; margin: 0;">Gran Vía 22, Barcelona</p>
+            <div class="modal-body">
+                <!-- Header usuario -->
+                <div class="d-flex gap-3 mb-4">
+                    <div class="avatar-modal" id="modalAvatar" style="width: 80px; height: 80px; background: #B8CCE4;">CG</div>
+                    <div class="flex-grow-1">
+                        <h6 id="modalNombre" class="fw-bold mb-1">Carlos García</h6>
+                        <p id="modalEmail" class="text-muted mb-2">carlos.garcia@email.com</p>
+                        <p id="modalTelefono" class="text-muted mb-2">+34 612 345 678</p>
+                        <span class="badge bg-info" id="modalBadgeRol">Arrendador</span>
+                    </div>
                 </div>
-                <span class="badge-estado badge-activo">Alquilada</span>
-                <span style="font-weight: 600; color: #111827;">$1.500/mes</span>
+                
+                <hr>
+                
+                <!-- Grid de datos -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Teléfono</small>
+                        <p id="dataTelefono" class="fw-500">+34 612 345 678</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Registro</small>
+                        <p id="dataRegistro" class="fw-500">12 ene 2025</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Propiedades</small>
+                        <p id="dataPropiedades" class="fw-500">3</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Último acceso</small>
+                        <p id="dataAcceso" class="fw-500">hace 2h</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Alquileres</small>
+                        <p id="dataAlquileres" class="fw-500">5</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Suscripción</small>
+                        <p id="dataSuscripcion" class="fw-500">Premium</p>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <!-- Propiedades -->
+                <h6 class="mb-3">Propiedades del Usuario</h6>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item">
+                        <p class="fw-bold mb-1">Calle Mayor 14, Madrid</p>
+                        <span class="badge bg-success">Alquilada</span>
+                        <span class="fw-bold float-end">$1.200/mes</span>
+                    </div>
+                    <div class="list-group-item">
+                        <p class="fw-bold mb-1">Gran Vía 22, Barcelona</p>
+                        <span class="badge bg-success">Alquilada</span>
+                        <span class="fw-bold float-end">$1.500/mes</span>
+                    </div>
+                    <div class="list-group-item">
+                        <p class="fw-bold mb-1">Av. Diagonal 88, BCN</p>
+                        <span class="badge bg-warning">Disponible</span>
+                        <span class="fw-bold float-end">$1.800/mes</span>
+                    </div>
+                </div>
             </div>
             
-            <div class="propiedad-mini-item">
-                <div>
-                    <p style="font-weight: 600; font-size: 14px; margin: 0;">Av. Diagonal 88, BCN</p>
-                </div>
-                <span class="badge-estado badge-activo">Disponible</span>
-                <span style="font-weight: 600; color: #111827;">$1.800/mes</span>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="btnDesactivarUsuario">Desactivar cuenta</button>
+                <button type="button" class="btn btn-primary" id="btnEditarUsuario">Editar usuario</button>
             </div>
         </div>
     </div>
-    
-    <div class="modal-footer-admin">
-        <button id="btnDesactivarUsuario" class="btn-desactivar">
-            Desactivar cuenta
-        </button>
-        <button id="btnEditarUsuario" class="btn-primario">
-            Editar usuario
-        </button>
+</div>
+
+<!-- MODAL CREAR/EDITAR USUARIO (Bootstrap 5) -->
+<div class="modal fade" id="modalFormUsuario" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalFormTitulo">Nuevo usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="formUsuario">
+                    <div class="mb-3">
+                        <label for="inputNombre" class="form-label">Nombre completo</label>
+                        <input type="text" class="form-control" id="inputNombre" name="nombre" placeholder="Ej. Juan García" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="inputEmail" class="form-label">Correo electrónico</label>
+                        <input type="email" class="form-control" id="inputEmail" name="email" placeholder="juan@example.com" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="inputTelefono" class="form-label">Teléfono</label>
+                        <input type="tel" class="form-control" id="inputTelefono" name="telefono" placeholder="+34 612 345 678">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="selectRolForm" class="form-label">Rol</label>
+                        <select class="form-select" id="selectRolForm" name="rol" required>
+                            <option value="">Selecciona un rol</option>
+                            <option value="admin">Admin</option>
+                            <option value="arrendador">Arrendador</option>
+                            <option value="inquilino">Inquilino</option>
+                            <option value="gestor">Gestor</option>
+                            <option value="miembro">Miembro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="inputPassword" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" id="inputPassword" name="password" placeholder="Contraseña">
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnCancelarFormUsuario" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarUsuario">Guardar usuario</button>
+            </div>
+        </div>
     </div>
 </div>
 

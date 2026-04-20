@@ -1,13 +1,25 @@
-var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
 
 window.onload = function() {
     asignarEventosAdmin();
+    asignarEventosNavIconos();
 };
 
 var asignarEventosAdmin = function() {
     var adminContainer = document.getElementById('adminContainer');
     var adminDropdown = document.getElementById('adminDropdown');
     var btnLogout = document.getElementById('btnLogout');
+    var botonesNav = document.querySelectorAll('.btn-nav-icon');
+
+    for (var i = 0; i < botonesNav.length; i++) {
+        botonesNav[i].onclick = function() {
+            var ruta = this.getAttribute('data-ruta');
+            if (ruta && ruta.trim() !== '') {
+                window.location.href = ruta;
+            }
+        };
+    }
     
     if (!adminContainer || !adminDropdown) return;
     
@@ -39,6 +51,7 @@ var asignarEventosAdmin = function() {
 
 // Ejecutar también al cargar el script por si window.onload ya pasó
 asignarEventosAdmin();
+asignarEventosNavIconos();
 
 var hacerLogout = function() {
     fetch('/logout', {
@@ -58,3 +71,22 @@ var hacerLogout = function() {
         window.location.href = '/logout';
     });
 };
+
+/* ================================================
+   FUNCIÓN: asignarEventosNavIconos
+   Asigna .onclick a iconos de navegación (funciona en todas las vistas)
+   ================================================ */
+function asignarEventosNavIconos() {
+    var botonesNav = document.querySelectorAll('.btn-nav-icon');
+    
+    for (var i = 0; i < botonesNav.length; i++) {
+        var btnNav = botonesNav[i];
+        btnNav.onclick = function(event) {
+            event.preventDefault();
+            var ruta = this.getAttribute('data-ruta');
+            if (ruta) {
+                window.location.href = ruta;
+            }
+        };
+    }
+}

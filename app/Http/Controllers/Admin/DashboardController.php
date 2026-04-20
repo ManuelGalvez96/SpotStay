@@ -38,13 +38,14 @@ class DashboardController extends Controller
             ->select(
               'tbl_alquiler.id_alquiler',
               'tbl_propiedad.titulo_propiedad',
-              'tbl_propiedad.direccion_propiedad',
+              DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
               'tbl_propiedad.ciudad_propiedad',
               'inquilino.nombre_usuario as nombre_inquilino',
               'arrendador.nombre_usuario as nombre_arrendador',
               'tbl_alquiler.estado_alquiler',
               'tbl_alquiler.creado_alquiler'
             )
+            ->where('tbl_alquiler.estado_alquiler', 'pendiente')
             ->orderBy('tbl_alquiler.creado_alquiler', 'desc')
             ->limit(5)
             ->get();
@@ -117,5 +118,50 @@ class DashboardController extends Controller
                 'actualizado_alquiler' => Carbon::now()
             ]);
         return response()->json(['success' => true]);
+    }
+
+    public function stats()
+    {
+        $usuariosPorRol = DB::table('tbl_rol')
+            ->join('tbl_rol_usuario',
+              'tbl_rol.id_rol', '=',
+              'tbl_rol_usuario.id_rol_fk')
+            ->select(
+              'tbl_rol.nombre_rol',
+              DB::raw('COUNT(*) as total')
+            )
+            ->groupBy('tbl_rol.id_rol', 'tbl_rol.nombre_rol')
+            ->get();
+
+        // Mapear roles a los esperados por el gráfico
+        $stats = [
+            'inquilinos' => 0,
+            'arrendadores' => 0,
+            'miembros' => 0,
+            'gestores' => 0
+        ];
+
+        foreach ($usuariosPorRol as $rol) {
+            $nombre = strtolower($rol->nombre_rol);
+            if (strpos($nombre, 'inquilino') !== false) {
+                $stats['inquilinos'] = $rol->total;
+            } elseif (strpos($nombre, 'arrendador') !== false) {
+                $stats['arrendadores'] = $rol->total;
+            } elseif (strpos($nombre, 'miembro') !== false) {
+                $stats['miembros'] = $rol->total;
+            } elseif (strpos($nombre, 'gestor') !== false) {
+                $stats['gestores'] = $rol->total;
+            }
+        }
+
+        return response()->json([
+            'stats' => $stats,
+            'data' => [
+                $stats['inquilinos'],
+                $stats['arrendadores'],
+                $stats['miembros'],
+                $stats['gestores']
+            ]
+        ]);
     }
 }

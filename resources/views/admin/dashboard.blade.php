@@ -72,7 +72,7 @@
             <span>Alquileres pendientes</span>
             <div style="display: flex; gap: 12px; align-items: center;">
                 <input type="text" id="buscadorTabla" placeholder="Buscar..." class="buscador-input">
-                <a href="#" class="link-ver-todos">Ver todos →</a>
+                <a href="/admin/alquileres" class="link-ver-todos">Ver todos →</a>
             </div>
         </div>
         

@@ -21,6 +21,7 @@
         <div class="hero-lateral">
             <div class="hero-avatar">{{ $avatarInicial }}</div>
             <a class="btn-volver" href="{{ route('arrendador.dashboard', ['arrendador_id' => $arrendadorId]) }}">← Volver al dashboard</a>
+            <a class="btn-volver" href="{{ route('logout') }}">Cerrar sesion</a>
         </div>
     </header>
 

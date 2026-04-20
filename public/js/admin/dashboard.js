@@ -27,6 +27,25 @@ function iniciarDonut() {
         return;
     }
     
+    // Fetch stats from API
+    fetch('/admin/dashboard/stats')
+        .then(function(response) {
+            if (!response.ok) throw new Error('Error al cargar estadísticas');
+            return response.json();
+        })
+        .then(function(result) {
+            var chartData = result.data || [0, 0, 0, 0];
+            iniciarDonutConDatos(chartData);
+        })
+        .catch(function(error) {
+            console.error('Error al cargar estadísticas del dashboard:', error);
+            // Usar datos por defecto si falla la carga
+            iniciarDonutConDatos([0, 0, 0, 0]);
+        });
+}
+
+function iniciarDonutConDatos(chartData) {
+    var canvasElement = document.getElementById('donutChart');
     var ctx = canvasElement.getContext('2d');
     
     var donutChart = new Chart(ctx, {
@@ -34,7 +53,7 @@ function iniciarDonut() {
         data: {
             labels: ['Inquilinos', 'Arrendadores', 'Miembros', 'Gestores'],
             datasets: [{
-                data: [687, 342, 166, 89],
+                data: chartData,
                 backgroundColor: ['#1AA068', '#035498', '#94A3B8', '#CBD5E1'],
                 borderColor: '#FFFFFF',
                 borderWidth: 2

@@ -18,7 +18,10 @@
             <h1>Solicitudes de alquiler</h1>
             <p class="subtitulo">Revisa y decide las solicitudes de tus propiedades.</p>
         </div>
-        <a class="btn-volver" href="{{ route('arrendador.dashboard', ['arrendador_id' => $arrendadorId]) }}">Volver al dashboard</a>
+        <div class="acciones-cabecera">
+            <a class="btn-volver" href="{{ route('arrendador.dashboard', ['arrendador_id' => $arrendadorId]) }}">Volver al dashboard</a>
+            <a class="btn-volver" href="{{ route('logout') }}">Cerrar sesion</a>
+        </div>
     </header>
 
     <section class="kpis">

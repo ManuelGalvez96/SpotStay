@@ -23,11 +23,9 @@ class AuthController extends Controller
                 return redirect('/admin/dashboard');
             }
 
-            if ($user->roles()->whereIn('slug_rol', ['miembro', 'inquilino'])->exists()) {
+            if ($user->roles()->whereIn('slug_rol', ['miembro', 'inquilino', 'propietario'])->exists()) {
                 return redirect('/miembro/inicio');
             }
-
-            return redirect('/');
         }
         return view('login');
     }

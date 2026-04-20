@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Error 404 | SpotStay - Página No Encontrada</title>
+    <title>Error 404</title>
     <link rel="stylesheet" href="{{ asset('css/error/style-404.css') }}">
 </head>
 
@@ -49,7 +49,7 @@
 
         <div class="error-content">
             <h1 class="error-title">Parece que te has perdido</h1>
-            <p class="error-message">Nuestra mascota Empresaria ha buscado por toda la plataforma corporativa, pero la propiedad que buscas no está en nuestra base de datos.</p>
+            <p class="error-message">Nuestra mascota Empresaria ha buscado por toda la pagina, pero no ha encontrado lo que buscas.</p>
 
             @php
             $urlInicio = url('/login');

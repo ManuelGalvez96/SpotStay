@@ -37,9 +37,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const checkState = (input) => {
         if (input.type === "text") {
-            container.classList.add("peek-active");
-        } else {
             container.classList.remove("peek-active");
+        } else {
+            container.classList.add("peek-active");
         }
     };
 

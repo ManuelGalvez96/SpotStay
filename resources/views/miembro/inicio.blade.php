@@ -18,6 +18,15 @@
             <div class="marca-miembro">
                 <img src="/img/logo.png" />
             </div>
+
+            @if(session('error'))
+            <div class="header-error-msg">
+                <div class="alert alert-error">
+                    {!! session('error') !!}
+                </div>
+            </div>
+            @endif
+
             <div class="acciones-miembro">
                 <button class="boton-icono" type="button" aria-label="Notificaciones">
                     <i class="bi bi-bell" aria-hidden="true"></i>
@@ -35,7 +44,7 @@
                         <a href="#" class="item-submenu"><i class="bi bi-gear"></i> Configuración</a>
 
                         <div class="separador-submenu"></div>
-                        <a href="{{ route('logout') }}" class="item-submenu" style="color: red;"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</a>
+                        <a href="{{ route('logout') }}" class="item-submenu" style="color: red;"><i class="bi bi-box-arrow-right" style="color: red"></i> Cerrar Sesión</a>
 
                     </div>
                 </div>
@@ -50,12 +59,11 @@
                 <li><a href="#" class="enlace-nav"><i class="bi bi-journal-text"></i> Alquileres</a></li>
                 <li><a href="#" class="enlace-nav"><i class="bi bi-chat-dots"></i> Mensajes</a></li>
                 @if ($esInquilino)
-                <li><a href="#" class="enlace-nav"><i class="bi bi-building-gear"></i> Gestionar</a></li>
+                <li><a href="{{ route('gestionar_propiedades') }}" class="enlace-nav"><i class="bi bi-building-gear"></i> Gestionar</a></li>
                 @endif
             </ul>
         </div>
     </nav>
-
     <main class="contenido-miembro">
         <section class="seccion-mapa-previsualizacion">
             <div class="cabecera-seccion">

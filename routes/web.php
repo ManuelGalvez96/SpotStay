@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\SolicitudController;
 use App\Http\Controllers\Admin\IncidenciaController;
 use App\Http\Controllers\Admin\AlquilerController;
 use App\Http\Controllers\Admin\SuscripcionController;
+use App\Http\Controllers\inquilino\InquilinoController;
 
 // Rutas Públicas
 Route::get('/', function () {
@@ -84,15 +85,14 @@ Route::middleware(['role:admin'])->group(function () {
     Route::post('/admin/suscripciones/{id}/cancelar', [SuscripcionController::class, 'cancelar']);
 });
 
-Route::get('/miembro/inicio', [HomeController::class, 'index']);
-Route::get('/miembro/mapa', function () {
-    return view('miembro.mapa');
-});
-
-Route::middleware(['role:miembro,inquilino'])->group(function () {
+Route::middleware(['role:miembro,inquilino,propietario'])->group(function () {
     Route::get('/miembro/inicio', [HomeController::class, 'index']);
     Route::get('/miembro/propiedad/{id}', [DetallePropiedadController::class, 'show'])->name('miembro.detalle_propiedad');
     Route::get('/miembro/mapa', function () {
         return view('miembro.mapa');
     });
+
+    Route::get('/inquilino/gestionar-propiedades', [InquilinoController::class, 'gestionarPropiedades'])->name('gestionar_propiedades');
+    Route::get('/inquilino/propiedad/{id}', [InquilinoController::class, 'verPropiedad'])->name('inquilino.ver_propiedad');
+    Route::post('/inquilino/propiedad/{id}/incidencia', [InquilinoController::class, 'reportarIncidencia'])->name('inquilino.reportar_incidencia');
 });

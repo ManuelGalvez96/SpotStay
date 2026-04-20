@@ -225,7 +225,7 @@ class IncidenciaSeeder extends Seeder
 
         foreach ($incidencias as $inc) {
             $idPropiedad = DB::table('tbl_propiedad')
-                ->where('direccion_propiedad', $inc['propiedad_direccion'])
+                ->whereRaw("TRIM(CONCAT_WS(' ', calle_propiedad, numero_propiedad)) = ?", [$inc['propiedad_direccion']])
                 ->value('id_propiedad');
 
             $idReporta = DB::table('tbl_usuario')

@@ -91,7 +91,7 @@ class AlquilerSeeder extends Seeder
 
         foreach ($alquileres as $alq) {
             $idPropiedad = DB::table('tbl_propiedad')
-                ->where('direccion_propiedad', $alq['propiedad_direccion'])
+                ->whereRaw("TRIM(CONCAT_WS(' ', calle_propiedad, numero_propiedad)) = ?", [$alq['propiedad_direccion']])
                 ->value('id_propiedad');
 
             $idInquilino = DB::table('tbl_usuario')

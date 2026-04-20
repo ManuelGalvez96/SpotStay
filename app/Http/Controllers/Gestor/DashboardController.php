@@ -38,7 +38,7 @@ class DashboardController extends Controller
                 'tbl_incidencia.prioridad_incidencia',
                 'tbl_incidencia.creado_incidencia',
                 'tbl_propiedad.titulo_propiedad',
-                'tbl_propiedad.direccion_propiedad',
+                DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
                 'tbl_propiedad.ciudad_propiedad'
             )
             ->orderBy('tbl_incidencia.creado_incidencia', 'desc')
@@ -53,7 +53,7 @@ class DashboardController extends Controller
                 'tbl_incidencia.prioridad_incidencia',
                 'tbl_incidencia.creado_incidencia',
                 'tbl_propiedad.titulo_propiedad',
-                'tbl_propiedad.direccion_propiedad'
+                DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad")
             )
             ->whereIn('tbl_incidencia.estado_incidencia', ['abierta', 'en_proceso'])
             ->where(function ($query) {
@@ -77,7 +77,7 @@ class DashboardController extends Controller
             ->select(
                 'tbl_propiedad.id_propiedad',
                 'tbl_propiedad.titulo_propiedad',
-                'tbl_propiedad.direccion_propiedad',
+                DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
                 'tbl_propiedad.ciudad_propiedad',
                 DB::raw('COALESCE(inc_activas.incidencias_activas, 0) as incidencias_activas')
             )

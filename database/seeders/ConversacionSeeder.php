@@ -98,7 +98,7 @@ class ConversacionSeeder extends Seeder
             $idPropiedad = null;
             if ($conv['propiedad_direccion']) {
                 $idPropiedad = DB::table('tbl_propiedad')
-                    ->where('direccion_propiedad', $conv['propiedad_direccion'])
+                    ->whereRaw("TRIM(CONCAT_WS(' ', calle_propiedad, numero_propiedad)) = ?", [$conv['propiedad_direccion']])
                     ->value('id_propiedad');
             }
 

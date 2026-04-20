@@ -24,7 +24,7 @@ class IncidenciaController extends Controller
             ->select(
               'tbl_incidencia.*',
               'tbl_propiedad.titulo_propiedad',
-              'tbl_propiedad.direccion_propiedad',
+                            DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
               'tbl_propiedad.ciudad_propiedad',
               'reporta.nombre_usuario as nombre_inquilino',
               'asignado.nombre_usuario as nombre_gestor'
@@ -101,7 +101,7 @@ class IncidenciaController extends Controller
             ->select(
               'tbl_incidencia.*',
               'tbl_propiedad.titulo_propiedad',
-              'tbl_propiedad.direccion_propiedad',
+                            DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
               'tbl_propiedad.ciudad_propiedad',
               'reporta.nombre_usuario as nombre_inquilino',
               'reporta.email_usuario as email_inquilino',
@@ -218,7 +218,7 @@ class IncidenciaController extends Controller
             ->select(
               'tbl_incidencia.*',
               'tbl_propiedad.titulo_propiedad',
-              'tbl_propiedad.direccion_propiedad',
+                            DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
               'reporta.nombre_usuario as nombre_inquilino'
             );
 

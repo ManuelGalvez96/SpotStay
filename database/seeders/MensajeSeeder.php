@@ -13,7 +13,7 @@ class MensajeSeeder extends Seeder
         // Conversación Calle Mayor 14 (Carlos García y Laura Martínez)
         $conversacionCalle = DB::table('tbl_conversacion')
             ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_conversacion.id_propiedad_fk')
-            ->where('tbl_propiedad.direccion_propiedad', 'Calle Mayor 14')
+            ->whereRaw("TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)) = ?", ['Calle Mayor 14'])
             ->where('tbl_conversacion.tipo_conversacion', 'directa')
             ->value('id_conversacion');
 

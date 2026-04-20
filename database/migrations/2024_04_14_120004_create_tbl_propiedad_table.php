@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('tbl_propiedad', function (Blueprint $table) {
             $table->unsignedBigInteger('id_propiedad')->autoIncrement()->primary();
             $table->unsignedBigInteger('id_arrendador_fk');
-            $table->unsignedBigInteger('id_gestor_fk');
+            $table->unsignedBigInteger('id_gestor_fk')->nullable();
             $table->string('titulo_propiedad', 150);
             $table->string('direccion_propiedad');
             $table->string('ciudad_propiedad', 100);

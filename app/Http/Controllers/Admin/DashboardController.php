@@ -45,6 +45,7 @@ class DashboardController extends Controller
               'tbl_alquiler.estado_alquiler',
               'tbl_alquiler.creado_alquiler'
             )
+            ->where('tbl_alquiler.estado_alquiler', 'pendiente')
             ->orderBy('tbl_alquiler.creado_alquiler', 'desc')
             ->limit(5)
             ->get();

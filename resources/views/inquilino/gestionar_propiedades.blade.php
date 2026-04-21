@@ -84,7 +84,7 @@
                     </div>
                     <div class="kpi-datos-inquilino">
                         <span class="kpi-numero">{{ $totalIncidencias }}</span>
-                        <span class="kpi-etiqueta">Incidencias Abiertas</span>
+                        <span class="kpi-etiqueta">Incidencias En Proceso</span>
                     </div>
                 </div>
             </div>

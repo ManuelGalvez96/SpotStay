@@ -17,15 +17,47 @@
                 <span class="valor-meta">{{ $alquiler->fecha_fin_alquiler ? \Carbon\Carbon::parse($alquiler->fecha_fin_alquiler)->format('d/m/Y') : 'Indefinido' }}</span>
             </div>
             <div class="item-meta">
-                <span class="label-meta">INCIDENCIAS ABIERTAS</span>
+                <span class="label-meta">INCIDENCIAS EN PROCESO</span>
                 <span class="valor-meta">{{ $alquiler->total_incidencias_propiedad ?? 0 }}</span>
             </div>
         </div>
 
-        <div class="acciones-gestion">
-            <a href="{{ route('inquilino.ver_propiedad', $alquiler->id_propiedad) }}" class="btn-inquilino btn-secundario">Ver Detalles</a>
-            <button class="btn-inquilino btn-primario">Pagar Recibo</button>
+        @if(($alquiler->pago_atrasado ?? 0) > 0)
+        <div class="alerta-pago-atrasado">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>El plazo del pago ha expirado, paga lo antes posible.</span>
         </div>
+        @endif
+
+        @php
+        $mostrarAlertaFin = false;
+        $diasFinContrato = null;
+        if (!empty($alquiler->fecha_fin_alquiler)) {
+        $hoy = \Carbon\Carbon::today();
+        $fin = \Carbon\Carbon::parse($alquiler->fecha_fin_alquiler)->startOfDay();
+        // Solo mostramos alerta si el contrato aún no ha vencido y quedan <= 30 días
+            if ($fin->gte($hoy)) {
+            $diasFinContrato = (int) $hoy->diffInDays($fin); // siempre positivo
+            $mostrarAlertaFin = $diasFinContrato <= 30;
+                }
+                }
+                @endphp
+
+                @if ($mostrarAlertaFin)
+                <div class="alerta-fin-contrato">
+                <i class="bi bi-clock-history"></i>
+                <span>El contrato finaliza en <strong>{{ $diasFinContrato }} días</strong></span>
+    </div>
+    @endif
+
+    <div class="acciones-gestion">
+        <a href="{{ route('inquilino.ver_propiedad', $alquiler->id_propiedad) }}" class="btn-inquilino btn-secundario">Ver Detalles</a>
+        @if ($mostrarAlertaFin || $alquiler->estado_alquiler != 'activo')
+        <a href="mailto:" class="btn-inquilino btn-secundario" style="color: var(--primario); border-color: var(--borde);"><i class="bi bi-envelope" style="margin-right: 5px;"></i> Contactar</a>
+        @else
+        <button class="btn-inquilino btn-primario">Pagar Recibo</button>
+        @endif
+    </div>
     </div>
 </article>
 @empty

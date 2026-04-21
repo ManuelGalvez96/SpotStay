@@ -72,15 +72,20 @@ class InquilinoController extends Controller
             $diasParaPago = round(Carbon::now()->diffInDays($fechaPago));
         }
 
-        // 3. Incidencias Totales Activas
+        // 3. Incidencias Totales Activas (de las propiedades del usuario)
         $totalIncidencias = DB::table('tbl_incidencia')
             ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_incidencia.id_propiedad_fk')
-            ->where('tbl_incidencia.estado_incidencia', '!=', 'resuelta')
-            ->where(function ($query) use ($userId) {
-                $query->where('tbl_incidencia.id_reporta_fk', $userId)
-                    ->orWhere('tbl_propiedad.id_arrendador_fk', $userId);
+            ->leftJoin('tbl_alquiler', function($join) use ($userId) {
+                $join->on('tbl_alquiler.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad')
+                     ->where('tbl_alquiler.id_inquilino_fk', '=', $userId)
+                     ->where('tbl_alquiler.estado_alquiler', '=', 'activo');
             })
-            ->count();
+            ->whereIn('tbl_incidencia.estado_incidencia', ['abierta', 'en_proceso'])
+            ->where(function ($query) use ($userId) {
+                $query->where('tbl_propiedad.id_arrendador_fk', $userId)
+                      ->orWhereNotNull('tbl_alquiler.id_alquiler');
+            })
+            ->count(DB::raw('DISTINCT tbl_incidencia.id_incidencia'));
 
         // 4. Listado de Propiedades Únicas (FILTRADO)
         $query = DB::table('tbl_propiedad')
@@ -93,6 +98,11 @@ class InquilinoController extends Controller
             ->where(function ($qb) use ($userId) {
                 $qb->where('tbl_alquiler.id_inquilino_fk', $userId)
                     ->orWhere('tbl_propiedad.id_arrendador_fk', $userId);
+            })
+            // Excluir contratos cuya fecha de fin ya ha pasado
+            ->where(function ($qb) {
+                $qb->whereNull('tbl_alquiler.fecha_fin_alquiler')
+                   ->orWhereRaw('tbl_alquiler.fecha_fin_alquiler >= CURDATE()');
             });
 
         // Aplicar filtros dinámicos
@@ -107,12 +117,29 @@ class InquilinoController extends Controller
         $alquileres = $query->select(
                 'tbl_propiedad.*',
                 DB::raw('MIN(tbl_fotos.ruta_foto) as ruta_foto'),
+                DB::raw('MIN(tbl_alquiler.id_alquiler) as id_alquiler'),
                 DB::raw('MIN(tbl_alquiler.estado_alquiler) as estado_alquiler'),
-                DB::raw('MIN(tbl_alquiler.fecha_fin_alquiler) as fecha_fin_alquiler'),
-                DB::raw('(SELECT COUNT(*) FROM tbl_incidencia WHERE id_propiedad_fk = tbl_propiedad.id_propiedad AND estado_incidencia != "resuelta") as total_incidencias_propiedad')
+                DB::raw('MIN(CASE WHEN tbl_alquiler.id_inquilino_fk = ' . $userId . ' THEN tbl_alquiler.fecha_fin_alquiler END) as fecha_fin_alquiler'),
+                DB::raw('(SELECT COUNT(*) FROM tbl_incidencia WHERE id_propiedad_fk = tbl_propiedad.id_propiedad AND estado_incidencia IN ("abierta", "en_proceso")) as total_incidencias_propiedad'),
+                DB::raw('(SELECT COUNT(*) FROM tbl_pago p INNER JOIN tbl_alquiler a ON a.id_alquiler = p.id_alquiler_fk WHERE a.id_propiedad_fk = tbl_propiedad.id_propiedad AND p.id_pagador_fk = ' . $userId . ' AND (p.estado_pago = "atrasado" OR (p.estado_pago = "pendiente" AND p.mes_pago < DATE_FORMAT(NOW(), "%Y-%m-01")))) as pago_atrasado')
             )
             ->groupBy('tbl_propiedad.id_propiedad')
             ->get();
+
+        // 4.5. Calcular datos de alerta fin de contrato para cada alquiler en el grid
+        $hoy = \Carbon\Carbon::today();
+        foreach ($alquileres as $alquiler) {
+            $alquiler->mostrarAlertaFin = false;
+            $alquiler->diasFinContrato = null;
+
+            if (!empty($alquiler->fecha_fin_alquiler)) {
+                $fin = \Carbon\Carbon::parse($alquiler->fecha_fin_alquiler)->startOfDay();
+                if ($fin->gte($hoy)) {
+                    $alquiler->diasFinContrato = (int) $hoy->diffInDays($fin);
+                    $alquiler->mostrarAlertaFin = $alquiler->diasFinContrato <= 30;
+                }
+            }
+        }
 
         // 5. Obtener ciudades únicas para el filtro
         $ciudades = DB::table('tbl_propiedad')
@@ -183,7 +210,25 @@ class InquilinoController extends Controller
             ->where('id_propiedad_fk', $id)
             ->get();
 
-        // 3. Próximo pago
+        // 3. Detectar si el contrato finaliza en menos de 30 días
+        $proximaFinalizacion = false;
+        $diasParaFinContrato = null;
+        $fechaFinContrato    = null;
+
+        if (!empty($alquiler->fecha_fin_alquiler)) {
+            $hoy         = Carbon::today();
+            $finContrato = Carbon::parse($alquiler->fecha_fin_alquiler)->startOfDay();
+
+            if ($finContrato->gte($hoy)) {
+                $diasParaFinContrato = (int) $hoy->diffInDays($finContrato); // igual que el grid
+                if ($diasParaFinContrato <= 30) {
+                    $proximaFinalizacion = true;
+                    $fechaFinContrato    = $finContrato->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
+                }
+            }
+        }
+
+        // 4. Próximo pago (solo si el contrato no está a punto de finalizar)
         $proximoPago = DB::table('tbl_pago')
             ->where('id_alquiler_fk', $alquiler->id_alquiler)
             ->where('estado_pago', 'pendiente')
@@ -194,8 +239,10 @@ class InquilinoController extends Controller
             $fechaPago = Carbon::parse($proximoPago->mes_pago)->day(1);
             $diasParaPago = Carbon::now()->diffInDays($fechaPago, false);
             $diasParaPago = $diasParaPago < 0 ? 0 : round($diasParaPago);
+            $fechaProximoPago = $fechaPago->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
         } else {
             $diasParaPago = 0;
+            $fechaProximoPago = Carbon::now()->addMonth()->day(1)->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
         }
 
         // 4. Incidencias (Todas las de la propiedad)
@@ -205,16 +252,20 @@ class InquilinoController extends Controller
             ->get();
 
         return view('inquilino.ver_propiedad', [
-            'nombreUsuario' => $nombreUsuario,
-            'tieneFoto' => $tieneFoto,
-            'fotoUsuario' => $fotoUsuario,
-            'inicialUsuario' => $inicialUsuario,
-            'alquiler' => $alquiler,
-            'fotos' => $fotos,
-            'diasParaPago' => $diasParaPago,
-            'incidencias' => $incidencias,
-            'esInquilino' => true,
-            'pdfEjemplo' => 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
+            'nombreUsuario'       => $nombreUsuario,
+            'tieneFoto'           => $tieneFoto,
+            'fotoUsuario'         => $fotoUsuario,
+            'inicialUsuario'      => $inicialUsuario,
+            'alquiler'            => $alquiler,
+            'fotos'               => $fotos,
+            'diasParaPago'        => $diasParaPago,
+            'fechaProximoPago'    => $fechaProximoPago,
+            'proximaFinalizacion' => $proximaFinalizacion,
+            'diasParaFinContrato' => $diasParaFinContrato,
+            'fechaFinContrato'    => $fechaFinContrato,
+            'incidencias'         => $incidencias,
+            'esInquilino'         => true,
+            'pdfEjemplo'          => 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
         ]);
     }
 

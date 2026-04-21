@@ -145,7 +145,24 @@
                 <!-- Columna Derecha: Gestión, Contrato y Pagos -->
                 <div class="columna-derecha">
 
-                    <!-- KPI Pagos -->
+                    @if ($proximaFinalizacion)
+                    {{-- ⚠️ AVISO: Contrato próximo a finalizar (menos de 30 días) --}}
+                    <div class="card-gestion fin-contrato">
+                        <div class="card-icon">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                        </div>
+                        <div class="card-body">
+                            <span class="label">CONTRATO PRÓXIMO A FINALIZAR</span>
+                            <span class="valor-kpi dias-fin">{{ $diasParaFinContrato }} días</span>
+                            <p class="nota">Tu contrato vence el <strong>{{ $fechaFinContrato }}</strong>.</p>
+                            <p class="nota" style="margin-top: 4px;">Contacta con el propietario para renovar o gestionar la salida.</p>
+                            <a href="mailto:" class="btn-accion btn-contactar">
+                                <i class="bi bi-envelope"></i> Contactar al Propietario
+                            </a>
+                        </div>
+                    </div>
+                    @else
+                    {{-- KPI Pagos normal --}}
                     <div class="card-gestion pago">
                         <div class="card-icon">
                             <i class="bi bi-calendar-check"></i>
@@ -153,10 +170,11 @@
                         <div class="card-body">
                             <span class="label">PRÓXIMO PAGO EN</span>
                             <span class="valor-kpi">{{ $diasParaPago }} días</span>
-                            <p class="nota">Vence el día 1 del próximo mes.</p>
+                            <p class="nota">Vence el {{ $fechaProximoPago }}</p>
                             <button class="btn-accion btn-pago">Pagar Cuota Ahora</button>
                         </div>
                     </div>
+                    @endif
 
                     <!-- Contrato -->
                     <div class="card-gestion contrato">
@@ -190,7 +208,7 @@
                                 </div>
                                 <div class="incidencia-acciones">
                                     <span class="estado-tag {{ $incidencia->estado_incidencia }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span>
-                                    
+
                                     @if($incidencia->id_reporta_fk == auth()->id() && $incidencia->estado_incidencia != 'resuelta')
                                     <form action="{{ route('inquilino.cerrar_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline;">
                                         @csrf

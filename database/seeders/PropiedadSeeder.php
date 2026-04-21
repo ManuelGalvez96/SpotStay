@@ -137,7 +137,7 @@ class PropiedadSeeder extends Seeder
                 'descripcion' => 'Piso en zona histórica de Sevilla',
                 'precio' => 650.00,
                 'gastos' => json_encode(['agua' => 20, 'luz' => 38, 'comunidad' => 28]),
-                'estado' => 'publicada',
+                'estado' => 'alquilada',
             ],
             [
                 'arrendador_email' => 'roberto.mora@spotstay.com',
@@ -153,7 +153,7 @@ class PropiedadSeeder extends Seeder
                 'descripcion' => 'Piso en zona céntrica de Valencia',
                 'precio' => 750.00,
                 'gastos' => json_encode(['agua' => 25, 'luz' => 45, 'comunidad' => 35]),
-                'estado' => 'borrador',
+                'estado' => 'alquilada',
             ],
             [
                 'arrendador_email' => 'arrendador@spotstay.com',

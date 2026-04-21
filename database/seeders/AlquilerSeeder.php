@@ -12,8 +12,11 @@ class AlquilerSeeder extends Seeder
     public function run(): void
     {
         $alquileres = [
-            // Alquiler de prueba para Gestión: María García (inquilino@spotstay.com)
-            ['propiedad' => 'Calle Mayor 14', 'inquilino' => 'inquilino@spotstay.com', 'estado' => 'activo', 'fecha_inicio' => '2025-01-01'],
+            // Alquiler de prueba para Gestión: María García (inquilino@spotstay.com) → 4 propiedades en 4 ciudades distintas
+            ['propiedad' => 'Calle Mayor 14',        'inquilino' => 'inquilino@spotstay.com', 'estado' => 'activo', 'fecha_inicio' => '2025-01-01'], // Madrid
+            ['propiedad' => 'Av. Diagonal 88',        'inquilino' => 'inquilino@spotstay.com', 'estado' => 'activo', 'fecha_inicio' => '2025-02-01', 'fecha_fin' => '2026-05-01'], // Barcelona (contrato finaliza 01/05/2026)
+            ['propiedad' => 'Alameda de Hércules 3', 'inquilino' => 'inquilino@spotstay.com', 'estado' => 'activo', 'fecha_inicio' => '2025-03-01'], // Sevilla
+            ['propiedad' => 'Calle Colón 8',          'inquilino' => 'inquilino@spotstay.com', 'estado' => 'activo', 'fecha_inicio' => '2025-04-01'], // Valencia
             ['propiedad' => 'Calle Mayor 14', 'inquilino' => 'laura@spotstay.com', 'estado' => 'activo', 'fecha_inicio' => '2025-01-15'],
             ['propiedad' => 'Calle Serrano 47', 'inquilino' => 'pedro@spotstay.com', 'estado' => 'activo', 'fecha_inicio' => '2025-02-01'],
             ['propiedad' => 'Av. Diagonal 88', 'inquilino' => 'sofia@spotstay.com', 'estado' => 'activo', 'fecha_inicio' => '2025-01-20'],
@@ -79,7 +82,7 @@ class AlquilerSeeder extends Seeder
                     [
                         'estado_alquiler' => $data['estado'],
                         'fecha_inicio_alquiler' => $data['fecha_inicio'],
-                        'fecha_fin_alquiler' => $data['estado'] === 'finalizado' ? now()->subDays(30)->format('Y-m-d') : null,
+                        'fecha_fin_alquiler' => $data['fecha_fin'] ?? ($data['estado'] === 'finalizado' ? now()->subDays(30)->format('Y-m-d') : null),
                         'id_admin_aprueba_fk' => $admin?->id_usuario,
                         'aprobado_alquiler' => $data['estado'] !== 'pendiente' ? now()->subDays(5) : null,
                         'creado_alquiler' => now(),

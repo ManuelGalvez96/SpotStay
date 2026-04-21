@@ -1,7 +1,7 @@
 var mapa;
 var capaMarcadores;
 var capaPoligonos;
-var rutaApiPropiedades = "/api/propiedades";
+var rutaApiPropiedades = "/miembro/mapa/propiedades";
 
 window.onload = function () {
 	iniciarMapa();
@@ -9,10 +9,10 @@ window.onload = function () {
 };
 
 function iniciarMapa() {
-	var centroInicial = [41.3663, 2.1166];
+	var centroInicial = [41.38684, 2.16959];
 	mapa = L.map("mapa", {
 		zoomControl: false,
-	}).setView(centroInicial, 13);
+	}).setView(centroInicial, 7);
 
 	L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 		maxZoom: 19,
@@ -24,7 +24,6 @@ function iniciarMapa() {
 	capaMarcadores = L.layerGroup().addTo(mapa);
 	capaPoligonos = L.layerGroup().addTo(mapa);
 
-	dibujarPoligonoEjemplo();
 	cargarPropiedades();
 
 	mapa.on("moveend", function () {
@@ -49,6 +48,8 @@ function obtenerFiltros() {
 		precio_maximo: obtenerValor("precio-maximo"),
 		tipo_inmueble: obtenerValor("tipo-inmueble"),
 		habitaciones: obtenerValor("numero-habitaciones"),
+		metros_minimo: obtenerValor("metros-minimo"),
+		metros_maximo: obtenerValor("metros-maximo"),
 	};
 }
 
@@ -78,6 +79,8 @@ function cargarPropiedades() {
 		precio_maximo: filtros.precio_maximo,
 		tipo_inmueble: filtros.tipo_inmueble,
 		habitaciones: filtros.habitaciones,
+		metros_minimo: filtros.metros_minimo,
+		metros_maximo: filtros.metros_maximo,
 	};
 
 	var url = rutaApiPropiedades + "?" + new URLSearchParams(parametros).toString();
@@ -120,17 +123,39 @@ function renderizarMarcadores(propiedades) {
 		});
 
 		var titulo = propiedad.titulo_propiedad || "Propiedad";
-		marcador.bindPopup(
-			"<strong>" + escaparHtml(titulo) + "</strong><br>" + precio
-		);
+		marcador.bindPopup(construirPopupPropiedad(propiedad), {
+			maxWidth: 340,
+			minWidth: 280,
+			className: "popup-propiedad-contenedor",
+		});
 		marcador.addTo(capaMarcadores);
 	}
+}
+
+function construirPopupPropiedad(propiedad) {
+	var titulo = propiedad.titulo_propiedad || "Propiedad";
+	var precio = formatearPrecio(propiedad.precio_propiedad);
+	var ciudad = propiedad.ciudad_propiedad || "Ciudad no disponible";
+	var direccion = propiedad.direccion_propiedad || "Direccion no disponible";
+	var estado = propiedad.estado_propiedad || "N/D";
+	var urlDetalle = "/miembro/propiedad/" + propiedad.id_propiedad;
+
+	return (
+		"<div class='popup-propiedad'>" +
+		"<h3 class='popup-propiedad-titulo'>" + escaparHtml(titulo) + "</h3>" +
+		"<p class='popup-propiedad-precio'>" + precio + " / mes</p>" +
+		"<p class='popup-propiedad-linea'><strong>Ciudad:</strong> " + escaparHtml(ciudad) + "</p>" +
+		"<p class='popup-propiedad-linea'><strong>Direccion:</strong> " + escaparHtml(direccion) + "</p>" +
+		"<p class='popup-propiedad-linea'><strong>Estado:</strong> " + escaparHtml(estado) + "</p>" +
+		"<a class='popup-propiedad-boton' href='" + urlDetalle + "'>Ver detalle</a>" +
+		"</div>"
+	);
 }
 
 function crearIconoPrecio(textoPrecio) {
 	return L.divIcon({
 		className: "etiqueta-precio",
-		html: "<span class=\"etiqueta-precio-texto\">" + textoPrecio + "</span>",
+		html: "<span class='etiqueta-precio-texto'>" + textoPrecio + "</span>",
 		iconSize: [1, 1],
 		iconAnchor: [12, 24],
 	});
@@ -151,6 +176,20 @@ function formatearPrecio(valor) {
 	});
 
 	return texto + " &euro;";
+}
+
+function escaparHtml(texto) {
+	var mapaCaracteres = {
+		"&": "&amp;",
+		"<": "&lt;",
+		">": "&gt;",
+		'"': "&quot;",
+		"'": "&#039;",
+	};
+
+	return String(texto).replace(/[&<>"']/g, function (caracter) {
+		return mapaCaracteres[caracter];
+	});
 }
 
 // function dibujarPoligonoEjemplo() {

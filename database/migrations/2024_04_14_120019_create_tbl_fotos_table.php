@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_foto')->autoIncrement()->primary();
             $table->unsignedBigInteger('id_propiedad_fk');
             $table->string('ruta_foto', 255);
+            $table->integer('orden')->unsigned()->default(0);
             $table->timestamp('creado_foto')->nullable();
 
             // Indices y restricciones

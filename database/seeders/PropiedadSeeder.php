@@ -228,7 +228,11 @@ class PropiedadSeeder extends Seeder
             ],
         ];
 
-        foreach ($propiedades as $prop) {
+        $tiposDisponibles = ['piso', 'casa', 'estudio', 'atico'];
+        $habitacionesDisponibles = ['1', '2', '3', '4'];
+        $metrosDisponibles = [45, 60, 75, 90, 110, 130];
+
+        foreach ($propiedades as $indice => $prop) {
             $idArrendador = DB::table('tbl_usuario')
                 ->where('email_usuario', $prop['arrendador_email'])
                 ->value('id_usuario');
@@ -239,6 +243,11 @@ class PropiedadSeeder extends Seeder
 
             unset($prop['arrendador_email'], $prop['gestor_email']);
 
+            // Asigna tipo y habitaciones para que los filtros del mapa tengan datos
+            $tipoInmueble = $tiposDisponibles[$indice % count($tiposDisponibles)];
+            $habitaciones = $habitacionesDisponibles[$indice % count($habitacionesDisponibles)];
+            $metrosCuadrados = $metrosDisponibles[$indice % count($metrosDisponibles)];
+
             DB::table('tbl_propiedad')->insert([
                 'titulo_propiedad' => $prop['titulo'],
                 'direccion_propiedad' => $prop['direccion'],
@@ -248,6 +257,9 @@ class PropiedadSeeder extends Seeder
                 'longitud_propiedad' => $prop['lng'],
                 'descripcion_propiedad' => $prop['descripcion'],
                 'precio_propiedad' => $prop['precio'],
+                'tipo_propiedad' => $tipoInmueble,
+                'habitaciones_propiedad' => $habitaciones,
+                'metros_cuadrados_propiedad' => $metrosCuadrados,
                 'gastos_propiedad' => $prop['gastos'],
                 'estado_propiedad' => $prop['estado'],
                 'id_arrendador_fk' => $idArrendador,

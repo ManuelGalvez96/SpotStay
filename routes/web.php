@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Miembro\HomeController;
 use App\Http\Controllers\Miembro\DetallePropiedadController;
+use App\Http\Controllers\Miembro\MapaController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -95,4 +96,5 @@ Route::middleware(['role:miembro,inquilino'])->group(function () {
     Route::get('/miembro/mapa', function () {
         return view('miembro.mapa');
     });
+    Route::get('/miembro/mapa/propiedades', [MapaController::class, 'propiedades'])->name('miembro.mapa.propiedades');
 });

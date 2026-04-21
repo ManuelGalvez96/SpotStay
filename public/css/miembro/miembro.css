@@ -241,6 +241,52 @@ body.pagina-miembro {
 	border: 1px solid var(--borde);
 }
 
+/* Popup grande de propiedad para el mapa */
+.popup-propiedad-contenedor .leaflet-popup-content {
+	margin: 12px 14px;
+}
+
+.popup-propiedad {
+	min-width: 250px;
+	max-width: 320px;
+}
+
+.popup-propiedad-titulo {
+	margin: 0 0 6px;
+	font-size: 16px;
+	font-weight: 700;
+	color: var(--texto);
+}
+
+.popup-propiedad-precio {
+	margin: 0 0 10px;
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--primario);
+}
+
+.popup-propiedad-linea {
+	margin: 0 0 6px;
+	font-size: 13px;
+	color: var(--texto-suave);
+	line-height: 1.4;
+}
+
+.popup-propiedad-boton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin-top: 8px;
+	height: 34px;
+	padding: 0 14px;
+	border-radius: 999px;
+	text-decoration: none;
+	background: var(--primario);
+	color: #ffffff;
+	font-size: 13px;
+	font-weight: 600;
+}
+
 /* ===== PAGINA INICIO MIEMBRO ===== */
 .acciones-miembro {
 	display: flex;

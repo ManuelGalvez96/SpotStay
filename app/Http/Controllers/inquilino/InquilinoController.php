@@ -99,10 +99,10 @@ class InquilinoController extends Controller
                 $qb->where('tbl_alquiler.id_inquilino_fk', $userId)
                     ->orWhere('tbl_propiedad.id_arrendador_fk', $userId);
             })
-            // Excluir contratos cuya fecha de fin ya ha pasado
+            // Excluir contratos cuya fecha de fin ya ha pasado más de 7 días
             ->where(function ($qb) {
                 $qb->whereNull('tbl_alquiler.fecha_fin_alquiler')
-                   ->orWhereRaw('tbl_alquiler.fecha_fin_alquiler >= CURDATE()');
+                   ->orWhereRaw('tbl_alquiler.fecha_fin_alquiler >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)');
             });
 
         // Aplicar filtros dinámicos
@@ -128,15 +128,30 @@ class InquilinoController extends Controller
 
         // 4.5. Calcular datos de alerta fin de contrato para cada alquiler en el grid
         $hoy = \Carbon\Carbon::today();
+        $ahora = \Carbon\Carbon::now();
         foreach ($alquileres as $alquiler) {
             $alquiler->mostrarAlertaFin = false;
             $alquiler->diasFinContrato = null;
+            $alquiler->esMismoDia = false;
+            $alquiler->tiempoRestanteHoy = null;
+
+            $alquiler->haExpirado = false;
+            $alquiler->diasExpirado = null;
 
             if (!empty($alquiler->fecha_fin_alquiler)) {
                 $fin = \Carbon\Carbon::parse($alquiler->fecha_fin_alquiler)->startOfDay();
-                if ($fin->gte($hoy)) {
-                    $alquiler->diasFinContrato = (int) $hoy->diffInDays($fin);
-                    $alquiler->mostrarAlertaFin = $alquiler->diasFinContrato <= 30;
+                
+                if ($fin->format('Y-m-d') === $hoy->format('Y-m-d')) {
+                    $alquiler->mostrarAlertaFin = true;
+                    $alquiler->diasFinContrato = 0;
+                } elseif ($fin->gt($hoy)) {
+                    $dias = (int) $hoy->diffInDays($fin);
+                    $alquiler->diasFinContrato = $dias;
+                    $alquiler->mostrarAlertaFin = $dias <= 30;
+                } else {
+                    $alquiler->haExpirado = true;
+                    $alquiler->diasExpirado = (int) $hoy->diffInDays($fin);
+                    $alquiler->mostrarAlertaFin = true;
                 }
             }
         }
@@ -219,8 +234,12 @@ class InquilinoController extends Controller
             $hoy         = Carbon::today();
             $finContrato = Carbon::parse($alquiler->fecha_fin_alquiler)->startOfDay();
 
-            if ($finContrato->gte($hoy)) {
-                $diasParaFinContrato = (int) $hoy->diffInDays($finContrato); // igual que el grid
+            if ($finContrato->format('Y-m-d') === $hoy->format('Y-m-d')) {
+                $proximaFinalizacion = true;
+                $diasParaFinContrato = 0;
+                $fechaFinContrato    = $finContrato->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
+            } elseif ($finContrato->gt($hoy)) {
+                $diasParaFinContrato = (int) $hoy->diffInDays($finContrato);
                 if ($diasParaFinContrato <= 30) {
                     $proximaFinalizacion = true;
                     $fechaFinContrato    = $finContrato->locale('es')->isoFormat('D [de] MMMM [de] YYYY');

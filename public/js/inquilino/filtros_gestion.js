@@ -89,6 +89,11 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(html => {
             contenedorGrid.innerHTML = html;
             contenedorGrid.style.opacity = '1';
+            
+            // Re-ejecutar el temporizador para los nodos recién creados por AJAX
+            if (typeof window.iniciarTemporizadorAlquileres === 'function') {
+                window.iniciarTemporizadorAlquileres();
+            }
         })
         .catch(error => {
             console.error('Error en el filtrado dinámico:', error);

@@ -153,8 +153,14 @@
                         </div>
                         <div class="card-body">
                             <span class="label">CONTRATO PRÓXIMO A FINALIZAR</span>
-                            <span class="valor-kpi dias-fin">{{ $diasParaFinContrato }} días</span>
-                            <p class="nota">Tu contrato vence el <strong>{{ $fechaFinContrato }}</strong>.</p>
+
+                            @if ($diasParaFinContrato === 0)
+                                <span class="valor-kpi dias-fin">HOY</span>
+                                <p class="nota">Vence en <strong class="js-tiempo-restante" data-fecha-fin="{{ $alquiler->fecha_fin_alquiler }}">calculando...</strong>.</p>
+                            @else
+                                <span class="valor-kpi dias-fin">{{ $diasParaFinContrato }} días</span>
+                                <p class="nota">Tu contrato vence el <strong>{{ $fechaFinContrato }}</strong>.</p>
+                            @endif
                             <p class="nota" style="margin-top: 4px;">Contacta con el propietario para renovar o gestionar la salida.</p>
                             <a href="mailto:" class="btn-accion btn-contactar">
                                 <i class="bi bi-envelope"></i> Contactar al Propietario
@@ -291,8 +297,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/miembro/miembro.js') }}"></script>
     <script src="{{ asset('js/inquilino/validacion_incidencia.js') }}"></script>
+    <script src="{{ asset('js/inquilino/inquilino.js') }}"></script>
 </body>
-
-</html>
 
 </html>

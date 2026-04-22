@@ -1,6 +1,9 @@
 @forelse ($alquileres as $alquiler)
 <article class="tarjeta-propiedad-gestion">
-    <div class="banner-propiedad" style="background-image: url('{{ $alquiler->ruta_foto ? asset('public/img/' . $alquiler->ruta_foto) : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80' }}'); background-size: cover; background-position: center;">
+    @php
+        $bannerFoto = $alquiler->ruta_foto ? asset('public/img/' . $alquiler->ruta_foto) : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
+    @endphp
+    <div class="banner-propiedad" style="<?php echo 'background-image: url(\'' . e($bannerFoto) . '\'); background-size: cover; background-position: center;'; ?>">
         <span class="badge-estado-inquilino">{{ ucfirst(str_replace('_', ' ', $alquiler->estado_alquiler)) }}</span>
     </div>
     <div class="info-propiedad-gestion">
@@ -25,13 +28,15 @@
         @if(($alquiler->pago_atrasado ?? 0) > 0)
         <div class="alerta-pago-atrasado">
             <i class="bi bi-exclamation-triangle-fill"></i>
-            <span>El plazo del pago ha expirado, paga lo antes posible.</span>
+            <span>
+                Tienes <strong>{{ $alquiler->pago_atrasado }} meses</strong> de retraso.
+            </span>
         </div>
         @endif
 
         @if ($alquiler->mostrarAlertaFin)
-        <div class="alerta-fin-contrato" @if($alquiler->haExpirado) style="background: #fff5f5; border-color: #fca5a5; color: #b91c1c;" @endif>
-            <i class="bi bi-clock-history" @if($alquiler->haExpirado) style="color: #ef4444;" @endif></i>
+        <div class="alerta-fin-contrato {{ $alquiler->haExpirado ? 'estado-expirado' : '' }}">
+            <i class="bi bi-clock-history"></i>
             @if ($alquiler->haExpirado)
             <span>El contrato ha expirado (hace <strong>{{ $alquiler->diasExpirado }} días</strong>). Tienes una semana para contactar al propietario y solucionar el inconveniente en el caso que quieras renovar el contrato.</span>
             @elseif ($alquiler->diasFinContrato === 0)

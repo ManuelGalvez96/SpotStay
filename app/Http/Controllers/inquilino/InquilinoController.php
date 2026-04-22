@@ -84,15 +84,15 @@ class InquilinoController extends Controller
         // 3. Incidencias Totales Activas (de las propiedades del usuario)
         $totalIncidencias = DB::table('tbl_incidencia')
             ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_incidencia.id_propiedad_fk')
-            ->leftJoin('tbl_alquiler', function($join) use ($userId) {
+            ->leftJoin('tbl_alquiler', function ($join) use ($userId) {
                 $join->on('tbl_alquiler.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad')
-                     ->where('tbl_alquiler.id_inquilino_fk', '=', $userId)
-                     ->where('tbl_alquiler.estado_alquiler', '=', 'activo');
+                    ->where('tbl_alquiler.id_inquilino_fk', '=', $userId)
+                    ->where('tbl_alquiler.estado_alquiler', '=', 'activo');
             })
             ->whereIn('tbl_incidencia.estado_incidencia', ['abierta', 'en_proceso'])
             ->where(function ($query) use ($userId) {
                 $query->where('tbl_propiedad.id_arrendador_fk', $userId)
-                      ->orWhereNotNull('tbl_alquiler.id_alquiler');
+                    ->orWhereNotNull('tbl_alquiler.id_alquiler');
             })
             ->count(DB::raw('DISTINCT tbl_incidencia.id_incidencia'));
 
@@ -111,7 +111,7 @@ class InquilinoController extends Controller
             // Excluir contratos cuya fecha de fin ya ha pasado más de 7 días
             ->where(function ($qb) {
                 $qb->whereNull('tbl_alquiler.fecha_fin_alquiler')
-                   ->orWhereRaw('tbl_alquiler.fecha_fin_alquiler >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)');
+                    ->orWhereRaw('tbl_alquiler.fecha_fin_alquiler >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)');
             });
 
         // Aplicar filtros dinámicos
@@ -124,15 +124,16 @@ class InquilinoController extends Controller
         }
 
         $alquileres = $query->select(
-                'tbl_propiedad.*',
-                DB::raw('MIN(tbl_fotos.ruta_foto) as ruta_foto'),
-                DB::raw('MIN(tbl_alquiler.id_alquiler) as id_alquiler'),
-                DB::raw('MIN(tbl_alquiler.estado_alquiler) as estado_alquiler'),
-                DB::raw('MIN(CASE WHEN tbl_alquiler.id_inquilino_fk = ' . $userId . ' THEN tbl_alquiler.fecha_fin_alquiler END) as fecha_fin_alquiler'),
-                DB::raw('(SELECT COUNT(*) FROM tbl_incidencia WHERE id_propiedad_fk = tbl_propiedad.id_propiedad AND estado_incidencia IN ("abierta", "en_proceso")) as total_incidencias_propiedad'),
-                DB::raw('(SELECT COUNT(*) FROM tbl_alquiler_cuota c INNER JOIN tbl_alquiler a ON a.id_alquiler = c.id_alquiler_fk WHERE a.id_propiedad_fk = tbl_propiedad.id_propiedad AND a.id_inquilino_fk = ' . $userId . ' AND c.estado = "atrasado") as pago_atrasado'),
-                DB::raw('(SELECT c.id_alquiler_cuota FROM tbl_alquiler_cuota c INNER JOIN tbl_alquiler a ON a.id_alquiler = c.id_alquiler_fk WHERE a.id_propiedad_fk = tbl_propiedad.id_propiedad AND a.id_inquilino_fk = ' . $userId . ' AND c.estado IN ("pendiente", "atrasado") ORDER BY c.mes_cuota ASC LIMIT 1) as cuota_pendiente_id')
-            )
+            'tbl_propiedad.*',
+            DB::raw('MIN(tbl_fotos.ruta_foto) as ruta_foto'),
+            DB::raw('MIN(tbl_alquiler.id_alquiler) as id_alquiler'),
+            DB::raw('MIN(tbl_alquiler.estado_alquiler) as estado_alquiler'),
+            DB::raw('MIN(CASE WHEN tbl_alquiler.id_inquilino_fk = ' . $userId . ' THEN tbl_alquiler.fecha_fin_alquiler END) as fecha_fin_alquiler'),
+            DB::raw('(SELECT COUNT(*) FROM tbl_incidencia WHERE id_propiedad_fk = tbl_propiedad.id_propiedad AND estado_incidencia IN ("abierta", "en_proceso")) as total_incidencias_propiedad'),
+            DB::raw('(SELECT COUNT(*) FROM tbl_alquiler_cuota c INNER JOIN tbl_alquiler a ON a.id_alquiler = c.id_alquiler_fk WHERE a.id_propiedad_fk = tbl_propiedad.id_propiedad AND a.id_inquilino_fk = ' . $userId . ' AND c.estado = "atrasado") as pago_atrasado'),
+            DB::raw('(SELECT c.id_alquiler_cuota FROM tbl_alquiler_cuota c INNER JOIN tbl_alquiler a ON a.id_alquiler = c.id_alquiler_fk WHERE a.id_propiedad_fk = tbl_propiedad.id_propiedad AND a.id_inquilino_fk = ' . $userId . ' AND c.estado IN ("pendiente", "atrasado") ORDER BY c.mes_cuota ASC LIMIT 1) as cuota_pendiente_id'),
+            DB::raw('(SELECT IFNULL(SUM(c.importe_base), 0) FROM tbl_alquiler_cuota c INNER JOIN tbl_alquiler a ON a.id_alquiler = c.id_alquiler_fk WHERE a.id_propiedad_fk = tbl_propiedad.id_propiedad AND a.id_inquilino_fk = ' . $userId . ' AND c.estado IN ("pendiente", "atrasado")) as total_deuda')
+        )
             ->groupBy('tbl_propiedad.id_propiedad')
             ->get();
 
@@ -150,7 +151,7 @@ class InquilinoController extends Controller
 
             if (!empty($alquiler->fecha_fin_alquiler)) {
                 $fin = \Carbon\Carbon::parse($alquiler->fecha_fin_alquiler)->startOfDay();
-                
+
                 if ($fin->format('Y-m-d') === $hoy->format('Y-m-d')) {
                     $alquiler->mostrarAlertaFin = true;
                     $alquiler->diasFinContrato = 0;
@@ -160,7 +161,7 @@ class InquilinoController extends Controller
                     $alquiler->mostrarAlertaFin = $dias <= 30;
                 } else {
                     $alquiler->haExpirado = true;
-                    $alquiler->diasExpirado = (int) $hoy->diffInDays($fin);
+                    $alquiler->diasExpirado = abs((int) $hoy->diffInDays($fin, false));
                     $alquiler->mostrarAlertaFin = true;
                 }
             }
@@ -241,9 +242,13 @@ class InquilinoController extends Controller
         $proximaFinalizacion = false;
         $diasParaFinContrato = null;
         $fechaFinContrato    = null;
+        $esIndefinido        = false;
+        $diasRestantesMes    = null;
+        $estadoPagoActual    = 'pendiente';
+
+        $hoy = Carbon::today();
 
         if (!empty($alquiler->fecha_fin_alquiler)) {
-            $hoy         = Carbon::today();
             $finContrato = Carbon::parse($alquiler->fecha_fin_alquiler)->startOfDay();
 
             if ($finContrato->format('Y-m-d') === $hoy->format('Y-m-d')) {
@@ -256,24 +261,57 @@ class InquilinoController extends Controller
                     $proximaFinalizacion = true;
                     $fechaFinContrato    = $finContrato->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
                 }
+            } else {
+                // Ha expirado (fin en el pasado)
+                $proximaFinalizacion = true;
+                $diasParaFinContrato = -1 * (int) $finContrato->diffInDays($hoy);
+                $fechaFinContrato    = $finContrato->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
             }
+        } else {
+            // CONTRATO INDEFINIDO
+            $esIndefinido = true;
+            $finDeMes = $hoy->copy()->endOfMonth()->startOfDay();
+            $diasRestantesMes = (int) $hoy->diffInDays($finDeMes);
         }
 
-            // 4. Próximo pago basado en cuotas de alquiler
-            $proximoPago = AlquilerCuota::query()
+        // 4. Próximo pago (basado en cuotas de alquiler)
+        $pagosPendientes = AlquilerCuota::query()
             ->where('id_alquiler_fk', $alquiler->id_alquiler)
-                ->whereIn('estado', ['pendiente', 'atrasado'])
+            ->whereIn('estado', ['pendiente', 'atrasado'])
             ->orderBy('mes_cuota', 'asc')
-            ->first();
+            ->get();
+
+        $inicioMesActual = Carbon::now()->startOfMonth()->toDateString();
+        $numPagosAtrasados = $pagosPendientes->where('mes_cuota', '<', $inicioMesActual)->count();
+
+        $totalDeuda = 0;
+        $proximoPago = $pagosPendientes->first();
 
         if ($proximoPago && $proximoPago->mes_cuota) {
             $fechaPago = Carbon::parse($proximoPago->mes_cuota)->day(1);
             $diasParaPago = Carbon::now()->diffInDays($fechaPago, false);
             $diasParaPago = $diasParaPago < 0 ? 0 : round($diasParaPago);
             $fechaProximoPago = $fechaPago->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
+            
+            // Verificamos si el pago pendiente es de este mes (o anterior) o de un mes futuro
+            $mesActualStr = Carbon::now()->format('Y-m');
+            $mesPagoStr = $fechaPago->format('Y-m');
+            
+            if ($mesPagoStr > $mesActualStr) {
+                // El recibo pendiente es para el futuro, así que el mes actual está pagado
+                $estadoPagoActual = 'pagado';
+                $totalDeuda = 0; // Si el mes actual está pagado, no hay deuda "acumulada" exigible hoy
+            } else {
+                // El recibo pendiente es de este mes o de meses pasados (deuda acumulada)
+                $estadoPagoActual = 'pendiente';
+                // Sumamos todos los pagos pendientes hasta hoy
+                $totalDeuda = $pagosPendientes->where('mes_cuota', '<=', Carbon::now()->endOfMonth()->format('Y-m-d'))->sum('importe_base');
+            }
         } else {
+            $totalDeuda = 0;
             $diasParaPago = 0;
             $fechaProximoPago = Carbon::now()->addMonth()->day(1)->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
+            $estadoPagoActual = 'pagado';
         }
 
         // 4. Incidencias (Todas las de la propiedad)
@@ -294,6 +332,11 @@ class InquilinoController extends Controller
             'proximaFinalizacion' => $proximaFinalizacion,
             'diasParaFinContrato' => $diasParaFinContrato,
             'fechaFinContrato'    => $fechaFinContrato,
+            'esIndefinido'        => $esIndefinido,
+            'diasRestantesMes'    => $diasRestantesMes,
+            'estadoPagoActual'    => $estadoPagoActual,
+            'numPagosAtrasados'   => $numPagosAtrasados,
+            'totalDeuda'          => $totalDeuda,
             'incidencias'         => $incidencias,
             'esInquilino'         => true,
             'pdfEjemplo'          => 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'

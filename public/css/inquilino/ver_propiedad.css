@@ -404,3 +404,30 @@
 	color: var(--primario);
 }
 
+/* ===== ESTADOS DE PAGO (INDEFINIDO) ===== */
+.pago-requerido {
+	color: #b91c1c !important;
+}
+
+.bg-pago-requerido {
+	background-color: #b91c1c !important;
+	border-color: #b91c1c !important;
+}
+
+.pago-exito {
+	color: #059669 !important;
+}
+
+.icono-check-pago {
+	font-size: 1.5rem;
+}
+
+.pago-aviso {
+	color: #b45309 !important;
+}
+
+.mt-10 {
+	margin-top: 10px;
+}
+
+

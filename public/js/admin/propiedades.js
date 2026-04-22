@@ -4,6 +4,7 @@
 
 var csrfToken;
 var paginaActual = 1;
+var totalPaginas = 1;
 
 /* ── window.onload ── */
 window.onload = function() {
@@ -12,6 +13,7 @@ window.onload = function() {
     asignarEventosTabla();
     asignarEventosModal();
     asignarEventosPaginacion();
+    filtrarPropiedades(1);
 };
 
 /* ── Asignar eventos a filtros ── */
@@ -22,50 +24,74 @@ var asignarEventosFiltros = function() {
     var buscadorPropiedades = document.getElementById('buscadorPropiedades');
 
     selectEstado.onchange = function() {
-        filtrarPropiedades();
+        filtrarPropiedades(1);
     };
 
     selectCiudad.onchange = function() {
-        filtrarPropiedades();
+        filtrarPropiedades(1);
     };
 
     selectPrecio.onchange = function() {
-        filtrarPropiedades();
+        filtrarPropiedades(1);
     };
 
-    buscadorPropiedades.onblur = function() {
-        filtrarPropiedades();
-    };
-
-    buscadorPropiedades.onkeyup = function() {
-        if (buscadorPropiedades.value.length === 0) {
-            filtrarPropiedades();
-        }
+    buscadorPropiedades.oninput = function() {
+        filtrarPropiedades(1);
     };
 };
 
 /* ── Filtrar propiedades ── */
-var filtrarPropiedades = function() {
+var filtrarPropiedades = function(pagina) {
     var estado = document.getElementById('selectEstado').value;
     var ciudad = document.getElementById('selectCiudad').value;
     var precio = document.getElementById('selectPrecio').value;
     var busqueda = document.getElementById('buscadorPropiedades').value.toLowerCase();
+    var paginaObjetivo = pagina || 1;
 
-    var url = '/admin/propiedades/filtrar?estado=' + encodeURIComponent(estado) + 
-              '&ciudad=' + encodeURIComponent(ciudad) + 
-              '&precio=' + encodeURIComponent(precio) + 
-              '&q=' + encodeURIComponent(busqueda);
+    var params = new URLSearchParams({
+        estado: estado,
+        ciudad: ciudad,
+        precio: precio,
+        q: busqueda,
+        page: paginaObjetivo
+    });
 
-    fetch(url)
+    var url = '/admin/propiedades/filtrar?' + params.toString();
+
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
         .then(function(response) {
+            if (!response.ok) {
+                throw new Error('Error HTTP ' + response.status);
+            }
             return response.json();
         })
         .then(function(data) {
             actualizarTabla(data);
+            actualizarPaginacion(data.currentPage || 1, data.totalPages || 1);
+            actualizarResumenTabla(data.from, data.to, data.total);
         })
         .catch(function(error) {
             console.error('Error al filtrar propiedades:', error);
+            var tbody = document.getElementById('tbodyPropiedades');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#EF4444;">No se pudieron cargar los resultados.</td></tr>';
+            }
         });
+};
+
+var actualizarResumenTabla = function(from, to, total) {
+    var footer = document.querySelector('.tabla-footer span');
+    if (footer) {
+        var inicio = from || 0;
+        var fin = to || 0;
+        var totalRegistros = total || 0;
+        footer.textContent = 'Mostrando ' + inicio + '-' + fin + ' de ' + totalRegistros + ' propiedades';
+    }
 };
 
 /* ── Actualizar tabla ── */
@@ -80,29 +106,41 @@ var actualizarTabla = function(data) {
     var filas = '';
     for (var i = 0; i < propiedades.length; i++) {
         var prop = propiedades[i];
+        var direccion = prop.direccion || '';
+        var ciudad = prop.ciudad || '';
+        var cp = prop.cp || '';
+        var arrendadorNombre = prop.arrendadorNombre || 'Sin arrendador';
+        var estado = prop.estado || 'borrador';
+        var precio = prop.precio || '$0.00/mes';
+        var color = prop.color || '#B8CCE4';
+        var inquilinosActuales = typeof prop.inquilinosActuales === 'number' ? prop.inquilinosActuales : 0;
+        var inquilinosTotales = typeof prop.inquilinosTotales === 'number' ? prop.inquilinosTotales : 1;
+
+        var primeraLineaDireccion = direccion.indexOf(',') >= 0 ? direccion.split(',')[0] : (direccion || 'Sin direccion');
+        var iniciales = arrendadorNombre.split(' ').map(function(n) { return n[0] || ''; }).join('').substring(0, 2).toUpperCase();
         
         var fila = '<tr data-id="' + prop.id + '">' +
             '<td>' +
                 '<div class="propiedad-celda">' +
-                    '<div class="thumb-propiedad" style="background: ' + prop.color + ';"></div>' +
+                    '<div class="thumb-propiedad" style="background: ' + color + ';"></div>' +
                     '<div>' +
-                        '<p class="propiedad-nombre">' + prop.direccion.split(',')[0] + '</p>' +
-                        '<p class="propiedad-ciudad">' + prop.ciudad + ', ' + prop.cp + '</p>' +
+                        '<p class="propiedad-nombre">' + primeraLineaDireccion + '</p>' +
+                        '<p class="propiedad-ciudad">' + ciudad + ', ' + cp + '</p>' +
                     '</div>' +
                 '</div>' +
             '</td>' +
             '<td>' +
                 '<div style="display: flex; align-items: center; gap: 8px;">' +
-                    '<div class="avatar-tabla" style="background: ' + prop.color + '; width: 28px; height: 28px;">' + 
-                        prop.arrendadorNombre.split(' ').map(function(n) { return n[0]; }).join('') +
+                    '<div class="avatar-tabla" style="background: ' + color + '; width: 28px; height: 28px;">' + 
+                        iniciales +
                     '</div>' +
-                    '<span style="font-size: 13px;">' + prop.arrendadorNombre + '</span>' +
+                    '<span style="font-size: 13px;">' + arrendadorNombre + '</span>' +
                 '</div>' +
             '</td>' +
-            '<td><span class="badge-estado badge-' + prop.estado + '">' + 
-                prop.estado.charAt(0).toUpperCase() + prop.estado.slice(1) + '</span></td>' +
-            '<td><span class="precio-propiedad">' + prop.precio + '</span></td>' +
-            '<td>' + prop.inquilinosActuales + ' / ' + prop.inquilinosTotales + '</td>' +
+            '<td><span class="badge-estado badge-' + estado + '">' + 
+                estado.charAt(0).toUpperCase() + estado.slice(1) + '</span></td>' +
+            '<td><span class="precio-propiedad">' + precio + '</span></td>' +
+            '<td>' + inquilinosActuales + ' / ' + inquilinosTotales + '</td>' +
             '<td>' +
                 '<div class="acciones-tabla">' +
                     '<button class="btn-accion btn-ver" data-id="' + prop.id + '" title="Ver detalle">' +
@@ -119,6 +157,10 @@ var actualizarTabla = function(data) {
             '</tr>';
 
         filas += fila;
+    }
+
+    if (filas.length === 0) {
+        filas = '<tr><td colspan="6" style="text-align:center; color:#6B7280;">No se encontraron propiedades.</td></tr>';
     }
 
     tbody.innerHTML = filas;
@@ -374,41 +416,58 @@ var asignarEventosPaginacion = function() {
 
 /* ── Cambiar página ── */
 var cambiarPagina = function(numero) {
+    if (numero < 1 || numero > totalPaginas) {
+        return;
+    }
+
     paginaActual = numero;
+    filtrarPropiedades(numero);
 
-    var url = '/admin/propiedades?pagina=' + numero;
-
-    fetch(url)
-        .then(function(response) {
-            return response.json();
-        })
-        .then(function(data) {
-            actualizarTabla(data);
-            actualizarPaginacion(numero, data.totalPaginas || 3);
-            var tabla = document.getElementById('tablaPropiedades');
-            tabla.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        })
-        .catch(function(error) {
-            console.error('Error:', error);
-        });
+    var tabla = document.getElementById('tablaPropiedades');
+    if (tabla) {
+        tabla.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 };
 
 /* ── Actualizar paginación ── */
-var actualizarPaginacion = function(paginaActiva, totalPaginas) {
+var actualizarPaginacion = function(paginaActiva, totalPaginasNuevas) {
+    paginaActual = paginaActiva;
+    totalPaginas = totalPaginasNuevas;
+
+    var contenedor = document.getElementById('paginas');
+    if (!contenedor) {
+        return;
+    }
+
+    var html = '';
+    for (var i = 1; i <= totalPaginasNuevas; i++) {
+        var clase = i === paginaActiva ? 'pag-numero activo' : 'pag-numero';
+        html += '<button class="' + clase + '" data-pagina="' + i + '">' + i + '</button>';
+    }
+
+    contenedor.innerHTML = html;
+
     var botonesPagina = document.querySelectorAll('.pag-numero');
-    for (var i = 0; i < botonesPagina.length; i++) {
-        var pagina = parseInt(botonesPagina[i].getAttribute('data-pagina'));
-        if (pagina === paginaActiva) {
-            botonesPagina[i].classList.add('activo');
-        } else {
-            botonesPagina[i].classList.remove('activo');
-        }
+    for (var j = 0; j < botonesPagina.length; j++) {
+        botonesPagina[j].onclick = function() {
+            var pagina = parseInt(this.getAttribute('data-pagina'));
+            cambiarPagina(pagina);
+        };
+    }
+
+    var btnAnterior = document.getElementById('btnAnterior');
+    var btnSiguiente = document.getElementById('btnSiguiente');
+    if (btnAnterior) {
+        btnAnterior.disabled = paginaActiva <= 1;
+    }
+    if (btnSiguiente) {
+        btnSiguiente.disabled = paginaActiva >= totalPaginasNuevas;
     }
 };
 
 /* ── Botón añadir propiedad ── */
 document.getElementById('btnAniadirPropiedad').onclick = function() {
-    console.log('Abrir modal nueva propiedad');
+    window.location.href = '/admin/propiedades/nueva';
 };
 
 /* ── Botón exportar ── */

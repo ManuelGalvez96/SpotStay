@@ -18,65 +18,6 @@
 </head>
 <body>
     <div class="dashboard-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="logo">
-                <img src="https://firebasestorage.googleapis.com/v0/b/banani-prod.appspot.com/o/reference-images%2F33506986-ca37-4e67-98fe-bd56178669bd?alt=media&token=1a48934b-52b6-429c-ad03-7f55dcaf5bf0" alt="SpotStay Logo" />
-                <span class="logo-text">SpotStay</span>
-            </div>
-            
-            <nav class="sidebar-nav">
-                <li class="sidebar-nav-item">
-                    <a href="#" class="sidebar-nav-link active">
-                        <span class="nav-icon">📊</span>
-                        Dashboard
-                    </a>
-                </li>
-                <li class="sidebar-nav-item">
-                    <a href="#" class="sidebar-nav-link">
-                        <span class="nav-icon">🏠</span>
-                        Publicar Propiedad
-                    </a>
-                </li>
-                <li class="sidebar-nav-item">
-                    <a href="#" class="sidebar-nav-link">
-                        <span class="nav-icon">📋</span>
-                        Aplicaciones
-                    </a>
-                </li>
-                <li class="sidebar-nav-item">
-                    <a href="#" class="sidebar-nav-link">
-                        <span class="nav-icon">💰</span>
-                        Precios y Gastos
-                    </a>
-                </li>
-                <li class="sidebar-nav-item">
-                    <a href="#" class="sidebar-nav-link">
-                        <span class="nav-icon">👥</span>
-                        Inquilinos
-                    </a>
-                </li>
-                <li class="sidebar-nav-item">
-                    <a href="#" class="sidebar-nav-link">
-                        <span class="nav-icon">💬</span>
-                        Mensajes
-                    </a>
-                </li>
-                <li class="sidebar-nav-item">
-                    <a href="#" class="sidebar-nav-link">
-                        <span class="nav-icon">📄</span>
-                        Contratos
-                    </a>
-                </li>
-                <li class="sidebar-nav-item">
-                    <a href="#" class="sidebar-nav-link">
-                        <span class="nav-icon">⚙️</span>
-                        Gestor Inmobiliario
-                    </a>
-                </li>
-            </nav>
-        </aside>
-        
         <!-- Main Content -->
         <main class="main-content">
             <!-- Top Bar -->
@@ -88,33 +29,34 @@
                     </div>
                 </div>
                 <div class="user-menu">
+                    <a class="btn btn-outline btn-sm" href="{{ route('logout') }}">Cerrar sesion</a>
                     <span>🔔</span>
-                    <div class="user-avatar">A</div>
+                    <div class="user-avatar">{{ $avatarInicial }}</div>
                 </div>
             </div>
             
             <!-- Dashboard Header -->
             <div class="dashboard-header">
-                <h1 class="dashboard-title">Bienvenido, Arrendador</h1>
+                <h1 class="dashboard-title">Bienvenido, {{ $arrendador->nombre_usuario ?? 'Arrendador' }}</h1>
                 <p class="dashboard-subtitle">Gestiona tus propiedades y tenants desde aquí</p>
             </div>
             
             <!-- Stats Grid -->
             <div class="stats-grid">
                 <div class="stat-box">
-                    <div class="stat-value">5</div>
+                    <div class="stat-value">{{ number_format($propiedadesActivas, 0, ',', '.') }}</div>
                     <div class="stat-label">Propiedades Activas</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-value">12</div>
+                    <div class="stat-value">{{ number_format($inquilinosActivos, 0, ',', '.') }}</div>
                     <div class="stat-label">Inquilinos Activos</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-value">$8,450</div>
+                    <div class="stat-value">{{ number_format($ingresosEsteMes, 2, ',', '.') }} €</div>
                     <div class="stat-label">Ingresos Este Mes</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-value">3</div>
+                    <div class="stat-value">{{ number_format($solicitudesPendientes, 0, ',', '.') }}</div>
                     <div class="stat-label">Solicitudes Pendientes</div>
                 </div>
             </div>
@@ -133,7 +75,7 @@
                         Agrega una nueva propiedad a tu portafolio y comienza a recibir solicitudes de inquilinos.
                     </p>
                     <div class="card-footer">
-                        <button class="btn btn-primary btn-sm">Publicar Propiedad</button>
+                        <a class="btn btn-primary btn-sm" href="{{ route('arrendador.propiedades', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Publicar Propiedad</a>
                     </div>
                 </div>
 
@@ -142,14 +84,14 @@
                     <div class="card-header">
                         <div class="card-icon">📋</div>
                         <div>
-                            <div class="card-title">Gestionar Aplicaciones</div>
+                            <div class="card-title">Gestionar Solicitudes de Alquiler</div>
                         </div>
                     </div>
                     <p class="card-description">
-                        Revisa y gestiona todas las solicitudes de alquiler de posibles inquilinos.
+                        Revisa y gestiona las solicitudes de alquiler de posibles inquilinos.
                     </p>
                     <div class="card-footer">
-                        <button class="btn btn-outline btn-sm">Ver Aplicaciones (3)</button>
+                        <a class="btn btn-outline btn-sm" href="{{ route('arrendador.solicitudes', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Ver Solicitudes ({{ $solicitudesPendientes }})</a>
                     </div>
                 </div>
 
@@ -165,7 +107,7 @@
                         Define el precio del alquiler, gastos adicionales y otras tarifas.
                     </p>
                     <div class="card-footer">
-                        <button class="btn btn-outline btn-sm">Configurar Precios</button>
+                        <a class="btn btn-outline btn-sm" href="{{ route('arrendador.precios-gastos', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Configurar Precios</a>
                     </div>
                 </div>
 
@@ -181,7 +123,7 @@
                         Consulta datos de contacto, historial y documentos de tus inquilinos.
                     </p>
                     <div class="card-footer">
-                        <button class="btn btn-outline btn-sm">Ver Inquilinos</button>
+                        <a class="btn btn-outline btn-sm" href="{{ route('arrendador.inquilinos', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Ver Inquilinos</a>
                     </div>
                 </div>
 
@@ -197,7 +139,7 @@
                         Comunícate directamente con tus inquilinos a través de mensajes integrados.
                     </p>
                     <div class="card-footer">
-                        <button class="btn btn-outline btn-sm">Abrir Mensajes</button>
+                        <a class="btn btn-outline btn-sm" href="{{ route('arrendador.mensajes', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Abrir Mensajes</a>
                     </div>
                 </div>
 
@@ -213,7 +155,7 @@
                         Genera, firma y descarga contratos de alquiler en formato digital.
                     </p>
                     <div class="card-footer">
-                        <button class="btn btn-outline btn-sm">Gestionar Contratos</button>
+                        <a class="btn btn-outline btn-sm" href="{{ route('arrendador.contratos', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Gestionar Contratos</a>
                     </div>
                 </div>
 
@@ -229,7 +171,7 @@
                         Define y gestiona tu gestor inmobiliario para administração de tus propiedades.
                     </p>
                     <div class="card-footer">
-                        <button class="btn btn-outline btn-sm">Configurar Gestor</button>
+                        <a class="btn btn-outline btn-sm" href="{{ route('arrendador.gestor', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Configurar Gestor</a>
                     </div>
                 </div>
             </div>
@@ -239,7 +181,7 @@
                 <div class="section-header">
                     <h2 class="section-title">Últimas Solicitudes</h2>
                     <div class="section-actions">
-                        <button class="btn btn-outline btn-sm">Ver Todas</button>
+                        <a class="btn btn-outline btn-sm" href="{{ route('arrendador.solicitudes', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Ver todas las solicitudes</a>
                     </div>
                 </div>
                 
@@ -255,39 +197,31 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Apartamento Centro - Apt 301</td>
-                                <td>Juan González</td>
-                                <td>
-                                    <span class="table-status status-pending">Pendiente</span>
-                                </td>
-                                <td>14 Abr 2026</td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline">Revisar</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Casa Familia - 3 Hab</td>
-                                <td>María López</td>
-                                <td>
-                                    <span class="table-status status-active">Aprobado</span>
-                                </td>
-                                <td>12 Abr 2026</td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline">Detalles</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Estudio Moderno - Barrio Norte</td>
-                                <td>Carlos Ruiz</td>
-                                <td>
-                                    <span class="table-status status-pending">Pendiente</span>
-                                </td>
-                                <td>10 Abr 2026</td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline">Revisar</button>
-                                </td>
-                            </tr>
+                            @forelse ($ultimasSolicitudes as $solicitud)
+                                @php
+                                    $estado = strtolower($solicitud->estado_alquiler ?? 'pendiente');
+                                    $esActivo = in_array($estado, ['activo', 'aprobado', 'aprobada'], true);
+                                    $estadoClase = $esActivo ? 'status-active' : 'status-pending';
+                                    $estadoTexto = ucfirst($estado);
+                                @endphp
+                                <tr>
+                                    <td>{{ $solicitud->titulo_propiedad }}</td>
+                                    <td>{{ $solicitud->nombre_solicitante }}</td>
+                                    <td>
+                                        <span class="table-status {{ $estadoClase }}">{{ $estadoTexto }}</span>
+                                    </td>
+                                    <td>
+                                        {{ $solicitud->creado_alquiler ? \Carbon\Carbon::parse($solicitud->creado_alquiler)->format('d/m/Y') : 'Sin fecha' }}
+                                    </td>
+                                    <td>
+                                        <a class="btn btn-sm btn-outline" href="{{ route('arrendador.solicitudes', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Revisar</a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5">No hay solicitudes recientes para este arrendador.</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -303,21 +237,21 @@
                 </div>
                 
                 <div class="message-list">
-                    <div class="message-item">
-                        <div class="message-tenant">Juan González</div>
-                        <div class="message-text">¿Cuál es la política de mascotas para el apartamento?</div>
-                        <div class="message-time">Hace 2 horas</div>
-                    </div>
-                    <div class="message-item">
-                        <div class="message-tenant">María López</div>
-                        <div class="message-text">Gracias por aprobar mi solicitud. ¿Cuándo puedo recoger las llaves?</div>
-                        <div class="message-time">Hace 4 horas</div>
-                    </div>
-                    <div class="message-item">
-                        <div class="message-tenant">Carlos Ruiz</div>
-                        <div class="message-text">Me gustaría visitar la propiedad nuevamente antes de decidirme.</div>
-                        <div class="message-time">Ayer</div>
-                    </div>
+                    @forelse ($mensajesRecientes as $mensaje)
+                        <div class="message-item">
+                            <div class="message-tenant">{{ $mensaje->nombre_usuario }}</div>
+                            <div class="message-text">{{ $mensaje->cuerpo_mensaje }}</div>
+                            <div class="message-time">
+                                {{ $mensaje->creado_mensaje ? \Carbon\Carbon::parse($mensaje->creado_mensaje)->diffForHumans() : 'Reciente' }}
+                            </div>
+                        </div>
+                    @empty
+                        <div class="message-item">
+                            <div class="message-tenant">Sin mensajes</div>
+                            <div class="message-text">Todavía no hay mensajes recientes con inquilinos.</div>
+                            <div class="message-time">-</div>
+                        </div>
+                    @endforelse
                 </div>
             </section>
 
@@ -343,42 +277,29 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Apartamento Centro</td>
-                                <td>Centro Histórico, Madrid</td>
-                                <td>$1,200</td>
-                                <td>Juan González</td>
-                                <td>
-                                    <span class="table-status status-active">Ocupado</span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline">Editar</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Casa Familia</td>
-                                <td>Barrio Residencial</td>
-                                <td>$2,500</td>
-                                <td>María López</td>
-                                <td>
-                                    <span class="table-status status-active">Ocupado</span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline">Editar</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Estudio Moderno</td>
-                                <td>Barrio Norte</td>
-                                <td>$950</td>
-                                <td>Disponible</td>
-                                <td>
-                                    <span class="table-status status-pending">Vacío</span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline">Editar</button>
-                                </td>
-                            </tr>
+                            @forelse ($propiedadesActivasDetalle as $propiedad)
+                                @php
+                                    $ocupada = !empty($propiedad->nombre_inquilino_actual);
+                                @endphp
+                                <tr>
+                                    <td>{{ $propiedad->titulo_propiedad }}</td>
+                                    <td>{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }}</td>
+                                    <td>{{ number_format((float) $propiedad->precio_propiedad, 2, ',', '.') }} €</td>
+                                    <td>{{ $propiedad->nombre_inquilino_actual ?? 'Disponible' }}</td>
+                                    <td>
+                                        <span class="table-status {{ $ocupada ? 'status-active' : 'status-pending' }}">
+                                            {{ $ocupada ? 'Ocupado' : 'Vacío' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline">Editar</button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6">No hay propiedades activas para este arrendador.</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>

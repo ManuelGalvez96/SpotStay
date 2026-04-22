@@ -1,0 +1,161 @@
+.crear-wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding-bottom: 24px;
+}
+
+.crear-toolbar {
+    margin-bottom: 16px;
+}
+
+.crear-hint {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.crear-hint strong {
+    font-size: 14px;
+    color: #111827;
+}
+
+.crear-hint span {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.crear-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: 16px;
+}
+
+.card-crear {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.card-crear .card-header-admin {
+    font-size: 14px;
+}
+
+.card-header-crear {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+}
+
+.card-header-title-crear {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.card-header-title-crear i {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #e8f0fb;
+    color: #035498;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.card-header-title-crear h2 {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #111827;
+}
+
+.card-header-sub-crear {
+    font-size: 11px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+.card-crear .form-grid {
+    padding: 20px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.campo-full {
+    grid-column: 1 / -1;
+}
+
+.form-grid label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 6px;
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: #0f172a;
+    background: #fff;
+}
+
+.form-grid input:focus,
+.form-grid select:focus,
+.form-grid textarea:focus {
+    outline: none;
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.15);
+}
+
+.acciones-form {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+    border-top: 1px solid #eef2f7;
+    padding-top: 14px;
+}
+
+.error-lista {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.btn-exportar,
+.btn-primario {
+    text-decoration: none;
+}
+
+.btn-primario {
+    border: none;
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .crear-kpis {
+        grid-template-columns: 1fr;
+    }
+
+    .card-header-crear {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

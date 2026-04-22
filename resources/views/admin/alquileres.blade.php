@@ -104,10 +104,10 @@
             <i class="bi bi-download"></i>
             <span>Exportar</span>
         </button>
-        <button id="btnNuevoAlquiler" class="btn-primario">
+        <a href="/admin/alquileres/nuevo" id="btnNuevoAlquiler" class="btn-primario">
             <i class="bi bi-plus"></i>
             <span>Nuevo alquiler</span>
-        </button>
+        </a>
     </div>
 </div>
 

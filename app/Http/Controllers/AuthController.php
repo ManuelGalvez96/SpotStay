@@ -80,6 +80,10 @@ class AuthController extends Controller
                 return redirect()->intended('/gestor/dashboard');
             }
 
+            if ($user->roles()->where('slug_rol', 'arrendador')->exists()) {
+                return redirect()->intended('/arrendador/dashboard');
+            }
+
             if ($user->roles()->whereIn('slug_rol', ['miembro', 'inquilino'])->exists()) {
                 return redirect()->intended('/miembro/inicio');
             }
@@ -139,7 +143,7 @@ class AuthController extends Controller
         ]);
 
         // 3. Asignación automática del rol "miembro"
-        $rolMiembro = Rol::where('slug_rol', 'miembro', 'inquilino')->first();
+        $rolMiembro = Rol::where('slug_rol', 'miembro')->first();
         if ($rolMiembro) {
             $usuario->roles()->attach($rolMiembro->id_rol, [
                 'asignado_rol_usuario' => Carbon::now()

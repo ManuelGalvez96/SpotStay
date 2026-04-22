@@ -30,24 +30,62 @@ function iniciarTemporizadorAlquileres() {
         // Diferencia en milisegundos
         let diffMillis = finDelDia - ahora;
 
+        // Calculamos la diferencia absoluta para medir el tiempo (ya sea futuro o pasado)
+        let diffAbsoluta = Math.abs(diffMillis);
+
         if (diffMillis <= 0) {
-            // Ya ha cruzado la medianoche localmente
+            // Ya ha cruzado la medianoche localmente (Expirado)
+            let diasPasados = Math.floor(diffAbsoluta / 86400000);
+
             const alertaGrid = nodo.closest('.contenedor-alerta-js');
             if (alertaGrid) {
                 // Modificamos visualmente el contenedor como si viniera expirado del servidor
                 const cajaExpirada = alertaGrid.closest('.alerta-fin-contrato');
                 if (cajaExpirada) {
-                    cajaExpirada.style.background = '#fff5f5';
-                    cajaExpirada.style.borderColor = '#fca5a5';
-                    cajaExpirada.style.color = '#b91c1c';
-                    const icon = cajaExpirada.querySelector('i');
-                    if (icon) icon.style.color = '#ef4444';
+                    cajaExpirada.classList.add('estado-expirado');
                 }
-                alertaGrid.innerHTML = `El contrato ha expirado (hace <strong>0 días</strong>). Tienes una semana para contactar al propietario y solucionar el inconveniente en el caso que quieras renovar el contrato.`;
+
+                let textoTiempo = "";
+                if (diasPasados >= 1) {
+                    textoTiempo = `hace <strong>${diasPasados} día${diasPasados > 1 ? 's' : ''}</strong>`;
+                } else {
+                    let horas = Math.floor(diffAbsoluta / 3600000);
+                    let minutos = Math.floor((diffAbsoluta % 3600000) / 60000);
+                    textoTiempo = `hace <strong>${horas}h ${minutos}m</strong>`;
+                }
+
+                alertaGrid.innerHTML = `El contrato finalizó ${textoTiempo}. <br>Para mas informacion entra en ver detalles.`;
             } else {
                 // Para ver_propiedad.blade.php
-                nodo.innerText = "¡Contrato expirado!";
-                nodo.style.color = "red";
+                let textoTiempo = diasPasados >= 1
+                    ? `hace ${diasPasados} día${diasPasados > 1 ? 's' : ''}`
+                    : `hace ${Math.floor(diffAbsoluta / 3600000)}h ${Math.floor((diffAbsoluta % 3600000) / 60000)}m`;
+
+                const cardGestion = nodo.closest('.card-gestion');
+                if (cardGestion) {
+                    cardGestion.classList.add('estado-expirado');
+
+                    const label = cardGestion.querySelector('.label');
+                    if (label) {
+                        label.innerText = 'CONTRATO FINALIZADO';
+                    }
+
+                    const valorKpi = cardGestion.querySelector('.valor-kpi');
+                    if (valorKpi) valorKpi.style.display = 'none'; // Ocultar "HOY"
+
+                    // Eliminar el texto "Vence en" y "." del párrafo que contiene el temporizador
+                    const pNota = nodo.closest('p.nota');
+                    if (pNota) {
+                        Array.from(pNota.childNodes).forEach(child => {
+                            if (child.nodeType === Node.TEXT_NODE) {
+                                child.textContent = '';
+                            }
+                        });
+                    }
+                }
+
+                nodo.innerText = `¡El contrato finalizó ${textoTiempo}!`;
+                nodo.classList.add('texto-expirado');
             }
         } else {
             // Calculamos horas y minutos omitiendo segundos para no sobrecargar el dom visual

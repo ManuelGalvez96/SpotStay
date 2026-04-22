@@ -154,17 +154,50 @@
                         <div class="card-body">
                             <span class="label">CONTRATO PRÓXIMO A FINALIZAR</span>
 
-                            @if ($diasParaFinContrato === 0)
+                            @if ($diasParaFinContrato <= 0)
                                 <span class="valor-kpi dias-fin">HOY</span>
                                 <p class="nota">Vence en <strong class="js-tiempo-restante" data-fecha-fin="{{ $alquiler->fecha_fin_alquiler }}">calculando...</strong>.</p>
-                            @else
+                                @else
                                 <span class="valor-kpi dias-fin">{{ $diasParaFinContrato }} días</span>
                                 <p class="nota">Tu contrato vence el <strong>{{ $fechaFinContrato }}</strong>.</p>
+                                @endif
+                                <p class="nota" style="margin-top: 4px;">Contacta con el propietario para renovar o gestionar la salida.</p>
+                                <a href="mailto:" class="btn-accion btn-contactar">
+                                    <i class="bi bi-envelope"></i> Contactar al Propietario
+                                </a>
+                        </div>
+                    </div>
+                    @elseif ($esIndefinido)
+                    {{-- KPI Pagos Indefinido --}}
+                    <div class="card-gestion pago">
+                        <div class="card-icon">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <div class="card-body">
+                            @if ($diasRestantesMes === 0 && $estadoPagoActual === 'pendiente')
+                            <span class="label pago-requerido">¡PAGO REQUERIDO!</span>
+                            <span class="valor-kpi pago-requerido">HOY</span>
+                            @if ($numPagosAtrasados > 0)
+                            <p class="nota pago-requerido"><strong>¡Paga ya!</strong> Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso más este mes (Total: <strong>{{ number_format($totalDeuda, 2, ',', '.') }}€</strong>).</p>
+                            @else
+                            <p class="nota pago-requerido"><strong>¡Paga ya!</strong> El plazo de este mes vence hoy.</p>
                             @endif
-                            <p class="nota" style="margin-top: 4px;">Contacta con el propietario para renovar o gestionar la salida.</p>
-                            <a href="mailto:" class="btn-accion btn-contactar">
-                                <i class="bi bi-envelope"></i> Contactar al Propietario
-                            </a>
+                            <button class="btn-accion btn-pago bg-pago-requerido">Pagar Cuota Ahora</button>
+                            @elseif ($estadoPagoActual === 'pagado')
+                            <span class="label pago-exito">PAGO REALIZADO CON ÉXITO</span>
+                            <span class="valor-kpi pago-exito"><i class="bi bi-check-circle-fill icono-check-pago"></i></span>
+                            <p class="nota pago-exito">Espera al siguiente mes.</p>
+                            <p class="nota mt-10">El siguiente pago empieza en: <strong>{{ $diasRestantesMes + 1 }} días</strong> para el mes que viene.</p>
+                            @else
+                            <span class="label">PRÓXIMO PAGO EN</span>
+                            <span class="valor-kpi">{{ $diasRestantesMes }} días</span>
+                            @if ($numPagosAtrasados > 0)
+                            <p class="nota pago-aviso">⚠️ Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso.<br> El total a pagar (incluyendo este mes) es de <strong>{{ number_format($totalDeuda, 2, ',', '.') }}€</strong>.</p>
+                            @else
+                            <p class="nota">Vence a final de mes.</p>
+                            @endif
+                            <button class="btn-accion btn-pago">Pagar Ahora</button>
+                            @endif
                         </div>
                     </div>
                     @else
@@ -174,10 +207,30 @@
                             <i class="bi bi-calendar-check"></i>
                         </div>
                         <div class="card-body">
+                            @if ($diasParaPago === 0 && $estadoPagoActual === 'pendiente')
+                            <span class="label pago-requerido">¡PAGO REQUERIDO!</span>
+                            <span class="valor-kpi pago-requerido">HOY</span>
+                            @if ($numPagosAtrasados > 0)
+                            <p class="nota pago-requerido"><strong>¡Paga ya!</strong> Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso más este mes (Total: <strong>{{ number_format($totalDeuda, 2, ',', '.') }}€</strong>).</p>
+                            @else
+                            <p class="nota pago-requerido"><strong>¡Paga ya!</strong> El plazo vence hoy.</p>
+                            @endif
+                            <button class="btn-accion btn-pago bg-pago-requerido">Pagar Cuota Ahora</button>
+                            @elseif ($estadoPagoActual === 'pagado')
+                            <span class="label pago-exito">PAGO REALIZADO CON ÉXITO</span>
+                            <span class="valor-kpi pago-exito"><i class="bi bi-check-circle-fill icono-check-pago"></i></span>
+                            <p class="nota pago-exito">Vence el {{ $fechaProximoPago }}</p>
+                            <p class="nota mt-10">Estado de cuenta: <strong>Al día</strong></p>
+                            @else
                             <span class="label">PRÓXIMO PAGO EN</span>
                             <span class="valor-kpi">{{ $diasParaPago }} días</span>
+                            @if ($numPagosAtrasados > 0)
+                            <p class="nota pago-aviso">⚠️ Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso. Se acumulará un total de <strong>{{ number_format($totalDeuda, 2, ',', '.') }}€</strong>.</p>
+                            @else
                             <p class="nota">Vence el {{ $fechaProximoPago }}</p>
+                            @endif
                             <button class="btn-accion btn-pago">Pagar Cuota Ahora</button>
+                            @endif
                         </div>
                     </div>
                     @endif

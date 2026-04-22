@@ -53,7 +53,67 @@ class PagoSeeder extends Seeder
                 ]);
             }
 
-            // --- 2. Pago pendiente del próximo mes (el que mostrará el contador) ---
+            // --- 1.5. Lógica personalizada para pruebas de María García ---
+            $tituloPropiedad = DB::table('tbl_propiedad')
+                ->where('id_propiedad', $alquiler->id_propiedad_fk)
+                ->value('titulo_propiedad');
+                
+            if ($tituloPropiedad === 'Piso en Calle Mayor') {
+                // TODO PAGADO: Insertamos este mes como pagado
+                $mesActual = Carbon::now()->day(1)->format('Y-m-01');
+                DB::table('tbl_pago')->insert([
+                    'id_alquiler_fk'          => $alquiler->id_alquiler,
+                    'id_pagador_fk'           => $inquilinoId,
+                    'tipo_pago'               => 'renta',
+                    'concepto_pago'           => 'Renta mensual ' . Carbon::now()->translatedFormat('F Y'),
+                    'importe_pago'            => $precio,
+                    'mes_pago'                => $mesActual,
+                    'estado_pago'             => 'pagado',
+                    'referencia_pago'         => 'REF-' . $alquiler->id_alquiler . '-' . strtoupper(substr(md5(rand()), 0, 6)),
+                    'fecha_confirmacion_pago' => Carbon::now()->day($diaPago),
+                    'creado_pago'             => now(),
+                    'actualizado_pago'        => now(),
+                ]);
+            } elseif ($tituloPropiedad === 'Piso Av. Diagonal') {
+                // DEUDA 1 MES: Insertamos este mes como pendiente
+                $mesActual = Carbon::now()->day(1)->format('Y-m-01');
+                DB::table('tbl_pago')->insert([
+                    'id_alquiler_fk'          => $alquiler->id_alquiler,
+                    'id_pagador_fk'           => $inquilinoId,
+                    'tipo_pago'               => 'renta',
+                    'concepto_pago'           => 'Renta mensual ' . Carbon::now()->translatedFormat('F Y'),
+                    'importe_pago'            => $precio,
+                    'mes_pago'                => $mesActual,
+                    'estado_pago'             => 'pendiente',
+                    'referencia_pago'         => 'REF-' . $alquiler->id_alquiler . '-' . strtoupper(substr(md5(rand()), 0, 6)),
+                    'fecha_confirmacion_pago' => null,
+                    'creado_pago'             => now(),
+                    'actualizado_pago'        => now(),
+                ]);
+            } elseif ($tituloPropiedad === 'Piso Valencia') {
+                // DEUDA ACUMULADA: Marzo y Abril pendientes
+                $meses = [
+                    Carbon::now()->subMonth()->day(1)->format('Y-m-01'),
+                    Carbon::now()->day(1)->format('Y-m-01')
+                ];
+                foreach ($meses as $mes) {
+                    DB::table('tbl_pago')->insert([
+                        'id_alquiler_fk'          => $alquiler->id_alquiler,
+                        'id_pagador_fk'           => $inquilinoId,
+                        'tipo_pago'               => 'renta',
+                        'concepto_pago'           => 'Renta mensual ' . Carbon::parse($mes)->translatedFormat('F Y'),
+                        'importe_pago'            => $precio,
+                        'mes_pago'                => $mes,
+                        'estado_pago'             => 'pendiente',
+                        'referencia_pago'         => 'REF-' . $alquiler->id_alquiler . '-' . strtoupper(substr(md5(rand()), 0, 6)),
+                        'fecha_confirmacion_pago' => null,
+                        'creado_pago'             => now(),
+                        'actualizado_pago'        => now(),
+                    ]);
+                }
+            }
+
+            // --- 2. Pago pendiente del próximo mes ---
             // Calculamos el 1 del próximo mes y le sumamos los días extra para dar variedad
             // Ej: si diaPago = 15 → pago vence el 15 del mes que viene (min ~31 días)
             $fechaProximoPago = Carbon::now()->addMonth()->day(1)->format('Y-m-01');

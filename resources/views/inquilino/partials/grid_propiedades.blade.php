@@ -25,13 +25,15 @@
         @if(($alquiler->pago_atrasado ?? 0) > 0)
         <div class="alerta-pago-atrasado">
             <i class="bi bi-exclamation-triangle-fill"></i>
-            <span>El plazo del pago ha expirado, paga lo antes posible.</span>
+            <span>
+                Tienes <strong>{{ $alquiler->pago_atrasado }} meses</strong> de retraso.
+            </span>
         </div>
         @endif
 
         @if ($alquiler->mostrarAlertaFin)
-        <div class="alerta-fin-contrato" @if($alquiler->haExpirado) style="background: #fff5f5; border-color: #fca5a5; color: #b91c1c;" @endif>
-            <i class="bi bi-clock-history" @if($alquiler->haExpirado) style="color: #ef4444;" @endif></i>
+        <div class="alerta-fin-contrato {{ $alquiler->haExpirado ? 'estado-expirado' : '' }}">
+            <i class="bi bi-clock-history"></i>
             @if ($alquiler->haExpirado)
             <span>El contrato ha expirado (hace <strong>{{ $alquiler->diasExpirado }} días</strong>). Tienes una semana para contactar al propietario y solucionar el inconveniente en el caso que quieras renovar el contrato.</span>
             @elseif ($alquiler->diasFinContrato === 0)
@@ -53,7 +55,7 @@
         <div class="acciones-gestion">
             <a href="{{ route('inquilino.ver_propiedad', $alquiler->id_propiedad) }}" class="btn-inquilino btn-secundario">Ver Detalles</a>
             @if ($alquiler->mostrarAlertaFin || $alquiler->estado_alquiler != 'activo')
-            <a href="mailto:" class="btn-inquilino btn-secundario" style="color: var(--primario); border-color: var(--borde);"><i class="bi bi-envelope" style="margin-right: 5px;"></i> Contactar</a>
+            <a href="mailto:" class="btn-inquilino btn-secundario btn-contactar-grid"><i class="bi bi-envelope icon-me"></i> Contactar</a>
             @else
             <button class="btn-inquilino btn-primario">Pagar Recibo</button>
             @endif

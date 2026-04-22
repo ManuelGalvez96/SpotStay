@@ -333,6 +333,17 @@
     color: #d97706;
 }
 
+/* ALERTA ESTADO EXPIRADO (Añadido por JS) */
+.alerta-fin-contrato.estado-expirado {
+    background: #fff5f5 !important;
+    border-color: #fca5a5 !important;
+    color: #b91c1c !important;
+}
+
+.alerta-fin-contrato.estado-expirado i {
+    color: #ef4444 !important;
+}
+
 .acciones-gestion {
     display: flex;
     gap: 12px;
@@ -372,6 +383,16 @@
     background: var(--borde);
 }
 
+/* ESTILOS ESPECÍFICOS GRID */
+.btn-contactar-grid {
+    color: var(--primario) !important;
+    border-color: var(--borde) !important;
+}
+
+.icon-me {
+    margin-right: 5px;
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
     .grid-propiedades-gestion {
@@ -382,3 +403,4 @@
         grid-template-columns: 1fr;
     }
 }
+

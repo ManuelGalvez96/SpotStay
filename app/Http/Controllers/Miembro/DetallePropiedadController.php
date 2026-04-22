@@ -21,9 +21,15 @@ class DetallePropiedadController extends Controller
                 'titulo_propiedad',
                 'direccion_propiedad',
                 'ciudad_propiedad',
+                'latitud_propiedad',
+                'longitud_propiedad',
                 'descripcion_propiedad',
                 'precio_propiedad',
-                'estado_propiedad'
+                'tipo_propiedad',
+                'habitaciones_propiedad',
+                'metros_cuadrados_propiedad',
+                'estado_propiedad',
+                'id_arrendador_fk'
             )
             ->where('id_propiedad', $id)
             ->first();
@@ -35,7 +41,13 @@ class DetallePropiedadController extends Controller
             ->limit(5)
             ->get();
 
-        return view('miembro.detalle_propiedad', compact('id', 'propiedad', 'fotosPropiedad'));
+        // Busca el arrendador de la propiedad
+        $arrendador = DB::table('tbl_usuario')
+            ->select('nombre_usuario', 'email_usuario', 'telefono_usuario')
+            ->where('id_usuario', $propiedad->id_arrendador_fk)
+            ->first();
+
+        return view('miembro.detalle_propiedad', compact('id', 'propiedad', 'fotosPropiedad', 'arrendador'));
     }
     public function cargarFotos($id)
     {

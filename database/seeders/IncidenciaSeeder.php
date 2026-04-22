@@ -4,94 +4,92 @@ namespace Database\Seeders;
 
 use App\Models\Incidencia;
 use App\Models\Propiedad;
+use App\Models\Alquiler;
 use App\Models\Usuario;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
 class IncidenciaSeeder extends Seeder
 {
     public function run(): void
     {
-        $incidencias = [
-            ['titulo' => 'Grifo con fugas', 'descripcion' => 'El grifo de la cocina tiene fugas', 'prioridad' => 'media', 'estado' => 'abierto'],
-            ['titulo' => 'Problema eléctrico', 'descripcion' => 'El enchufe de la sala no funciona', 'prioridad' => 'alta', 'estado' => 'abierto'],
-            ['titulo' => 'Cerradura rota', 'descripcion' => 'La puerta principal no cierra bien', 'prioridad' => 'alta', 'estado' => 'en_proceso'],
-            ['titulo' => 'Pintura descascarada', 'descripcion' => 'La pintura de la pared está descascarada', 'prioridad' => 'baja', 'estado' => 'resuelto'],
-            ['titulo' => 'Ventana rota', 'descripcion' => 'Una ventana está rota', 'prioridad' => 'alta', 'estado' => 'abierto'],
-            ['titulo' => 'Calefacción no funciona', 'descripcion' => 'La calefacción no calienta', 'prioridad' => 'media', 'estado' => 'en_proceso'],
-            ['titulo' => 'Tuberías ruidosas', 'descripcion' => 'Las tuberías hacen ruido', 'prioridad' => 'media', 'estado' => 'abierto'],
-            ['titulo' => 'Humedad en paredes', 'descripcion' => 'Hay humedad en las paredes del baño', 'prioridad' => 'media', 'estado' => 'resuelto'],
-            ['titulo' => 'Detector de humo averiado', 'descripcion' => 'El detector no funciona', 'prioridad' => 'alta', 'estado' => 'abierto'],
-            ['titulo' => 'Persiana rota', 'descripcion' => 'La persiana no sube', 'prioridad' => 'baja', 'estado' => 'resuelto'],
-            ['titulo' => 'Baldosa levantada', 'descripcion' => 'Una baldosa del baño está levantada', 'prioridad' => 'media', 'estado' => 'abierto'],
-            ['titulo' => 'Gotera en techo', 'descripcion' => 'Hay una gotera en el techo', 'prioridad' => 'alta', 'estado' => 'en_proceso'],
-            ['titulo' => 'Puerta con desperfectos', 'descripcion' => 'La puerta no cierra bien', 'prioridad' => 'baja', 'estado' => 'resuelto'],
-            ['titulo' => 'Espejo roto', 'descripcion' => 'El espejo del baño está roto', 'prioridad' => 'media', 'estado' => 'abierto'],
-            ['titulo' => 'Sin agua caliente', 'descripcion' => 'No hay agua caliente', 'prioridad' => 'alta', 'estado' => 'abierto'],
-            ['titulo' => 'Zócalo suelto', 'descripcion' => 'El zócalo está suelto', 'prioridad' => 'baja', 'estado' => 'resuelto'],
-            ['titulo' => 'Lámpara rota', 'descripcion' => 'La lámpara no funciona', 'prioridad' => 'media', 'estado' => 'abierto'],
-            ['titulo' => 'Radiador frío', 'descripcion' => 'El radiador no calienta', 'prioridad' => 'media', 'estado' => 'en_proceso'],
-            ['titulo' => 'Suelo resbaladizo', 'descripcion' => 'El suelo es muy resbaladizo', 'prioridad' => 'media', 'estado' => 'abierto'],
-            ['titulo' => 'Mampara ducha rota', 'descripcion' => 'La puerta de la ducha está rota', 'prioridad' => 'media', 'estado' => 'resuelto'],
-        ];
-
         $propiedades = Propiedad::all();
-        $usuarios = Usuario::all();
+        $gestores = Usuario::whereHas('roles', function ($q) {
+            $q->where('slug_rol', 'gestor');
+        })->get();
 
-        if ($propiedades->isEmpty() || $usuarios->isEmpty()) {
+        if ($propiedades->isEmpty() || $gestores->isEmpty()) {
             return;
         }
 
-        $propIndex = 0;
-        foreach ($incidencias as $data) {
-            $propiedad = $propiedades->get($propIndex % $propiedades->count());
-            $reportador = $usuarios->random();
-            $asignado = $usuarios->random();
-            $estado = $this->normalizarEstado((string) $data['estado']);
-            $categoria = $this->inferirCategoria((string) $data['titulo'], (string) $data['descripcion']);
+        $incidenciasData = [
+            ['titulo' => 'Grifo roto', 'descripcion' => 'El grifo de la cocina gotea constantemente', 'categoria' => 'fontanería', 'prioridad' => 'media'],
+            ['titulo' => 'Calefacción averiada', 'descripcion' => 'La calefacción no funciona y hace frío en el interior', 'categoria' => 'calefacción', 'prioridad' => 'alta'],
+            ['titulo' => 'Humedad en pared', 'descripcion' => 'Hay humedad en la pared del baño', 'categoria' => 'estructuración', 'prioridad' => 'media'],
+            ['titulo' => 'Enchufe sin funcionar', 'descripcion' => 'Un enchufe de la sala no da corriente', 'categoria' => 'electricidad', 'prioridad' => 'alta'],
+            ['titulo' => 'Ventana rota', 'descripcion' => 'Una ventana del dormitorio tiene una grieta', 'categoria' => 'carpintería', 'prioridad' => 'alta'],
+            ['titulo' => 'Puerta atascada', 'descripcion' => 'La puerta del dormitorio cierra con dificultad', 'categoria' => 'carpintería', 'prioridad' => 'baja'],
+            ['titulo' => 'Tuberías ruidosas', 'descripcion' => 'Las tuberías hacen ruido durante la noche', 'categoria' => 'fontanería', 'prioridad' => 'media'],
+            ['titulo' => 'Radiador frío', 'descripcion' => 'El radiador del salón no calienta', 'categoria' => 'calefacción', 'prioridad' => 'media'],
+            ['titulo' => 'Gotera en techo', 'descripcion' => 'Hay una gotera en el techo cuando llueve', 'categoria' => 'estructuración', 'prioridad' => 'alta'],
+            ['titulo' => 'Lámpara rota', 'descripcion' => 'La lámpara de la sala no enciende', 'categoria' => 'electricidad', 'prioridad' => 'baja'],
+            ['titulo' => 'Baldosa levantada', 'descripcion' => 'Una baldosa del baño está levantada', 'categoria' => 'revestimiento', 'prioridad' => 'media'],
+            ['titulo' => 'Cerradura rota', 'descripcion' => 'La cerradura de la puerta principal no abre bien', 'categoria' => 'seguridad', 'prioridad' => 'alta'],
+            ['titulo' => 'Sin agua caliente', 'descripcion' => 'El calentador de agua no funciona', 'categoria' => 'fontanería', 'prioridad' => 'alta'],
+            ['titulo' => 'Pintura descascarada', 'descripcion' => 'La pintura de la pared está descascarada', 'categoria' => 'pintura', 'prioridad' => 'baja'],
+            ['titulo' => 'Persiana rota', 'descripcion' => 'La persiana no sube correctamente', 'categoria' => 'carpintería', 'prioridad' => 'baja'],
+            ['titulo' => 'Detector de humo averiado', 'descripcion' => 'El detector de humo no funciona', 'categoria' => 'seguridad', 'prioridad' => 'alta'],
+            ['titulo' => 'Grieta en pared', 'descripcion' => 'Hay una grieta importante en la pared del salón', 'categoria' => 'estructuración', 'prioridad' => 'media'],
+            ['titulo' => 'Zócalo suelto', 'descripcion' => 'El zócalo de la sala está despegado', 'categoria' => 'revestimiento', 'prioridad' => 'baja'],
+            ['titulo' => 'Mampara ducha rota', 'descripcion' => 'El cristal de la ducha está roto', 'categoria' => 'revestimiento', 'prioridad' => 'media'],
+            ['titulo' => 'Suelo mojado constantemente', 'descripcion' => 'El suelo del baño está siempre mojado', 'categoria' => 'fontanería', 'prioridad' => 'media'],
+        ];
 
-            Incidencia::firstOrCreate(
-                ['id_propiedad_fk' => $propiedad->id_propiedad, 'titulo_incidencia' => $data['titulo']],
-                [
-                    'descripcion_incidencia' => $data['descripcion'],
-                    'categoria_incidencia' => $categoria,
-                    'prioridad_incidencia' => $data['prioridad'],
-                    'estado_incidencia' => $estado,
-                    'id_reporta_fk' => $reportador->id_usuario,
-                    'id_asignado_fk' => $asignado?->id_usuario,
-                    'creado_incidencia' => now()->subDays(rand(1, 30)),
-                    'actualizado_incidencia' => now(),
-                ]
-            );
+        $estados = ['abierta', 'en_proceso', 'resuelta'];
+        $prioridades = ['baja', 'media', 'alta'];
+        $incidenciaCounter = 0;
 
-            $propIndex++;
+        foreach ($propiedades as $propiedad) {
+            // Mínimo 1 incidencia por propiedad
+            $numIncidencias = rand(1, 3);
+
+            for ($i = 0; $i < $numIncidencias; $i++) {
+                $incidenciaData = $incidenciasData[($incidenciaCounter + $i) % count($incidenciasData)];
+                $estado = $estados[$incidenciaCounter % count($estados)];
+                $prioridad = $prioridades[rand(0, count($prioridades) - 1)];
+
+                // Obtener un inquilino de esa propiedad si existe
+                $alquiler = Alquiler::where('id_propiedad_fk', $propiedad->id_propiedad)->first();
+                $reportador = $alquiler ? Usuario::find($alquiler->id_inquilino_fk) : Usuario::whereHas('roles', function ($q) {
+                    $q->where('slug_rol', 'inquilino');
+                })->first();
+
+                if (!$reportador) {
+                    continue;
+                }
+
+                $asignado = $gestores->random();
+                $fechaCreacion = now()->subDays(rand(1, 30));
+
+                Incidencia::firstOrCreate(
+                    [
+                        'id_propiedad_fk' => $propiedad->id_propiedad,
+                        'titulo_incidencia' => $incidenciaData['titulo'],
+                    ],
+                    [
+                        'descripcion_incidencia' => $incidenciaData['descripcion'],
+                        'categoria_incidencia' => $incidenciaData['categoria'],
+                        'prioridad_incidencia' => $prioridad,
+                        'estado_incidencia' => $estado,
+                        'id_reporta_fk' => $reportador->id_usuario,
+                        'id_asignado_fk' => $asignado->id_usuario,
+                        'creado_incidencia' => $fechaCreacion,
+                        'actualizado_incidencia' => $estado === 'resuelta' ? $fechaCreacion->copy()->addDays(rand(1, 10)) : now(),
+                    ]
+                );
+
+                $incidenciaCounter++;
+            }
         }
-    }
-
-    private function normalizarEstado(string $estado): string
-    {
-        return match (strtolower(trim($estado))) {
-            'abierto' => 'abierta',
-            'resuelto' => 'resuelta',
-            default => strtolower(trim($estado)),
-        };
-    }
-
-    private function inferirCategoria(string $titulo, string $descripcion): string
-    {
-        $texto = strtolower($titulo . ' ' . $descripcion);
-
-        if (str_contains($texto, 'grifo') || str_contains($texto, 'tuber') || str_contains($texto, 'gotera') || str_contains($texto, 'agua') || str_contains($texto, 'ducha')) {
-            return 'fontaneria';
-        }
-
-        if (str_contains($texto, 'enchufe') || str_contains($texto, 'electr') || str_contains($texto, 'lampara') || str_contains($texto, 'detector')) {
-            return 'electricidad';
-        }
-
-        if (str_contains($texto, 'calefaccion') || str_contains($texto, 'radiador')) {
-            return 'calefaccion';
-        }
-
-        return 'otro';
     }
 }

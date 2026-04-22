@@ -12,43 +12,74 @@ class UsuarioSeeder extends Seeder
     public function run(): void
     {
         $usuarios = [
-            ['nombre' => 'Admin Principal', 'email' => 'admin@spotstay.com', 'rol' => 'admin', 'tel' => '+34 600 000 001'],
-            ['nombre' => 'María García', 'email' => 'inquilino@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 000'],
-            ['nombre' => 'Laura Martínez', 'email' => 'laura@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 001'],
-            ['nombre' => 'Pedro Jiménez', 'email' => 'pedro@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 002'],
-            ['nombre' => 'Sofía López', 'email' => 'sofia@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 003'],
-            ['nombre' => 'Carmen Iglesias', 'email' => 'carmen.iglesias@email.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 004'],
-            ['nombre' => 'Andrés Molina', 'email' => 'andres.molina@email.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 005'],
-            ['nombre' => 'Patricia Vega', 'email' => 'patricia.vega@email.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 006'],
-            ['nombre' => 'Javier Moya', 'email' => 'javier.moya@email.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 007'],
-            ['nombre' => 'Lucía Serrano', 'email' => 'lucia.serrano@email.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 008'],
-            ['nombre' => 'Admin Secundario', 'email' => 'admin2@spotstay.com', 'rol' => 'admin', 'tel' => '+34 600 000 002'],
-            // Usuarios usados en PropiedadSeeder
-            ['nombre' => 'Arrendador Principal', 'email' => 'arrendador@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 111'],
-            ['nombre' => 'Carlos Garcia', 'email' => 'carlos@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 112'],
-            ['nombre' => 'Elena Vargas', 'email' => 'elena@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 113'],
-            ['nombre' => 'Roberto Mora', 'email' => 'roberto.mora@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 114'],
-            ['nombre' => 'Roberto Diaz', 'email' => 'roberto.diaz@email.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 115'],
-            ['nombre' => 'Inquilino 1', 'email' => 'inquilino1@example.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 111'],
-            ['nombre' => 'Inquilino 2', 'email' => 'inquilino2@example.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 112'],
-            ['nombre' => 'Inquilino 3', 'email' => 'inquilino3@example.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 113'],
-            ['nombre' => 'Inquilino 4', 'email' => 'inquilino4@example.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 114'],
-            ['nombre' => 'Inquilino 5', 'email' => 'inquilino5@example.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 115'],
-            ['nombre' => 'Inquilino 6', 'email' => 'inquilino6@example.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 116'],
-            ['nombre' => 'Inquilino 7', 'email' => 'inquilino7@example.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 117'],
-            ['nombre' => 'Inquilino 8', 'email' => 'inquilino8@example.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 118'],
-            ['nombre' => 'Miguel Gestor', 'email' => 'miguel@spotstay.com', 'rol' => 'gestor', 'tel' => '+34 603 333 111'],
-            ['nombre' => 'Gestor 2', 'email' => 'gestor2@spotstay.com', 'rol' => 'gestor', 'tel' => '+34 603 333 112'],
-            ['nombre' => 'Gestor 3', 'email' => 'gestor3@spotstay.com', 'rol' => 'gestor', 'tel' => '+34 603 333 113'],
-            ['nombre' => 'Usuario Test 1', 'email' => 'test1@example.com', 'rol' => 'inquilino', 'tel' => '+34 604 444 111'],
-            ['nombre' => 'Usuario Test 2', 'email' => 'test2@example.com', 'rol' => 'arrendador', 'tel' => '+34 604 444 112'],
+            // Todas las contraseñas son "password123"
+            // ADMINS (3 máximo)
+            ['nombre' => 'Admin Principal', 'apellido' => 'García', 'email' => 'agarcia@spotstay.com', 'rol' => 'admin', 'tel' => '+34 600 000 001'],
+            ['nombre' => 'Admin Secundario', 'apellido' => 'López', 'email' => 'alopez@spotstay.com', 'rol' => 'admin', 'tel' => '+34 600 000 002'],
+            ['nombre' => 'Admin Support', 'apellido' => 'Martínez', 'email' => 'amartinez@spotstay.com', 'rol' => 'admin', 'tel' => '+34 600 000 003'],
+
+            // GESTORES
+            ['nombre' => 'Miguel', 'apellido' => 'Gestor', 'email' => 'mgestor@spotstay.com', 'rol' => 'gestor', 'tel' => '+34 603 333 111'],
+            ['nombre' => 'Ana', 'apellido' => 'Fernández', 'email' => 'afernandez@spotstay.com', 'rol' => 'gestor', 'tel' => '+34 603 333 112'],
+            ['nombre' => 'Carlos', 'apellido' => 'Romero', 'email' => 'cromero@spotstay.com', 'rol' => 'gestor', 'tel' => '+34 603 333 113'],
+
+            // MIEMBROS (5 máximo)
+            ['nombre' => 'Roberto', 'apellido' => 'Díaz', 'email' => 'rdiaz@spotstay.com', 'rol' => 'miembro', 'tel' => '+34 604 111 111'],
+            ['nombre' => 'Carmen', 'apellido' => 'Sánchez', 'email' => 'csanchez@spotstay.com', 'rol' => 'miembro', 'tel' => '+34 604 111 112'],
+            ['nombre' => 'Francisco', 'apellido' => 'Pérez', 'email' => 'fperez@spotstay.com', 'rol' => 'miembro', 'tel' => '+34 604 111 113'],
+            ['nombre' => 'Beatriz', 'apellido' => 'González', 'email' => 'bgonzalez@spotstay.com', 'rol' => 'miembro', 'tel' => '+34 604 111 114'],
+            ['nombre' => 'Diego', 'apellido' => 'Rodríguez', 'email' => 'drodriguez@spotstay.com', 'rol' => 'miembro', 'tel' => '+34 604 111 115'],
+
+            // ARRENDADORES (25+)
+            ['nombre' => 'Jaume', 'apellido' => 'Lavignole', 'email' => 'jlavignole@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 001'],
+            ['nombre' => 'Isabel', 'apellido' => 'Vázquez', 'email' => 'ivazquez@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 002'],
+            ['nombre' => 'Enrique', 'apellido' => 'Ruiz', 'email' => 'eruiz@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 003'],
+            ['nombre' => 'María', 'apellido' => 'García', 'email' => 'mgarcia@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 004'],
+            ['nombre' => 'Jorge', 'apellido' => 'Jiménez', 'email' => 'jjimenez@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 005'],
+            ['nombre' => 'Patricia', 'apellido' => 'Núñez', 'email' => 'pnunez@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 006'],
+            ['nombre' => 'Alejandro', 'apellido' => 'Moreno', 'email' => 'amoreno@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 007'],
+            ['nombre' => 'Elena', 'apellido' => 'Vargas', 'email' => 'evargas@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 008'],
+            ['nombre' => 'Sergio', 'apellido' => 'Navarro', 'email' => 'snavarro@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 009'],
+            ['nombre' => 'Gloria', 'apellido' => 'Campos', 'email' => 'gcampos@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 010'],
+            ['nombre' => 'Rafael', 'apellido' => 'Iglesias', 'email' => 'riglesias@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 011'],
+            ['nombre' => 'Catalina', 'apellido' => 'Molina', 'email' => 'cmolina@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 012'],
+            ['nombre' => 'Iago', 'apellido' => 'Vega', 'email' => 'ivega@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 013'],
+            ['nombre' => 'Lorena', 'apellido' => 'Herrera', 'email' => 'lherrera@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 014'],
+            ['nombre' => 'Víctor', 'apellido' => 'Gutierrez', 'email' => 'vgutierrez@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 015'],
+            ['nombre' => 'Sandra', 'apellido' => 'Ramos', 'email' => 'sramos@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 016'],
+            ['nombre' => 'Lucas', 'apellido' => 'Flores', 'email' => 'lflores@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 017'],
+            ['nombre' => 'Valeria', 'apellido' => 'Cabrera', 'email' => 'vcabrera@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 018'],
+            ['nombre' => 'Martín', 'apellido' => 'Ramírez', 'email' => 'mramirez@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 019'],
+            ['nombre' => 'Sofía', 'apellido' => 'Cortés', 'email' => 'scortes@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 020'],
+            ['nombre' => 'Andrés', 'apellido' => 'Soto', 'email' => 'asoto@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 021'],
+            ['nombre' => 'Daniela', 'apellido' => 'Delgado', 'email' => 'ddelgado@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 022'],
+            ['nombre' => 'Cristian', 'apellido' => 'Parra', 'email' => 'cparra@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 023'],
+            ['nombre' => 'Natalia', 'apellido' => 'Castro', 'email' => 'ncastro@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 024'],
+            ['nombre' => 'Guillermo', 'apellido' => 'Rojas', 'email' => 'grojas@spotstay.com', 'rol' => 'arrendador', 'tel' => '+34 601 111 025'],
+
+            // INQUILINOS (15+)
+            ['nombre' => 'David', 'apellido' => 'Suárez', 'email' => 'dsuarez@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 001'],
+            ['nombre' => 'Laura', 'apellido' => 'Martínez', 'email' => 'lmartinez@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 002'],
+            ['nombre' => 'Pablo', 'apellido' => 'López', 'email' => 'plopez@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 003'],
+            ['nombre' => 'Marta', 'apellido' => 'Sánchez', 'email' => 'msanchez@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 004'],
+            ['nombre' => 'Fernando', 'apellido' => 'Pérez', 'email' => 'fperez@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 005'],
+            ['nombre' => 'Amanda', 'apellido' => 'García', 'email' => 'agarcia@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 006'],
+            ['nombre' => 'Juan', 'apellido' => 'González', 'email' => 'jgonzalez@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 007'],
+            ['nombre' => 'Victoria', 'apellido' => 'Rodríguez', 'email' => 'vrodriguez@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 008'],
+            ['nombre' => 'Pepe', 'apellido' => 'Fernández', 'email' => 'pfernandez@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 009'],
+            ['nombre' => 'Raquel', 'apellido' => 'Díez', 'email' => 'rdiez@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 010'],
+            ['nombre' => 'Tomás', 'apellido' => 'Herrera', 'email' => 'therrera@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 011'],
+            ['nombre' => 'Irene', 'apellido' => 'Jiménez', 'email' => 'ijimenez@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 012'],
+            ['nombre' => 'Andrés', 'apellido' => 'Molina', 'email' => 'amolina@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 013'],
+            ['nombre' => 'Rocío', 'apellido' => 'Vega', 'email' => 'rvega@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 014'],
+            ['nombre' => 'Roberto', 'apellido' => 'Mora', 'email' => 'rmora@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 015'],
         ];
 
         foreach ($usuarios as $data) {
             $usuario = Usuario::firstOrCreate(
                 ['email_usuario' => $data['email']],
                 [
-                    'nombre_usuario' => $data['nombre'],
+                    'nombre_usuario' => $data['nombre'] . ' ' . $data['apellido'],
                     'contrasena_usuario' => Hash::make('password123'),
                     'telefono_usuario' => $data['tel'],
                     'activo_usuario' => true,
@@ -64,3 +95,4 @@ class UsuarioSeeder extends Seeder
         }
     }
 }
+

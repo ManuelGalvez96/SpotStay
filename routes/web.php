@@ -78,8 +78,12 @@ Route::middleware(['role:admin'])->group(function () {
 
     // Alquileres
     Route::get('/admin/alquileres', [AlquilerController::class, 'index']);
+    Route::get('/admin/alquileres/nuevo', [AlquilerController::class, 'nueva']);
     Route::get('/admin/alquileres/filtrar', [AlquilerController::class, 'filtrar']);
     Route::get('/admin/alquileres/{id}', [AlquilerController::class, 'show']);
+    Route::post('/admin/alquileres/crear', [AlquilerController::class, 'crear']);
+    Route::post('/admin/alquiler/{id}/aprobar', [AlquilerController::class, 'aprobar']);
+    Route::post('/admin/alquiler/{id}/rechazar', [AlquilerController::class, 'rechazar']);
 
     // Suscripciones
     Route::get('/admin/suscripciones', [SuscripcionController::class, 'index']);

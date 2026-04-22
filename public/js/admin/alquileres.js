@@ -9,6 +9,7 @@ var pasoActual = 1;
 var totalPasos = 4;
 var datosNuevoAlquiler = {};
 var paginaActual = 1;
+var totalPaginas = 1;
 
 window.onload = function() {
     csrfToken = document.querySelector('meta[name=csrf-token]').content;
@@ -17,6 +18,7 @@ window.onload = function() {
     asignarEventosModal();
     asignarEventosModalNuevo();
     asignarEventosPaginacion();
+    filtrarAlquileres(1);
 };
 
 /* ── FILTROS ── */
@@ -28,35 +30,36 @@ var asignarEventosFiltros = function() {
 
     if (selectEstado) {
         selectEstado.onchange = function() {
-            filtrarAlquileres();
+            filtrarAlquileres(1);
         };
     }
 
     if (selectPropiedad) {
         selectPropiedad.onchange = function() {
-            filtrarAlquileres();
+            filtrarAlquileres(1);
         };
     }
 
     if (selectMes) {
         selectMes.onchange = function() {
-            filtrarAlquileres();
+            filtrarAlquileres(1);
         };
     }
 
     if (buscador) {
-        buscador.onblur = function() {
-            filtrarAlquileres();
+        buscador.oninput = function() {
+            filtrarAlquileres(1);
         };
-        buscador.onkeyup = function(e) {
+        buscador.onkeydown = function(e) {
             if (e.key === 'Enter') {
-                filtrarAlquileres();
+                e.preventDefault();
+                filtrarAlquileres(1);
             }
         };
     }
 };
 
-var filtrarAlquileres = function() {
+var filtrarAlquileres = function(pagina) {
     var estado = document.getElementById('selectEstadoAlq') ? 
         document.getElementById('selectEstadoAlq').value : '';
     var propiedad = document.getElementById('selectPropiedadAlq') ? 
@@ -65,28 +68,99 @@ var filtrarAlquileres = function() {
         document.getElementById('selectMesAlq').value : '';
     var q = document.getElementById('buscadorAlq') ? 
         document.getElementById('buscadorAlq').value : '';
+    var page = pagina || 1;
 
-    var url = '/admin/alquileres/filtrar?';
-    var params = [];
-    if (estado) params.push('estado=' + encodeURIComponent(estado));
-    if (propiedad) params.push('propiedad=' + encodeURIComponent(propiedad));
-    if (mes) params.push('mes=' + encodeURIComponent(mes));
-    if (q) params.push('q=' + encodeURIComponent(q));
-    
-    if (params.length > 0) {
-        url += params.join('&');
-    }
+    var params = new URLSearchParams({
+        estado: estado,
+        propiedad: propiedad,
+        mes: mes,
+        q: q,
+        page: page
+    });
 
-    fetch(url).then(function(response) {
+    var url = '/admin/alquileres/filtrar?' + params.toString();
+
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    }).then(function(response) {
+        if (!response.ok) {
+            throw new Error('Error HTTP ' + response.status);
+        }
         return response.json();
     }).then(function(data) {
-        var contador = document.getElementById('contadorAlquileres');
-        if (contador) {
-            contador.textContent = data.total;
-        }
+        actualizarTablaAlquileres(data.alquileres || []);
+        actualizarContadores(data.total, data.from, data.to);
+        actualizarPaginacion(data.currentPage || 1, data.totalPages || 1);
     }).catch(function(error) {
         console.error('Error filtrando:', error);
+        var tbody = document.getElementById('tbodyAlquileres');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="7"><div class="sin-resultados">No se pudieron cargar los alquileres</div></td></tr>';
+        }
     });
+};
+
+var actualizarTablaAlquileres = function(alquileres) {
+    var tbody = document.getElementById('tbodyAlquileres');
+    if (!tbody) return;
+
+    if (!alquileres.length) {
+        tbody.innerHTML = '<tr><td colspan="7"><div class="sin-resultados">No hay alquileres registrados</div></td></tr>';
+        return;
+    }
+
+    var filas = '';
+    for (var i = 0; i < alquileres.length; i++) {
+        var a = alquileres[i];
+        var filaInactiva = (a.estado_alquiler === 'finalizado' || a.estado_alquiler === 'rechazado') ? 'fila-inactiva' : '';
+        var fin = a.fecha_fin_alquiler ? formatearFecha(a.fecha_fin_alquiler) : '—';
+        var accionesPendiente = '';
+
+        if (a.estado_alquiler === 'pendiente') {
+            accionesPendiente = '<button class="btn-aprobar-alq" data-id="' + a.id + '">✓ Aprobar</button>' +
+                               '<button class="btn-rechazar-alq" data-id="' + a.id + '">✕ Rechazar</button>';
+        }
+
+        filas += '<tr data-id="' + a.id + '" class="' + filaInactiva + '">' +
+            '<td><div class="propiedad-celda"><div class="thumb-propiedad" style="background:' + a.color_prop + '"></div><div><p class="propiedad-nombre">' + (a.titulo_propiedad || '') + '</p><p class="propiedad-ciudad">' + (a.ciudad_propiedad || '') + '</p></div></div></td>' +
+            '<td><div class="usuario-celda-mini"><div class="avatar-tabla avatar-sm" style="background:' + a.color_inq + '">' + (a.iniciales_inq || '') + '</div><span class="nombre-mini">' + (a.nombre_inquilino || '') + '</span></div></td>' +
+            '<td><div class="usuario-celda-mini"><div class="avatar-tabla avatar-sm" style="background:' + a.color_arr + '">' + (a.iniciales_arr || '') + '</div><span class="nombre-mini">' + (a.nombre_arrendador || '') + '</span></div></td>' +
+            '<td><span class="texto-fecha">' + formatearFecha(a.fecha_inicio_alquiler) + '</span></td>' +
+            '<td><span class="texto-fecha">' + fin + '</span></td>' +
+            '<td><span class="badge-estado badge-estado-' + a.estado_alquiler + '">' + capitalizar(a.estado_alquiler) + '</span></td>' +
+            '<td><div class="acciones-tabla"><button class="btn-accion btn-ver-alq" data-id="' + a.id + '"><i class="bi bi-eye"></i></button>' + accionesPendiente + '</div></td>' +
+            '</tr>';
+    }
+
+    tbody.innerHTML = filas;
+    asignarEventosTabla();
+};
+
+var actualizarContadores = function(total, from, to) {
+    var contador = document.getElementById('contadorAlquileres');
+    if (contador) {
+        contador.textContent = (total || 0) + ' alquileres encontrados';
+    }
+
+    var footer = document.querySelector('.tabla-footer');
+    if (footer) {
+        footer.textContent = 'Mostrando ' + (from || 0) + '-' + (to || 0) + ' de ' + (total || 0) + ' alquileres';
+    }
+};
+
+var capitalizar = function(texto) {
+    if (!texto) return '';
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
+};
+
+var formatearFecha = function(fechaTexto) {
+    if (!fechaTexto) return '—';
+    var fecha = new Date(fechaTexto);
+    if (isNaN(fecha.getTime())) return fechaTexto;
+    return fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
 };
 
 /* ── TABLA ── */
@@ -98,7 +172,7 @@ var asignarEventosTabla = function() {
     botonesVer.forEach(function(btn) {
         btn.onclick = function(e) {
             e.preventDefault();
-            var id = this.getAttribute('data-alquiler-id');
+            var id = this.getAttribute('data-id');
             abrirModal(id);
         };
     });
@@ -106,16 +180,16 @@ var asignarEventosTabla = function() {
     botonesAprobar.forEach(function(btn) {
         btn.onclick = function(e) {
             e.preventDefault();
-            var id = this.getAttribute('data-alquiler-id');
-            alquilerIdActual = id;
+            var id = this.getAttribute('data-id');
+            aprobarAlquiler(id);
         };
     });
 
     botonesRechazar.forEach(function(btn) {
         btn.onclick = function(e) {
             e.preventDefault();
-            var id = this.getAttribute('data-alquiler-id');
-            alquilerIdActual = id;
+            var id = this.getAttribute('data-id');
+            rechazarAlquiler(id);
         };
     });
 };
@@ -554,17 +628,45 @@ var irAPaso = function(paso) {
         item.classList.remove('paso-activo', 'paso-completado');
         
         if (numPaso < paso) {
-            item.classList.add('paso-completado');
-        } else if (numPaso === paso) {
-            item.classList.add('paso-activo');
+        var overlay = document.getElementById('modalOverlayNuevo');
+        var modal = document.getElementById('modalNuevoAlquiler');
+        if (overlay) {
+            overlay.classList.add('visible');
+        }
+        if (modal) {
+            modal.classList.add('visible');
         }
     });
 
     /* Actualizar label paso */
-    var labelPaso = document.getElementById('labelPasoActual');
-    if (labelPaso) {
-        labelPaso.textContent = 'Paso ' + paso + ' de ' + totalPasos;
+        var overlay = document.getElementById('modalOverlayNuevo');
+        var modal = document.getElementById('modalNuevoAlquiler');
+        if (overlay) {
+            overlay.classList.remove('visible');
+        }
+        if (modal) {
+            modal.classList.remove('visible');
     }
+
+        var selectProp = document.getElementById('nuevoPropiedadId');
+        var selectInq = document.getElementById('nuevoInquilinoId');
+        var fechaInicio = document.getElementById('nuevoFechaInicio');
+        var fechaFin = document.getElementById('nuevoFechaFin');
+        var precio = document.getElementById('nuevoPrecio');
+        if (selectProp) selectProp.value = '';
+        if (selectInq) selectInq.value = '';
+        if (fechaInicio) fechaInicio.value = '';
+        if (fechaFin) fechaFin.value = '';
+        if (precio) precio.value = '';
+
+        var previewProp = document.getElementById('propiedadSeleccionada');
+        var previewInq = document.getElementById('inquilinoSeleccionado');
+        if (previewProp) previewProp.style.display = 'none';
+        if (previewInq) previewInq.style.display = 'none';
+
+        var precioSugerido = document.getElementById('precioSugerido');
+        if (precioSugerido) precioSugerido.textContent = 'Precio sugerido segun la propiedad: —';
+
 
     /* Mostrar/ocultar botones */
     var btnAnterior = document.getElementById('btnPasoAnterior');
@@ -641,6 +743,14 @@ var rellenarResumen = function() {
     var precio = document.getElementById('nuevoPrecio');
 
     var propText = selectProp ? selectProp.options[selectProp.selectedIndex].text : '—';
+                    var precioInput = document.getElementById('nuevoPrecio');
+                    if (precioInput && !precioInput.value) {
+                        precioInput.value = parseFloat(precioSugerido).toFixed(2);
+                    }
+                    var sugerido = document.getElementById('precioSugerido');
+                    if (sugerido) {
+                        sugerido.textContent = 'Precio sugerido segun la propiedad: € ' + parseFloat(precioSugerido).toFixed(2);
+                    }
     var inqText = selectInq ? selectInq.options[selectInq.selectedIndex].text : '—';
 
     if (document.getElementById('resumenPropiedad')) {
@@ -728,17 +838,37 @@ var asignarEventosPaginacion = function() {
 };
 
 var cambiarPagina = function(numPagina) {
-    var url = '/admin/alquileres?page=' + numPagina;
-    var estado = document.getElementById('selectEstadoAlq') ? 
-        document.getElementById('selectEstadoAlq').value : '';
-    var propiedad = document.getElementById('selectPropiedadAlq') ? 
-        document.getElementById('selectPropiedadAlq').value : '';
-    var mes = document.getElementById('selectMesAlq') ? 
-        document.getElementById('selectMesAlq').value : '';
+    if (numPagina < 1 || numPagina > totalPaginas) {
+        return;
+    }
 
-    if (estado) url += '&estado=' + encodeURIComponent(estado);
-    if (propiedad) url += '&propiedad=' + encodeURIComponent(propiedad);
-    if (mes) url += '&mes=' + encodeURIComponent(mes);
+                alert('Error al crear: ' + (data.error || 'Error desconocido'));
+    filtrarAlquileres(numPagina);
+};
 
-    window.location.href = url;
+var actualizarPaginacion = function(pagina, paginas) {
+    paginaActual = pagina;
+    totalPaginas = paginas;
+
+    var contenedor = document.getElementById('paginasAlq');
+    if (!contenedor) return;
+
+    var html = '';
+    for (var i = 1; i <= paginas; i++) {
+        var clase = 'pag-numero' + (i === pagina ? ' activo' : '');
+        html += '<span class="' + clase + '" data-pagina="' + i + '">' + i + '</span>';
+    }
+    contenedor.innerHTML = html;
+
+    var btnsPaginas = contenedor.querySelectorAll('[data-pagina]');
+    btnsPaginas.forEach(function(btn) {
+        btn.onclick = function() {
+            cambiarPagina(parseInt(this.getAttribute('data-pagina')));
+        };
+    });
+
+    var btnAnterior = document.getElementById('btnAnteriorAlq');
+    var btnSiguiente = document.getElementById('btnSiguienteAlq');
+    if (btnAnterior) btnAnterior.disabled = pagina <= 1;
+    if (btnSiguiente) btnSiguiente.disabled = pagina >= paginas;
 };

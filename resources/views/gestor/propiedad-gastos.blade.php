@@ -106,6 +106,7 @@
                     <th>MES</th>
                     <th>CONCEPTO</th>
                     <th>CATEGORÍA</th>
+                    <th>ÁMBITO</th>
                     <th>VENCIMIENTO</th>
                     <th>ESTADO</th>
                     <th>DETALLE DE PAGO</th>
@@ -123,6 +124,13 @@
                         <td>{{ \Carbon\Carbon::parse($cuota->mes_cuota)->translatedFormat('m/Y') }}</td>
                         <td>{{ $cuota->concepto_gasto }}</td>
                         <td>{{ $cuota->categoria_gasto === 'base_propiedad' ? 'Base propiedad' : ($cuota->categoria_gasto ?: 'Sin categoría') }}</td>
+                        <td>
+                            @if(($cuota->ambito_gasto ?? 'propiedad') === 'contrato')
+                                Contrato #{{ $cuota->id_alquiler_fk }}
+                            @else
+                                Propiedad
+                            @endif
+                        </td>
                         <td>{{ \Carbon\Carbon::parse($cuota->vencimiento_cuota)->format('d/m/Y') }}</td>
                         <td>
                             <span class="badge-estado badge-gasto-{{ $estadoVisual }}">
@@ -150,7 +158,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="tabla-vacia">Todavía no hay gastos creados para esta propiedad.</td>
+                        <td colspan="7" class="tabla-vacia">Todavía no hay gastos creados para esta propiedad.</td>
                     </tr>
                 @endforelse
             </tbody>

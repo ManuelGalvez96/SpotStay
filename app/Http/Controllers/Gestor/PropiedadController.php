@@ -791,7 +791,9 @@ class PropiedadController extends Controller
                     'tbl_gasto_cuota.pagado_cuota',
                     'tbl_gasto.concepto_gasto',
                     'tbl_gasto.categoria_gasto',
-                    'tbl_gasto.pagador_gasto'
+                    'tbl_gasto.pagador_gasto',
+                    'tbl_gasto.ambito_gasto',
+                    'tbl_gasto.id_alquiler_fk'
                 )
                 ->orderBy('tbl_gasto_cuota.mes_cuota', 'desc')
                 ->orderBy('tbl_gasto_cuota.vencimiento_cuota', 'asc')

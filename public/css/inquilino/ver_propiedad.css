@@ -373,3 +373,61 @@
 		grid-template-columns: 1fr;
 	}
 }
+
+/* ===== AVISO FIN DE CONTRATO ===== */
+.fin-contrato .card-icon {
+	background: rgba(217, 119, 6, 0.1);
+	color: #d97706;
+}
+
+.fin-contrato .label {
+	color: #d97706 !important;
+}
+
+.dias-fin {
+	color: var(--texto) !important;
+}
+
+.btn-contactar {
+	background: var(--fondo-suave);
+	color: var(--primario);
+	border: 1px solid var(--borde);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	margin-top: 10px;
+}
+
+.btn-contactar:hover {
+	background: var(--borde);
+	color: var(--primario);
+}
+
+/* ===== ESTADOS DE PAGO (INDEFINIDO) ===== */
+.pago-requerido {
+	color: #b91c1c !important;
+}
+
+.bg-pago-requerido {
+	background-color: #b91c1c !important;
+	border-color: #b91c1c !important;
+}
+
+.pago-exito {
+	color: #059669 !important;
+}
+
+.icono-check-pago {
+	font-size: 1.5rem;
+}
+
+.pago-aviso {
+	color: #b45309 !important;
+}
+
+.mt-10 {
+	margin-top: 10px;
+}
+
+

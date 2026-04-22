@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use App\Models\Alquiler;
+use App\Models\AlquilerCuota;
 use App\Models\Contrato;
 use App\Models\Pago;
 
@@ -208,27 +210,36 @@ class AlquilerController extends Controller
         $query = DB::table('tbl_alquiler')
             ->join('tbl_propiedad', 'tbl_alquiler.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad')
 <<<<<<< HEAD
+<<<<<<< HEAD
             ->join('tbl_usuario', 'tbl_alquiler.id_inquilino_fk', '=', 'tbl_usuario.id_usuario')
             ->where('tbl_alquiler.estado_alquiler', 'pendiente')
             ->select(
                 'tbl_alquiler.id_alquiler',
 =======
+=======
+>>>>>>> 329032382f01f6a74e7455a1fb44aa0398547030
             ->join('tbl_usuario as inquilino', 'tbl_alquiler.id_inquilino_fk', '=', 'inquilino.id_usuario')
             ->join('tbl_usuario as arrendador', 'tbl_propiedad.id_arrendador_fk', '=', 'arrendador.id_usuario')
             ->select(
                 'tbl_alquiler.id_alquiler',
                 'tbl_alquiler.id_propiedad_fk',
                 'tbl_alquiler.id_inquilino_fk',
+<<<<<<< HEAD
 >>>>>>> 08c175d524e199a9fe67827fccc13bde9d5a2447
+=======
+>>>>>>> 329032382f01f6a74e7455a1fb44aa0398547030
                 'tbl_alquiler.estado_alquiler',
                 'tbl_alquiler.fecha_inicio_alquiler',
                 'tbl_alquiler.fecha_fin_alquiler',
                 'tbl_propiedad.titulo_propiedad',
                 'tbl_propiedad.ciudad_propiedad',
 <<<<<<< HEAD
+<<<<<<< HEAD
                 'tbl_usuario.nombre_usuario'
             );
 =======
+=======
+>>>>>>> 329032382f01f6a74e7455a1fb44aa0398547030
                 'tbl_propiedad.precio_propiedad',
                 'inquilino.nombre_usuario as nombre_inquilino',
                 'arrendador.id_usuario as id_arrendador',
@@ -246,7 +257,10 @@ class AlquilerController extends Controller
         if ($request->has('mes') && $request->mes) {
             $query->whereMonth('tbl_alquiler.fecha_inicio_alquiler', $request->mes);
         }
+<<<<<<< HEAD
 >>>>>>> 08c175d524e199a9fe67827fccc13bde9d5a2447
+=======
+>>>>>>> 329032382f01f6a74e7455a1fb44aa0398547030
 
         if ($request->has('q') && $request->q) {
             $q = '%' . strtolower(trim($request->q)) . '%';
@@ -259,10 +273,13 @@ class AlquilerController extends Controller
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         $alquileres = $query->get();
 
         return response()->json(['alquileres' => $alquileres]);
 =======
+=======
+>>>>>>> 329032382f01f6a74e7455a1fb44aa0398547030
         $paginados = $query
             ->orderByDesc('tbl_alquiler.id_alquiler')
             ->paginate(10);
@@ -304,7 +321,10 @@ class AlquilerController extends Controller
             'from' => $paginados->firstItem(),
             'to' => $paginados->lastItem(),
         ]);
+<<<<<<< HEAD
 >>>>>>> 08c175d524e199a9fe67827fccc13bde9d5a2447
+=======
+>>>>>>> 329032382f01f6a74e7455a1fb44aa0398547030
     }
 
     /**
@@ -343,6 +363,8 @@ class AlquilerController extends Controller
                 ->update([
                     'estado_propiedad' => 'alquilada'
                 ]);
+
+            $this->generarCuotasAlAprobar($alquiler);
 
             DB::commit();
             return response()->json(['success' => true]);
@@ -466,6 +488,56 @@ class AlquilerController extends Controller
             return back()
                 ->withErrors(['general' => 'No se pudo crear el alquiler.'])
                 ->withInput();
+        }
+    }
+
+    private function generarCuotasAlAprobar(object $alquiler): void
+    {
+        if (!Schema::hasTable('tbl_alquiler_cuota')) {
+            return;
+        }
+
+        $propiedad = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $alquiler->id_propiedad_fk)
+            ->select('precio_propiedad')
+            ->first();
+
+        $importeBase = round((float) ($propiedad->precio_propiedad ?? 0), 2);
+        if ($importeBase <= 0) {
+            return;
+        }
+
+        $inicio = Carbon::parse((string) $alquiler->fecha_inicio_alquiler)->startOfMonth();
+        $limite = $alquiler->fecha_fin_alquiler
+            ? Carbon::parse((string) $alquiler->fecha_fin_alquiler)->startOfMonth()
+            : $inicio->copy()->addMonths(11);
+
+        if ($limite->lessThan($inicio)) {
+            return;
+        }
+
+        $diaVencimiento = Carbon::parse((string) $alquiler->fecha_inicio_alquiler)->day;
+
+        $cursor = $inicio->copy();
+        while ($cursor->lessThanOrEqualTo($limite)) {
+            $ultimoDiaMes = (int) $cursor->copy()->endOfMonth()->day;
+            $dia = min($diaVencimiento, $ultimoDiaMes);
+            $fechaVencimiento = $cursor->copy()->day($dia)->toDateString();
+
+            AlquilerCuota::firstOrCreate(
+                [
+                    'id_alquiler_fk' => (int) $alquiler->id_alquiler,
+                    'mes_cuota' => $cursor->copy()->toDateString(),
+                ],
+                [
+                    'importe_base' => $importeBase,
+                    'estado' => 'pendiente',
+                    'fecha_vencimiento' => $fechaVencimiento,
+                    'pagado_en' => null,
+                ]
+            );
+
+            $cursor->addMonth();
         }
     }
 }

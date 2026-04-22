@@ -14,7 +14,9 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_pago')->autoIncrement()->primary();
             $table->unsignedBigInteger('id_alquiler_fk');
             $table->unsignedBigInteger('id_pagador_fk');
-            $table->string('tipo_pago', 30);
+            $table->unsignedBigInteger('id_gasto_cuota_detalle_fk')->nullable();
+            $table->unsignedBigInteger('id_gasto_cuota_fk')->nullable();
+            $table->enum('tipo_pago', ['alquiler', 'gasto', 'fianza']);
             $table->string('concepto_pago', 200);
             $table->decimal('importe_pago', 8, 2);
             $table->date('mes_pago')->nullable();
@@ -27,6 +29,8 @@ return new class extends Migration {
             // Índices
             $table->index('id_alquiler_fk');
             $table->index('id_pagador_fk');
+            $table->index('id_gasto_cuota_detalle_fk');
+            $table->index('id_gasto_cuota_fk');
             $table->index('estado_pago');
             $table->index('mes_pago');
             $table->index('referencia_pago');

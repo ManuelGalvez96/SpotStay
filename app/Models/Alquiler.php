@@ -70,4 +70,10 @@ class Alquiler extends Model
     {
         return $this->hasMany(Pago::class, 'id_alquiler_fk', 'id_alquiler');
     }
+
+    // Cuotas mensuales de alquiler asociadas al contrato
+    public function cuotas(): HasMany
+    {
+        return $this->hasMany(AlquilerCuota::class, 'id_alquiler_fk', 'id_alquiler');
+    }
 }

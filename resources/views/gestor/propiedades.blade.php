@@ -10,7 +10,7 @@
 @section('content')
 <div class="hero-admin">
     <div class="hero-content">
-        <h1>Propiedades asignadas</h1>
+        <h1>Propiedades gestionadas</h1>
         <p>Gestiona el estado de tus propiedades y accede al detalle de cada una</p>
     </div>
     <div class="hero-deco hero-deco-1"></div>
@@ -20,7 +20,7 @@
 
 <div class="resumen-kpis-gestor">
     <div class="resumen-kpis-label">
-        <strong>{{ $totalAsignadas }}</strong> propiedades asignadas
+        <strong>{{ $totalAsignadas }}</strong> propiedades gestionadas
     </div>
 
     <div class="kpi-grid-pequeno gestor-kpis" id="propiedadesKpiGrid">
@@ -144,7 +144,7 @@
                     $badgeEstado = match($propiedad->estado_propiedad) {
                         'publicada' => 'pendiente',
                         'alquilada' => 'activo',
-                        'inactiva' => 'rechazado',
+                        'inactiva' => 'inactiva',
                         default => 'pendiente'
                     };
 

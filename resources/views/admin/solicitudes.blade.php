@@ -23,7 +23,7 @@
         </div>
         <div class="kpi-mini-datos">
             <span class="kpi-mini-numero kpi-mini-numero-naranja">{{ $solicitudesPendientes->total() }}</span>
-            <span class="kpi-mini-label">Pendientes</span>
+            <span class="kpi-mini-label">Pendientes este mes</span>
         </div>
     </div>
 
@@ -64,6 +64,12 @@
             <i class="bi bi-search"></i>
             <input type="text" id="buscadorSolicitudes" placeholder="Buscar por nombre o ciudad...">
         </div>
+        <select id="selectRangoSol" class="select-filtro">
+            <option value="mes">Este mes</option>
+            <option value="3meses">Últimos 3 meses</option>
+            <option value="anio">Este año</option>
+            <option value="all">Todas</option>
+        </select>
         <select id="selectEstadoSol" class="select-filtro">
             <option value="">Todos los estados</option>
             <option value="pendiente">Pendiente</option>
@@ -80,7 +86,7 @@
         </select>
     </div>
     <div class="toolbar-derecha">
-        <span class="texto-pendientes">{{ $solicitudesPendientes->total() }} pendientes de revisión</span>
+        <span class="texto-pendientes">{{ $solicitudesPendientes->total() }} pendientes de revisión este mes</span>
     </div>
 </div>
 
@@ -227,7 +233,7 @@
             <div class="tiempo-medio-stats">
                 <div class="stat-item">
                     <span class="stat-numero">{{ $solicitudesPendientes->total() }}</span>
-                    <span class="stat-label">Pendientes</span>
+                    <span class="stat-label">Pendientes este mes</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-numero">{{ $totalSolicitudes }}</span>

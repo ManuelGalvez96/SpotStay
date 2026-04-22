@@ -17,6 +17,10 @@ class SolicitudController extends Controller
               'tbl_usuario.id_usuario','=',
               'tbl_solicitud_arrendador.id_usuario_fk')
             ->where('estado_solicitud_arrendador','pendiente')
+            ->whereMonth('actualizado_solicitud_arrendador',
+              Carbon::now()->month)
+            ->whereYear('actualizado_solicitud_arrendador',
+              Carbon::now()->year)
             ->select(
               'tbl_solicitud_arrendador.*',
               'tbl_usuario.nombre_usuario',
@@ -194,6 +198,26 @@ class SolicitudController extends Controller
             $query->whereHas('usuario', function ($q) use ($request) {
                 $q->where('nombre_usuario', 'like', '%' . $request->q . '%');
             });
+        }
+
+        /* Filtro por rango temporal */
+        $rango = $request->rango ?? 'mes'; /* por defecto: este mes */
+        
+        switch ($rango) {
+            case 'all':
+                /* Sin filtro de fechas - mostrar todas */
+                break;
+            case 'mes':
+                $query->whereMonth('actualizado_solicitud_arrendador', Carbon::now()->month)
+                      ->whereYear('actualizado_solicitud_arrendador', Carbon::now()->year);
+                break;
+            case '3meses':
+                $fechaHace3Meses = Carbon::now()->subMonths(3);
+                $query->where('actualizado_solicitud_arrendador', '>=', $fechaHace3Meses);
+                break;
+            case 'anio':
+                $query->whereYear('actualizado_solicitud_arrendador', Carbon::now()->year);
+                break;
         }
 
         $solicitudesPaginadas = $query

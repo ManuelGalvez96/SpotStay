@@ -150,11 +150,19 @@ document.addEventListener('DOMContentLoaded', function() {
 ──────────────────────────────────────────── */
 var asignarEventosFiltros = function() {
     var buscador = document.getElementById('buscadorSolicitudes');
+    var selectRango = document.getElementById('selectRangoSol');
     var selectEstado = document.getElementById('selectEstadoSol');
     var selectCiudad = document.getElementById('selectCiudadSol');
 
     if (buscador) {
         buscador.onkeyup = function() {
+            paginaActualSol = 1;
+            filtrarSolicitudes();
+        };
+    }
+
+    if (selectRango) {
+        selectRango.onchange = function() {
             paginaActualSol = 1;
             filtrarSolicitudes();
         };
@@ -230,17 +238,20 @@ var asignarEventosPaginacion = function() {
    FUNCIÓN: Filtrar solicitudes
 ──────────────────────────────────────────── */
 var filtrarSolicitudes = function() {
+    var selectRango = document.getElementById('selectRangoSol');
     var selectEstado = document.getElementById('selectEstadoSol');
     var selectCiudad = document.getElementById('selectCiudadSol');
     var buscador = document.getElementById('buscadorSolicitudes');
     
+    var rango = selectRango ? selectRango.value : 'mes';
     var estado = selectEstado ? selectEstado.value : '';
     var ciudad = selectCiudad ? selectCiudad.value : '';
     var q = buscador ? buscador.value : '';
     
-    console.log('Filtrando con - Estado:', estado, 'Ciudad:', ciudad, 'Búsqueda:', q, 'Página:', paginaActualSol);
+    console.log('Filtrando con - Rango:', rango, 'Estado:', estado, 'Ciudad:', ciudad, 'Búsqueda:', q, 'Página:', paginaActualSol);
     
-    var url = '/admin/solicitudes/filtrar?estado=' + encodeURIComponent(estado) +
+    var url = '/admin/solicitudes/filtrar?rango=' + encodeURIComponent(rango) +
+              '&estado=' + encodeURIComponent(estado) +
               '&ciudad=' + encodeURIComponent(ciudad) +
               '&q=' + encodeURIComponent(q) +
               '&page=' + paginaActualSol;

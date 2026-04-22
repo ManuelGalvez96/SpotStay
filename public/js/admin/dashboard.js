@@ -5,14 +5,23 @@
 
 /* ── Variables globales ── */
 var csrfToken = null;
+var modalSolicitud = null;
 
 /* ── window.onload ── */
 window.onload = function() {
     csrfToken = document.querySelector('meta[name=csrf-token]').content;
     
+    // Inicializar modal de solicitudes si existe
+    var modalElement = document.getElementById('modalSolicitudDash');
+    if (modalElement && typeof bootstrap !== 'undefined') {
+        modalSolicitud = new bootstrap.Modal(modalElement);
+    }
+    
     iniciarDonut();
     asignarEventosBotones();
-    asignarEventoBuscador();
+    asignarEventoBuscadorAlquileres();
+    asignarEventoBuscadorSolicitudes();
+    asignarEventosBotonesSolicitudes();
     asignarEventosNavIconos();
 };
 
@@ -196,74 +205,117 @@ function rechazarAlquiler(id) {
 }
 
 /* ================================================
-   FUNCIÓN: asignarEventoBuscador
-   Asigna eventos onblur y onkeyup al buscador
+   FUNCIÓN: asignarEventoBuscadorAlquileres
+   Asigna evento onkeyup para filtro AJAX
    ================================================ */
-function asignarEventoBuscador() {
-    var buscador = document.getElementById('buscadorTabla');
+function asignarEventoBuscadorAlquileres() {
+    var buscador = document.getElementById('buscadorAlquileres');
     
     if (!buscador) {
         return;
     }
     
-    // Evento onblur
-    buscador.onblur = function() {
-        filtrarTabla(this.value);
-    };
-    
-    // Evento onkeyup
+    // Evento onkeyup para búsqueda en vivo
     buscador.onkeyup = function() {
-        if (this.value.length === 0) {
-            filtrarTabla('');
-        }
+        filtrarAlquileres();
     };
 }
 
 /* ================================================
-   FUNCIÓN: filtrarTabla
-   Filtra las filas de la tabla según el término
+   FUNCIÓN: asignarEventoBuscadorSolicitudes
+   Asigna evento onkeyup para filtro AJAX de solicitudes
    ================================================ */
-function filtrarTabla(termino) {
+function asignarEventoBuscadorSolicitudes() {
+    var buscador = document.getElementById('buscadorSolicitudes');
+    
+    if (!buscador) {
+        return;
+    }
+    
+    // Evento onkeyup para búsqueda en vivo
+    buscador.onkeyup = function() {
+        filtrarSolicitudesDash();
+    };
+}
+
+/* ================================================
+   FUNCIÓN: filtrarAlquileres
+   Hace fetch AJAX para filtrar alquileres
+   ================================================ */
+function filtrarAlquileres() {
+    var buscador = document.getElementById('buscadorAlquileres');
+    var busqueda = buscador ? buscador.value : '';
+    
+    var url = '/admin/alquileres/filtrar?q=' + encodeURIComponent(busqueda);
+    
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken
+        }
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        actualizarTablaAlquileres(data);
+        asignarEventosBotones();
+    })
+    .catch(function(error) {
+        console.error('Error en filtro AJAX:', error);
+    });
+}
+
+/* ================================================
+   FUNCIÓN: actualizarTablaAlquileres
+   Actualiza las filas de la tabla de alquileres
+   Máximo 5 resultados
+   ================================================ */
+function actualizarTablaAlquileres(data) {
     var tbody = document.getElementById('tbodyAlquileres');
     
     if (!tbody) {
         return;
     }
     
-    var filas = tbody.querySelectorAll('tr');
+    tbody.innerHTML = '';
     
-    if (termino === '' || termino.length === 0) {
-        // Mostrar todas las filas
-        for (var i = 0; i < filas.length; i++) {
-            filas[i].style.display = 'table-row';
-        }
-        return;
-    }
-    
-    var terminoLower = termino.toLowerCase();
-    
-    // Recorrer filas y ocultar/mostrar según coincidencia
-    for (var i = 0; i < filas.length; i++) {
-        var fila = filas[i];
-        var celdas = fila.querySelectorAll('td');
-        var coincide = false;
+    if (data.alquileres && data.alquileres.length > 0) {
+        // Limitar a máximo 5 resultados
+        var limite = Math.min(data.alquileres.length, 5);
         
-        // Buscar en propiedad (1ª columna) e inquilino (2ª columna)
-        for (var j = 0; j < celdas.length; j++) {
-            if (j === 0 || j === 1) { // Propiedad e Inquilino
-                var texto = celdas[j].textContent.toLowerCase();
-                if (texto.indexOf(terminoLower) !== -1) {
-                    coincide = true;
-                    break;
-                }
+        for (var i = 0; i < limite; i++) {
+            var alquiler = data.alquileres[i];
+            var badgeClass = 'badge-' + alquiler.estado_alquiler.replace('_', '-');
+            var estadoLabel = alquiler.estado_alquiler.charAt(0).toUpperCase() + alquiler.estado_alquiler.slice(1);
+            
+            var fila = document.createElement('tr');
+            fila.setAttribute('data-id', alquiler.id_alquiler);
+            fila.setAttribute('data-nombre', alquiler.titulo_propiedad + ', ' + alquiler.ciudad_propiedad);
+            fila.setAttribute('data-inquilino', alquiler.nombre_inquilino);
+            fila.setAttribute('data-estado', alquiler.estado_alquiler);
+            
+            var accionesHTML = '';
+            if (alquiler.estado_alquiler === 'pendiente') {
+                accionesHTML = '<div class="acciones-tabla">' +
+                    '<button class="btn-aprobar" data-id="' + alquiler.id_alquiler + '">✓ Aprobar</button>' +
+                    '<button class="btn-rechazar" data-id="' + alquiler.id_alquiler + '">✕ Rechazar</button>' +
+                    '</div>';
+            } else {
+                accionesHTML = '<span class="sin-accion">—</span>';
             }
+            
+            fila.innerHTML = '<td>' + alquiler.titulo_propiedad + ', ' + alquiler.ciudad_propiedad + '</td>' +
+                '<td>' + alquiler.nombre_inquilino + '</td>' +
+                '<td><span class="badge-estado ' + badgeClass + '">' + estadoLabel + '</span></td>' +
+                '<td>' + accionesHTML + '</td>';
+            
+            tbody.appendChild(fila);
         }
-        
-        if (coincide) {
-            fila.style.display = 'table-row';
-        } else {
-            fila.style.display = 'none';
-        }
+    } else {
+        var fila = document.createElement('tr');
+        fila.innerHTML = '<td colspan="4" class="tabla-vacia-cell">No hay alquileres pendientes</td>';
+        tbody.appendChild(fila);
     }
 }
 
@@ -284,4 +336,98 @@ function asignarEventosNavIconos() {
             }
         };
     }
+}
+
+/* ================================================
+   FUNCIÓN: asignarEventosBotonesSolicitudes
+   Asigna onclick a botones "Revisar" solicitudes
+   ================================================ */
+function asignarEventosBotonesSolicitudes() {
+    var botonesRevisar = document.querySelectorAll('.btn-revisar');
+    
+    for (var i = 0; i < botonesRevisar.length; i++) {
+        var btnRevisar = botonesRevisar[i];
+        btnRevisar.onclick = function(event) {
+            event.preventDefault();
+            var id = this.getAttribute('data-id');
+            abrirModalSolicitud(id);
+        };
+    }
+}
+
+/* ================================================
+   FUNCIÓN: abrirModalSolicitud
+   Abre modal con datos de la solicitud
+   ================================================ */
+function abrirModalSolicitud(id) {
+    fetch('/admin/solicitudes/' + id)
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(datos) {
+            rellenarModalSolicitud(datos);
+            
+            if (modalSolicitud) {
+                modalSolicitud.show();
+            }
+        })
+        .catch(function(error) {
+            console.error('Error al abrir modal:', error);
+        });
+}
+
+/* ================================================
+   FUNCIÓN: rellenarModalSolicitud
+   Rellena el modal con datos de solicitud
+   ================================================ */
+function rellenarModalSolicitud(datos) {
+    var partes = datos.nombre_usuario.split(' ');
+    var iniciales = (partes[0] ? partes[0].charAt(0) : '') + (partes[1] ? partes[1].charAt(0) : '');
+    var colores = ['#B8CCE4', '#A8D5BF', '#F9E4A0', '#FFD5CC', '#D7EAF9', '#EDE7F6', '#D5F5E3', '#FAD7D7'];
+    var color = colores[datos.id_solicitud_arrendador % 8];
+    
+    // Rellenar datos básicos
+    var avatarEl = document.getElementById('modalAvatarSolicitudDash');
+    if (avatarEl) {
+        avatarEl.style.background = color;
+        avatarEl.textContent = iniciales.toUpperCase();
+    }
+    
+    var nombreEl = document.getElementById('modalNombreSolicitudDash');
+    if (nombreEl) nombreEl.textContent = datos.nombre_usuario;
+    
+    var emailEl = document.getElementById('modalEmailSolicitudDash');
+    if (emailEl) emailEl.textContent = datos.email_usuario;
+    
+    var datosObj = JSON.parse(datos.datos_solicitud_arrendador || '{}');
+    var ciudadEl = document.getElementById('modalCiudadSolicitudDash');
+    if (ciudadEl) {
+        ciudadEl.innerHTML = '<i class="bi bi-geo-alt"></i> ' + (datosObj.ciudad || 'No disponible');
+    }
+    
+    // Rellenar datos de propiedad
+    var direccionEl = document.getElementById('modalDireccionSolicitudDash');
+    if (direccionEl) {
+        direccionEl.textContent = datosObj.direccion || '—';
+    }
+    
+    // Actualizar estado
+    var badgeEl = document.getElementById('modalBadgeEstadoSolicitudDash');
+    if (badgeEl) {
+        var estado = datos.estado_solicitud_arrendador || 'pendiente';
+        var estadoLabel = estado.charAt(0).toUpperCase() + estado.slice(1);
+        badgeEl.textContent = estadoLabel;
+        badgeEl.className = 'badge';
+        if (estado === 'aprobada') {
+            badgeEl.classList.add('bg-success');
+        } else if (estado === 'rechazada') {
+            badgeEl.classList.add('bg-danger');
+        } else {
+            badgeEl.classList.add('bg-warning');
+        }
+    }
+    
+    // Limpiar notas
+    var notasEl = document.getElementById('modalNotasSolicitudDash');
+    if (notasEl) notasEl.value = '';
 }

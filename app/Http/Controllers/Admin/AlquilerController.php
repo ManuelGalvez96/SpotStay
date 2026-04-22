@@ -184,19 +184,17 @@ class AlquilerController extends Controller
     {
         $query = DB::table('tbl_alquiler')
             ->join('tbl_propiedad', 'tbl_alquiler.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad')
-            ->join('tbl_usuario', 'tbl_alquiler.id_inquilino_fk', '=', 'tbl_usuario.id_usuario');
-
-        if ($request->has('estado') && $request->estado) {
-            $query->where('tbl_alquiler.estado_alquiler', $request->estado);
-        }
-
-        if ($request->has('propiedad') && $request->propiedad) {
-            $query->where('tbl_alquiler.id_propiedad_fk', $request->propiedad);
-        }
-
-        if ($request->has('mes') && $request->mes) {
-            $query->whereMonth('tbl_alquiler.fecha_inicio_alquiler', $request->mes);
-        }
+            ->join('tbl_usuario', 'tbl_alquiler.id_inquilino_fk', '=', 'tbl_usuario.id_usuario')
+            ->where('tbl_alquiler.estado_alquiler', 'pendiente')
+            ->select(
+                'tbl_alquiler.id_alquiler',
+                'tbl_alquiler.estado_alquiler',
+                'tbl_alquiler.fecha_inicio_alquiler',
+                'tbl_alquiler.fecha_fin_alquiler',
+                'tbl_propiedad.titulo_propiedad',
+                'tbl_propiedad.ciudad_propiedad',
+                'tbl_usuario.nombre_usuario'
+            );
 
         if ($request->has('q') && $request->q) {
             $q = '%' . $request->q . '%';
@@ -206,9 +204,9 @@ class AlquilerController extends Controller
             });
         }
 
-        $total = $query->count();
+        $alquileres = $query->get();
 
-        return response()->json(['total' => $total]);
+        return response()->json(['alquileres' => $alquileres]);
     }
 
     /**

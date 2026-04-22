@@ -25,7 +25,7 @@ class AlquilerSeeder extends Seeder
             return;
         }
 
-        $estados = ['activo', 'finalizado', 'cancelado'];
+        $estados = ['pendiente', 'activo', 'finalizado', 'cancelado'];
         $alquilerCounter = 0;
 
         foreach ($propiedades as $propiedad) {

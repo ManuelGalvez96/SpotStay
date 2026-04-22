@@ -23,7 +23,7 @@
         </div>
         <div class="kpi-mini-datos">
             <span class="kpi-mini-numero kpi-mini-numero-naranja">{{ $solicitudesPendientes->total() }}</span>
-            <span class="kpi-mini-label">Pendientes</span>
+            <span class="kpi-mini-label">Pendientes este mes</span>
         </div>
     </div>
 
@@ -64,6 +64,12 @@
             <i class="bi bi-search"></i>
             <input type="text" id="buscadorSolicitudes" placeholder="Buscar por nombre o ciudad...">
         </div>
+        <select id="selectRangoSol" class="select-filtro">
+            <option value="mes">Este mes</option>
+            <option value="3meses">Últimos 3 meses</option>
+            <option value="anio">Este año</option>
+            <option value="all">Todas</option>
+        </select>
         <select id="selectEstadoSol" class="select-filtro">
             <option value="">Todos los estados</option>
             <option value="pendiente">Pendiente</option>
@@ -80,7 +86,7 @@
         </select>
     </div>
     <div class="toolbar-derecha">
-        <span class="texto-pendientes">{{ $solicitudesPendientes->total() }} pendientes de revisión</span>
+        <span class="texto-pendientes">{{ $solicitudesPendientes->total() }} pendientes de revisión este mes</span>
     </div>
 </div>
 
@@ -155,27 +161,9 @@
             </div>
 
             <div class="tabla-footer">
-                <span class="info-paginacion">Mostrando {{ $solicitudesPendientes->firstItem() ?? 0 }}-{{ $solicitudesPendientes->lastItem() ?? 0 }} de {{ $solicitudesPendientes->total() }} solicitudes</span>
+                <span class="info-paginacion">Mostrando 0-0 de 0 solicitudes</span>
                 <div class="paginacion-links" id="paginacionSolicitudes">
-                    @if ($solicitudesPendientes->onFirstPage())
-                        <span class="btn-paginacion deshabilitado"><i class="bi bi-chevron-left"></i></span>
-                    @else
-                        <button class="btn-paginacion" data-page="{{ $solicitudesPendientes->currentPage() - 1 }}"><i class="bi bi-chevron-left"></i></button>
-                    @endif
-
-                    @foreach ($solicitudesPendientes->getUrlRange(1, $solicitudesPendientes->lastPage()) as $page => $url)
-                        @if ($page == $solicitudesPendientes->currentPage())
-                            <span class="btn-paginacion activo">{{ $page }}</span>
-                        @else
-                            <button class="btn-paginacion" data-page="{{ $page }}">{{ $page }}</button>
-                        @endif
-                    @endforeach
-
-                    @if ($solicitudesPendientes->hasMorePages())
-                        <button class="btn-paginacion" data-page="{{ $solicitudesPendientes->currentPage() + 1 }}"><i class="bi bi-chevron-right"></i></button>
-                    @else
-                        <span class="btn-paginacion deshabilitado"><i class="bi bi-chevron-right"></i></span>
-                    @endif
+                    <!-- Generado por JavaScript -->
                 </div>
             </div>
         </div>
@@ -245,7 +233,7 @@
             <div class="tiempo-medio-stats">
                 <div class="stat-item">
                     <span class="stat-numero">{{ $solicitudesPendientes->total() }}</span>
-                    <span class="stat-label">Pendientes</span>
+                    <span class="stat-label">Pendientes este mes</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-numero">{{ $totalSolicitudes }}</span>
@@ -257,41 +245,51 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="modalOverlay"></div>
-<div class="modal-admin" id="modalSolicitud">
-    <div class="modal-header-admin">
-        <div class="modal-titulo-grupo">
-            <span>Detalle de solicitud</span>
-            <span class="badge-estado badge-pendiente" id="modalBadgeEstado">Pendiente</span>
-        </div>
-        <button id="btnCerrarModal" class="btn-cerrar-modal"><i class="bi bi-x"></i></button>
-    </div>
-
-    <div class="modal-cuerpo">
-        <span class="seccion-label">SOLICITANTE</span>
-        <div class="modal-persona-header">
-            <div class="modal-avatar" id="modalAvatar"></div>
-            <div class="modal-persona-info">
-                <h2 id="modalNombre"></h2>
-                <p id="modalEmail"></p>
-                <p id="modalCiudad"><i class="bi bi-geo-alt"></i></p>
+<!-- MODAL SOLICITUD (Bootstrap 5) -->
+<div class="modal fade" id="modalSolicitud" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalle de solicitud</h5>
+                <span class="badge bg-warning" id="modalBadgeEstado">Pendiente</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Header solicitante -->
+                <div class="modal-solicitante">
+                    <div class="avatar-modal" id="modalAvatar">UT</div>
+                    <div class="modal-solicitante-info">
+                        <h6 class="modal-nombre" id="modalNombre">Usuario Test</h6>
+                        <p class="modal-email" id="modalEmail">test@example.com</p>
+                        <p class="modal-ciudad" id="modalCiudad"><i class="bi bi-geo-alt"></i></p>
+                    </div>
+                </div>
+                
+                <hr class="modal-separator">
+                
+                <!-- Propiedad solicitada -->
+                <h6 class="modal-seccion-titulo">Propiedad Solicitada</h6>
+                <div class="modal-seccion" id="modalDatosPropiedad">
+                    <div>
+                        <label class="form-label">Dirección</label>
+                        <p class="modal-data">—</p>
+                    </div>
+                </div>
+                
+                <hr class="modal-separator">
+                
+                <!-- Notas -->
+                <h6 class="modal-seccion-titulo">Notas (Opcional)</h6>
+                <textarea id="modalNotas" class="form-control" rows="4" placeholder="Añade notas o motivo de rechazo..."></textarea>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn-danger" id="btnRechazarModal">Rechazar solicitud</button>
+                <button type="button" class="btn-primary" id="btnAprobarModal">Aprobar solicitud</button>
             </div>
         </div>
-
-        <div class="modal-separador"></div>
-
-        <span class="seccion-label">PROPIEDAD SOLICITADA</span>
-        <div class="modal-grid-datos" id="modalDatosPropiedad"></div>
-
-        <div class="modal-separador"></div>
-
-        <span class="seccion-label">NOTAS (opcional)</span>
-        <textarea id="modalNotas" class="textarea-admin" placeholder="Añade notas o motivo de rechazo..."></textarea>
-    </div>
-
-    <div class="modal-footer-admin">
-        <button id="btnRechazarModal" class="btn-desactivar">Rechazar solicitud</button>
-        <button id="btnAprobarModal" class="btn-primario">Aprobar solicitud</button>
     </div>
 </div>
 

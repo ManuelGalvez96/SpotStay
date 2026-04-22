@@ -25,6 +25,9 @@ return new class extends Migration {
             $table->decimal('longitud_propiedad', 10, 7)->nullable();
             $table->text('descripcion_propiedad')->nullable();
             $table->decimal('precio_propiedad', 8, 2);
+            $table->string('tipo_propiedad', 30)->nullable();
+            $table->string('habitaciones_propiedad', 20)->nullable();
+            $table->unsignedSmallInteger('metros_cuadrados_propiedad')->nullable();
             $table->json('gastos_propiedad')->nullable();
             $table->string('estado_propiedad', 30)->default('borrador');
             $table->timestamp('creado_propiedad')->nullable();
@@ -33,6 +36,9 @@ return new class extends Migration {
             // Índices
             $table->index('id_arrendador_fk');
             $table->index('estado_propiedad');
+            $table->index('tipo_propiedad');
+            $table->index('habitaciones_propiedad');
+            $table->index('metros_cuadrados_propiedad');
 
             // Foreign keys
             $table->foreign('id_arrendador_fk')

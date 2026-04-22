@@ -10,11 +10,59 @@
 .hero-admin {
     position: relative;
     padding: 32px 32px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #035498;
     color: white;
     border-radius: 16px;
     margin-bottom: 24px;
     overflow: hidden;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-admin h1 {
+    color: white;
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.hero-admin p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    margin-top: 4px;
+    margin-bottom: 0;
+}
+
+/* ── Círculos decorativos hero ── */
+.hero-deco {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    pointer-events: none;
+}
+
+.hero-deco-1 {
+    width: 300px;
+    height: 300px;
+    top: -100px;
+    right: -80px;
+}
+
+.hero-deco-2 {
+    width: 200px;
+    height: 200px;
+    bottom: -80px;
+    right: 200px;
+}
+
+.hero-deco-3 {
+    width: 150px;
+    height: 150px;
+    top: 20px;
+    right: 250px;
 }
 
 .kpi-grid-pequeno {
@@ -42,7 +90,7 @@
     background: white;
     border-radius: 12px;
     padding: 16px;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid #035498;
     box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     display: flex;
     gap: 12px;
@@ -202,8 +250,8 @@
 
 .select-filtro:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
 }
 
 /* Botones vista */
@@ -233,14 +281,14 @@
 }
 
 .btn-vista.activo {
-    background: #667eea;
+    background: #035498;
     color: white;
-    border-color: #667eea;
+    border-color: #035498;
 }
 
 /* Botones primarios */
 .btn-primario {
-    background: #667eea;
+    background: #035498;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -255,8 +303,8 @@
 }
 
 .btn-primario:hover {
-    background: #5568d3;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    background: #024080;
+    box-shadow: 0 4px 12px rgba(3, 84, 152, 0.3);
 }
 
 .btn-primario:active {
@@ -425,8 +473,8 @@
 .input-full:focus,
 .select-full:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
 }
 
 .textarea-admin {
@@ -442,8 +490,8 @@
 
 .textarea-admin:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
 }
 
 .nueva-inc-grid {
@@ -576,8 +624,8 @@
 
 .buscador:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
 }
 
 .select-filter {
@@ -591,8 +639,8 @@
 
 .select-filter:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
 }
 
 .modal-admin {
@@ -658,7 +706,7 @@
 }
 
 .btn-primary {
-    background: #667eea;
+    background: #035498;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -670,7 +718,7 @@
 }
 
 .btn-primary:hover {
-    background: #5568d3;
+    background: #024080;
 }
 
 .btn-secondary {
@@ -812,7 +860,7 @@
     margin-bottom: 12px;
     cursor: pointer;
     transition: all 0.15s;
-    border-left: 3px solid #667eea;
+    border-left: 3px solid #035498;
 }
 
 .tarjeta-inc[data-prioridad="urgente"] {
@@ -998,7 +1046,7 @@
 .modal-imagen-inc {
     height: 140px;
     width: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #035498;
     position: relative;
     overflow: hidden;
     border-radius: 8px;
@@ -1057,8 +1105,8 @@
 .form-input:focus,
 .form-select:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
 }
 
 /* Secciones modal */
@@ -1163,8 +1211,8 @@
 
 .notas-textarea:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
 }
 
 /* Timeline historial */
@@ -1227,7 +1275,7 @@
 
 .timeline-evento[data-tipo="creacion"] .timeline-punto-modal,
 .timeline-evento[data-tipo="asignacion"] .timeline-punto-modal {
-    background: #667eea;
+    background: #035498;
 }
 
 .timeline-evento-info {
@@ -1264,6 +1312,214 @@
     border-radius: 6px;
     background: #F3F4F6;
     color: #475569;
+}
+
+/* ============================================
+   TABLE VIEW STYLES
+   ============================================ */
+
+.card-admin {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #E5E7EB;
+    overflow: hidden;
+    margin-top: 16px;
+}
+
+.tabla-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #E5E7EB;
+    background: #F9FAFB;
+    font-size: 13px;
+    color: #6B7280;
+    gap: 24px;
+}
+
+.tabla-admin {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-admin thead th {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #9CA3AF;
+    letter-spacing: 0.8px;
+    padding: 12px 20px;
+    text-align: left;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+}
+
+.tabla-admin tbody tr {
+    border-bottom: 1px solid #F3F4F6;
+    transition: background-color 0.2s ease;
+}
+
+.tabla-admin tbody tr:hover {
+    background: #F9FAFB;
+}
+
+.tabla-admin tbody td {
+    padding: 14px 20px;
+    font-size: 14px;
+    color: #111827;
+    border: none;
+    vertical-align: middle;
+}
+
+.fila-inactiva {
+    opacity: 0.65;
+}
+
+/* Badges estado en tabla */
+.badge-estado {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.badge-estado.badge-abierta {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.badge-estado.badge-en_proceso {
+    background: #FEF3C7;
+    color: #92400e;
+}
+
+.badge-estado.badge-resuelta {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.badge-estado.badge-cerrada {
+    background: #F1F5F9;
+    color: #475569;
+}
+
+/* Botones de acciones en tabla */
+.acciones-tabla {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-accion {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    background: white;
+    color: #6B7280;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.btn-accion:hover {
+    background: #F3F4F6;
+    color: #035498;
+    border-color: #035498;
+}
+
+.btn-ver {
+    color: #035498;
+}
+
+.btn-editar {
+    color: #D97706;
+}
+
+/* Button estado styles */
+.btn-estado {
+    font-size: 0.875rem;
+}
+
+.btn-estado.active {
+    background-color: #035498 !important;
+    color: white !important;
+    border-color: #035498 !important;
+}
+
+.seccion-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #111827;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 6px;
+    margin-top: 12px;
+}
+
+.seccion-label:first-child {
+    margin-top: 0;
+}
+
+/* ============================================
+   PAGINATION STYLES
+   ============================================ */
+
+.paginacion {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.btn-pag {
+    background: transparent;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: #6B7280;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.btn-pag:hover {
+    border-color: #035498;
+    color: #035498;
+    background: #EEF4FF;
+}
+
+.pag-numero {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: #6B7280;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.pag-numero:hover {
+    background: #E5E7EB;
+    color: #111827;
+}
+
+.pag-numero.activo {
+    background: #035498;
+    color: white;
 }
 
 /* Responsive */

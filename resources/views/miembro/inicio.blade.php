@@ -84,10 +84,10 @@
                     <div class="filtros-miembro">
                         <h2 class="titulo-filtros">Filtros</h2>
                         <div class="grupo-filtro">
-                            <label class="etiqueta-filtro" for="precio-minimo">Precio mínimo</label>
+                            <label class="etiqueta-filtro" for="precio-minimo">Rango de precio</label>
                             <div class="fila-campos">
-                                <input type="number" id="precio-minimo" class="campo-filtro" placeholder="0" min="0" />
-                                <input type="number" id="precio-maximo" class="campo-filtro" placeholder="2000" min="0" />
+                                <input type="number" id="precio-minimo" class="campo-filtro" placeholder="Min" min="0" />
+                                <input type="number" id="precio-maximo" class="campo-filtro" placeholder="Max" min="0" />
                             </div>
                         </div>
                         <div class="grupo-filtro">
@@ -107,7 +107,7 @@
                                 <option value="1">1</option>
                                 <option value="2">2</option>
                                 <option value="3">3</option>
-                                <option value="4">4+</option>
+                                <option value="4">4</option>
                             </select>
                         </div>
                         <button class="boton-aplicar" type="button">Aplicar filtros</button>

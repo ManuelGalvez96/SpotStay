@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Miembro\HomeController;
 use App\Http\Controllers\Miembro\DetallePropiedadController;
+use App\Http\Controllers\Miembro\MapaController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -115,4 +116,5 @@ Route::middleware(['role:miembro,inquilino,propietario'])->group(function () {
     Route::get('/inquilino/propiedad/{id}', [InquilinoController::class, 'verPropiedad'])->name('inquilino.ver_propiedad');
     Route::post('/inquilino/propiedad/{id}/incidencia', [InquilinoController::class, 'reportarIncidencia'])->name('inquilino.reportar_incidencia');
     Route::post('/inquilino/incidencia/{id}/cerrar', [InquilinoController::class, 'cerrarIncidencia'])->name('inquilino.cerrar_incidencia');
+    Route::get('/miembro/mapa/propiedades', [MapaController::class, 'propiedades'])->name('miembro.mapa.propiedades');
 });

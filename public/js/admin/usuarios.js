@@ -379,9 +379,14 @@ var abrirModal = function(id) {
         }
     })
     .then(function(response) {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+        }
         return response.json();
     })
     .then(function(usuario) {
+        console.log('Usuario recibido:', usuario);
         if (!usuario) {
             console.error('Usuario no encontrado');
             return;
@@ -414,10 +419,39 @@ var abrirModal = function(id) {
         // Datos
         document.getElementById('dataTelefono').textContent = usuario.telefono_usuario || 'N/A';
         document.getElementById('dataRegistro').textContent = usuario.creado_usuario ? usuario.creado_usuario.substr(0, 10) : 'N/A';
-        document.getElementById('dataPropiedades').textContent = '0';
+        document.getElementById('dataPropiedades').textContent = usuario.total_propiedades || '0';
         document.getElementById('dataAcceso').textContent = 'N/A';
-        document.getElementById('dataAlquileres').textContent = '0';
-        document.getElementById('dataSuscripcion').textContent = 'Estándar';
+        document.getElementById('dataAlquileres').textContent = usuario.total_alquileres || '0';
+        document.getElementById('dataSuscripcion').textContent = usuario.suscripcion || 'Estándar';
+        
+        // Rellenar sección de Propiedades del Usuario
+        var listaPropiedades = document.getElementById('listaPropiedades');
+        if (listaPropiedades) {
+            listaPropiedades.innerHTML = '';
+            
+            if (usuario.propiedades && usuario.propiedades.length > 0) {
+                usuario.propiedades.forEach(function(propiedad) {
+                    var estadoBadgeClass = 'bg-success';
+                    if (propiedad.estado_propiedad === 'disponible') {
+                        estadoBadgeClass = 'bg-warning';
+                    } else if (propiedad.estado_propiedad === 'mantenimiento') {
+                        estadoBadgeClass = 'bg-danger';
+                    }
+                    
+                    var item = document.createElement('div');
+                    item.className = 'list-group-item';
+                    item.innerHTML = '<p class="fw-bold mb-1">' + (propiedad.direccion_propiedad || 'Sin dirección') + '</p>' +
+                                    '<span class="badge ' + estadoBadgeClass + '">' + (propiedad.estado_propiedad || 'Desconocido') + '</span>' +
+                                    '<span class="fw-bold float-end">$' + (propiedad.precio_propiedad || '0') + '/mes</span>';
+                    listaPropiedades.appendChild(item);
+                });
+            } else {
+                var item = document.createElement('div');
+                item.className = 'list-group-item';
+                item.textContent = 'No tiene propiedades registradas';
+                listaPropiedades.appendChild(item);
+            }
+        }
         
         // Mostrar modal Bootstrap
         modalPerfil.show();
@@ -427,7 +461,8 @@ var abrirModal = function(id) {
     })
     .catch(function(error) {
         console.error('Error en fetch abrirModal:', error);
-        alert('Error al cargar datos del usuario');
+        console.error('Error message:', error.message);
+        alert('Error al cargar datos del usuario: ' + error.message);
     });
 };
 

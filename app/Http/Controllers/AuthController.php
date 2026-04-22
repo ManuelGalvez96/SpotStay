@@ -24,11 +24,9 @@ class AuthController extends Controller
                 return redirect('/admin/dashboard');
             }
 
-            if ($user->roles()->whereIn('slug_rol', ['miembro', 'inquilino'])->exists()) {
+            if ($user->roles()->whereIn('slug_rol', ['miembro', 'inquilino', 'propietario'])->exists()) {
                 return redirect('/miembro/inicio');
             }
-
-            return redirect('/');
         }
         return view('login');
     }
@@ -48,20 +46,25 @@ class AuthController extends Controller
             'password.required' => 'La contraseña es obligatoria.',
         ]);
 
-        // 2. Buscar usuario y verificar si está activo
+        // 2. Buscar usuario por email
         $usuario = Usuario::where('email_usuario', $credentials['email'])->first();
-        
-        if (!$usuario || !$usuario->activo_usuario) {
-            return back()->withErrors([
-                'email' => 'Esta cuenta está desactivada. Contacta al administrador.',
-            ])->onlyInput('email');
-        }
 
-        // 3. Intentar autenticar al usuario
-        if (Auth::attempt([
-            'email_usuario' => $credentials['email'],
-            'password' => $credentials['password']
-        ])) {
+        // 3. Verificar si el usuario existe y la contraseña es correcta
+        if ($usuario && Hash::check($credentials['password'], $usuario->contrasena_usuario)) {
+
+            // 4. Si las credenciales son correctas, comprobar si la cuenta está activa
+            if (!$usuario->activo_usuario) {
+                return back()->withErrors([
+                    'email' => 'Esta cuenta está desactivada.<br> Contacta al administrador.',
+                ])->onlyInput('email');
+            }
+
+            // 5. Intentar el login (ya sabemos que las credenciales son correctas)
+            Auth::login($usuario);
+            $request->session()->regenerate();
+
+            /** @var Usuario $user */
+            $user = Auth::user();
 
             $request->session()->regenerate();
 

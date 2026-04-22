@@ -14,6 +14,7 @@ class RolSeeder extends Seeder
             ['nombre_rol' => 'Arrendador', 'slug_rol' => 'arrendador'],
             ['nombre_rol' => 'Inquilino', 'slug_rol' => 'inquilino'],
             ['nombre_rol' => 'Gestor', 'slug_rol' => 'gestor'],
+            ['nombre_rol' => 'Miembro', 'slug_rol' => 'miembro'],
         ];
 
         foreach ($roles as $rol) {

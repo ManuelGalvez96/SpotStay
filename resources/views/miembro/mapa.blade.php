@@ -1,8 +1,9 @@
 <!doctype html>
 <html lang="es">
 	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
 		<title>SpotStay | Mapa</title>
 		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 		<link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}" />
@@ -25,10 +26,10 @@
 				</div>
 
 				<div class="grupo-filtro">
-					<label class="etiqueta-filtro" for="precio-minimo">Precio minimo</label>
+					<label class="etiqueta-filtro" for="precio-minimo">Rango de precio</label>
 					<div class="fila-campos">
-						<input type="number" id="precio-minimo" class="campo-filtro" placeholder="0" min="0"/>
-						<input type="number" id="precio-maximo" class="campo-filtro" placeholder="2000" min="0"/>
+						<input type="number" id="precio-minimo" class="campo-filtro" placeholder="Min" min="0"/>
+						<input type="number" id="precio-maximo" class="campo-filtro" placeholder="Max" min="0"/>
 					</div>
 				</div>
 
@@ -44,21 +45,19 @@
 				</div>
 
 				<div class="grupo-filtro">
-					<label class="etiqueta-filtro" for="numero-habitaciones">
-						Numero de habitaciones
-					</label>
-					<select id="numero-habitaciones" class="campo-filtro">
-						<option value="">Todas</option>
-						<option value="1">1</option>
-						<option value="2">2</option>
-						<option value="3">3</option>
-						<option value="4">4+</option>
-					</select>
+					<label class="etiqueta-filtro" for="numero-habitaciones">Numero de habitaciones</label>
+					<input type="text" id="numero-habitaciones" class="campo-filtro" placeholder="Ej: 1, 2, 3, 4" />
 				</div>
 
-				<button class="boton-aplicar" id="boton-aplicar-filtros" type="button">
-					Aplicar filtros
-				</button>
+				<div class="grupo-filtro">
+					<label class="etiqueta-filtro" for="metros-minimo">Metros cuadrados</label>
+					<div class="fila-campos">
+						<input type="number" id="metros-minimo" class="campo-filtro" placeholder="Min" min="0" />
+						<input type="number" id="metros-maximo" class="campo-filtro" placeholder="Max" min="0" />
+					</div>
+				</div>
+
+				<button class="boton-aplicar" id="boton-aplicar-filtros" type="button">Aplicar filtros</button>
 			</aside>
 
 			<section class="contenedor-mapa">
@@ -66,11 +65,7 @@
 			</section>
 		</main>
 
-		<script
-			src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-			integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-			crossorigin=""
-		></script>
+		<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 		<script src="{{ asset('js/miembro/mapa.js') }}"></script>
 	</body>
 </html>

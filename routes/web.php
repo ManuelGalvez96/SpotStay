@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Miembro\HomeController;
+use App\Http\Controllers\Miembro\DetallePropiedadController;
+use App\Http\Controllers\Miembro\MapaController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UsuarioController;
@@ -10,6 +13,7 @@ use App\Http\Controllers\Admin\SolicitudController;
 use App\Http\Controllers\Admin\IncidenciaController;
 use App\Http\Controllers\Admin\AlquilerController;
 use App\Http\Controllers\Admin\SuscripcionController;
+use App\Http\Controllers\inquilino\InquilinoController;
 use App\Http\Controllers\Gestor\DashboardController as GestorDashboardController;
 use App\Http\Controllers\Gestor\IncidenciaController as GestorIncidenciaController;
 use App\Http\Controllers\Gestor\PropiedadController as GestorPropiedadController;
@@ -42,6 +46,8 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/usuarios', [UsuarioController::class, 'index']);
     Route::get('/admin/usuarios/filtrar', [UsuarioController::class, 'filtrar']);
     Route::get('/admin/usuarios/{id}', [UsuarioController::class, 'show']);
+    Route::post('/admin/usuarios/crear', [UsuarioController::class, 'crear']);
+    Route::post('/admin/usuarios/{id}/editar', [UsuarioController::class, 'editar']);
     Route::post('/admin/usuarios/{id}/toggle-estado', [UsuarioController::class, 'toggleEstado']);
     Route::get('/admin/usuarios/exportar', [UsuarioController::class, 'exportar']);
 
@@ -65,6 +71,19 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/incidencias/{id}', [IncidenciaController::class, 'show']);
     Route::post('/admin/incidencias/{id}/estado', [IncidenciaController::class, 'cambiarEstado']);
     Route::post('/admin/incidencias/{id}/asignar', [IncidenciaController::class, 'asignar']);
+
+    // Alquileres
+    Route::get('/admin/alquileres', [AlquilerController::class, 'index']);
+    Route::get('/admin/alquileres/filtrar', [AlquilerController::class, 'filtrar']);
+    Route::get('/admin/alquileres/{id}', [AlquilerController::class, 'show']);
+
+    // Suscripciones
+    Route::get('/admin/suscripciones', [SuscripcionController::class, 'index']);
+    Route::get('/admin/suscripciones/filtrar', [SuscripcionController::class, 'filtrar']);
+    Route::get('/admin/suscripciones/{id}', [SuscripcionController::class, 'show']);
+    Route::post('/admin/suscripciones/{id}/editar', [SuscripcionController::class, 'editar']);
+    Route::post('/admin/suscripciones/{id}/cancelar', [SuscripcionController::class, 'cancelar']);
+    Route::get('/admin/suscripciones/exportar', [SuscripcionController::class, 'exportar']);
 });
 
 // Rutas Gestor
@@ -86,9 +105,16 @@ Route::middleware(['role:gestor'])->group(function () {
     Route::post('/gestor/incidencias/{id}/presupuesto', [GestorIncidenciaController::class, 'crearPresupuesto']);
 });
 
-Route::middleware(['role:miembro,inquilino'])->group(function () {
+Route::middleware(['role:miembro,inquilino,propietario'])->group(function () {
     Route::get('/miembro/inicio', [HomeController::class, 'index']);
+    Route::get('/miembro/propiedad/{id}', [DetallePropiedadController::class, 'show'])->name('miembro.detalle_propiedad');
     Route::get('/miembro/mapa', function () {
         return view('miembro.mapa');
     });
+
+    Route::get('/inquilino/gestionar-propiedades', [InquilinoController::class, 'gestionarPropiedades'])->name('gestionar_propiedades');
+    Route::get('/inquilino/propiedad/{id}', [InquilinoController::class, 'verPropiedad'])->name('inquilino.ver_propiedad');
+    Route::post('/inquilino/propiedad/{id}/incidencia', [InquilinoController::class, 'reportarIncidencia'])->name('inquilino.reportar_incidencia');
+    Route::post('/inquilino/incidencia/{id}/cerrar', [InquilinoController::class, 'cerrarIncidencia'])->name('inquilino.cerrar_incidencia');
+    Route::get('/miembro/mapa/propiedades', [MapaController::class, 'propiedades'])->name('miembro.mapa.propiedades');
 });

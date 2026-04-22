@@ -244,21 +244,9 @@
                 
                 <!-- Propiedades -->
                 <h6 class="mb-3">Propiedades del Usuario</h6>
-                <div class="list-group list-group-flush">
+                <div class="list-group list-group-flush" id="listaPropiedades">
                     <div class="list-group-item">
-                        <p class="fw-bold mb-1">Calle Mayor 14, Madrid</p>
-                        <span class="badge bg-success">Alquilada</span>
-                        <span class="fw-bold float-end">$1.200/mes</span>
-                    </div>
-                    <div class="list-group-item">
-                        <p class="fw-bold mb-1">Gran Vía 22, Barcelona</p>
-                        <span class="badge bg-success">Alquilada</span>
-                        <span class="fw-bold float-end">$1.500/mes</span>
-                    </div>
-                    <div class="list-group-item">
-                        <p class="fw-bold mb-1">Av. Diagonal 88, BCN</p>
-                        <span class="badge bg-warning">Disponible</span>
-                        <span class="fw-bold float-end">$1.800/mes</span>
+                        <p class="text-muted">Cargando propiedades...</p>
                     </div>
                 </div>
             </div>

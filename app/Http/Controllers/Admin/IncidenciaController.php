@@ -72,7 +72,9 @@ class IncidenciaController extends Controller
             ->get();
 
         $propiedades = DB::table('tbl_propiedad')
-            ->select('id_propiedad','titulo_propiedad','direccion_propiedad','ciudad_propiedad')
+            ->select('id_propiedad','titulo_propiedad',
+                DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', calle_propiedad, numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
+                'ciudad_propiedad')
             ->orderBy('titulo_propiedad','asc')
             ->get();
 
@@ -227,42 +229,82 @@ class IncidenciaController extends Controller
 
     public function filtrar(Request $request)
     {
-        $query = DB::table('tbl_incidencia')
+        $perPage = 10;
+        $page = $request->input('page', 1);
+        
+        $queryBase = DB::table('tbl_incidencia')
             ->join('tbl_propiedad',
               'tbl_propiedad.id_propiedad','=',
               'tbl_incidencia.id_propiedad_fk')
             ->join('tbl_usuario as reporta',
               'reporta.id_usuario','=',
               'tbl_incidencia.id_reporta_fk')
+            ->leftJoin('tbl_usuario as asignado',
+              'asignado.id_usuario','=',
+              'tbl_incidencia.id_asignado_fk')
             ->select(
               'tbl_incidencia.*',
               'tbl_propiedad.titulo_propiedad',
-                            DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
-              'reporta.nombre_usuario as nombre_inquilino'
+              DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
+              'reporta.nombre_usuario as nombre_inquilino',
+              'asignado.nombre_usuario as nombre_gestor'
             );
 
+        // Aplicar filtros
         if ($request->categoria) {
-            $query->where('categoria_incidencia', $request->categoria);
+            $queryBase->where('categoria_incidencia', $request->categoria);
         }
         if ($request->prioridad) {
-            $query->where('prioridad_incidencia', $request->prioridad);
+            $queryBase->where('prioridad_incidencia', $request->prioridad);
         }
-        if ($request->estado) {
-            $query->where('tbl_incidencia.estado_incidencia',
-              $request->estado);
+        if ($request->propiedad) {
+            $queryBase->where('tbl_incidencia.id_propiedad_fk', $request->propiedad);
         }
         if ($request->q) {
-            $query->where('titulo_incidencia','like',
-              '%' . $request->q . '%');
+            $queryBase->where('titulo_incidencia','like','%' . $request->q . '%');
         }
 
-        $incidencias = $query
+        // Obtener totales por estado para badges
+        $abiertas = (clone $queryBase)
+            ->where('tbl_incidencia.estado_incidencia','abierta')
             ->orderBy('tbl_incidencia.creado_incidencia','desc')
             ->get();
 
+        $enProceso = (clone $queryBase)
+            ->where('tbl_incidencia.estado_incidencia','en_proceso')
+            ->orderBy('tbl_incidencia.creado_incidencia','desc')
+            ->get();
+
+        $resueltas = (clone $queryBase)
+            ->where('tbl_incidencia.estado_incidencia','resuelta')
+            ->orderBy('tbl_incidencia.creado_incidencia','desc')
+            ->get();
+
+        $cerradas = (clone $queryBase)
+            ->where('tbl_incidencia.estado_incidencia','cerrada')
+            ->orderBy('tbl_incidencia.creado_incidencia','desc')
+            ->get();
+
+        // Paginar la tabla combinada
+        $allIncidencias = $queryBase->orderBy('tbl_incidencia.creado_incidencia','desc')
+            ->paginate($perPage);
+
         return response()->json([
-            'incidencias' => $incidencias,
-            'total' => $incidencias->count()
+            'abiertas' => $abiertas,
+            'enProceso' => $enProceso,
+            'resueltas' => $resueltas,
+            'cerradas' => $cerradas,
+            'totalAbiertas' => $abiertas->count(),
+            'totalEnProceso' => $enProceso->count(),
+            'totalResueltas' => $resueltas->count(),
+            'totalCerradas' => $cerradas->count(),
+            'tabla' => $allIncidencias->items(),
+            'currentPage' => $allIncidencias->currentPage(),
+            'totalPages' => $allIncidencias->lastPage(),
+            'total' => $allIncidencias->total(),
+            'perPage' => $allIncidencias->perPage(),
+            'from' => $allIncidencias->firstItem(),
+            'to' => $allIncidencias->lastItem()
         ]);
     }
 

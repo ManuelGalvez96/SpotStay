@@ -35,8 +35,8 @@ class CheckRole
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            $rolesRequeridos = implode(' o ', $roles);
-            return redirect('/login')->with('error', "Acceso denegado:<br>Tu cuenta no tiene permisos suficientes <br>(Se requiere: $rolesRequeridos)");
+            $rolesRequeridos = implode('<br>', $roles);
+            return redirect('/login')->with('error', "Acceso denegado:<br>Tu cuenta no tiene permisos suficientes <br>Se requiere uno de estos roles: <br> $rolesRequeridos");
         }
 
         return $next($request);

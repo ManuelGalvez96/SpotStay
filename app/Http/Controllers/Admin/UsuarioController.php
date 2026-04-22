@@ -111,22 +111,99 @@ class UsuarioController extends Controller
 
     public function show($id)
     {
-        $usuario = DB::table('tbl_usuario')
-            ->leftJoin('tbl_rol_usuario',
-              'tbl_usuario.id_usuario', '=',
-              'tbl_rol_usuario.id_usuario_fk')
-            ->leftJoin('tbl_rol',
-              'tbl_rol.id_rol', '=',
-              'tbl_rol_usuario.id_rol_fk')
-            ->select('tbl_usuario.*', 'tbl_rol.nombre_rol', 'tbl_rol.slug_rol')
-            ->where('tbl_usuario.id_usuario', $id)
-            ->first();
+        try {
+            $usuario = DB::table('tbl_usuario')
+                ->leftJoin('tbl_rol_usuario',
+                  'tbl_usuario.id_usuario', '=',
+                  'tbl_rol_usuario.id_usuario_fk')
+                ->leftJoin('tbl_rol',
+                  'tbl_rol.id_rol', '=',
+                  'tbl_rol_usuario.id_rol_fk')
+                ->select('tbl_usuario.*', 'tbl_rol.nombre_rol', 'tbl_rol.slug_rol')
+                ->where('tbl_usuario.id_usuario', $id)
+                ->first();
 
-        if (!$usuario) {
-            return response()->json(null, 404);
+            if (!$usuario) {
+                return response()->json(['error' => 'Usuario no encontrado'], 404);
+            }
+
+            // Obtener propiedades del usuario (si es arrendador)
+            $propiedadesFormato = [];
+            try {
+                $propiedades = DB::table('tbl_propiedad')
+                    ->where('id_arrendador_fk', $id)
+                    ->get();
+                
+                foreach ($propiedades as $p) {
+                    $direccion = '';
+                    if (isset($p->calle_propiedad)) {
+                        $direccion = $p->calle_propiedad;
+                        if (isset($p->numero_propiedad)) {
+                            $direccion .= ', ' . $p->numero_propiedad;
+                        }
+                        if (isset($p->piso_propiedad) && !empty($p->piso_propiedad)) {
+                            $direccion .= ', ' . $p->piso_propiedad;
+                        }
+                        if (isset($p->ciudad_propiedad)) {
+                            $direccion .= ' - ' . $p->ciudad_propiedad;
+                        }
+                    }
+                    
+                    $propiedadesFormato[] = [
+                        'direccion_propiedad' => $direccion,
+                        'estado_propiedad' => $p->estado_propiedad ?? 'borrador',
+                        'precio_propiedad' => (int)($p->precio_propiedad ?? 0)
+                    ];
+                }
+            } catch (\Exception $e) {
+                \Log::error('Error obteniendo propiedades: ' . $e->getMessage());
+            }
+
+            // Obtener total de alquileres
+            $totalAlquileres = 0;
+            try {
+                $totalAlquileres = DB::table('tbl_alquiler')
+                    ->where(function($q) use ($id) {
+                        $q->where('id_arrendador_fk', $id)
+                          ->orWhere('id_inquilino_fk', $id);
+                    })
+                    ->count();
+            } catch (\Exception $e) {
+                \Log::error('Error obteniendo alquileres: ' . $e->getMessage());
+            }
+
+            // Obtener suscripción
+            $suscripcionNombre = 'Estándar';
+            try {
+                $suscripcion = DB::table('tbl_suscripcion')
+                    ->where('id_usuario_fk', $id)
+                    ->first();
+                if ($suscripcion && isset($suscripcion->nombre_suscripcion)) {
+                    $suscripcionNombre = $suscripcion->nombre_suscripcion;
+                }
+            } catch (\Exception $e) {
+                \Log::error('Error obteniendo suscripción: ' . $e->getMessage());
+            }
+
+            return response()->json([
+                'id_usuario' => $usuario->id_usuario,
+                'nombre_usuario' => $usuario->nombre_usuario,
+                'email_usuario' => $usuario->email_usuario,
+                'telefono_usuario' => $usuario->telefono_usuario ?? 'N/A',
+                'creado_usuario' => $usuario->creado_usuario,
+                'activo_usuario' => $usuario->activo_usuario ?? false,
+                'nombre_rol' => $usuario->nombre_rol ?? 'Sin rol',
+                'slug_rol' => $usuario->slug_rol ?? null,
+                'total_propiedades' => count($propiedadesFormato),
+                'propiedades' => $propiedadesFormato,
+                'total_alquileres' => $totalAlquileres,
+                'suscripcion' => $suscripcionNombre
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error en UsuarioController@show: ' . $e->getMessage() . ' - ' . $e->getFile() . ':' . $e->getLine());
+            return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
         }
-
-        return response()->json($usuario);
     }
 
     public function toggleEstado($id)

@@ -177,7 +177,14 @@
                             <span class="label">PRÓXIMO PAGO EN</span>
                             <span class="valor-kpi">{{ $diasParaPago }} días</span>
                             <p class="nota">Vence el {{ $fechaProximoPago }}</p>
-                            <button class="btn-accion btn-pago">Pagar Cuota Ahora</button>
+                            @if (!empty($proximoPago) && !empty($proximoPago->id_alquiler_cuota))
+                            <form method="POST" action="{{ route('inquilino.pagar_cuota', $proximoPago->id_alquiler_cuota) }}" style="margin:0;">
+                                @csrf
+                                <button class="btn-accion btn-pago" type="submit">Pagar Cuota Ahora</button>
+                            </form>
+                            @else
+                            <button class="btn-accion btn-pago" type="button" disabled>Sin cuotas pendientes</button>
+                            @endif
                         </div>
                     </div>
                     @endif

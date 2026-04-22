@@ -54,8 +54,13 @@
             <a href="{{ route('inquilino.ver_propiedad', $alquiler->id_propiedad) }}" class="btn-inquilino btn-secundario">Ver Detalles</a>
             @if ($alquiler->mostrarAlertaFin || $alquiler->estado_alquiler != 'activo')
             <a href="mailto:" class="btn-inquilino btn-secundario" style="color: var(--primario); border-color: var(--borde);"><i class="bi bi-envelope" style="margin-right: 5px;"></i> Contactar</a>
+            @elseif(!empty($alquiler->cuota_pendiente_id))
+            <form method="POST" action="{{ route('inquilino.pagar_cuota', $alquiler->cuota_pendiente_id) }}" style="display:inline; margin:0;">
+                @csrf
+                <button type="submit" class="btn-inquilino btn-primario">Pagar Recibo</button>
+            </form>
             @else
-            <button class="btn-inquilino btn-primario">Pagar Recibo</button>
+            <button class="btn-inquilino btn-secundario" type="button" disabled>Sin recibos pendientes</button>
             @endif
         </div>
     </div>

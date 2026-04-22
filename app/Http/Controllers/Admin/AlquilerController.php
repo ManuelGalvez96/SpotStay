@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use App\Models\Alquiler;
+use App\Models\AlquilerCuota;
 use App\Models\Contrato;
 use App\Models\Pago;
 
@@ -326,6 +328,8 @@ class AlquilerController extends Controller
                     'estado_propiedad' => 'alquilada'
                 ]);
 
+            $this->generarCuotasAlAprobar($alquiler);
+
             DB::commit();
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
@@ -448,6 +452,56 @@ class AlquilerController extends Controller
             return back()
                 ->withErrors(['general' => 'No se pudo crear el alquiler.'])
                 ->withInput();
+        }
+    }
+
+    private function generarCuotasAlAprobar(object $alquiler): void
+    {
+        if (!Schema::hasTable('tbl_alquiler_cuota')) {
+            return;
+        }
+
+        $propiedad = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $alquiler->id_propiedad_fk)
+            ->select('precio_propiedad')
+            ->first();
+
+        $importeBase = round((float) ($propiedad->precio_propiedad ?? 0), 2);
+        if ($importeBase <= 0) {
+            return;
+        }
+
+        $inicio = Carbon::parse((string) $alquiler->fecha_inicio_alquiler)->startOfMonth();
+        $limite = $alquiler->fecha_fin_alquiler
+            ? Carbon::parse((string) $alquiler->fecha_fin_alquiler)->startOfMonth()
+            : $inicio->copy()->addMonths(11);
+
+        if ($limite->lessThan($inicio)) {
+            return;
+        }
+
+        $diaVencimiento = Carbon::parse((string) $alquiler->fecha_inicio_alquiler)->day;
+
+        $cursor = $inicio->copy();
+        while ($cursor->lessThanOrEqualTo($limite)) {
+            $ultimoDiaMes = (int) $cursor->copy()->endOfMonth()->day;
+            $dia = min($diaVencimiento, $ultimoDiaMes);
+            $fechaVencimiento = $cursor->copy()->day($dia)->toDateString();
+
+            AlquilerCuota::firstOrCreate(
+                [
+                    'id_alquiler_fk' => (int) $alquiler->id_alquiler,
+                    'mes_cuota' => $cursor->copy()->toDateString(),
+                ],
+                [
+                    'importe_base' => $importeBase,
+                    'estado' => 'pendiente',
+                    'fecha_vencimiento' => $fechaVencimiento,
+                    'pagado_en' => null,
+                ]
+            );
+
+            $cursor->addMonth();
         }
     }
 }

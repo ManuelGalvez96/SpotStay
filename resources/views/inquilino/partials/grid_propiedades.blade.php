@@ -17,14 +17,46 @@
                 <span class="valor-meta">{{ $alquiler->fecha_fin_alquiler ? \Carbon\Carbon::parse($alquiler->fecha_fin_alquiler)->format('d/m/Y') : 'Indefinido' }}</span>
             </div>
             <div class="item-meta">
-                <span class="label-meta">INCIDENCIAS ABIERTAS</span>
+                <span class="label-meta">INCIDENCIAS EN PROCESO</span>
                 <span class="valor-meta">{{ $alquiler->total_incidencias_propiedad ?? 0 }}</span>
             </div>
         </div>
 
+        @if(($alquiler->pago_atrasado ?? 0) > 0)
+        <div class="alerta-pago-atrasado">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>El plazo del pago ha expirado, paga lo antes posible.</span>
+        </div>
+        @endif
+
+        @if ($alquiler->mostrarAlertaFin)
+        <div class="alerta-fin-contrato" @if($alquiler->haExpirado) style="background: #fff5f5; border-color: #fca5a5; color: #b91c1c;" @endif>
+            <i class="bi bi-clock-history" @if($alquiler->haExpirado) style="color: #ef4444;" @endif></i>
+            @if ($alquiler->haExpirado)
+            <span>El contrato ha expirado (hace <strong>{{ $alquiler->diasExpirado }} días</strong>). Tienes una semana para contactar al propietario y solucionar el inconveniente en el caso que quieras renovar el contrato.</span>
+            @elseif ($alquiler->diasFinContrato === 0)
+            <span class="contenedor-alerta-js">
+                El contrato finaliza <strong>hoy</strong> (quedan <strong class="js-tiempo-restante" data-fecha-fin="{{ $alquiler->fecha_fin_alquiler }}">calculando...</strong>)
+            </span>
+            @elseif ($alquiler->diasFinContrato > 0)
+            <span class="contenedor-alerta-js">
+                El contrato finaliza en <strong>{{ $alquiler->diasFinContrato }} días</strong>
+            </span>
+            @else
+            <span class="contenedor-alerta-js">
+                El contrato finaliza en <strong>{{ $alquiler->diasFinContrato }} días</strong>
+            </span>
+            @endif
+        </div>
+        @endif
+
         <div class="acciones-gestion">
             <a href="{{ route('inquilino.ver_propiedad', $alquiler->id_propiedad) }}" class="btn-inquilino btn-secundario">Ver Detalles</a>
+            @if ($alquiler->mostrarAlertaFin || $alquiler->estado_alquiler != 'activo')
+            <a href="mailto:" class="btn-inquilino btn-secundario" style="color: var(--primario); border-color: var(--borde);"><i class="bi bi-envelope" style="margin-right: 5px;"></i> Contactar</a>
+            @else
             <button class="btn-inquilino btn-primario">Pagar Recibo</button>
+            @endif
         </div>
     </div>
 </article>

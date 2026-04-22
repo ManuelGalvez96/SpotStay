@@ -84,7 +84,7 @@
                     </div>
                     <div class="kpi-datos-inquilino">
                         <span class="kpi-numero">{{ $totalIncidencias }}</span>
-                        <span class="kpi-etiqueta">Incidencias Abiertas</span>
+                        <span class="kpi-etiqueta">Incidencias En Proceso</span>
                     </div>
                 </div>
             </div>
@@ -125,6 +125,7 @@
 
     <script src="{{ asset('js/miembro/miembro.js') }}"></script>
     <script src="{{ asset('js/inquilino/filtros_gestion.js') }}"></script>
+    <script src="{{ asset('js/inquilino/inquilino.js') }}"></script>
 </body>
 
 </html>

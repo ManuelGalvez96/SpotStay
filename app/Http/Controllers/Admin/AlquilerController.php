@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use App\Models\Alquiler;
@@ -12,6 +13,28 @@ use App\Models\Pago;
 
 class AlquilerController extends Controller
 {
+    /**
+     * Mostrar formulario de nuevo alquiler
+     */
+    public function nueva()
+    {
+        $propiedadesPublicadas = DB::table('tbl_propiedad')
+            ->where('estado_propiedad', 'publicada')
+            ->select('id_propiedad', 'titulo_propiedad', 'ciudad_propiedad', 'precio_propiedad')
+            ->orderBy('titulo_propiedad')
+            ->get();
+
+        $inquilinos = DB::table('tbl_usuario')
+            ->join('tbl_rol_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_rol_usuario.id_usuario_fk')
+            ->join('tbl_rol', 'tbl_rol_usuario.id_rol_fk', '=', 'tbl_rol.id_rol')
+            ->where('tbl_rol.nombre_rol', 'inquilino')
+            ->select('tbl_usuario.id_usuario', 'tbl_usuario.nombre_usuario', 'tbl_usuario.email_usuario')
+            ->orderBy('tbl_usuario.nombre_usuario')
+            ->get();
+
+        return view('admin.alquileres-crear', compact('propiedadesPublicadas', 'inquilinos'));
+    }
+
     /**
      * Mostrar listado de alquileres con KPI
      */
@@ -184,29 +207,104 @@ class AlquilerController extends Controller
     {
         $query = DB::table('tbl_alquiler')
             ->join('tbl_propiedad', 'tbl_alquiler.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad')
+<<<<<<< HEAD
             ->join('tbl_usuario', 'tbl_alquiler.id_inquilino_fk', '=', 'tbl_usuario.id_usuario')
             ->where('tbl_alquiler.estado_alquiler', 'pendiente')
             ->select(
                 'tbl_alquiler.id_alquiler',
+=======
+            ->join('tbl_usuario as inquilino', 'tbl_alquiler.id_inquilino_fk', '=', 'inquilino.id_usuario')
+            ->join('tbl_usuario as arrendador', 'tbl_propiedad.id_arrendador_fk', '=', 'arrendador.id_usuario')
+            ->select(
+                'tbl_alquiler.id_alquiler',
+                'tbl_alquiler.id_propiedad_fk',
+                'tbl_alquiler.id_inquilino_fk',
+>>>>>>> 08c175d524e199a9fe67827fccc13bde9d5a2447
                 'tbl_alquiler.estado_alquiler',
                 'tbl_alquiler.fecha_inicio_alquiler',
                 'tbl_alquiler.fecha_fin_alquiler',
                 'tbl_propiedad.titulo_propiedad',
                 'tbl_propiedad.ciudad_propiedad',
+<<<<<<< HEAD
                 'tbl_usuario.nombre_usuario'
             );
+=======
+                'tbl_propiedad.precio_propiedad',
+                'inquilino.nombre_usuario as nombre_inquilino',
+                'arrendador.id_usuario as id_arrendador',
+                'arrendador.nombre_usuario as nombre_arrendador'
+            );
+
+        if ($request->has('estado') && $request->estado) {
+            $query->where('tbl_alquiler.estado_alquiler', $request->estado);
+        }
+
+        if ($request->has('propiedad') && $request->propiedad) {
+            $query->where('tbl_alquiler.id_propiedad_fk', $request->propiedad);
+        }
+
+        if ($request->has('mes') && $request->mes) {
+            $query->whereMonth('tbl_alquiler.fecha_inicio_alquiler', $request->mes);
+        }
+>>>>>>> 08c175d524e199a9fe67827fccc13bde9d5a2447
 
         if ($request->has('q') && $request->q) {
-            $q = '%' . $request->q . '%';
+            $q = '%' . strtolower(trim($request->q)) . '%';
             $query->where(function ($where) use ($q) {
-                $where->orWhere('tbl_propiedad.titulo_propiedad', 'LIKE', $q)
-                    ->orWhere('tbl_usuario.nombre_usuario', 'LIKE', $q);
+                $where->orWhereRaw('LOWER(tbl_propiedad.titulo_propiedad) LIKE ?', [$q])
+                    ->orWhereRaw('LOWER(inquilino.nombre_usuario) LIKE ?', [$q])
+                    ->orWhereRaw('LOWER(arrendador.nombre_usuario) LIKE ?', [$q])
+                    ->orWhereRaw('LOWER(tbl_propiedad.ciudad_propiedad) LIKE ?', [$q]);
             });
         }
 
+<<<<<<< HEAD
         $alquileres = $query->get();
 
         return response()->json(['alquileres' => $alquileres]);
+=======
+        $paginados = $query
+            ->orderByDesc('tbl_alquiler.id_alquiler')
+            ->paginate(10);
+
+        $colores = ['#B8CCE4','#A8D5BF','#F9E4A0','#FFD5CC','#D7EAF9','#EDE7F6','#D5F5E3','#FAD7D7','#CCE5FF','#FDE8C8'];
+
+        $alquileres = $paginados->getCollection()->map(function ($alq) use ($colores) {
+            $partesInq = explode(' ', $alq->nombre_inquilino ?? '');
+            $inicialesInq = strtoupper(substr($partesInq[0] ?? '', 0, 1) . substr($partesInq[1] ?? '', 0, 1));
+
+            $partesArr = explode(' ', $alq->nombre_arrendador ?? '');
+            $inicialesArr = strtoupper(substr($partesArr[0] ?? '', 0, 1) . substr($partesArr[1] ?? '', 0, 1));
+
+            return [
+                'id' => $alq->id_alquiler,
+                'id_propiedad_fk' => $alq->id_propiedad_fk,
+                'id_inquilino_fk' => $alq->id_inquilino_fk,
+                'id_arrendador' => $alq->id_arrendador,
+                'titulo_propiedad' => $alq->titulo_propiedad,
+                'ciudad_propiedad' => $alq->ciudad_propiedad,
+                'nombre_inquilino' => $alq->nombre_inquilino,
+                'nombre_arrendador' => $alq->nombre_arrendador,
+                'estado_alquiler' => $alq->estado_alquiler,
+                'fecha_inicio_alquiler' => $alq->fecha_inicio_alquiler,
+                'fecha_fin_alquiler' => $alq->fecha_fin_alquiler,
+                'color_prop' => $colores[$alq->id_propiedad_fk % 10],
+                'color_inq' => $colores[$alq->id_inquilino_fk % 10],
+                'color_arr' => $colores[$alq->id_arrendador % 10],
+                'iniciales_inq' => $inicialesInq,
+                'iniciales_arr' => $inicialesArr,
+            ];
+        })->values();
+
+        return response()->json([
+            'alquileres' => $alquileres,
+            'total' => $paginados->total(),
+            'currentPage' => $paginados->currentPage(),
+            'totalPages' => $paginados->lastPage(),
+            'from' => $paginados->firstItem(),
+            'to' => $paginados->lastItem(),
+        ]);
+>>>>>>> 08c175d524e199a9fe67827fccc13bde9d5a2447
     }
 
     /**
@@ -216,6 +314,9 @@ class AlquilerController extends Controller
     {
         try {
             DB::beginTransaction();
+
+            $admin = Auth::user();
+            $adminId = $admin->id_usuario ?? $admin->id ?? null;
 
             // Obtener el alquiler para saber la propiedad
             $alquiler = DB::table('tbl_alquiler')
@@ -232,7 +333,7 @@ class AlquilerController extends Controller
                 ->where('id_alquiler', $id)
                 ->update([
                     'estado_alquiler' => 'activo',
-                    'id_admin_aprueba_fk' => auth()->id(),
+                    'id_admin_aprueba_fk' => $adminId,
                     'aprobado_alquiler' => now()
                 ]);
 
@@ -274,23 +375,61 @@ class AlquilerController extends Controller
      */
     public function crear(Request $request)
     {
+        $datos = $request->validate([
+            'id_propiedad' => 'required|exists:tbl_propiedad,id_propiedad',
+            'id_inquilino' => 'required|exists:tbl_usuario,id_usuario',
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
+            'precio' => 'required|numeric|min:0'
+        ]);
+
         try {
             DB::beginTransaction();
 
-            // Validar datos
-            $request->validate([
-                'id_propiedad' => 'required|exists:tbl_propiedad,id_propiedad',
-                'id_inquilino' => 'required|exists:tbl_usuario,id_usuario',
-                'fecha_inicio' => 'required|date',
-                'precio' => 'required|numeric|min:0'
-            ]);
+            // Evitar crear alquiler sobre una propiedad no disponible.
+            $propiedad = DB::table('tbl_propiedad')
+                ->where('id_propiedad', $datos['id_propiedad'])
+                ->first();
+
+            if (!$propiedad || !in_array($propiedad->estado_propiedad, ['publicada', 'activo'])) {
+                DB::rollBack();
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'La propiedad no esta disponible para crear un alquiler.'
+                    ], 422);
+                }
+
+                return back()
+                    ->withErrors(['id_propiedad' => 'La propiedad no esta disponible para crear un alquiler.'])
+                    ->withInput();
+            }
+
+            $existeAlquilerAbierto = DB::table('tbl_alquiler')
+                ->where('id_propiedad_fk', $datos['id_propiedad'])
+                ->whereIn('estado_alquiler', ['pendiente', 'activo'])
+                ->exists();
+
+            if ($existeAlquilerAbierto) {
+                DB::rollBack();
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Ya existe un alquiler pendiente o activo para esta propiedad.'
+                    ], 422);
+                }
+
+                return back()
+                    ->withErrors(['id_propiedad' => 'Ya existe un alquiler pendiente o activo para esta propiedad.'])
+                    ->withInput();
+            }
 
             // Crear alquiler
             $alquilerId = DB::table('tbl_alquiler')->insertGetId([
-                'id_propiedad_fk' => $request->id_propiedad,
-                'id_inquilino_fk' => $request->id_inquilino,
-                'fecha_inicio_alquiler' => $request->fecha_inicio,
-                'fecha_fin_alquiler' => $request->fecha_fin ?? null,
+                'id_propiedad_fk' => $datos['id_propiedad'],
+                'id_inquilino_fk' => $datos['id_inquilino'],
+                'fecha_inicio_alquiler' => $datos['fecha_inicio'],
+                'fecha_fin_alquiler' => $datos['fecha_fin'] ?? null,
                 'estado_alquiler' => 'pendiente',
                 'aprobado_alquiler' => null,
                 'creado_alquiler' => now(),
@@ -298,10 +437,10 @@ class AlquilerController extends Controller
             ]);
 
             // Crear pago fianza
-            $fianza = $request->precio * 2;
+            $fianza = $datos['precio'] * 2;
             DB::table('tbl_pago')->insert([
                 'id_alquiler_fk' => $alquilerId,
-                'id_pagador_fk' => $request->id_inquilino,
+                'id_pagador_fk' => $datos['id_inquilino'],
                 'tipo_pago' => 'fianza',
                 'importe_pago' => $fianza,
                 'estado_pago' => 'pendiente',
@@ -311,10 +450,22 @@ class AlquilerController extends Controller
             ]);
 
             DB::commit();
-            return response()->json(['success' => true, 'id_alquiler' => $alquilerId]);
+
+            if ($request->expectsJson()) {
+                return response()->json(['success' => true, 'id_alquiler' => $alquilerId]);
+            }
+
+            return redirect('/admin/alquileres')->with('success', 'Alquiler creado correctamente.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['success' => false, 'error' => $e->getMessage()]);
+
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'error' => $e->getMessage()]);
+            }
+
+            return back()
+                ->withErrors(['general' => 'No se pudo crear el alquiler.'])
+                ->withInput();
         }
     }
 }

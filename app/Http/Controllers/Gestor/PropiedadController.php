@@ -272,10 +272,14 @@ class PropiedadController extends Controller
         $validated = $request->validate([
             'concepto_gasto' => ['required', 'string', 'max:200'],
             'categoria_gasto' => ['nullable', 'string', 'max:50'],
-            'importe_gasto' => ['required', 'numeric', 'min:0.01'],
+            'importe_estimado' => ['nullable', 'numeric', 'min:0.01'],
             'dia_vencimiento' => ['required', 'integer', 'min:1', 'max:28'],
             'fecha_inicio_gasto' => ['required', 'date'],
         ]);
+
+        $importeEstimado = array_key_exists('importe_estimado', $validated) && $validated['importe_estimado'] !== null && $validated['importe_estimado'] !== ''
+            ? round((float) $validated['importe_estimado'], 2)
+            : null;
 
         $inicio = Carbon::parse($validated['fecha_inicio_gasto'])->startOfMonth();
         $hoy = Carbon::today()->startOfMonth();
@@ -293,7 +297,7 @@ class PropiedadController extends Controller
             ]);
         }
 
-        DB::transaction(function () use ($id, $gestorId, $validated, $inicio, $hoy, $alquileresActivos) {
+        DB::transaction(function () use ($id, $gestorId, $validated, $inicio, $hoy, $alquileresActivos, $importeEstimado) {
             $ahora = now();
             $gastoId = DB::table('tbl_gasto')->insertGetId([
                 'id_propiedad_fk' => $id,
@@ -301,7 +305,7 @@ class PropiedadController extends Controller
                 'id_gestor_fk' => $gestorId,
                 'concepto_gasto' => trim($validated['concepto_gasto']),
                 'categoria_gasto' => trim((string) ($validated['categoria_gasto'] ?? '')) !== '' ? trim((string) $validated['categoria_gasto']) : null,
-                'importe_gasto' => round((float) $validated['importe_gasto'], 2),
+                'importe_estimado' => $importeEstimado,
                 'ambito_gasto' => 'propiedad',
                 'pagador_gasto' => 'inquilino',
                 'periodicidad_gasto' => 'mensual',
@@ -318,7 +322,7 @@ class PropiedadController extends Controller
                 $this->crearCuotaMensualConDetalles(
                     $gastoId,
                     $cursor->copy(),
-                    round((float) $validated['importe_gasto'], 2),
+                    $importeEstimado ?? 0.0,
                     (int) $validated['dia_vencimiento'],
                     'inquilino',
                     $alquileresActivos
@@ -429,7 +433,7 @@ class PropiedadController extends Controller
                     $this->crearCuotaMensualConDetalles(
                         (int) $gasto->id_gasto,
                         $cursor->copy(),
-                        (float) $gasto->importe_gasto,
+                        (float) ($gasto->importe_estimado ?? 0),
                         (int) $gasto->dia_vencimiento,
                         (string) $gasto->pagador_gasto,
                         $alquileresActivos
@@ -485,7 +489,7 @@ class PropiedadController extends Controller
                 'id_gestor_fk' => $gestorId,
                 'concepto_gasto' => ucfirst($conceptoTexto),
                 'categoria_gasto' => 'base_propiedad',
-                'importe_gasto' => round($importeNormalizado, 2),
+                'importe_estimado' => round($importeNormalizado, 2),
                 'ambito_gasto' => 'propiedad',
                 'pagador_gasto' => 'inquilino',
                 'periodicidad_gasto' => 'mensual',
@@ -664,10 +668,11 @@ class PropiedadController extends Controller
             $finMes = Carbon::today()->endOfMonth()->toDateString();
 
             $resumenGastos = [
-                'mensual_total' => (float) DB::table('tbl_gasto')
-                    ->where('id_propiedad_fk', $propiedadId)
-                    ->where('estado_gasto', 'activo')
-                    ->sum('importe_gasto') + (float) $propiedad->precio_propiedad,
+                'mensual_total' => (float) DB::table('tbl_gasto_cuota')
+                    ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+                    ->where('tbl_gasto.id_propiedad_fk', $propiedadId)
+                    ->where('tbl_gasto_cuota.mes_cuota', $mesActual)
+                    ->sum('tbl_gasto_cuota.importe_total_cuota') + (float) $propiedad->precio_propiedad,
                 'pendientes_mes' => DB::table('tbl_gasto_cuota')
                     ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
                     ->where('tbl_gasto.id_propiedad_fk', $propiedadId)
@@ -733,27 +738,27 @@ class PropiedadController extends Controller
 
             if (empty($alquileresIds)) {
                 $pagosPrincipales['alquiler']['estado'] = 'sin_dato';
+            } elseif (!Schema::hasTable('tbl_alquiler_cuota')) {
+                $pagosPrincipales['alquiler']['estado'] = 'pendiente';
             } else {
-                $pagosMes = DB::table('tbl_pago')
+                $cuotasMes = DB::table('tbl_alquiler_cuota')
                     ->whereIn('id_alquiler_fk', $alquileresIds)
-                    ->where('tipo_pago', 'alquiler')
-                    ->whereBetween('mes_pago', [$inicioMes, $finMes])
-                    ->select('id_alquiler_fk', 'estado_pago')
+                    ->where('mes_cuota', $mesActual)
+                    ->select('id_alquiler_fk', 'estado')
                     ->get();
 
-                $atrasadosPrevios = DB::table('tbl_pago')
+                $atrasadosPrevios = DB::table('tbl_alquiler_cuota')
                     ->whereIn('id_alquiler_fk', $alquileresIds)
-                    ->where('tipo_pago', 'alquiler')
-                    ->where('mes_pago', '<', $inicioMes)
-                    ->where('estado_pago', '!=', 'confirmado')
+                    ->where('mes_cuota', '<', $inicioMes)
+                    ->where('estado', '!=', 'pagado')
                     ->exists();
 
                 if ($atrasadosPrevios) {
                     $pagosPrincipales['alquiler']['estado'] = 'atrasado';
-                } elseif ($pagosMes->isEmpty()) {
+                } elseif ($cuotasMes->isEmpty()) {
                     $pagosPrincipales['alquiler']['estado'] = 'pendiente';
                 } else {
-                    $confirmados = $pagosMes->where('estado_pago', 'confirmado')->pluck('id_alquiler_fk')->unique()->count();
+                    $confirmados = $cuotasMes->where('estado', 'pagado')->pluck('id_alquiler_fk')->unique()->count();
                     $totalAlquileresActivos = count($alquileresIds);
 
                     if ($confirmados === $totalAlquileresActivos) {

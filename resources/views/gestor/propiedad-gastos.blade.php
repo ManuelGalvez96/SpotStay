@@ -69,8 +69,8 @@
                     <input type="text" name="categoria_gasto" value="{{ old('categoria_gasto') }}" maxlength="50" placeholder="Ej: suministros" />
                 </label>
                 <label>
-                    Importe mensual (EUR)
-                    <input type="number" step="0.01" min="0.01" name="importe_gasto" value="{{ old('importe_gasto') }}" required />
+                    Importe estimado mensual (EUR)
+                    <input type="number" step="0.01" min="0" name="importe_estimado" value="{{ old('importe_estimado') }}" placeholder="Opcional" />
                 </label>
             </div>
 

@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_gestor_fk');
             $table->string('concepto_gasto', 200);
             $table->string('categoria_gasto', 50)->nullable();
-            $table->decimal('importe_gasto', 10, 2);
+            $table->decimal('importe_estimado', 10, 2)->nullable();
             $table->enum('ambito_gasto', ['propiedad', 'contrato']);
             $table->enum('pagador_gasto', ['arrendador', 'inquilino'])->default('inquilino');
             $table->string('periodicidad_gasto', 30)->default('mensual');

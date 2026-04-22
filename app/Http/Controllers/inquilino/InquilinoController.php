@@ -4,6 +4,7 @@ namespace App\Http\Controllers\inquilino;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\AlquilerCuota;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -12,7 +13,8 @@ class InquilinoController extends Controller
 {
     public function gestionarPropiedades(Request $request)
     {
-        $usuario = auth()->user();
+        /** @var \App\Models\Usuario|null $usuario */
+        $usuario = Auth::user();
         if (!$usuario) return redirect()->route('login');
 
         // ID del usuario autenticado
@@ -57,14 +59,17 @@ class InquilinoController extends Controller
             ->count(DB::raw('DISTINCT tbl_propiedad.id_propiedad'));
 
         // 2. Días para el próximo pago
-        $proximoPago = DB::table('tbl_pago')
-            ->where('id_pagador_fk', $userId)
-            ->where('estado_pago', 'pendiente')
-            ->orderBy('mes_pago', 'asc')
+        $proximoPago = AlquilerCuota::query()
+            ->join('tbl_alquiler', 'tbl_alquiler.id_alquiler', '=', 'tbl_alquiler_cuota.id_alquiler_fk')
+            ->where('tbl_alquiler.id_inquilino_fk', $userId)
+            ->where('tbl_alquiler.estado_alquiler', 'activo')
+            ->where('tbl_alquiler_cuota.estado', 'pendiente')
+            ->orderBy('tbl_alquiler_cuota.mes_cuota', 'asc')
+            ->select('tbl_alquiler_cuota.mes_cuota')
             ->first();
 
-        if ($proximoPago && $proximoPago->mes_pago) {
-            $fechaPago = Carbon::parse($proximoPago->mes_pago)->day(1);
+        if ($proximoPago && $proximoPago->mes_cuota) {
+            $fechaPago = Carbon::parse($proximoPago->mes_cuota)->day(1);
             $diasParaPago = Carbon::now()->diffInDays($fechaPago, false);
             $diasParaPago = $diasParaPago < 0 ? 0 : round($diasParaPago);
         } else {
@@ -145,7 +150,7 @@ class InquilinoController extends Controller
 
     public function verPropiedad($id)
     {
-        $usuario = auth()->user();
+        $usuario = Auth::user();
         if (!$usuario) return redirect()->route('login');
 
         $userId = $usuario->id_usuario;
@@ -184,14 +189,14 @@ class InquilinoController extends Controller
             ->get();
 
         // 3. Próximo pago
-        $proximoPago = DB::table('tbl_pago')
+        $proximoPago = AlquilerCuota::query()
             ->where('id_alquiler_fk', $alquiler->id_alquiler)
-            ->where('estado_pago', 'pendiente')
-            ->orderBy('mes_pago', 'asc')
+            ->where('estado', 'pendiente')
+            ->orderBy('mes_cuota', 'asc')
             ->first();
 
-        if ($proximoPago && $proximoPago->mes_pago) {
-            $fechaPago = Carbon::parse($proximoPago->mes_pago)->day(1);
+        if ($proximoPago && $proximoPago->mes_cuota) {
+            $fechaPago = Carbon::parse($proximoPago->mes_cuota)->day(1);
             $diasParaPago = Carbon::now()->diffInDays($fechaPago, false);
             $diasParaPago = $diasParaPago < 0 ? 0 : round($diasParaPago);
         } else {
@@ -220,7 +225,7 @@ class InquilinoController extends Controller
 
     public function reportarIncidencia(Request $request, $id)
     {
-        $usuario = auth()->user();
+        $usuario = Auth::user();
         if (!$usuario) return redirect()->route('login');
 
         $request->validate([
@@ -268,7 +273,7 @@ class InquilinoController extends Controller
      */
     public function cerrarIncidencia($id)
     {
-        $userId = auth()->id();
+        $userId = Auth::id();
 
         $incidencia = DB::table('tbl_incidencia')
             ->where('id_incidencia', $id)

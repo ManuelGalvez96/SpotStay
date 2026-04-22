@@ -21,6 +21,7 @@ class Pago extends Model
 
     protected $fillable = [
         'id_alquiler_fk',
+        'id_alquiler_cuota_fk',
         'id_pagador_fk',
         'id_gasto_cuota_detalle_fk',
         'id_gasto_cuota_fk',
@@ -47,6 +48,12 @@ class Pago extends Model
     public function alquiler(): BelongsTo
     {
         return $this->belongsTo(Alquiler::class, 'id_alquiler_fk', 'id_alquiler');
+    }
+
+    // Cuota de alquiler asociada (nuevo flujo de alquiler mensual)
+    public function alquilerCuota(): BelongsTo
+    {
+        return $this->belongsTo(AlquilerCuota::class, 'id_alquiler_cuota_fk', 'id_alquiler_cuota');
     }
 
     // Usuario que realizó el pago

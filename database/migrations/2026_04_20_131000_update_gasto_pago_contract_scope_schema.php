@@ -9,14 +9,19 @@ return new class extends Migration {
     public function up(): void
     {
         if (Schema::hasTable('tbl_gasto')) {
+            $afterColumn = Schema::hasColumn('tbl_gasto', 'importe_estimado') ? 'importe_estimado' : 'importe_gasto';
+
             Schema::table('tbl_gasto', function (Blueprint $table) {
                 if (!Schema::hasColumn('tbl_gasto', 'id_alquiler_fk')) {
                     $table->unsignedBigInteger('id_alquiler_fk')->nullable()->after('id_propiedad_fk');
                 }
-                if (!Schema::hasColumn('tbl_gasto', 'ambito_gasto')) {
-                    $table->enum('ambito_gasto', ['propiedad', 'contrato'])->default('propiedad')->after('importe_gasto');
-                }
             });
+
+            if (!Schema::hasColumn('tbl_gasto', 'ambito_gasto')) {
+                Schema::table('tbl_gasto', function (Blueprint $table) use ($afterColumn) {
+                    $table->enum('ambito_gasto', ['propiedad', 'contrato'])->default('propiedad')->after($afterColumn);
+                });
+            }
 
             DB::statement("UPDATE tbl_gasto SET pagador_gasto = 'inquilino' WHERE pagador_gasto IN ('gestor', 'inquilinos')");
             DB::statement("ALTER TABLE tbl_gasto MODIFY pagador_gasto ENUM('arrendador','inquilino') NOT NULL DEFAULT 'inquilino'");

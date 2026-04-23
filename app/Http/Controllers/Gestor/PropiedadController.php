@@ -33,6 +33,27 @@ class PropiedadController extends Controller
             ->where('prioridad_incidencia', 'urgente')
             ->groupBy('id_propiedad_fk');
 
+        $subPagosPendientes = DB::table('tbl_alquiler')
+            ->join('tbl_alquiler_cuota', 'tbl_alquiler_cuota.id_alquiler_fk', '=', 'tbl_alquiler.id_alquiler')
+            ->select('tbl_alquiler.id_propiedad_fk', DB::raw('COUNT(*) as total_pagos_pendientes'))
+            ->where('tbl_alquiler.estado_alquiler', 'activo')
+            ->where('tbl_alquiler_cuota.estado', 'pendiente')
+            ->groupBy('tbl_alquiler.id_propiedad_fk');
+
+        $subPagosAtrasados = DB::table('tbl_alquiler')
+            ->join('tbl_alquiler_cuota', 'tbl_alquiler_cuota.id_alquiler_fk', '=', 'tbl_alquiler.id_alquiler')
+            ->select('tbl_alquiler.id_propiedad_fk', DB::raw('COUNT(*) as total_pagos_atrasados'))
+            ->where('tbl_alquiler.estado_alquiler', 'activo')
+            ->where('tbl_alquiler_cuota.estado', 'atrasado')
+            ->groupBy('tbl_alquiler.id_propiedad_fk');
+
+        $subPagosPagados = DB::table('tbl_alquiler')
+            ->join('tbl_alquiler_cuota', 'tbl_alquiler_cuota.id_alquiler_fk', '=', 'tbl_alquiler.id_alquiler')
+            ->select('tbl_alquiler.id_propiedad_fk', DB::raw('COUNT(*) as total_pagos_pagados'))
+            ->where('tbl_alquiler.estado_alquiler', 'activo')
+            ->where('tbl_alquiler_cuota.estado', 'pagado')
+            ->groupBy('tbl_alquiler.id_propiedad_fk');
+
         $baseQuery = DB::table('tbl_propiedad')
             ->join('tbl_usuario as arrendador', 'arrendador.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
             ->leftJoinSub($subAlquileresActivos, 'alq_activos', function ($join) {
@@ -43,6 +64,15 @@ class PropiedadController extends Controller
             })
             ->leftJoinSub($subIncidenciasCriticas, 'inc_criticas', function ($join) {
                 $join->on('inc_criticas.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad');
+            })
+            ->leftJoinSub($subPagosPendientes, 'pagos_pendientes', function ($join) {
+                $join->on('pagos_pendientes.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad');
+            })
+            ->leftJoinSub($subPagosAtrasados, 'pagos_atrasados', function ($join) {
+                $join->on('pagos_atrasados.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad');
+            })
+            ->leftJoinSub($subPagosPagados, 'pagos_pagados', function ($join) {
+                $join->on('pagos_pagados.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad');
             })
             ->where('tbl_propiedad.id_gestor_fk', $gestorId)
             ->where('tbl_propiedad.estado_propiedad', '!=', 'borrador');
@@ -110,7 +140,10 @@ class PropiedadController extends Controller
                 'arrendador.nombre_usuario as nombre_arrendador',
                 DB::raw('COALESCE(alq_activos.total_alquileres_activos, 0) as total_alquileres_activos'),
                 DB::raw('COALESCE(inc_activas.total_incidencias_activas, 0) as total_incidencias_activas'),
-                DB::raw('COALESCE(inc_criticas.total_incidencias_criticas, 0) as total_incidencias_criticas')
+                DB::raw('COALESCE(inc_criticas.total_incidencias_criticas, 0) as total_incidencias_criticas'),
+                DB::raw('COALESCE(pagos_pendientes.total_pagos_pendientes, 0) as total_pagos_pendientes'),
+                DB::raw('COALESCE(pagos_atrasados.total_pagos_atrasados, 0) as total_pagos_atrasados'),
+                DB::raw('COALESCE(pagos_pagados.total_pagos_pagados, 0) as total_pagos_pagados')
             )
             ->orderBy($sortColumn, $sortDir)
             ->orderBy('tbl_propiedad.id_propiedad', 'desc')

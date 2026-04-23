@@ -92,18 +92,18 @@
     color: #035498;
 }
 
-.th-salud {
+.th-pagos {
     white-space: nowrap;
 }
 
-.salud-help-wrap {
+.pagos-help-wrap {
     position: relative;
     display: inline-flex;
     align-items: center;
     margin-left: 6px;
 }
 
-.salud-help-square {
+.pagos-help-square {
     width: 18px;
     height: 18px;
     border: 1px solid #94A3B8;
@@ -120,14 +120,14 @@
     justify-content: center;
 }
 
-.salud-help-square:hover,
-.salud-help-square:focus {
+.pagos-help-square:hover,
+.pagos-help-square:focus {
     border-color: #475569;
     color: #0F172A;
     outline: none;
 }
 
-.salud-legend-box {
+.pagos-legend-box {
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
@@ -145,40 +145,40 @@
     z-index: 30;
 }
 
-.salud-legend-box strong {
+.pagos-legend-box strong {
     display: block;
     margin-bottom: 6px;
     color: #0F172A;
 }
 
-.salud-legend-row {
+.pagos-legend-row {
     display: block;
     margin-top: 6px;
     white-space: normal;
 }
 
-.salud-legend-tag {
+.pagos-legend-tag {
     font-weight: 700;
 }
 
-.salud-legend-verde {
+.pagos-legend-verde {
     color: #166534;
 }
 
-.salud-legend-amarillo {
+.pagos-legend-amarillo {
     color: #92400E;
 }
 
-.salud-legend-rojo {
+.pagos-legend-rojo {
     color: #991B1B;
 }
 
-.salud-help-wrap:hover .salud-legend-box,
-.salud-help-wrap:focus-within .salud-legend-box {
+.pagos-help-wrap:hover .pagos-legend-box,
+.pagos-help-wrap:focus-within .pagos-legend-box {
     display: block;
 }
 
-.salud-chip {
+.pagos-chip {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -188,36 +188,36 @@
     font-weight: 600;
 }
 
-.salud-punto {
+.pagos-punto {
     width: 8px;
     height: 8px;
     border-radius: 50%;
 }
 
-.salud-verde {
+.pagos-verde {
     background: #DCFCE7;
     color: #166534;
 }
 
-.salud-verde .salud-punto {
+.pagos-verde .pagos-punto {
     background: #16A34A;
 }
 
-.salud-amarillo {
+.pagos-amarillo {
     background: #FEF3C7;
     color: #92400E;
 }
 
-.salud-amarillo .salud-punto {
+.pagos-amarillo .pagos-punto {
     background: #D97706;
 }
 
-.salud-rojo {
+.pagos-rojo {
     background: #FEE2E2;
     color: #991B1B;
 }
 
-.salud-rojo .salud-punto {
+.pagos-rojo .pagos-punto {
     background: #DC2626;
 }
 

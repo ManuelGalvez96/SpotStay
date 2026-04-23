@@ -841,8 +841,6 @@ var cambiarPagina = function(numPagina) {
     if (numPagina < 1 || numPagina > totalPaginas) {
         return;
     }
-
-                alert('Error al crear: ' + (data.error || 'Error desconocido'));
     filtrarAlquileres(numPagina);
 };
 

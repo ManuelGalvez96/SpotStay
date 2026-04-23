@@ -700,20 +700,25 @@ var cambiarPagina = function(numeroPagina) {
 
 /* ================================================
    FUNCIÓN: actualizarPaginacion
-   Actualiza los botones de paginación
+   Regenera completamente los botones de paginación
    ================================================ */
 var actualizarPaginacion = function(paginaActual, totalPaginas) {
-    var botonesNumero = document.querySelectorAll('.pag-numero');
+    var paginasSpan = document.getElementById('paginas');
     
-    for (var i = 0; i < botonesNumero.length; i++) {
-        var btn = botonesNumero[i];
-        var pagina = parseInt(btn.getAttribute('data-pagina'));
-        
-        if (pagina === paginaActual) {
-            btn.classList.add('activo');
-        } else {
-            btn.classList.remove('activo');
-        }
+    if (!paginasSpan) {
+        return;
+    }
+    
+    // Limpiar botones anteriores
+    paginasSpan.innerHTML = '';
+    
+    // Crear botones de página
+    for (var i = 1; i <= totalPaginas; i++) {
+        var btn = document.createElement('button');
+        btn.className = 'pag-numero' + (i === paginaActual ? ' activo' : '');
+        btn.textContent = i;
+        btn.setAttribute('data-pagina', i);
+        paginasSpan.appendChild(btn);
     }
 };
 

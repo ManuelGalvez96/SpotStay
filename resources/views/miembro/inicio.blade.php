@@ -46,9 +46,9 @@
         <div class="contenedor-nav">
             <ul class="lista-nav">
                 <li><a href="#" class="enlace-nav activo"><i class="bi bi-house-door"></i> Inicio</a></li>
-                <li><a href="#" class="enlace-nav"><i class="bi bi-plus-circle"></i> Registra tus Propiedades</a></li>
-                <li><a href="#" class="enlace-nav"><i class="bi bi-journal-text"></i> Alquileres</a></li>
+                <li><a href="{{ route('miembro.registrar-propiedad') }}" class="enlace-nav"><i class="bi bi-plus-circle"></i> Registra tus Propiedades</a></li>
                 <li><a href="#" class="enlace-nav"><i class="bi bi-chat-dots"></i> Mensajes</a></li>
+                <li><a href="#" class="enlace-nav"><i class="bi bi-gear"></i> Configuración</a></li>
                 @if ($esInquilino)
                 <li><a href="#" class="enlace-nav"><i class="bi bi-building-gear"></i> Gestionar</a></li>
                 @endif

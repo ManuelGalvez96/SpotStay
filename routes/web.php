@@ -93,6 +93,9 @@ Route::get('/miembro/mapa', function () {
 Route::middleware(['role:miembro,inquilino'])->group(function () {
     Route::get('/miembro/inicio', [HomeController::class, 'index']);
     Route::get('/miembro/propiedad/{id}', [DetallePropiedadController::class, 'show'])->name('miembro.detalle_propiedad');
+    Route::get('/miembro/registrar-propiedad', function () {
+        return view('miembro.registrar_propiedad');
+    })->name('miembro.registrar-propiedad');
     Route::get('/miembro/mapa', function () {
         return view('miembro.mapa');
     });

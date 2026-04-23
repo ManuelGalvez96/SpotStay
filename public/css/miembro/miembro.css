@@ -430,6 +430,25 @@ body.pagina-miembro {
 	display: block;
 }
 
+.registro-propiedad-panel {
+	padding: 24px;
+}
+
+.form-registro-propiedad {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.mapa-registro-propiedad {
+	width: 100%;
+	height: 320px;
+	border-radius: var(--radio);
+	border: 1px solid var(--borde);
+	overflow: hidden;
+	background: #e6edf5;
+}
+
 .mapa-previsualizacion-overlay {
 	position: absolute;
 	right: 14px;

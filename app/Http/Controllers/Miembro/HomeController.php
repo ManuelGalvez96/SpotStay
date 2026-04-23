@@ -39,7 +39,7 @@ class HomeController extends Controller
             $texto = trim((string) $request->buscador);
             $query->where(function ($subQuery) use ($texto) {
                 $subQuery->where('ciudad_propiedad', 'like', '%' . $texto . '%')
-                    ->orWhere('direccion_propiedad', 'like', '%' . $texto . '%')
+                    ->orWhere('calle_propiedad', 'like', '%' . $texto . '%')
                     ->orWhere('titulo_propiedad', 'like', '%' . $texto . '%');
             });
         }

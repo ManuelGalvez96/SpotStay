@@ -1,15 +1,12 @@
 @forelse ($alquileres as $alquiler)
 <article class="tarjeta-propiedad-gestion">
-    @php
-        $bannerFoto = $alquiler->ruta_foto ? asset('public/img/' . $alquiler->ruta_foto) : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
-    @endphp
-    <div class="banner-propiedad" style="<?php echo 'background-image: url(\'' . e($bannerFoto) . '\'); background-size: cover; background-position: center;'; ?>">
+    <div class="banner-propiedad">
+        <img src="{{ $alquiler->banner_foto_url }}" alt="Imagen de {{ $alquiler->titulo_propiedad }}" class="banner-propiedad-imagen">
         <span class="badge-estado-inquilino">{{ ucfirst(str_replace('_', ' ', $alquiler->estado_alquiler)) }}</span>
     </div>
     <div class="info-propiedad-gestion">
         <h3>{{ $alquiler->titulo_propiedad }}</h3>
-        <p class="ubicacion-gestion"><i class="bi bi-geo-alt"></i> {{ $alquiler->ciudad_propiedad }}, {{ $alquiler->calle_propiedad }} {{ $alquiler->numero_propiedad }}</p>
-
+        <p class="propiedad-direccion"><i class="bi bi-geo-alt"></i> {{ $alquiler->direccion_propiedad }}</p>
         <div class="meta-gestion">
             <div class="item-meta">
                 <span class="label-meta">RENTA MENSUAL</span>
@@ -58,14 +55,14 @@
         <div class="acciones-gestion">
             <a href="{{ route('inquilino.ver_propiedad', $alquiler->id_propiedad) }}" class="btn-inquilino btn-secundario">Ver Detalles</a>
             @if ($alquiler->mostrarAlertaFin || $alquiler->estado_alquiler != 'activo')
-            <a href="mailto:" class="btn-inquilino btn-secundario" style="color: var(--primario); border-color: var(--borde);"><i class="bi bi-envelope" style="margin-right: 5px;"></i> Contactar</a>
-            @elseif(!empty($alquiler->cuota_pendiente_id))
-            <form method="POST" action="{{ route('inquilino.pagar_cuota', $alquiler->cuota_pendiente_id) }}" style="display:inline; margin:0;">
+            <a href="mailto:" class="btn-inquilino btn-secundario btn-contactar-grid"><i class="bi bi-envelope icon-me"></i> Contactar</a>
+            @elseif(($alquiler->estado_pago_actual ?? 'pagado') === 'pendiente' && !empty($alquiler->cuota_pendiente_id))
+            <form method="POST" action="{{ route('inquilino.pagar_cuota', $alquiler->cuota_pendiente_id) }}" class="form-pago-grid">
                 @csrf
                 <button type="submit" class="btn-inquilino btn-primario">Pagar Recibo</button>
             </form>
             @else
-            <button class="btn-inquilino btn-secundario" type="button" disabled>Sin recibos pendientes</button>
+            <button class="btn-inquilino btn-secundario" type="button" disabled>Al día</button>
             @endif
         </div>
     </div>

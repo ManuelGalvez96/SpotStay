@@ -3,10 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\Alquiler;
+use App\Models\AlquilerCuota;
 use App\Models\Propiedad;
 use App\Models\Usuario;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class AlquilerSeeder extends Seeder
 {
@@ -66,6 +68,14 @@ class AlquilerSeeder extends Seeder
                     ]
                 );
 
+                $alquiler = Alquiler::where('id_propiedad_fk', $propiedad->id_propiedad)
+                    ->where('id_inquilino_fk', $inquilino->id_usuario)
+                    ->first();
+
+                if ($alquiler) {
+                    $this->generarCuotas($alquiler);
+                }
+
                 $alquilerCounter++;
             }
         }
@@ -108,7 +118,80 @@ class AlquilerSeeder extends Seeder
                         'actualizado_alquiler' => now(),
                     ]
                 );
+
+                $alquiler = Alquiler::where('id_propiedad_fk', $propiedad->id_propiedad)
+                    ->where('id_inquilino_fk', $arrendador->id_usuario)
+                    ->first();
+
+                if ($alquiler) {
+                    $this->generarCuotas($alquiler);
+                }
             }
+        }
+    }
+
+    private function generarCuotas(Alquiler $alquiler): void
+    {
+        if (!Schema::hasTable('tbl_alquiler_cuota')) {
+            return;
+        }
+
+        $propiedad = Propiedad::where('id_propiedad', $alquiler->id_propiedad_fk)
+            ->select('precio_propiedad')
+            ->first();
+
+        $importeBase = round((float) ($propiedad->precio_propiedad ?? 0), 2);
+        if ($importeBase <= 0) {
+            return;
+        }
+
+        // Día del mes en que vence el pago (fecha de inicio del alquiler)
+        $diaVencimiento = Carbon::parse((string) $alquiler->fecha_inicio_alquiler)->day;
+
+        // Mes inicial del período (mes anterior a la fecha de inicio si el día es > 23)
+        $inicio = Carbon::parse((string) $alquiler->fecha_inicio_alquiler);
+        $mesCuotaInicial = $inicio->copy()->startOfMonth();
+
+        // Mes límite
+        $limite = $alquiler->fecha_fin_alquiler
+            ? Carbon::parse((string) $alquiler->fecha_fin_alquiler)->startOfMonth()
+            : $mesCuotaInicial->copy()->addMonths(11);
+
+        if ($limite->lessThan($mesCuotaInicial)) {
+            return;
+        }
+
+        $cursor = $mesCuotaInicial->copy();
+        $ahora = Carbon::now();
+
+        while ($cursor->lessThanOrEqualTo($limite)) {
+            // El vencimiento es exactamente 1 mes después del inicio del período
+            $fechaVencimiento = $cursor->copy()->addMonth()->day($diaVencimiento)->toDateString();
+            $fechaVencimientoParsed = Carbon::parse($fechaVencimiento)->startOfDay();
+
+            // Estado: pagado si el vencimiento fue hace más de 0 días
+            $estado = 'pendiente';
+            $pagadoEn = null;
+
+            if ($fechaVencimientoParsed->lt($ahora)) {
+                $estado = 'pagado';
+                $pagadoEn = $fechaVencimientoParsed->copy()->endOfDay();
+            }
+
+            AlquilerCuota::firstOrCreate(
+                [
+                    'id_alquiler_fk' => (int) $alquiler->id_alquiler,
+                    'mes_cuota' => $cursor->copy()->toDateString(),
+                ],
+                [
+                    'importe_base' => $importeBase,
+                    'estado' => $estado,
+                    'fecha_vencimiento' => $fechaVencimiento,
+                    'pagado_en' => $pagadoEn,
+                ]
+            );
+
+            $cursor->addMonth();
         }
     }
 }

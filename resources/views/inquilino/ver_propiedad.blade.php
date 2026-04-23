@@ -19,15 +19,15 @@
         <div class="contenedor-encabezado-miembro">
             <!-- Bloque de Mensajes de Feedback -->
             @if(session('success'))
-            <div class="header-error-msg" style="position: absolute; left: 50%; transform: translateX(-50%); z-index: 100;">
-                <div class="alert" style="background-color: rgba(24, 166, 114, 0.1); border-color: rgba(24, 166, 114, 0.2); color: #18a672; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem;">
+            <div class="header-error-msg header-feedback-msg">
+                <div class="alert alert-success-feedback">
                     {!! session('success') !!}
                 </div>
             </div>
             @endif
 
             @if(session('error'))
-            <div class="header-error-msg" style="position: absolute; left: 50%; transform: translateX(-50%); z-index: 100;">
+            <div class="header-error-msg header-feedback-msg">
                 <div class="alert alert-error">
                     {!! session('error') !!}
                 </div>
@@ -53,7 +53,7 @@
                         <a href="#" class="item-submenu"><i class="bi bi-person"></i> Mi Perfil</a>
                         <a href="#" class="item-submenu"><i class="bi bi-gear"></i> Configuración</a>
                         <div class="separador-submenu"></div>
-                        <a href="{{ route('logout') }}" class="item-submenu" style="color: red;"><i class="bi bi-box-arrow-right" style="color: red"></i> Cerrar Sesión</a>
+                        <a href="{{ route('logout') }}" class="item-submenu item-submenu-danger"><i class="bi bi-box-arrow-right icon-danger"></i> Cerrar Sesión</a>
                     </div>
                 </div>
             </div>
@@ -103,12 +103,14 @@
                     <!-- Galería Simple -->
                     <div class="galeria-detalle">
                         @if ($fotos->count() > 0)
-                        @php $fotoPrincipal = asset('public/img/' . $fotos[0]->ruta_foto); @endphp
-                        <div class="foto-principal" style="<?php echo 'background-image: url(\'' . e($fotoPrincipal) . '\');'; ?>"></div>
+                        <div class="foto-principal">
+                            <img src="{{ $fotoPrincipal }}" alt="Imagen principal de {{ $alquiler->titulo_propiedad }}" class="foto-principal-imagen">
+                        </div>
                         <div class="miniaturas">
                             @foreach ($fotos as $foto)
-                            @php $fotoMiniatura = asset('public/img/' . $foto->ruta_foto); @endphp
-                            <div class="miniatura" style="<?php echo 'background-image: url(\'' . e($fotoMiniatura) . '\');'; ?>"></div>
+                            <div class="miniatura">
+                                <img src="{{ $foto->url_foto }}" alt="Miniatura de {{ $alquiler->titulo_propiedad }}" class="miniatura-imagen">
+                            </div>
                             @endforeach
                         </div>
                         @else
@@ -122,15 +124,15 @@
                         <div class="detalles-grid">
                             <div class="detalle-item">
                                 <span class="label">Superficie</span>
-                                <span class="valor">N/D</span>
+                                <span class="valor">{{ $alquiler->metros_cuadrados_propiedad }} m²</span>
                             </div>
                             <div class="detalle-item">
                                 <span class="label">Habitaciones</span>
-                                <span class="valor">N/D</span>
+                                <span class="valor">{{ $alquiler->habitaciones_propiedad }}</span>
                             </div>
                             <div class="detalle-item">
-                                <span class="label">Baños</span>
-                                <span class="valor">N/D</span>
+                                <span class="label">Tipo</span>
+                                <span class="valor">{{ $alquiler->tipo_propiedad }}</span>
                             </div>
                             <div class="detalle-item">
                                 <span class="label">Precio Renta</span>
@@ -163,7 +165,7 @@
                                 <span class="valor-kpi dias-fin">{{ $diasParaFinContrato }} días</span>
                                 <p class="nota">Tu contrato vence el <strong>{{ $fechaFinContrato }}</strong>.</p>
                                 @endif
-                                <p class="nota" style="margin-top: 4px;">Contacta con el propietario para renovar o gestionar la salida.</p>
+                                <p class="nota nota-fin-contrato">Contacta con el propietario para renovar o gestionar la salida.</p>
                                 <a href="mailto:" class="btn-accion btn-contactar">
                                     <i class="bi bi-envelope"></i> Contactar al Propietario
                                 </a>
@@ -210,34 +212,36 @@
                         </div>
                         <div class="card-body">
                             @if ($diasParaPago === 0 && $estadoPagoActual === 'pendiente')
-                            <span class="label pago-requerido">¡PAGO REQUERIDO!</span>
-                            <span class="valor-kpi pago-requerido">HOY</span>
-                            @if ($numPagosAtrasados > 0)
-                            <p class="nota pago-requerido"><strong>¡Paga ya!</strong> Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso más este mes (Total: <strong>{{ number_format($totalDeuda, 2, ',', '.') }}€</strong>).</p>
-                            @else
-                            <p class="nota pago-requerido"><strong>¡Paga ya!</strong> El plazo vence hoy.</p>
-                            @endif
-                            <button class="btn-accion btn-pago bg-pago-requerido">Pagar Cuota Ahora</button>
+                                <span class="label pago-requerido">¡PAGO REQUERIDO!</span>
+                                <span class="valor-kpi pago-requerido">HOY</span>
+                                @if ($numPagosAtrasados > 0)
+                                    <p class="nota pago-requerido"><strong>¡Paga ya!</strong> Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso más este mes (Total: <strong>{{ number_format($totalDeuda, 2, ',', '.') }}€</strong>).</p>
+                                @else
+                                    <p class="nota pago-requerido"><strong>¡Paga ya!</strong> El plazo vence hoy.</p>
+                                @endif
+                                <button class="btn-accion btn-pago bg-pago-requerido">Pagar Cuota Ahora</button>
                             @elseif ($estadoPagoActual === 'pagado')
-                            <span class="label pago-exito">PAGO REALIZADO CON ÉXITO</span>
-                            <span class="valor-kpi pago-exito"><i class="bi bi-check-circle-fill icono-check-pago"></i></span>
-                            <p class="nota pago-exito">Vence el {{ $fechaProximoPago }}</p>
-                            <p class="nota mt-10">Estado de cuenta: <strong>Al día</strong></p>
+                                <span class="label pago-exito">PAGO REALIZADO CON ÉXITO</span>
+                                <span class="valor-kpi pago-exito"><i class="bi bi-check-circle-fill icono-check-pago"></i></span>
+                                <p class="nota pago-exito">Vence el {{ $fechaProximoPago }}</p>
+                                <p class="nota mt-10">Estado de cuenta: <strong>Al día</strong></p>
                             @else
-                            <span class="label">PRÓXIMO PAGO EN</span>
-                            <span class="valor-kpi">{{ $diasParaPago }} días</span>
-                            @if ($numPagosAtrasados > 0)
-                            <p class="nota pago-aviso">⚠️ Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso. Se acumulará un total de <strong>{{ number_format($totalDeuda, 2, ',', '.') }}€</strong>.</p>
-                            @else
-                            <p class="nota">Vence el {{ $fechaProximoPago }}</p>
-                            @if (!empty($proximoPago) && !empty($proximoPago->id_alquiler_cuota))
-                            <form method="POST" action="{{ route('inquilino.pagar_cuota', $proximoPago->id_alquiler_cuota) }}" style="margin:0;">
-                                @csrf
-                                <button class="btn-accion btn-pago" type="submit">Pagar Cuota Ahora</button>
-                            </form>
-                            @else
-                            <button class="btn-accion btn-pago" type="button" disabled>Sin cuotas pendientes</button>
-                            @endif
+                                <span class="label">PRÓXIMO PAGO EN</span>
+                                <span class="valor-kpi">{{ $diasParaPago }} días</span>
+                                @if ($numPagosAtrasados > 0)
+                                    <p class="nota pago-aviso">⚠️ Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso. Se acumulará un total de <strong>{{ number_format($totalDeuda, 2, ',', '.') }}€</strong>.</p>
+                                @else
+                                    <p class="nota">Vence el {{ $fechaProximoPago }}</p>
+                                @endif
+                                
+                                @if (!empty($cuotaPendienteId))
+                                    <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId) }}" class="form-pago-detalle">
+                                        @csrf
+                                        <button class="btn-accion btn-pago" type="submit">Pagar Cuota Ahora</button>
+                                    </form>
+                                @else
+                                    <button class="btn-accion btn-pago" type="button" disabled>Sin cuotas pendientes</button>
+                                @endif
                             @endif
                         </div>
                     </div>
@@ -277,7 +281,7 @@
                                     <span class="estado-tag {{ $incidencia->estado_incidencia }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span>
 
                                     @if($incidencia->id_reporta_fk == auth()->id() && $incidencia->estado_incidencia != 'resuelta')
-                                    <form action="{{ route('inquilino.cerrar_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline;">
+                                    <form action="{{ route('inquilino.cerrar_incidencia', $incidencia->id_incidencia) }}" method="POST" class="form-inline-incidencia">
                                         @csrf
                                         <button type="submit" class="btn-resolver" title="Marcar como resuelta">
                                             <i class="bi bi-check-circle"></i>
@@ -348,7 +352,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" id="boton-enviar" class="btn btn-primary btn-login-desabilitado" style="background-color: var(--primario); border-color: var(--primario);" disabled>Enviar Reporte</button>
+                        <button type="submit" id="boton-enviar" class="btn btn-primary btn-login-desabilitado btn-enviar-reporte" disabled>Enviar Reporte</button>
                     </div>
                 </form>
             </div>

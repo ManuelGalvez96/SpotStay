@@ -85,6 +85,15 @@
 	height: 400px;
 	background-size: cover;
 	background-position: center;
+ overflow: hidden;
+ border-radius: 0;
+}
+
+.foto-principal-imagen {
+ width: 100%;
+ height: 100%;
+ object-fit: cover;
+ display: block;
 }
 
 .foto-principal.placeholder {
@@ -112,6 +121,14 @@
 	flex-shrink: 0;
 	opacity: 0.7;
 	transition: opacity 0.3s;
+ overflow: hidden;
+}
+
+.miniatura-imagen {
+ width: 100%;
+ height: 100%;
+ object-fit: cover;
+ display: block;
 }
 
 .miniatura:hover {
@@ -428,6 +445,45 @@
 
 .mt-10 {
 	margin-top: 10px;
+}
+
+.nota-fin-contrato {
+ margin-top: 4px;
+}
+
+.header-feedback-msg {
+ position: absolute;
+ left: 50%;
+ transform: translateX(-50%);
+ z-index: 100;
+}
+
+.alert-success-feedback {
+ background-color: rgba(24, 166, 114, 0.1);
+ border: 1px solid rgba(24, 166, 114, 0.2);
+ color: #18a672;
+ padding: 8px 16px;
+ border-radius: 8px;
+ font-size: 0.85rem;
+ margin: 0;
+}
+
+.form-pago-detalle {
+ margin: 0;
+}
+
+.item-submenu-danger,
+.item-submenu-danger .icon-danger {
+ color: red !important;
+}
+
+.form-inline-incidencia {
+ display: inline;
+}
+
+.btn-enviar-reporte {
+ background-color: var(--primario);
+ border-color: var(--primario);
 }
 
 

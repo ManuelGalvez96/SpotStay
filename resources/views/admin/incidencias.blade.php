@@ -266,178 +266,193 @@
 
 </div>
 
-<div class="modal-overlay" id="modalOverlay"></div>
-<div class="modal-admin modal-ancho" id="modalIncidencia">
-    <div class="modal-header-admin">
-        <div class="modal-titulo-grupo">
-            <span class="modal-titulo">Detalle de incidencia</span>
-            <span id="modalBadgePrioridad" class="badge-prioridad"></span>
-            <span id="modalBadgeCategoria" class="badge-categoria-modal"></span>
+<!-- Vista de Lista -->
+<div class="card-admin" id="vistaLista" style="display: none;">
+    <div class="tabla-header">
+        <span id="contadorResultados">0 incidencias encontradas</span>
+        <div class="paginacion">
+            <button id="btnAnteriorInc" class="btn-pag">← Anterior</button>
+            <span id="paginasInc">
+            </span>
+            <button id="btnSiguienteInc" class="btn-pag">Siguiente →</button>
         </div>
-        <button id="btnCerrarModal" class="btn-cerrar-modal">
-            <i class="bi bi-x"></i>
-        </button>
     </div>
+    <table class="tabla-admin" id="tablaIncidencias">
+        <thead>
+            <tr>
+                <th>TÍTULO</th>
+                <th>PROPIEDAD</th>
+                <th>CATEGORÍA</th>
+                <th>PRIORIDAD</th>
+                <th>ESTADO</th>
+                <th>REPORTADA POR</th>
+                <th>ACCIONES</th>
+            </tr>
+        </thead>
+        <tbody id="tbodyIncidencias">
+        </tbody>
+    </table>
+</div>
 
-    <div class="modal-imagen-inc" id="modalImagenInc">
-        <div class="modal-imagen-texto" id="modalImagenTexto"></div>
-    </div>
-
-    <div class="modal-cuerpo">
-        <span class="seccion-label">DESCRIPCIÓN</span>
-        <h3 id="modalTituloInc" class="modal-titulo-inc"></h3>
-        <p id="modalDescInc" class="modal-desc-inc"></p>
-
-        <div class="modal-separador"></div>
-
-        <div class="modal-grid-2">
-            <div class="dato-item">
-                <span class="dato-label">Propiedad</span>
-                <span class="dato-valor" id="modalPropiedadInc"></span>
+<!-- MODAL DETALLE INCIDENCIA (Bootstrap 5) -->
+<div class="modal fade" id="modalIncidencia" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="d-flex align-items-center gap-3" style="flex: 1;">
+                    <h5 class="modal-title mb-0">Detalle de incidencia</h5>
+                    <span id="modalBadgePrioridad" class="badge"></span>
+                    <span id="modalBadgeCategoria" class="badge bg-secondary"></span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="dato-item">
-                <span class="dato-label">Reportada por</span>
-                <span class="dato-valor" id="modalInquilinoInc"></span>
+
+            <div class="modal-body">
+                <span class="seccion-label">DESCRIPCIÓN</span>
+                <h6 id="modalTituloInc" class="fw-bold mb-2"></h6>
+                <p id="modalDescInc" class="text-muted mb-3"></p>
+
+                <hr>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Propiedad</small>
+                        <p id="modalPropiedadInc" class="fw-500"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Reportada por</small>
+                        <p id="modalInquilinoInc" class="fw-500"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Fecha reporte</small>
+                        <p id="modalFechaInc" class="fw-500"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Categoría</small>
+                        <p id="modalCategoriaInc" class="fw-500"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Prioridad</small>
+                        <span id="modalPrioridadInc"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Estado actual</small>
+                        <span id="modalEstadoInc"></span>
+                    </div>
+                </div>
+
+                <hr>
+
+                <span class="seccion-label">ASIGNAR GESTOR</span>
+                <div class="d-flex gap-2 mb-3">
+                    <select id="selectGestorModal" class="form-select form-select-sm">
+                        <option value="">Sin asignar</option>
+                        @foreach($gestores as $gestor)
+                            <option value="{{ $gestor->id_usuario }}">{{ $gestor->nombre_usuario }}</option>
+                        @endforeach
+                    </select>
+                    <button id="btnAsignar" class="btn btn-sm btn-primary">Asignar</button>
+                </div>
+
+                <hr>
+
+                <span class="seccion-label">CAMBIAR ESTADO</span>
+                <div class="d-flex gap-2 mb-3 flex-wrap">
+                    <button class="btn btn-sm btn-outline-secondary btn-estado" data-estado="abierta">Abierta</button>
+                    <button class="btn btn-sm btn-outline-secondary btn-estado" data-estado="en_proceso">En proceso</button>
+                    <button class="btn btn-sm btn-outline-secondary btn-estado" data-estado="resuelta">Resuelta</button>
+                    <button class="btn btn-sm btn-outline-secondary btn-estado" data-estado="cerrada">Cerrada</button>
+                </div>
+
+                <hr>
+
+                <span class="seccion-label">HISTORIAL DE CAMBIOS</span>
+                <div id="timelineHistorial" class="mb-3"></div>
+
+                <hr>
+
+                <span class="seccion-label">NOTAS INTERNAS</span>
+                <textarea id="modalNotasInc" class="form-control" rows="3" placeholder="Añade notas sobre esta incidencia..."></textarea>
             </div>
-            <div class="dato-item">
-                <span class="dato-label">Fecha reporte</span>
-                <span class="dato-valor" id="modalFechaInc"></span>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnCerrarInc">Marcar como cerrada</button>
+                <button type="button" class="btn btn-outline-secondary" id="btnContactarInquilino">
+                    <i class="bi bi-chat"></i> Contactar
+                </button>
+                <button type="button" class="btn btn-primary" id="btnGuardarCambios">Guardar cambios</button>
             </div>
-            <div class="dato-item">
-                <span class="dato-label">Categoría</span>
-                <span class="dato-valor" id="modalCategoriaInc"></span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Prioridad</span>
-                <span id="modalPrioridadInc"></span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Estado actual</span>
-                <span id="modalEstadoInc"></span>
-            </div>
-        </div>
-
-        <div class="modal-separador"></div>
-
-        <span class="seccion-label">ASIGNAR GESTOR</span>
-        <div class="asignacion-fila">
-            <select id="selectGestorModal" class="select-filtro select-flex">
-                <option value="">Sin asignar</option>
-                @foreach($gestores as $gestor)
-                    <option value="{{ $gestor->id_usuario }}">{{ $gestor->nombre_usuario }}</option>
-                @endforeach
-            </select>
-            <button id="btnAsignar" class="btn-primario btn-asignar">Asignar</button>
-        </div>
-
-        <div class="modal-separador"></div>
-
-        <span class="seccion-label">CAMBIAR ESTADO</span>
-        <div class="estados-fila">
-            <button class="btn-estado" data-estado="abierta">Abierta</button>
-            <button class="btn-estado" data-estado="en_proceso">En proceso</button>
-            <button class="btn-estado" data-estado="resuelta">Resuelta</button>
-            <button class="btn-estado" data-estado="cerrada">Cerrada</button>
-        </div>
-
-        <div class="modal-separador"></div>
-
-        <span class="seccion-label">HISTORIAL DE CAMBIOS</span>
-        <div class="timeline-inc" id="timelineHistorial">
-            <div class="timeline-linea-v"></div>
-        </div>
-
-        <div class="modal-separador"></div>
-
-        <span class="seccion-label">NOTAS INTERNAS</span>
-        <textarea id="modalNotasInc" class="textarea-admin" placeholder="Añade notas sobre esta incidencia..."></textarea>
-    </div>
-
-    <div class="modal-footer-admin">
-        <button id="btnCerrarInc" class="btn-exportar">Marcar como cerrada</button>
-        <div class="modal-footer-derecha">
-            <button id="btnContactarInquilino" class="btn-exportar">
-                <i class="bi bi-chat"></i>
-                <span>Contactar inquilino</span>
-            </button>
-            <button id="btnGuardarCambios" class="btn-primario">Guardar cambios</button>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay-nueva" id="modalOverlayNueva"></div>
-<div class="modal-admin" id="modalNuevaIncidencia">
-    <div class="modal-header-admin">
-        <div class="modal-titulo-grupo">
-            <span class="modal-titulo">Nueva incidencia</span>
-        </div>
-        <button id="btnCerrarModalNueva" class="btn-cerrar-modal">
-            <i class="bi bi-x"></i>
-        </button>
-    </div>
-
-    <div class="modal-cuerpo">
-        <span class="seccion-label">PROPIEDAD</span>
-        <select id="nuevaPropiedadId" class="select-filtro select-full">
-            <option value="">Selecciona una propiedad...</option>
-            @foreach($propiedades as $prop)
-                <option value="{{ $prop->id_propiedad }}">{{ $prop->titulo_propiedad }} — {{ $prop->ciudad_propiedad }}</option>
-            @endforeach
-        </select>
-
-        <div class="modal-separador"></div>
-
-        <span class="seccion-label">INQUILINO QUE REPORTA</span>
-        <select id="nuevaInquilinoId" class="select-filtro select-full">
-            <option value="">Selecciona un inquilino...</option>
-            @foreach($inquilinos as $inq)
-                <option value="{{ $inq->id_usuario }}">{{ $inq->nombre_usuario }}</option>
-            @endforeach
-        </select>
-
-        <div class="modal-separador"></div>
-
-        <span class="seccion-label">TÍTULO</span>
-        <input type="text" id="nuevaTitulo" class="input-full" placeholder="Describe brevemente el problema...">
-
-        <div class="modal-separador"></div>
-
-        <span class="seccion-label">DESCRIPCIÓN</span>
-        <textarea id="nuevaDescripcion" class="textarea-admin" placeholder="Explica el problema con detalle..."></textarea>
-
-        <div class="modal-separador"></div>
-
-        <div class="nueva-inc-grid">
-            <div>
-                <span class="seccion-label">CATEGORÍA</span>
-                <select id="nuevaCategoria" class="select-filtro select-full">
-                    <option value="fontaneria">Fontanería</option>
-                    <option value="electricidad">Electricidad</option>
-                    <option value="calefaccion">Calefacción</option>
-                    <option value="climatizacion">Climatización</option>
-                    <option value="humedades">Humedades</option>
-                    <option value="cerrajeria">Cerrajería</option>
-                    <option value="otro">Otro</option>
-                </select>
+<!-- MODAL NUEVA INCIDENCIA (Bootstrap 5) -->
+<div class="modal fade" id="modalNuevaIncidencia" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nueva incidencia</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div>
-                <span class="seccion-label">PRIORIDAD</span>
-                <select id="nuevaPrioridad" class="select-filtro select-full">
-                    <option value="baja">Baja</option>
-                    <option value="media">Media</option>
-                    <option value="alta">Alta</option>
-                    <option value="urgente">Urgente</option>
+
+            <div class="modal-body">
+                <div id="formNuevaIncidencia">
+                <span class="seccion-label">PROPIEDAD</span>
+                <select id="nuevaPropiedadId" class="form-select form-select-sm mb-3">
+                    <option value="">Selecciona una propiedad...</option>
+                    @foreach($propiedades as $prop)
+                        <option value="{{ $prop->id_propiedad }}">{{ $prop->titulo_propiedad }} — {{ $prop->ciudad_propiedad }}</option>
+                    @endforeach
                 </select>
+
+                <span class="seccion-label">INQUILINO QUE REPORTA</span>
+                <select id="nuevaInquilinoId" class="form-select form-select-sm mb-3">
+                    <option value="">Selecciona un inquilino...</option>
+                    @foreach($inquilinos as $inq)
+                        <option value="{{ $inq->id_usuario }}">{{ $inq->nombre_usuario }}</option>
+                    @endforeach
+                </select>
+
+                <span class="seccion-label">TÍTULO</span>
+                <input type="text" id="nuevaTitulo" class="form-control form-control-sm mb-3" placeholder="Describe brevemente el problema...">
+
+                <span class="seccion-label">DESCRIPCIÓN</span>
+                <textarea id="nuevaDescripcion" class="form-control form-control-sm mb-3" rows="3" placeholder="Explica el problema con detalle..."></textarea>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <span class="seccion-label">CATEGORÍA</span>
+                        <select id="nuevaCategoria" class="form-select form-select-sm">
+                            <option value="fontaneria">Fontanería</option>
+                            <option value="electricidad">Electricidad</option>
+                            <option value="calefaccion">Calefacción</option>
+                            <option value="climatizacion">Climatización</option>
+                            <option value="humedades">Humedades</option>
+                            <option value="cerrajeria">Cerrajería</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="seccion-label">PRIORIDAD</span>
+                        <select id="nuevaPrioridad" class="form-select form-select-sm">
+                            <option value="baja">Baja</option>
+                            <option value="media">Media</option>
+                            <option value="alta">Alta</option>
+                            <option value="urgente">Urgente</option>
+                        </select>
+                    </div>
+                </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnCancelarNueva" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarNueva">
+                    <i class="bi bi-plus"></i> Crear incidencia
+                </button>
             </div>
         </div>
-    </div>
-
-    <div class="modal-footer-admin">
-        <button id="btnCancelarNueva" class="btn-exportar">Cancelar</button>
-        <button id="btnGuardarNueva" class="btn-primario">
-            <i class="bi bi-plus"></i>
-            <span>Crear incidencia</span>
-        </button>
     </div>
 </div>
 

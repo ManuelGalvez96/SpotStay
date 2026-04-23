@@ -231,4 +231,95 @@ class SuscripcionController extends Controller
               'attachment; filename="suscripciones.csv"'
         ]);
     }
+
+    /**
+     * Obtener datos para modal de gestión de planes
+     */
+    public function datosPlanesModal()
+    {
+        $gratuito = DB::table('tbl_suscripcion')
+            ->where('plan_suscripcion', 'gratuito')
+            ->where('estado_suscripcion', 'activa')
+            ->count();
+        $basico = DB::table('tbl_suscripcion')
+            ->where('plan_suscripcion', 'basico')
+            ->where('estado_suscripcion', 'activa')
+            ->count();
+        $pro = DB::table('tbl_suscripcion')
+            ->where('plan_suscripcion', 'pro')
+            ->where('estado_suscripcion', 'activa')
+            ->count();
+
+        return response()->json([
+            'gratuito' => $gratuito,
+            'basico' => $basico,
+            'pro' => $pro,
+            'precio_basico' => 9.99,
+            'precio_pro' => 29.99,
+            'max_basico' => 3,
+            'max_pro' => 10
+        ]);
+    }
+
+    /**
+     * Guardar configuración de planes
+     */
+    public function guardarPlanes(Request $request)
+    {
+        $planes = $request->all();
+
+        // Si existe tabla tbl_plan, actualizar precios
+        // Si no, simplemente devolver success
+        // Esta es una implementación básica sin transacción
+
+        foreach(['gratuito', 'basico', 'pro'] as $nombrePlan) {
+            if (isset($planes[$nombrePlan])) {
+                $exists = DB::table('tbl_plan')
+                    ->where('slug_plan', $nombrePlan)
+                    ->exists();
+
+                if ($exists) {
+                    DB::table('tbl_plan')
+                        ->where('slug_plan', $nombrePlan)
+                        ->update([
+                            'precio_plan' =>
+                              $planes[$nombrePlan]['precio'] ?? 0,
+                            'max_propiedades_plan' =>
+                              $planes[$nombrePlan]['max_propiedades'] ?? 1,
+                            'descripcion_plan' =>
+                              $planes[$nombrePlan]['descripcion'] ?? '',
+                            'actualizado_plan' => Carbon::now()
+                        ]);
+                }
+            }
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Obtener configuración de planes en formato JSON
+     */
+    public function plans()
+    {
+        return response()->json([
+            'plans' => [
+                'gratuito' => [
+                    'name' => 'Gratuito',
+                    'price' => 0,
+                    'max_properties' => 1
+                ],
+                'basico' => [
+                    'name' => 'Básico',
+                    'price' => 9.99,
+                    'max_properties' => 3
+                ],
+                'pro' => [
+                    'name' => 'Pro',
+                    'price' => 29.99,
+                    'max_properties' => 10
+                ]
+            ]
+        ]);
+    }
 }

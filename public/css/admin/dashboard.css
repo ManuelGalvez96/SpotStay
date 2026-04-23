@@ -410,11 +410,16 @@ body {
 }
 
 .btn-revisar {
+    background: none;
+    border: none;
     color: #035498;
     font-size: 13px;
     font-weight: 500;
     text-decoration: none;
     transition: all 0.2s ease;
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
 }
 
 .btn-revisar:hover {
@@ -633,4 +638,174 @@ body {
     .buscador-input {
         width: 100%;
     }
+}
+
+/* ── Header Actions (Buscador y Ver todos) ── */
+.card-header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* ── Card Header Acciones (Buscador y Badge) ── */
+.card-header-acciones {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-left: auto;
+}
+
+/* ── Tabla celda vacía ── */
+.tabla-vacia-cell {
+    text-align: center;
+    color: #999;
+}
+
+/* ── Sin solicitudes mensaje ── */
+.sin-solicitudes {
+    text-align: center;
+    color: #999;
+    margin: 0;
+}
+
+/* ── Sin actividad mensaje ── */
+.sin-actividad {
+    text-align: center;
+    color: #999;
+    margin: 0;
+}
+
+/* ── Modal Solicitud Dashboard ── */
+.modal-solicitante-dash {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.modal-avatar-dash {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    background: #B8CCE4;
+    flex-shrink: 0;
+}
+
+.modal-solicitante-info-dash {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.modal-nombre-dash {
+    margin: 0 0 4px 0;
+    font-weight: 600;
+    font-size: 16px;
+    color: #111827;
+}
+
+.modal-email-dash {
+    margin: 0 0 8px 0;
+    color: #666;
+    font-size: 13px;
+}
+
+.modal-ciudad-dash {
+    margin: 0;
+    color: #999;
+    font-size: 13px;
+}
+
+/* ── Modal Separator ── */
+.modal-separator-dash {
+    margin: 16px 0;
+    border: none;
+    border-top: 1px solid #E5E7EB;
+}
+
+/* ── Modal Seccion Titulo ── */
+.modal-seccion-titulo-dash {
+    margin: 0 0 12px 0;
+    font-weight: 600;
+    font-size: 15px;
+    color: #111827;
+}
+
+/* ── Modal Seccion ── */
+.modal-seccion-dash {
+    margin-bottom: 16px;
+}
+
+.modal-label-dash {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.modal-data-dash {
+    margin: 0;
+    color: #333;
+    font-size: 14px;
+}
+
+/* ── Avatar Default ── */
+.avatar-default {
+    background: #B8CCE4;
+}
+
+/* ── Tabla Contenedor Scroll ── */
+.tabla-contenedor-scroll {
+    max-height: 360px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.tabla-contenedor-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tabla-contenedor-scroll::-webkit-scrollbar-track {
+    background: #F3F4F6;
+    border-radius: 10px;
+}
+
+.tabla-contenedor-scroll::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 10px;
+}
+
+.tabla-contenedor-scroll::-webkit-scrollbar-thumb:hover {
+    background: #9CA3AF;
+}
+
+/* ── Lista Solicitudes Scroll ── */
+.lista-solicitudes-scroll {
+    max-height: 360px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.lista-solicitudes-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.lista-solicitudes-scroll::-webkit-scrollbar-track {
+    background: #F3F4F6;
+    border-radius: 10px;
+}
+
+.lista-solicitudes-scroll::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 10px;
+}
+
+.lista-solicitudes-scroll::-webkit-scrollbar-thumb:hover {
+    background: #9CA3AF;
 }

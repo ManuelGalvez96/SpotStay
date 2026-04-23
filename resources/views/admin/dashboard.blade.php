@@ -67,48 +67,51 @@
 <!-- BLOQUE CENTRAL -->
 <div class="central-grid">
     <!-- TARJETA TABLA ALQUILERES -->
-    <div class="card-admin">
+    <div class="card-admin card-con-franja">
+        <div class="card-franja"></div>
         <div class="card-header-admin">
             <span>Alquileres pendientes</span>
-            <div style="display: flex; gap: 12px; align-items: center;">
-                <input type="text" id="buscadorTabla" placeholder="Buscar..." class="buscador-input">
-                <a href="#" class="link-ver-todos">Ver todos →</a>
+            <div class="card-header-actions">
+                <input type="text" id="buscadorAlquileres" placeholder="Buscar..." class="buscador-input">
+                <a href="/admin/alquileres" class="link-ver-todos">Ver todos →</a>
             </div>
         </div>
         
-        <table class="tabla-admin" id="tablaAlquileres">
-            <thead>
-                <tr>
-                    <th>PROPIEDAD</th>
-                    <th>INQUILINO</th>
-                    <th>ESTADO</th>
-                    <th>ACCIÓN</th>
-                </tr>
-            </thead>
-            <tbody id="tbodyAlquileres">
-                @forelse($ultimosAlquileres as $alquiler)
-                <tr data-id="{{ $alquiler->id_alquiler }}">
-                    <td>{{ $alquiler->titulo_propiedad }}, {{ $alquiler->ciudad_propiedad }}</td>
-                    <td>{{ $alquiler->nombre_inquilino }}</td>
-                    <td><span class="badge-estado badge-{{ str_replace('_', '-', $alquiler->estado_alquiler) }}">{{ ucfirst($alquiler->estado_alquiler) }}</span></td>
-                    <td>
-                        @if($alquiler->estado_alquiler === 'pendiente')
-                        <div class="acciones-tabla">
-                            <button class="btn-aprobar" data-id="{{ $alquiler->id_alquiler }}">✓ Aprobar</button>
-                            <button class="btn-rechazar" data-id="{{ $alquiler->id_alquiler }}">✕ Rechazar</button>
-                        </div>
-                        @else
-                        <span class="sin-accion">—</span>
-                        @endif
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="4" style="text-align: center; color: #999;">No hay alquileres pendientes</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
+        <div class="tabla-contenedor-scroll">
+            <table class="tabla-admin" id="tablaAlquileres">
+                <thead>
+                    <tr>
+                        <th>PROPIEDAD</th>
+                        <th>INQUILINO</th>
+                        <th>ESTADO</th>
+                        <th>ACCIÓN</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyAlquileres">
+                    @forelse($ultimosAlquileres as $alquiler)
+                    <tr data-id="{{ $alquiler->id_alquiler }}" data-nombre="{{ $alquiler->titulo_propiedad }}, {{ $alquiler->ciudad_propiedad }}" data-inquilino="{{ $alquiler->nombre_inquilino }}" data-estado="{{ $alquiler->estado_alquiler }}">
+                        <td>{{ $alquiler->titulo_propiedad }}, {{ $alquiler->ciudad_propiedad }}</td>
+                        <td>{{ $alquiler->nombre_inquilino }}</td>
+                        <td><span class="badge-estado badge-{{ str_replace('_', '-', $alquiler->estado_alquiler) }}">{{ ucfirst($alquiler->estado_alquiler) }}</span></td>
+                        <td>
+                            @if($alquiler->estado_alquiler === 'pendiente')
+                            <div class="acciones-tabla">
+                                <button class="btn-aprobar" data-id="{{ $alquiler->id_alquiler }}">✓ Aprobar</button>
+                                <button class="btn-rechazar" data-id="{{ $alquiler->id_alquiler }}">✕ Rechazar</button>
+                            </div>
+                            @else
+                            <span class="sin-accion">—</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="4" class="tabla-vacia-cell">No hay alquileres pendientes</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
     
     <!-- TARJETA SOLICITUDES NUEVAS -->
@@ -116,35 +119,45 @@
         <div class="card-franja"></div>
         <div class="card-header-admin">
             <span>Solicitudes nuevas</span>
-            <span class="badge-contador">3</span>
+            <div class="card-header-acciones">
+                <input type="text" id="buscadorSolicitudes" placeholder="Buscar por nombre..." class="buscador-input">
+                <span class="badge-contador">3</span>
+            </div>
         </div>
         
-        <div class="lista-solicitudes">
-            @forelse($ultimasSolicitudes as $solicitud)
-            @php
-                $datos = json_decode($solicitud->datos_solicitud_arrendador);
-                $partes = explode(' ', $solicitud->nombre_usuario);
-                $iniciales = strtoupper(substr($partes[0], 0, 1)) . 
-                             strtoupper(substr($partes[1] ?? '', 0, 1));
-            @endphp
-            <div class="solicitud-item">
-                <div class="solicitud-avatar" style="background: #B8CCE4;">{{ $iniciales }}</div>
-                <div class="solicitud-info">
-                    <p class="solicitud-nombre">{{ $solicitud->nombre_usuario }}</p>
-                    <p class="solicitud-ciudad">{{ $datos->ciudad ?? 'N/A' }}</p>
+        <div class="lista-solicitudes-scroll">
+            <div class="lista-solicitudes" id="listaSolicitudes">
+                @php $contadorSolicitudes = 0; @endphp
+                @forelse($ultimasSolicitudes as $solicitud)
+                @php
+                    if ($contadorSolicitudes >= 5) {
+                        continue;
+                    }
+                    $contadorSolicitudes++;
+                    $datos = json_decode($solicitud->datos_solicitud_arrendador);
+                    $partes = explode(' ', $solicitud->nombre_usuario);
+                    $iniciales = strtoupper(substr($partes[0], 0, 1)) . 
+                                 strtoupper(substr($partes[1] ?? '', 0, 1));
+                @endphp
+                <div class="solicitud-item" data-id="{{ $solicitud->id_solicitud_arrendador }}" data-nombre="{{ $solicitud->nombre_usuario }}">
+                    <div class="solicitud-avatar avatar-default">{{ $iniciales }}</div>
+                    <div class="solicitud-info">
+                        <p class="solicitud-nombre">{{ $solicitud->nombre_usuario }}</p>
+                        <p class="solicitud-ciudad">{{ $datos->ciudad ?? 'N/A' }}</p>
+                    </div>
+                    <div class="solicitud-meta">
+                        <span class="solicitud-tiempo">{{ \Carbon\Carbon::parse($solicitud->creado_solicitud_arrendador)->diffForHumans() }}</span>
+                        <button class="btn-revisar" data-id="{{ $solicitud->id_solicitud_arrendador }}" type="button">Revisar →</button>
+                    </div>
                 </div>
-                <div class="solicitud-meta">
-                    <span class="solicitud-tiempo">{{ \Carbon\Carbon::parse($solicitud->creado_solicitud_arrendador)->diffForHumans() }}</span>
-                    <a href="#" class="btn-revisar">Revisar →</a>
-                </div>
+                @empty
+                <p class="sin-solicitudes">No hay solicitudes nuevas</p>
+                @endforelse
             </div>
-            @empty
-            <p style="text-align: center; color: #999;">No hay solicitudes nuevas</p>
-            @endforelse
         </div>
         
         <div class="card-footer-admin">
-            <a href="#">Ver todas las solicitudes →</a>
+            <a href="/admin/solicitudes">Ver todas las solicitudes →</a>
         </div>
     </div>
 </div>
@@ -214,8 +227,54 @@
                 </div>
             </div>
             @empty
-            <p style="text-align: center; color: #999;">No hay actividad reciente</p>
+            <p class="sin-actividad">No hay actividad reciente</p>
             @endforelse
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SOLICITUD DASHBOARD (Bootstrap 5) -->
+<div class="modal fade" id="modalSolicitudDash" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalle de solicitud</h5>
+                <span class="badge bg-warning" id="modalBadgeEstadoSolicitudDash">Pendiente</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Header solicitante -->
+                <div class="modal-solicitante-dash">
+                    <div id="modalAvatarSolicitudDash" class="modal-avatar-dash">UT</div>
+                    <div class="modal-solicitante-info-dash">
+                        <h6 id="modalNombreSolicitudDash" class="modal-nombre-dash">Usuario Test</h6>
+                        <p id="modalEmailSolicitudDash" class="modal-email-dash">test@example.com</p>
+                        <p id="modalCiudadSolicitudDash" class="modal-ciudad-dash"><i class="bi bi-geo-alt"></i></p>
+                    </div>
+                </div>
+                
+                <hr class="modal-separator-dash">
+                
+                <!-- Propiedad solicitada -->
+                <h6 class="modal-seccion-titulo-dash">Propiedad Solicitada</h6>
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Dirección</label>
+                    <p id="modalDireccionSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                
+                <hr class="modal-separator-dash">
+                
+                <!-- Notas -->
+                <h6 class="modal-seccion-titulo-dash">Notas (Opcional)</h6>
+                <textarea id="modalNotasSolicitudDash" class="form-control" rows="4" placeholder="Añade notas..."></textarea>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-danger">Rechazar</button>
+                <button type="button" class="btn btn-primary">Aprobar</button>
+            </div>
         </div>
     </div>
 </div>

@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RolSeeder::class,
             UsuarioSeeder::class,
+            ArrendadorDemoSeeder::class,
             SuscripcionSeeder::class,
             PropiedadSeeder::class,
             AlquilerSeeder::class,
@@ -21,10 +22,14 @@ class DatabaseSeeder extends Seeder
             PagoSeeder::class,
             IncidenciaSeeder::class,
             HistorialIncidenciaSeeder::class,
+            SolicitudArrendadorSeeder::class,
             ConversacionSeeder::class,
+            ConversacionUsuarioSeeder::class,
             MensajeSeeder::class,
             NotificacionSeeder::class,
-            SolicitudArrendadorSeeder::class,
+            ChatbotSesionSeeder::class,
+            ChatbotMensajeSeeder::class,
+            DocumentoSeeder::class,
         ]);
     }
 }

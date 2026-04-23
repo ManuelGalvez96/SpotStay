@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}" />
 </head>
+
 <body class="pagina-miembro">
     <header class="encabezado-miembro" id="encabezado-miembro">
         <div class="contenedor-encabezado-miembro">
@@ -64,7 +66,7 @@
                 </div>
                 <div class="detalle-resumen-item">
                     <span class="detalle-resumen-etiqueta">Precio</span>
-                    <span class="detalle-resumen-valor"> {{ number_format($propiedad->precio_propiedad, 0, ',', '.') }} €</span>
+                    <span class="detalle-resumen-valor">{{ number_format($propiedad->precio_propiedad, 0, ',', '.') }} €</span>
                 </div>
             </section>
 
@@ -142,7 +144,7 @@
             <section class="detalle-seccion detalle-similares">
                 <span>Carrousel de propiedades similares</span>
             </section>
-        @else
+            @else
             <div class="estado-vacio">
                 <p>No se encontro la propiedad solicitada.</p>
             </div>
@@ -151,4 +153,5 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="{{ asset('js/miembro/miembro.js') }}"></script>
 </body>
+
 </html>

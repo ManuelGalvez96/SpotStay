@@ -2,270 +2,240 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\Propiedad;
+use App\Models\Usuario;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class PropiedadSeeder extends Seeder
 {
     public function run(): void
     {
-        $propiedades = [
-            // Arrendador 1
-            [
-                'arrendador_email' => 'arrendador@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
-                'titulo' => 'Piso en Calle Mayor',
-                'direccion' => 'Calle Mayor 14',
-                'ciudad' => 'Madrid',
-                'cp' => '28001',
-                'lat' => 40.4153,
-                'lng' => -3.7074,
-                'descripcion' => 'Amplio piso en el centro de Madrid',
-                'precio' => 1200.00,
-                'gastos' => json_encode(['agua' => 30, 'luz' => 50, 'comunidad' => 40, 'gas' => 25]),
-                'estado' => 'alquilada',
-            ],
-            [
-                'arrendador_email' => 'arrendador@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
-                'titulo' => 'Piso Calle Serrano',
-                'direccion' => 'Calle Serrano 47',
-                'ciudad' => 'Madrid',
-                'cp' => '28001',
-                'lat' => 40.4307,
-                'lng' => -3.6869,
-                'descripcion' => 'Piso elegante en zona de Serrano',
-                'precio' => 1800.00,
-                'gastos' => json_encode(['agua' => 35, 'luz' => 60, 'comunidad' => 50]),
-                'estado' => 'alquilada',
-            ],
-            [
-                'arrendador_email' => 'inquilino@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
-                'titulo' => 'Estudio Fuencarral',
-                'direccion' => 'Calle Fuencarral 22',
-                'ciudad' => 'Madrid',
-                'cp' => '28004',
-                'lat' => 40.4211,
-                'lng' => -3.7043,
-                'descripcion' => 'Estudio moderno en zona céntrica',
-                'precio' => 800.00,
-                'gastos' => json_encode(['agua' => 25, 'luz' => 40, 'comunidad' => 30]),
-                'estado' => 'publicada',
-            ],
-            // Arrendador 2
-            [
-                'arrendador_email' => 'admin@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
-                'titulo' => 'Piso Av. Diagonal',
-                'direccion' => 'Av. Diagonal 88',
-                'ciudad' => 'Barcelona',
-                'cp' => '08008',
-                'lat' => 41.3947,
-                'lng' => 2.1538,
-                'descripcion' => 'Apartamento en la avenida Diagonal',
-                'precio' => 1500.00,
-                'gastos' => json_encode(['agua' => 30, 'luz' => 55, 'comunidad' => 45]),
-                'estado' => 'alquilada',
-            ],
-            [
-                'arrendador_email' => 'admin@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
-                'titulo' => 'Piso Calle Pelai',
-                'direccion' => 'Calle Pelai 12',
-                'ciudad' => 'Barcelona',
-                'cp' => '08001',
-                'lat' => 41.3979,
-                'lng' => 2.1674,
-                'descripcion' => 'Piso luminoso en el corazón de Barcelona',
-                'precio' => 1100.00,
-                'gastos' => json_encode(['agua' => 28, 'luz' => 48, 'comunidad' => 38]),
-                'estado' => 'alquilada',
-            ],
-            // Arrendador 1
-            [
-                'arrendador_email' => 'arrendador@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
-                'titulo' => 'Lujo Paseo de Gracia',
-                'direccion' => 'Paseo de Gracia 5',
-                'ciudad' => 'Barcelona',
-                'cp' => '08007',
-                'lat' => 41.3917,
-                'lng' => 2.1649,
-                'descripcion' => 'Piso de lujo en Paseo de Gracia',
-                'precio' => 2200.00,
-                'gastos' => json_encode(['agua' => 40, 'luz' => 70, 'comunidad' => 60]),
-                'estado' => 'publicada',
-            ],
-            [
-                'arrendador_email' => 'arrendador@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
-                'titulo' => 'Piso Centro Málaga',
-                'direccion' => 'Calle Larios 7',
-                'ciudad' => 'Málaga',
-                'cp' => '29005',
-                'lat' => 36.7202,
-                'lng' => -4.4213,
-                'descripcion' => 'Piso céntrico en Málaga',
-                'precio' => 820.00,
-                'gastos' => json_encode(['agua' => 25, 'luz' => 42, 'comunidad' => 35]),
-                'estado' => 'publicada',
-            ],
-            [
-                'arrendador_email' => 'admin@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
-                'titulo' => 'Piso Historic Sevilla',
-                'direccion' => 'Alameda de Hércules 3',
-                'ciudad' => 'Sevilla',
-                'cp' => '41002',
-                'lat' => 37.3831,
-                'lng' => -5.9754,
-                'descripcion' => 'Piso en zona histórica de Sevilla',
-                'precio' => 650.00,
-                'gastos' => json_encode(['agua' => 20, 'luz' => 38, 'comunidad' => 28]),
-                'estado' => 'publicada',
-            ],
-            // Arrendador 2
-            [
-                'arrendador_email' => 'admin@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
-                'titulo' => 'Piso Valencia',
-                'direccion' => 'Calle Colón 8',
-                'ciudad' => 'Valencia',
-                'cp' => '46004',
-                'lat' => 39.4697,
-                'lng' => -0.3763,
-                'descripcion' => 'Piso en zona céntrica de Valencia',
-                'precio' => 750.00,
-                'gastos' => json_encode(['agua' => 25, 'luz' => 45, 'comunidad' => 35]),
-                'estado' => 'borrador',
-            ],
-            [
-                'arrendador_email' => 'arrendador@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
-                'titulo' => 'Piso Gran Vía',
-                'direccion' => 'Gran Vía 45',
-                'ciudad' => 'Bilbao',
-                'cp' => '48001',
-                'lat' => 43.2630,
-                'lng' => -2.9350,
-                'descripcion' => 'Piso en Gran Vía de Bilbao',
-                'precio' => 900.00,
-                'gastos' => json_encode(['agua' => 28, 'luz' => 50, 'comunidad' => 40]),
-                'estado' => 'inactiva',
-            ],
-            // Propiedades adicionales (11-15)
-            [
-                'arrendador_email' => 'admin@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
-                'titulo' => 'Piso Zaragoza',
-                'direccion' => 'Calle Coso 15',
-                'ciudad' => 'Zaragoza',
-                'cp' => '50001',
-                'lat' => 41.6563,
-                'lng' => -0.8773,
-                'descripcion' => 'Piso en el centro de Zaragoza',
-                'precio' => 650.00,
-                'gastos' => json_encode(['agua' => 22, 'luz' => 40, 'comunidad' => 30]),
-                'estado' => 'publicada',
-            ],
-            [
-                'arrendador_email' => 'arrendador@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
-                'titulo' => 'Piso Alicante',
-                'direccion' => 'Paseo de la Explanada 3',
-                'ciudad' => 'Alicante',
-                'cp' => '03002',
-                'lat' => 38.3452,
-                'lng' => -0.4810,
-                'descripcion' => 'Piso con vistas a la bahía',
-                'precio' => 1200.00,
-                'gastos' => json_encode(['agua' => 30, 'luz' => 55, 'comunidad' => 45]),
-                'estado' => 'publicada',
-            ],
-            [
-                'arrendador_email' => 'admin@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
-                'titulo' => 'Piso Granada',
-                'direccion' => 'Calle Reyes Católicos 12',
-                'ciudad' => 'Granada',
-                'cp' => '18009',
-                'lat' => 37.1773,
-                'lng' => -3.5986,
-                'descripcion' => 'Piso histórico en Granada',
-                'precio' => 700.00,
-                'gastos' => json_encode(['agua' => 20, 'luz' => 38, 'comunidad' => 28]),
-                'estado' => 'borrador',
-            ],
-            [
-                'arrendador_email' => 'arrendador@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
-                'titulo' => 'Piso Murcia',
-                'direccion' => 'Plaza de las Flores 7',
-                'ciudad' => 'Murcia',
-                'cp' => '30002',
-                'lat' => 37.9922,
-                'lng' => -1.1307,
-                'descripcion' => 'Piso céntrico en Murcia',
-                'precio' => 550.00,
-                'gastos' => json_encode(['agua' => 18, 'luz' => 35, 'comunidad' => 25]),
-                'estado' => 'inactiva',
-            ],
-            [
-                'arrendador_email' => 'admin@spotstay.com',
-                'gestor_email' => 'admin@spotstay.com',
-                'titulo' => 'Piso Valladolid',
-                'direccion' => 'Calle Miguel Íscar 15',
-                'ciudad' => 'Valladolid',
-                'cp' => '47001',
-                'lat' => 41.6510,
-                'lng' => -4.7245,
-                'descripcion' => 'Piso en zona comercial de Valladolid',
-                'precio' => 1400.00,
-                'gastos' => json_encode(['agua' => 32, 'luz' => 58, 'comunidad' => 48]),
-                'estado' => 'publicada',
-            ],
+        $ciudades = ['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao', 'M├ílaga'];
+
+        $arrendadores = [
+            ['email' => 'jlavignole@spotstay.com', 'nombre' => 'Jaume Lavignole'],
+            ['email' => 'ivazquez@spotstay.com', 'nombre' => 'Isabel V├ízquez'],
+            ['email' => 'eruiz@spotstay.com', 'nombre' => 'Enrique Ruiz'],
+            ['email' => 'mgarcia@spotstay.com', 'nombre' => 'Mar├¡a Garc├¡a'],
+            ['email' => 'jjimenez@spotstay.com', 'nombre' => 'Jorge Jim├®nez'],
+            ['email' => 'pnunez@spotstay.com', 'nombre' => 'Patricia N├║├▒ez'],
+            ['email' => 'amoreno@spotstay.com', 'nombre' => 'Alejandro Moreno'],
+            ['email' => 'evargas@spotstay.com', 'nombre' => 'Elena Vargas'],
+            ['email' => 'snavarro@spotstay.com', 'nombre' => 'Sergio Navarro'],
+            ['email' => 'gcampos@spotstay.com', 'nombre' => 'Gloria Campos'],
+            ['email' => 'riglesias@spotstay.com', 'nombre' => 'Rafael Iglesias'],
+            ['email' => 'cmolina@spotstay.com', 'nombre' => 'Catalina Molina'],
+            ['email' => 'ivega@spotstay.com', 'nombre' => 'Iago Vega'],
+            ['email' => 'lherrera@spotstay.com', 'nombre' => 'Lorena Herrera'],
+            ['email' => 'vgutierrez@spotstay.com', 'nombre' => 'V├¡ctor Gutierrez'],
+            ['email' => 'sramos@spotstay.com', 'nombre' => 'Sandra Ramos'],
+            ['email' => 'lflores@spotstay.com', 'nombre' => 'Lucas Flores'],
+            ['email' => 'vcabrera@spotstay.com', 'nombre' => 'Valeria Cabrera'],
+            ['email' => 'mramirez@spotstay.com', 'nombre' => 'Mart├¡n Ram├¡rez'],
+            ['email' => 'scortes@spotstay.com', 'nombre' => 'Sof├¡a Cort├®s'],
+            ['email' => 'asoto@spotstay.com', 'nombre' => 'Andr├®s Soto'],
+            ['email' => 'ddelgado@spotstay.com', 'nombre' => 'Daniela Delgado'],
+            ['email' => 'cparra@spotstay.com', 'nombre' => 'Cristian Parra'],
+            ['email' => 'ncastro@spotstay.com', 'nombre' => 'Natalia Castro'],
+            ['email' => 'grojas@spotstay.com', 'nombre' => 'Guillermo Rojas'],
         ];
 
-        $tiposDisponibles = ['piso', 'casa', 'estudio', 'atico'];
-        $habitacionesDisponibles = ['1', '2', '3', '4'];
-        $metrosDisponibles = [45, 60, 75, 90, 110, 130];
+        $gestores = Usuario::whereHas('roles', function ($q) {
+            $q->where('slug_rol', 'gestor');
+        })->get();
 
-        foreach ($propiedades as $indice => $prop) {
-            $idArrendador = DB::table('tbl_usuario')
-                ->where('email_usuario', $prop['arrendador_email'])
-                ->value('id_usuario');
+        if ($gestores->isEmpty()) {
+            return;
+        }
 
-            $idGestor = DB::table('tbl_usuario')
-                ->where('email_usuario', $prop['gestor_email'])
-                ->value('id_usuario');
+        $propiedadesData = [];
+        $counter = 0;
 
-            unset($prop['arrendador_email'], $prop['gestor_email']);
+        // Generar propiedades para cada arrendador
+        foreach ($arrendadores as $arrendadorData) {
+            $arrendador = Usuario::where('email_usuario', $arrendadorData['email'])->first();
+            
+            if (!$arrendador) {
+                continue;
+            }
 
-            // Asigna tipo y habitaciones para que los filtros del mapa tengan datos
-            $tipoInmueble = $tiposDisponibles[$indice % count($tiposDisponibles)];
-            $habitaciones = $habitacionesDisponibles[$indice % count($habitacionesDisponibles)];
-            $metrosCuadrados = $metrosDisponibles[$indice % count($metrosDisponibles)];
+            // Cada arrendador tiene m├¡nimo 2 propiedades
+            // Primera: estado 'borrador'
+            $propiedadesData[] = [
+                'arrendador_id' => $arrendador->id_usuario,
+                'gestor_id' => $gestores->get($counter % $gestores->count())->id_usuario,
+                'titulo' => $this->generarTitulo($counter),
+                'calle' => $this->generarCalle($counter),
+                'numero' => rand(1, 999),
+                'piso' => rand(0, 6),
+                'puerta' => chr(65 + rand(0, 4)), // A-E
+                'ciudad' => $ciudades[$counter % count($ciudades)],
+                'cp' => $this->generarCP($ciudades[$counter % count($ciudades)]),
+                'lat' => $this->generarLatitud($ciudades[$counter % count($ciudades)]),
+                'lng' => $this->generarLongitud($ciudades[$counter % count($ciudades)]),
+                'descripcion' => 'Piso completamente equipado en zona c├®ntrica con acceso a transporte p├║blico.',
+                'precio' => rand(60, 250) * 10, // 600-2500
+                'gastos' => json_encode($this->generarGastos()),
+                'estado' => 'borrador',
+                'creado' => now()->subDays(rand(30, 90)),
+            ];
 
-            DB::table('tbl_propiedad')->insert([
-                'titulo_propiedad' => $prop['titulo'],
-                'direccion_propiedad' => $prop['direccion'],
-                'ciudad_propiedad' => $prop['ciudad'],
-                'codigo_postal_propiedad' => $prop['cp'],
-                'latitud_propiedad' => $prop['lat'],
-                'longitud_propiedad' => $prop['lng'],
-                'descripcion_propiedad' => $prop['descripcion'],
-                'precio_propiedad' => $prop['precio'],
-                'tipo_propiedad' => $tipoInmueble,
-                'habitaciones_propiedad' => $habitaciones,
-                'metros_cuadrados_propiedad' => $metrosCuadrados,
-                'gastos_propiedad' => $prop['gastos'],
-                'estado_propiedad' => $prop['estado'],
-                'id_arrendador_fk' => $idArrendador,
-                'id_gestor_fk' => $idGestor,
-                'creado_propiedad' => Carbon::now(),
-            ]);
+            // Segunda: estado 'alquilada' o 'publicada'
+            $propiedadesData[] = [
+                'arrendador_id' => $arrendador->id_usuario,
+                'gestor_id' => $gestores->get(($counter + 1) % $gestores->count())->id_usuario,
+                'titulo' => $this->generarTitulo($counter + 1),
+                'calle' => $this->generarCalle($counter + 1),
+                'numero' => rand(1, 999),
+                'piso' => rand(0, 6),
+                'puerta' => chr(65 + rand(0, 4)),
+                'ciudad' => $ciudades[($counter + 1) % count($ciudades)],
+                'cp' => $this->generarCP($ciudades[($counter + 1) % count($ciudades)]),
+                'lat' => $this->generarLatitud($ciudades[($counter + 1) % count($ciudades)]),
+                'lng' => $this->generarLongitud($ciudades[($counter + 1) % count($ciudades)]),
+                'descripcion' => 'Apartamento moderno con todas las comodidades en pleno centro urbano.',
+                'precio' => rand(60, 250) * 10,
+                'gastos' => json_encode($this->generarGastos()),
+                'estado' => $counter % 2 === 0 ? 'alquilada' : 'publicada',
+                'creado' => now()->subDays(rand(5, 60)),
+            ];
+
+            // Tercera propiedad (algunos arrendadores): compartida con m├║ltiples inquilinos
+            if ($counter % 3 === 0) {
+                $propiedadesData[] = [
+                    'arrendador_id' => $arrendador->id_usuario,
+                    'gestor_id' => $gestores->get(($counter + 2) % $gestores->count())->id_usuario,
+                    'titulo' => $this->generarTitulo($counter + 2),
+                    'calle' => $this->generarCalle($counter + 2),
+                    'numero' => rand(1, 999),
+                    'piso' => rand(0, 6),
+                    'puerta' => chr(65 + rand(0, 4)),
+                    'ciudad' => $ciudades[($counter + 2) % count($ciudades)],
+                    'cp' => $this->generarCP($ciudades[($counter + 2) % count($ciudades)]),
+                    'lat' => $this->generarLatitud($ciudades[($counter + 2) % count($ciudades)]),
+                    'lng' => $this->generarLongitud($ciudades[($counter + 2) % count($ciudades)]),
+                    'descripcion' => 'Vivienda amplia compartida, ideal para grupos de amigos o compa├▒eros de trabajo.',
+                    'precio' => rand(60, 180) * 10,
+                    'gastos' => json_encode($this->generarGastos()),
+                    'estado' => 'alquilada',
+                    'creado' => now()->subDays(rand(10, 120)),
+                ];
+            }
+
+            $counter += 3;
+        }
+
+        // Insertar propiedades
+        foreach ($propiedadesData as $data) {
+            Propiedad::firstOrCreate(
+                [
+                    'titulo_propiedad' => $data['titulo'],
+                    'calle_propiedad' => $data['calle'],
+                    'numero_propiedad' => $data['numero'],
+                ],
+                [
+                    'id_arrendador_fk' => $data['arrendador_id'],
+                    'id_gestor_fk' => $data['gestor_id'],
+                    'piso_propiedad' => $data['piso'],
+                    'puerta_propiedad' => $data['puerta'],
+                    'ciudad_propiedad' => $data['ciudad'],
+                    'codigo_postal_propiedad' => $data['cp'],
+                    'latitud_propiedad' => $data['lat'],
+                    'longitud_propiedad' => $data['lng'],
+                    'descripcion_propiedad' => $data['descripcion'],
+                    'precio_propiedad' => $data['precio'],
+                    'gastos_propiedad' => $data['gastos'],
+                    'estado_propiedad' => $data['estado'],
+                    'creado_propiedad' => $data['creado'],
+                    'actualizado_propiedad' => $data['creado'],
+                ]
+            );
         }
     }
+
+    private function generarTitulo(int $index): string
+    {
+        $titulos = [
+            'Piso luminoso en el centro',
+            'Apartamento con terraza',
+            'Estudio moderno y acogedor',
+            'Casa colonial reformada',
+            'Loft con altos techos',
+            'Vivienda acogedora con jard├¡n',
+            'Piso c├®ntrico cerca de transporte',
+            'Apartamento con vistas',
+            'Estudio funcional y pr├íctico',
+            'Casa tradicional restaurada',
+        ];
+        return $titulos[$index % count($titulos)] . ' ' . ($index + 1);
+    }
+
+    private function generarCalle(int $index): string
+    {
+        $calles = [
+            'Calle Mayor', 'Avenida de la Paz', 'Calle Pr├¡ncipe', 'Paseo del Prado',
+            'Calle Alcal├í', 'Gran V├¡a', 'Calle Serrano', 'Avenida Paseo de Gracia',
+            'Calle Ramblas', 'Avenida Diagonal', 'Calle Col├│n', 'Paseo de la Costa',
+            'Calle del Carmen', 'Avenida de la Libertad', 'Calle Nueva',
+        ];
+        return $calles[$index % count($calles)];
+    }
+
+    private function generarCP(string $ciudad): string
+    {
+        $cps = [
+            'Madrid' => ['28001', '28002', '28003', '28004', '28005'],
+            'Barcelona' => ['08001', '08002', '08003', '08004', '08008'],
+            'Valencia' => ['46001', '46002', '46003', '46004'],
+            'Sevilla' => ['41001', '41002', '41003', '41004'],
+            'Bilbao' => ['48001', '48002', '48003', '48004'],
+            'M├ílaga' => ['29001', '29002', '29005', '29007'],
+        ];
+        $codigos = $cps[$ciudad] ?? ['00000'];
+        return $codigos[array_rand($codigos)];
+    }
+
+    private function generarLatitud(string $ciudad): float
+    {
+        $lats = [
+            'Madrid' => 40.4168,
+            'Barcelona' => 41.3874,
+            'Valencia' => 39.4699,
+            'Sevilla' => 37.3891,
+            'Bilbao' => 43.2630,
+            'M├ílaga' => 36.7213,
+        ];
+        return $lats[$ciudad] + (rand(-100, 100) / 1000);
+    }
+
+    private function generarLongitud(string $ciudad): float
+    {
+        $lngs = [
+            'Madrid' => -3.7038,
+            'Barcelona' => 2.1686,
+            'Valencia' => -0.3761,
+            'Sevilla' => -5.9845,
+            'Bilbao' => -2.9350,
+            'M├ílaga' => -4.4214,
+        ];
+        return $lngs[$ciudad] + (rand(-100, 100) / 1000);
+    }
+
+    private function generarGastos(): array
+    {
+        $gastos = [
+            'agua' => rand(20, 40),
+            'luz' => rand(40, 80),
+            'comunidad' => rand(30, 70),
+        ];
+        
+        // Algunos incluyen gas (30% de probabilidad)
+        if (rand(0, 2) === 0) {
+            $gastos['gas'] = rand(20, 50);
+        }
+
+        return $gastos;
+    }
 }
+

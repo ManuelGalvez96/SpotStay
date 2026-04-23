@@ -18,6 +18,51 @@
 	--radio-lg: 18px;
 }
 
+/* ===== ALERTAS DE FEEDBACK (Estilo Login) ===== */
+.header-error-msg {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 10px 0;
+	box-sizing: border-box;
+	height: 72px;
+	/* Alineado con el alto del header */
+}
+
+.alert {
+	padding: 4px 16px;
+	border-radius: 8px;
+	font-size: 0.8rem;
+	line-height: 1.25;
+	border: 1px solid transparent;
+	animation: headerFadeIn 0.3s ease-out;
+	text-align: center;
+	max-width: 500px;
+	box-sizing: border-box;
+}
+
+.alert-error {
+	background-color: rgba(255, 77, 77, 0.1);
+	border-color: rgba(255, 77, 77, 0.2);
+	color: #ff6666;
+}
+
+@keyframes headerFadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+
+
+
+
 /* Reset basico para un comportamiento consistente */
 * {
 	box-sizing: border-box;
@@ -1137,4 +1182,12 @@ body.pagina-miembro {
 	.panel-filtros {
 		padding: 20px 16px;
 	}
+}
+
+/* Botón deshabilitado para validaciones JS */
+.btn-login-desabilitado {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    filter: grayscale(0.5);
 }

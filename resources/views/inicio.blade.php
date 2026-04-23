@@ -32,7 +32,7 @@
         </div>
         <div class="flex items-center gap-4">
           <a href="{{ route('login') }}" class="btn btn-ghost" data-media-type="banani-button">Iniciar sesión</a>
-          <a href="#" class="btn btn-primary" data-media-type="banani-button">Regístrate</a>
+          <a href="{{ route('register') }}" class="btn btn-primary" data-media-type="banani-button">Regístrate</a>
         </div>
       </div>
     </nav>

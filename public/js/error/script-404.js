@@ -7,11 +7,29 @@
 const faceGroup = document.getElementById('face-group');
 const eyeGroup = document.getElementById('eye-group');
 const yetiSvg = document.getElementById('yeti-svg');
+const errorContent = document.querySelector('.error-content');
+
+// Variable de control para pausar el seguimiento
+let isFrozen = false;
+
+// Si el cursor entra en el recuadro de texto, pausamos el movimiento y reseteamos la posición
+if (errorContent) {
+    errorContent.onmouseenter = function () {
+        isFrozen = true;
+        // Reseteamos la cara a la posición inicial (mirando al frente)
+        if (faceGroup) {
+            faceGroup.style.transform = 'translate(0px, 0px)';
+        }
+    };
+    errorContent.onmouseleave = function () {
+        isFrozen = false;
+    };
+}
 
 // 1. SEGUIMIENTO DEL CURSOR GLOBAL
 // Usamos la propiedad onmousemove del objeto window para rastrear toda la pantalla
 window.onmousemove = function (e) {
-    if (!yetiSvg || !faceGroup) return;
+    if (!yetiSvg || !faceGroup || isFrozen) return;
 
     // Obtenemos la posición actual de la mascota
     const rect = yetiSvg.getBoundingClientRect();

@@ -322,41 +322,240 @@
     </div>
 </div>
 
-<!-- MODAL -->
+<!-- MODAL DETALLE SUSCRIPCIÓN -->
 <div class="modal-overlay" id="modalOverlay"></div>
 <div class="modal" id="modalSuscripcion">
-    <div class="modal-header">
-        <h2>Detalle de suscripción</h2>
+    <div class="modal-header-sus">
+        <div class="modal-titulo-grupo">
+            <span>Detalle de suscripción</span>
+            <span id="modalBadgePlanSus" class="badge-plan"></span>
+            <span id="modalBadgeEstadoSus" class="badge-estado"></span>
+        </div>
         <button id="btnCerrarModal" class="btn-cerrar-modal">
             <i class="bi bi-x"></i>
         </button>
     </div>
 
-    <div class="modal-content">
-        <div class="modal-seccion">
-            <h3 class="seccion-titulo">ARRENDADOR</h3>
-            <div class="arrendador-info">
-                <div class="modal-avatar" id="modalAvatarSus"></div>
-                <div class="arrendador-datos">
-                    <h3 id="modalNombreSus"></h3>
-                    <p id="modalEmailSus"></p>
-                    <p id="modalTelefonoSus"></p>
+    <div class="modal-body-sus">
+        <!-- ARRENDADOR -->
+        <h4 class="modal-seccion-label">ARRENDADOR</h4>
+        <div class="modal-arrendador-fila">
+            <div class="modal-avatar" id="modalAvatarSus"></div>
+            <div>
+                <p id="modalNombreSus" class="modal-nombre"></p>
+                <p id="modalEmailSus" class="modal-sub"></p>
+                <p id="modalTelefonoSus" class="modal-sub"></p>
+            </div>
+        </div>
+
+        <div class="modal-sep"></div>
+
+        <!-- DETALLES DEL PLAN -->
+        <h4 class="modal-seccion-label">DETALLES DEL PLAN</h4>
+        <div class="modal-grid-datos">
+            <div class="modal-dato">
+                <span class="modal-dato-label">Plan</span>
+                <span id="dataPlanSus"></span>
+            </div>
+            <div class="modal-dato">
+                <span class="modal-dato-label">Precio</span>
+                <span class="modal-dato-valor" id="dataPrecioSus"></span>
+            </div>
+            <div class="modal-dato">
+                <span class="modal-dato-label">Propiedades máx.</span>
+                <span class="modal-dato-valor" id="dataMaxPropsSus"></span>
+            </div>
+            <div class="modal-dato">
+                <span class="modal-dato-label">Propiedades usadas</span>
+                <span class="modal-dato-valor" id="dataUsadasSus"></span>
+            </div>
+            <div class="modal-dato">
+                <span class="modal-dato-label">Inicio</span>
+                <span class="modal-dato-valor" id="dataInicioSus"></span>
+            </div>
+            <div class="modal-dato">
+                <span class="modal-dato-label">Fin</span>
+                <span class="modal-dato-valor" id="dataFinSus"></span>
+            </div>
+            <div class="modal-dato">
+                <span class="modal-dato-label">Días restantes</span>
+                <span class="modal-dato-valor" id="dataDiasSus"></span>
+            </div>
+            <div class="modal-dato">
+                <span class="modal-dato-label">Estado</span>
+                <span id="dataEstadoSus"></span>
+            </div>
+        </div>
+
+        <div class="modal-sep"></div>
+
+        <!-- USO DE PROPIEDADES -->
+        <h4 class="modal-seccion-label" id="labelUsoPropSus">USO DE PROPIEDADES</h4>
+        <div class="barra-uso-grande">
+            <div class="barra-uso-relleno" id="barraUsoPropSus"></div>
+        </div>
+        <div class="barra-uso-leyenda">
+            <span id="barraLeyIzqSus"></span>
+            <span id="barraLeyDerSus"></span>
+        </div>
+        <div id="listaPropsSus" class="props-lista-modal"></div>
+
+        <div class="modal-sep"></div>
+
+        <!-- CAMBIAR PLAN -->
+        <h4 class="modal-seccion-label">CAMBIAR PLAN</h4>
+        <div class="planes-botones-modal">
+            <button class="btn-plan-modal" data-plan="gratuito">Gratuito</button>
+            <button class="btn-plan-modal" data-plan="basico">Básico</button>
+            <button class="btn-plan-modal" data-plan="pro">Pro</button>
+        </div>
+
+        <div class="modal-sep"></div>
+
+        <!-- EDITAR SUSCRIPCIÓN -->
+        <h4 class="modal-seccion-label">EDITAR SUSCRIPCIÓN</h4>
+        <div class="edicion-sus-grid">
+            <div>
+                <label class="edit-label">Precio mensual (€)</label>
+                <input type="number" id="editPrecioSus" class="edit-input" step="0.01" min="0">
+            </div>
+            <div>
+                <label class="edit-label">Propiedades máximas</label>
+                <input type="number" id="editMaxPropsSus" class="edit-input" min="1" max="99">
+            </div>
+            <div>
+                <label class="edit-label">Fecha de inicio</label>
+                <input type="date" id="editInicioSus" class="edit-input">
+            </div>
+            <div>
+                <label class="edit-label">Fecha de fin</label>
+                <input type="date" id="editFinSus" class="edit-input">
+            </div>
+        </div>
+        <div style="margin-top:12px">
+            <label class="edit-label">Notas del admin</label>
+            <textarea id="editNotasSus" class="edit-textarea" placeholder="Añade notas sobre esta suscripción..."></textarea>
+        </div>
+    </div>
+
+    <div class="modal-footer-sus">
+        <button id="btnCancelarSus" class="btn-cancelar-accion">Cancelar suscripción</button>
+        <button id="btnGuardarSus" class="btn-guardar-accion">Guardar cambios</button>
+    </div>
+</div>
+
+<!-- MODAL GESTIÓN DE PLANES -->
+<div class="modal-overlay" id="modalOverlayPlanes"></div>
+<div class="modal modal-planes" id="modalPlanes">
+    <div class="modal-header-sus">
+        <div class="modal-titulo-grupo">
+            <span>Gestionar planes</span>
+            <span class="badge-info">Configuración global</span>
+        </div>
+        <button id="btnCerrarModalPlanes" class="btn-cerrar-modal">
+            <i class="bi bi-x"></i>
+        </button>
+    </div>
+
+    <div class="modal-body-sus">
+        <p class="planes-aviso">
+            <i class="bi bi-info-circle"></i>
+            Los cambios afectarán a todos los arrendadores con ese plan a partir de la próxima renovación.
+        </p>
+
+        <!-- PLAN GRATUITO -->
+        <div class="plan-editor-bloque">
+            <div class="plan-editor-header">
+                <span class="badge-plan badge-plan-gratuito">
+                    <i class="bi bi-gift"></i>
+                    Gratuito
+                </span>
+                <span class="plan-editor-usuarios" id="usuariosGratuito">— usuarios activos</span>
+            </div>
+            <div class="plan-editor-grid">
+                <div>
+                    <label class="edit-label">Precio mensual (€)</label>
+                    <input type="number" id="planGratuitoPrecio" class="edit-input" value="0" step="0.01" min="0" readonly style="background:#F9FAFB;color:#9CA3AF">
+                </div>
+                <div>
+                    <label class="edit-label">Propiedades máximas</label>
+                    <input type="number" id="planGratuitoMaxProps" class="edit-input" value="1" min="1" max="99">
+                </div>
+                <div style="grid-column:span 2">
+                    <label class="edit-label">Descripción</label>
+                    <input type="text" id="planGratuitoDesc" class="edit-input" placeholder="Plan sin coste para empezar">
                 </div>
             </div>
         </div>
 
-        <div class="modal-seccion">
-            <h3 class="seccion-titulo">DETALLES DEL PLAN</h3>
-            <div id="modalDetallesGrid"></div>
-        </div>
+        <div class="plan-editor-sep"></div>
 
-        <div class="modal-seccion">
-            <h3 class="seccion-titulo">ACCIONES</h3>
-            <div class="modal-acciones">
-                <button id="btnCancelarSus" class="btn-desactivar">Cancelar suscripción</button>
-                <button id="btnGuardarSus" class="btn-primario">Guardar cambios</button>
+        <!-- PLAN BÁSICO -->
+        <div class="plan-editor-bloque">
+            <div class="plan-editor-header">
+                <span class="badge-plan badge-plan-basico">
+                    <i class="bi bi-layers"></i>
+                    Básico
+                </span>
+                <span class="plan-editor-usuarios" id="usuariosBasico">— usuarios activos</span>
+            </div>
+            <div class="plan-editor-grid">
+                <div>
+                    <label class="edit-label">Precio mensual (€)</label>
+                    <input type="number" id="planBasicoPrecio" class="edit-input" value="{{ $precioBasico }}" step="0.01" min="0">
+                </div>
+                <div>
+                    <label class="edit-label">Propiedades máximas</label>
+                    <input type="number" id="planBasicoMaxProps" class="edit-input" value="3" min="1" max="99">
+                </div>
+                <div style="grid-column:span 2">
+                    <label class="edit-label">Descripción</label>
+                    <input type="text" id="planBasicoDesc" class="edit-input" placeholder="Plan para arrendadores con pocas propiedades">
+                </div>
             </div>
         </div>
+
+        <div class="plan-editor-sep"></div>
+
+        <!-- PLAN PRO -->
+        <div class="plan-editor-bloque">
+            <div class="plan-editor-header">
+                <span class="badge-plan badge-plan-pro">
+                    <i class="bi bi-star-fill"></i>
+                    Pro
+                </span>
+                <span class="plan-editor-usuarios" id="usuariosPro">— usuarios activos</span>
+            </div>
+            <div class="plan-editor-grid">
+                <div>
+                    <label class="edit-label">Precio mensual (€)</label>
+                    <input type="number" id="planProPrecio" class="edit-input" value="{{ $precioPro }}" step="0.01" min="0">
+                </div>
+                <div>
+                    <label class="edit-label">Propiedades máximas</label>
+                    <input type="number" id="planProMaxProps" class="edit-input" value="10" min="1" max="99">
+                </div>
+                <div style="grid-column:span 2">
+                    <label class="edit-label">Descripción</label>
+                    <input type="text" id="planProDesc" class="edit-input" placeholder="Plan para arrendadores con muchas propiedades">
+                </div>
+            </div>
+        </div>
+
+        <div class="planes-card-footer">
+            <button id="btnVerPlanes" class="btn-ver-planes">
+                <i class="bi bi-gear"></i>
+                <span>Gestionar planes →</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-footer-sus">
+        <button id="btnCancelarPlanes" class="btn-cancelar-gris">Cancelar</button>
+        <button id="btnGuardarPlanes" class="btn-guardar-accion">
+            <i class="bi bi-check"></i>
+            <span>Guardar planes</span>
+        </button>
     </div>
 </div>
 

@@ -2,46 +2,41 @@
 
 namespace Database\Seeders;
 
+use App\Models\Contrato;
+use App\Models\Alquiler;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class ContratoSeeder extends Seeder
 {
     public function run(): void
     {
-        // Obtén alquileres activos con sus propiedades relacionadas
-        $alquileres = DB::table('tbl_alquiler')
-            ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
-            ->join('tbl_usuario as arrendador', 'arrendador.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
-            ->join('tbl_usuario as inquilino', 'inquilino.id_usuario', '=', 'tbl_alquiler.id_inquilino_fk')
-            ->where('tbl_alquiler.estado_alquiler', 'activo')
-            ->select(
-                'tbl_alquiler.id_alquiler',
-                'tbl_alquiler.fecha_inicio_alquiler',
-                'arrendador.id_usuario as id_arrendador',
-                'inquilino.id_usuario as id_inquilino'
-            )
-            ->get();
-
-        foreach ($alquileres as $alquiler) {
-            $url = 'contratos/contrato_' . $alquiler->id_alquiler . '.pdf';
-            $hash = hash('sha256', $url);
-            $fechaInicio = Carbon::parse($alquiler->fecha_inicio_alquiler);
-
-            DB::table('tbl_contrato')->insert([
-                'id_alquiler_fk' => $alquiler->id_alquiler,
-                'url_pdf_contrato' => $url,
-                'hash_contrato' => $hash,
-                'firmado_arrendador' => true,
-                'fecha_firma_arrendador' => $fechaInicio->subDay(),
-                'ip_firma_arrendador' => '192.168.1.1',
-                'firmado_inquilino' => true,
-                'fecha_firma_inquilino' => $fechaInicio->subDay(),
-                'ip_firma_inquilino' => '192.168.1.2',
-                'estado_contrato' => 'firmado',
-                'creado_contrato' => Carbon::now(),
-            ]);
+        $alquileres = Alquiler::all();
+        
+        foreach ($alquileres as $index => $alquiler) {
+            // Genera un PDF simulado (en producción sería un PDF real)
+            $urlPdf = '/contratos/contrato_' . $alquiler->id_alquiler . '.pdf';
+            $hashContrato = hash('sha256', json_encode([
+                'id_alquiler' => $alquiler->id_alquiler,
+                'timestamp' => now()->timestamp,
+                'random' => rand(1000, 9999)
+            ]));
+            
+            Contrato::firstOrCreate(
+                ['id_alquiler_fk' => $alquiler->id_alquiler],
+                [
+                    'url_pdf_contrato' => $urlPdf,
+                    'hash_contrato' => $hashContrato,
+                    'firmado_arrendador' => (bool) rand(0, 1),
+                    'fecha_firma_arrendador' => rand(0, 1) ? now()->subDays(rand(1, 10)) : null,
+                    'ip_firma_arrendador' => '192.168.' . rand(1, 255) . '.' . rand(1, 255),
+                    'firmado_inquilino' => (bool) rand(0, 1),
+                    'fecha_firma_inquilino' => rand(0, 1) ? now()->subDays(rand(1, 10)) : null,
+                    'ip_firma_inquilino' => '192.168.' . rand(1, 255) . '.' . rand(1, 255),
+                    'estado_contrato' => $index % 3 === 0 ? 'firmado' : 'pendiente',
+                    'creado_contrato' => now()->subDays(rand(5, 30)),
+                    'actualizado_contrato' => now(),
+                ]
+            );
         }
     }
 }

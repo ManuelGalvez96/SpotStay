@@ -23,11 +23,7 @@
     <div class="topbar">
         <!-- Zona izquierda -->
         <div class="topbar-izq">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 4C2.44772 4 2 4.44772 2 5V16C2 17.1046 2.89543 18 4 18H16C17.1046 18 18 17.1046 18 16V5C18 4.44772 17.5523 4 17 4H3Z" fill="#035498"/>
-                <path d="M6 2V6M14 2V6" stroke="#035498" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            <span class="topbar-logo">SpotStay</span>
+            <img src="{{ asset('img/logo.png') }}" alt="SpotStay Logo" class="topbar-logo-img">
         </div>
         
         <!-- Zona central: botones nav -->

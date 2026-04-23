@@ -121,7 +121,7 @@ function construirPopupPropiedad(propiedad) {
 	var titulo = propiedad.titulo_propiedad || "Propiedad";
 	var precio = formatearPrecio(propiedad.precio_propiedad);
 	var ciudad = propiedad.ciudad_propiedad || "Ciudad no disponible";
-	var direccion = propiedad.direccion_propiedad || "Direccion no disponible";
+	var direccion = propiedad.direccion_propiedad || construirDireccion(propiedad);
 	var estado = propiedad.estado_propiedad || "N/D";
 	var urlDetalle = "/miembro/propiedad/" + propiedad.id_propiedad;
 
@@ -137,12 +137,27 @@ function construirPopupPropiedad(propiedad) {
 	);
 }
 
+function construirDireccion(propiedad) {
+	var calleNumero = [propiedad.calle_propiedad, propiedad.numero_propiedad]
+		.filter(Boolean)
+		.join(" ");
+	var piso = propiedad.piso_propiedad ? "Piso " + propiedad.piso_propiedad : "";
+	var puerta = propiedad.puerta_propiedad ? "Puerta " + propiedad.puerta_propiedad : "";
+	var partes = [calleNumero, piso, puerta].filter(Boolean);
+
+	if (partes.length === 0) {
+		return "Direccion no disponible";
+	}
+
+	return partes.join(", ");
+}
+
 function crearIconoPrecio(textoPrecio) {
 	return L.divIcon({
-		className: "etiqueta-precio",
-		html: "<span class='etiqueta-precio-texto'>" + textoPrecio + "</span>",
-		iconSize: [1, 1],
-		iconAnchor: [12, 24],
+		className: "etiqueta-precio-icono",
+		html: "<span class='etiqueta-precio'>" + textoPrecio + "</span>",
+		iconSize: [92, 36],
+		iconAnchor: [46, 36],
 	});
 }
 

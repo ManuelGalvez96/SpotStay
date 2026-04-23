@@ -19,7 +19,10 @@ class DetallePropiedadController extends Controller
             ->select(
                 'id_propiedad',
                 'titulo_propiedad',
-                'direccion_propiedad',
+                'calle_propiedad',
+                'numero_propiedad',
+                'piso_propiedad',
+                'puerta_propiedad',
                 'ciudad_propiedad',
                 'latitud_propiedad',
                 'longitud_propiedad',
@@ -31,6 +34,7 @@ class DetallePropiedadController extends Controller
                 'estado_propiedad',
                 'id_arrendador_fk'
             )
+            ->selectRaw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', calle_propiedad, numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad")
             ->where('id_propiedad', $id)
             ->first();
 

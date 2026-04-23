@@ -249,14 +249,26 @@ body.pagina-miembro {
 	border: none;
 }
 
+.etiqueta-precio-icono {
+	background: transparent;
+	border: none;
+}
+
 .etiqueta-precio {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 52px;
+	height: 30px;
 	position: relative;
-	padding: 8px 14px;
+	padding: 0 12px;
 	background: var(--primario);
 	color: #ffffff;
 	border-radius: 16px;
 	font-weight: 600;
 	font-size: 13px;
+	line-height: 1;
+	white-space: nowrap;
 	box-shadow: 0 12px 22px -12px rgba(0, 0, 0, 0.35);
 	border: 2px solid #ffffff;
 }

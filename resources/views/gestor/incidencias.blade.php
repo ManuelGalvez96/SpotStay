@@ -34,8 +34,10 @@
                 <option value="">Todos los estados</option>
                 <option value="abierta" {{ $estado === 'abierta' ? 'selected' : '' }}>Nuevas</option>
                 <option value="en_proceso" {{ $estado === 'en_proceso' ? 'selected' : '' }}>En proceso</option>
-                <option value="esperando" {{ $estado === 'esperando' ? 'selected' : '' }}>Esperando</option>
+                <option value="esperando_decision" {{ $estado === 'esperando_decision' ? 'selected' : '' }}>Esperando decisión</option>
+                <option value="esperando_pago" {{ $estado === 'esperando_pago' ? 'selected' : '' }}>Esperando pago</option>
                 <option value="resuelta" {{ $estado === 'resuelta' ? 'selected' : '' }}>Resueltas</option>
+                <option value="cerrada" {{ $estado === 'cerrada' ? 'selected' : '' }}>Cerradas</option>
             </select>
 
             <select name="prioridad">
@@ -92,7 +94,10 @@
                         $badgeEstado = match($incidencia->estado_incidencia) {
                             'abierta' => 'pendiente',
                             'en_proceso' => 'activo',
+                            'esperando_decision' => 'pendiente',
+                            'esperando_pago' => 'pendiente',
                             'resuelta' => 'activo',
+                            'cerrada' => 'activo',
                             default => 'rechazado'
                         };
                     @endphp

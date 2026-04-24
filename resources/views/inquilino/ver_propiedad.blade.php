@@ -243,6 +243,8 @@
                     </div>
                     @endif
 
+                    @endif
+
                     <!-- Contrato -->
                     <div class="card-gestion contrato">
                         <div class="card-icon">
@@ -262,9 +264,11 @@
                     <div class="card-gestion incidencias">
                         <div class="cabecera-card">
                             <h3><i class="bi bi-tools"></i> Gestor de Incidencias</h3>
-                            <button class="btn-reportar" data-bs-toggle="modal" data-bs-target="#modalReportar">
-                                <i class="bi bi-plus-lg"></i> Reportar
-                            </button>
+                            @if($esInquilino)
+                                <button class="btn-reportar" data-bs-toggle="modal" data-bs-target="#modalReportar">
+                                    <i class="bi bi-plus-lg"></i> Reportar
+                                </button>
+                            @endif
                         </div>
                         <div class="lista-incidencias">
                             @forelse ($incidencias as $incidencia)
@@ -272,17 +276,60 @@
                                 <div class="incidencia-info">
                                     <span class="titulo">{{ $incidencia->titulo_incidencia }}</span>
                                     <span class="fecha">{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y') }}</span>
+                                    @if(isset($incidencia->presupuesto_importe_incidencia) && !is_null($incidencia->presupuesto_importe_incidencia))
+                                        <span class="fecha">Presupuesto: {{ number_format((float) $incidencia->presupuesto_importe_incidencia, 2, ',', '.') }} EUR</span>
+                                    @endif
                                 </div>
                                 <div class="incidencia-acciones">
                                     <span class="estado-tag {{ $incidencia->estado_incidencia }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span>
 
-                                    @if($incidencia->id_reporta_fk == auth()->id() && $incidencia->estado_incidencia != 'resuelta')
-                                    <form action="{{ route('inquilino.cerrar_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline;">
-                                        @csrf
-                                        <button type="submit" class="btn-resolver" title="Marcar como resuelta">
-                                            <i class="bi bi-check-circle"></i>
-                                        </button>
-                                    </form>
+                                    @if($esArrendador)
+                                        @if($incidencia->estado_incidencia === 'esperando_decision')
+                                            <form action="{{ route('inquilino.decision_pago_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline-flex; gap: 6px; align-items: center;">
+                                                @csrf
+                                                <select name="responsable_pago" class="form-select form-select-sm" required>
+                                                    <option value="">Quién paga</option>
+                                                    <option value="arrendador">Arrendador</option>
+                                                    <option value="inquilino">Inquilino</option>
+                                                </select>
+                                                <button type="submit" class="btn-resolver" title="Confirmar decisión">
+                                                    <i class="bi bi-check2-square"></i>
+                                                </button>
+                                            </form>
+                                        @elseif($incidencia->estado_incidencia === 'esperando_pago' && $incidencia->responsable_pago_incidencia === 'arrendador')
+                                            <form action="{{ route('inquilino.pagar_presupuesto_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline;">
+                                                @csrf
+                                                <button type="submit" class="btn-resolver" title="Pagar presupuesto">
+                                                    <i class="bi bi-credit-card"></i>
+                                                </button>
+                                            </form>
+                                        @else
+                                            <small>Esperando siguiente paso del flujo.</small>
+                                        @endif
+                                    @elseif($esInquilino)
+                                        @if($incidencia->estado_incidencia === 'esperando_pago' && $incidencia->responsable_pago_incidencia === 'inquilino' && $incidencia->id_reporta_fk == (auth()->user()->id_usuario ?? 0))
+                                            <form action="{{ route('inquilino.pagar_presupuesto_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline;">
+                                                @csrf
+                                                <button type="submit" class="btn-resolver" title="Pagar presupuesto">
+                                                    <i class="bi bi-credit-card"></i>
+                                                </button>
+                                            </form>
+                                        @elseif($incidencia->estado_incidencia === 'resuelta' && $incidencia->id_reporta_fk == (auth()->user()->id_usuario ?? 0))
+                                            <form action="{{ route('inquilino.cerrar_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline;">
+                                                @csrf
+                                                <button type="submit" class="btn-resolver" title="Confirmar solución y cerrar">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </button>
+                                            </form>
+                                        @elseif($incidencia->estado_incidencia === 'esperando_decision')
+                                            <small>Pendiente de decisión del arrendador.</small>
+                                        @elseif($incidencia->estado_incidencia === 'esperando_pago' && $incidencia->responsable_pago_incidencia === 'arrendador')
+                                            <small>Esperando pago del arrendador.</small>
+                                        @elseif($incidencia->estado_incidencia === 'cerrada')
+                                            <small>Incidencia cerrada.</small>
+                                        @else
+                                            <small>Esperando gestión del responsable asignado.</small>
+                                        @endif
                                     @endif
                                 </div>
                             </div>

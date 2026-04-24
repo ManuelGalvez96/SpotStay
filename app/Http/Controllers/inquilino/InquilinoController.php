@@ -227,6 +227,9 @@ class InquilinoController extends Controller
             return redirect()->route('gestionar_propiedades')->with('error', 'No tienes un alquiler activo para esta propiedad.');
         }
 
+        $esInquilino = (int) $alquiler->id_inquilino_fk === (int) $userId;
+        $esArrendador = (int) $alquiler->id_arrendador_fk === (int) $userId;
+
         // Lógica de usuario consistente con Miembro
         $nombreUsuario = $usuario->name ?? $usuario->nombre_usuario ?? $usuario->email ?? '';
         $tieneFoto = !empty($usuario->foto_usuario);
@@ -338,7 +341,8 @@ class InquilinoController extends Controller
             'numPagosAtrasados'   => $numPagosAtrasados,
             'totalDeuda'          => $totalDeuda,
             'incidencias'         => $incidencias,
-            'esInquilino'         => true,
+            'esInquilino'         => $esInquilino,
+            'esArrendador'        => $esArrendador,
             'pdfEjemplo'          => 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
         ]);
     }
@@ -355,12 +359,35 @@ class InquilinoController extends Controller
             'prioridad' => 'required|string',
         ]);
 
+        $esInquilinoDeLaPropiedad = DB::table('tbl_alquiler')
+            ->where('id_propiedad_fk', $id)
+            ->where('id_inquilino_fk', $usuario->id_usuario)
+            ->where('estado_alquiler', 'activo')
+            ->exists();
+
+        if (!$esInquilinoDeLaPropiedad) {
+            return redirect()->back()->with('error', 'Solo el inquilino activo de la propiedad puede crear incidencias.');
+        }
+
         DB::beginTransaction();
         try {
+            $propiedad = DB::table('tbl_propiedad')
+                ->where('id_propiedad', $id)
+                ->select('id_gestor_fk', 'id_arrendador_fk')
+                ->first();
+
+            if (!$propiedad) {
+                DB::rollBack();
+                return redirect()->back()->with('error', 'La propiedad asociada no existe.');
+            }
+
+            $idAsignado = $propiedad->id_gestor_fk ?: $propiedad->id_arrendador_fk;
+
             // 1. Crear la incidencia
             $idIncidencia = DB::table('tbl_incidencia')->insertGetId([
                 'id_propiedad_fk' => $id,
                 'id_reporta_fk' => $usuario->id_usuario,
+                'id_asignado_fk' => $idAsignado,
                 'titulo_incidencia' => $request->titulo,
                 'descripcion_incidencia' => $request->descripcion,
                 'categoria_incidencia' => $request->categoria,
@@ -374,7 +401,7 @@ class InquilinoController extends Controller
             DB::table('tbl_historial_incidencia')->insert([
                 'id_incidencia_fk' => $idIncidencia,
                 'id_usuario_fk' => $usuario->id_usuario,
-                'comentario_historial' => 'Incidencia reportada por el inquilino/propietario.',
+                'comentario_historial' => 'Incidencia reportada por el inquilino.',
                 'cambio_estado_historial' => 'abierta',
                 'creado_historial' => Carbon::now(),
                 'actualizado_historial' => Carbon::now()
@@ -386,6 +413,113 @@ class InquilinoController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'Error al reportar la incidencia: ' . $e->getMessage());
         }
+    }
+
+    public function decidirPagoIncidencia(Request $request, $id)
+    {
+        $usuario = Auth::user();
+        if (!$usuario) {
+            return redirect()->route('login');
+        }
+
+        $request->validate([
+            'responsable_pago' => 'required|in:arrendador,inquilino',
+        ]);
+
+        $incidencia = DB::table('tbl_incidencia')
+            ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_incidencia.id_propiedad_fk')
+            ->where('tbl_incidencia.id_incidencia', $id)
+            ->select('tbl_incidencia.*', 'tbl_propiedad.id_arrendador_fk')
+            ->first();
+
+        if (!$incidencia) {
+            return back()->with('error', 'Incidencia no encontrada.');
+        }
+
+        if ((int) $incidencia->id_arrendador_fk !== (int) $usuario->id_usuario) {
+            return back()->with('error', 'Solo el arrendador puede decidir quién paga el presupuesto.');
+        }
+
+        if ($incidencia->estado_incidencia !== 'esperando_decision') {
+            return back()->with('error', 'Esta incidencia no está pendiente de decisión del arrendador.');
+        }
+
+        $responsablePago = $request->responsable_pago;
+
+        DB::table('tbl_incidencia')
+            ->where('id_incidencia', $id)
+            ->update([
+                'responsable_pago_incidencia' => $responsablePago,
+                'estado_incidencia' => 'esperando_pago',
+                'esperando_de_incidencia' => $responsablePago,
+                'actualizado_incidencia' => now(),
+            ]);
+
+        DB::table('tbl_historial_incidencia')->insert([
+            'id_incidencia_fk' => $id,
+            'id_usuario_fk' => $usuario->id_usuario,
+            'comentario_historial' => 'El arrendador decide que el presupuesto lo pagará: ' . $responsablePago . '.',
+            'cambio_estado_historial' => 'esperando_pago',
+            'creado_historial' => now(),
+            'actualizado_historial' => now(),
+        ]);
+
+        return back()->with('success', 'Decisión registrada. La incidencia queda pendiente de pago.');
+    }
+
+    public function pagarPresupuestoIncidencia($id)
+    {
+        $usuario = Auth::user();
+        if (!$usuario) {
+            return redirect()->route('login');
+        }
+
+        $incidencia = DB::table('tbl_incidencia')
+            ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_incidencia.id_propiedad_fk')
+            ->where('tbl_incidencia.id_incidencia', $id)
+            ->select('tbl_incidencia.*', 'tbl_propiedad.id_arrendador_fk')
+            ->first();
+
+        if (!$incidencia) {
+            return back()->with('error', 'Incidencia no encontrada.');
+        }
+
+        if ($incidencia->estado_incidencia !== 'esperando_pago') {
+            return back()->with('error', 'Esta incidencia no está pendiente de pago.');
+        }
+
+        $esArrendador = (int) $incidencia->id_arrendador_fk === (int) $usuario->id_usuario;
+        $esInquilinoReporta = (int) $incidencia->id_reporta_fk === (int) $usuario->id_usuario;
+        $responsable = (string) ($incidencia->responsable_pago_incidencia ?? '');
+
+        $puedePagar = ($responsable === 'arrendador' && $esArrendador)
+            || ($responsable === 'inquilino' && $esInquilinoReporta);
+
+        if (!$puedePagar) {
+            return back()->with('error', 'No eres la persona responsable del pago de este presupuesto.');
+        }
+
+        DB::table('tbl_incidencia')
+            ->where('id_incidencia', $id)
+            ->update([
+                'pagado_presupuesto_incidencia' => true,
+                'pagado_incidencia' => now(),
+                'estado_incidencia' => 'resuelta',
+                'esperando_de_incidencia' => null,
+                'resuelto_incidencia' => now(),
+                'actualizado_incidencia' => now(),
+            ]);
+
+        DB::table('tbl_historial_incidencia')->insert([
+            'id_incidencia_fk' => $id,
+            'id_usuario_fk' => $usuario->id_usuario,
+            'comentario_historial' => 'Presupuesto pagado por ' . $responsable . '. Incidencia marcada como resuelta.',
+            'cambio_estado_historial' => 'resuelta',
+            'creado_historial' => now(),
+            'actualizado_historial' => now(),
+        ]);
+
+        return back()->with('success', 'Pago registrado. La incidencia ha pasado a resuelta.');
     }
 
     public function pagarCuotaAlquiler(int $cuotaId)
@@ -556,7 +690,12 @@ class InquilinoController extends Controller
      */
     public function cerrarIncidencia($id)
     {
-        $userId = Auth::id();
+        $usuario = Auth::user();
+        if (!$usuario) {
+            return redirect()->route('login');
+        }
+
+        $userId = (int) $usuario->id_usuario;
 
         $incidencia = DB::table('tbl_incidencia')
             ->where('id_incidencia', $id)
@@ -571,20 +710,29 @@ class InquilinoController extends Controller
             return back()->with('error', 'No tienes permiso para cerrar esta incidencia.');
         }
 
-        // Seguridad adicional: No cerrar si ya está resuelta
-        if ($incidencia->estado_incidencia === 'resuelta') {
-            return back()->with('info', 'Esta incidencia ya está marcada como resuelta.');
+        if ($incidencia->estado_incidencia !== 'resuelta') {
+            return back()->with('error', 'Solo puedes confirmar y cerrar incidencias en estado resuelta.');
         }
 
         try {
             DB::table('tbl_incidencia')
                 ->where('id_incidencia', $id)
                 ->update([
-                    'estado_incidencia' => 'resuelta',
+                    'estado_incidencia' => 'cerrada',
+                    'cerrado_incidencia' => now(),
                     'actualizado_incidencia' => now()
                 ]);
 
-            return back()->with('success', '¡Incidencia cerrada correctamente! Gracias por confirmar la solución.');
+            DB::table('tbl_historial_incidencia')->insert([
+                'id_incidencia_fk' => $id,
+                'id_usuario_fk' => $userId,
+                'comentario_historial' => 'El inquilino confirma la resolución y cierra la incidencia.',
+                'cambio_estado_historial' => 'cerrada',
+                'creado_historial' => now(),
+                'actualizado_historial' => now(),
+            ]);
+
+            return back()->with('success', 'Incidencia cerrada correctamente. Gracias por confirmar la resolución.');
         } catch (\Exception $e) {
             return back()->with('error', 'Error al cerrar la incidencia: ' . $e->getMessage());
         }

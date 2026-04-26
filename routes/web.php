@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Miembro\HomeController;
 use App\Http\Controllers\Miembro\DetallePropiedadController;
 use App\Http\Controllers\Miembro\MapaController;
+use App\Http\Controllers\Miembro\SolicitudAlquilerController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -114,6 +115,7 @@ Route::middleware(['role:gestor'])->group(function () {
 Route::middleware(['role:miembro,inquilino,propietario'])->group(function () {
     Route::get('/miembro/inicio', [HomeController::class, 'index']);
     Route::get('/miembro/propiedad/{id}', [DetallePropiedadController::class, 'show'])->name('miembro.detalle_propiedad');
+    Route::post('/miembro/propiedad/{id}/solicitud-alquiler', [SolicitudAlquilerController::class, 'store'])->name('miembro.solicitud_alquiler.store');
     Route::get('/miembro/registrar-propiedad', function () {
         return view('miembro.registrar_propiedad');
     })->name('miembro.registrar-propiedad');

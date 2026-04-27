@@ -66,9 +66,9 @@ var filtrarPropiedades = function(pagina) {
     })
         .then(function(response) {
             if (!response.ok) {
-                throw new Error('Error HTTP ' + response.status);
+                throw new Error(' Error HTTP ' + response.status);
             }
-            return response.json();
+            return response.json(); 
         })
         .then(function(data) {
             actualizarTabla(data);

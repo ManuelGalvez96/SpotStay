@@ -94,12 +94,12 @@ Route::middleware(['role:admin'])->group(function () {
     Route::post('/admin/alquiler/{id}/rechazar', [AlquilerController::class, 'rechazar']);
 
     // Suscripciones
-    Route::get('/admin/suscripciones', [SuscripcionController::class, 'index']);
-    Route::get('/admin/suscripciones/filtrar', [SuscripcionController::class, 'filtrar']);
-    Route::get('/admin/suscripciones/{id}', [SuscripcionController::class, 'show']);
-    Route::post('/admin/suscripciones/{id}/editar', [SuscripcionController::class, 'editar']);
-    Route::post('/admin/suscripciones/{id}/cancelar', [SuscripcionController::class, 'cancelar']);
-    Route::get('/admin/suscripciones/exportar', [SuscripcionController::class, 'exportar']);
+    // Route::get('/admin/suscripciones', [SuscripcionController::class, 'index']);
+    // Route::get('/admin/suscripciones/filtrar', [SuscripcionController::class, 'filtrar']);
+    // Route::get('/admin/suscripciones/{id}', [SuscripcionController::class, 'show']);
+    // Route::post('/admin/suscripciones/{id}/editar', [SuscripcionController::class, 'editar']);
+    // Route::post('/admin/suscripciones/{id}/cancelar', [SuscripcionController::class, 'cancelar']);
+    // Route::get('/admin/suscripciones/exportar', [SuscripcionController::class, 'exportar']);
 });
 
 // Rutas Gestor
@@ -160,6 +160,7 @@ Route::middleware(['role:miembro,inquilino,propietario'])->group(function () {
 
     Route::get('/inquilino/gestionar-propiedades', [InquilinoController::class, 'gestionarPropiedades'])->name('gestionar_propiedades');
     Route::get('/inquilino/propiedad/{id}', [InquilinoController::class, 'verPropiedad'])->name('inquilino.ver_propiedad');
+    Route::post('/inquilino/cuotas/{cuotaId}/pagar', [InquilinoController::class, 'pagarCuotaAlquiler'])->name('inquilino.pagar_cuota');
     Route::post('/inquilino/propiedad/{id}/incidencia', [InquilinoController::class, 'reportarIncidencia'])->name('inquilino.reportar_incidencia');
     Route::post('/inquilino/incidencia/{id}/cerrar', [InquilinoController::class, 'cerrarIncidencia'])->name('inquilino.cerrar_incidencia');
     Route::get('/miembro/mapa/propiedades', [MapaController::class, 'propiedades'])->name('miembro.mapa.propiedades');

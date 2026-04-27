@@ -32,34 +32,19 @@ function iniciarMapa() {
 }
 
 function configurarFiltros() {
-	var boton = document.getElementById("boton-aplicar-filtros");
-	if (!boton) {
+	if (!window.FiltrosMiembro || typeof window.FiltrosMiembro.registrarBotonAplicar !== "function") {
 		return;
 	}
 
-	boton.onclick = function () {
-		cargarPropiedades();
-	};
+	window.FiltrosMiembro.registrarBotonAplicar("boton-aplicar-filtros", cargarPropiedades);
 }
 
 function obtenerFiltros() {
-	return {
-		precio_minimo: obtenerValor("precio-minimo"),
-		precio_maximo: obtenerValor("precio-maximo"),
-		tipo_inmueble: obtenerValor("tipo-inmueble"),
-		habitaciones: obtenerValor("numero-habitaciones"),
-		metros_minimo: obtenerValor("metros-minimo"),
-		metros_maximo: obtenerValor("metros-maximo"),
-	};
-}
-
-function obtenerValor(idCampo) {
-	var campo = document.getElementById(idCampo);
-	if (!campo || campo.value === "") {
-		return "";
+	if (!window.FiltrosMiembro || typeof window.FiltrosMiembro.obtenerFiltrosMapa !== "function") {
+		return {};
 	}
 
-	return campo.value;
+	return window.FiltrosMiembro.obtenerFiltrosMapa();
 }
 
 function cargarPropiedades() {
@@ -75,12 +60,12 @@ function cargarPropiedades() {
 		lat_max: limites.getNorthEast().lat,
 		lng_min: limites.getSouthWest().lng,
 		lng_max: limites.getNorthEast().lng,
-		precio_minimo: filtros.precio_minimo,
-		precio_maximo: filtros.precio_maximo,
-		tipo_inmueble: filtros.tipo_inmueble,
-		habitaciones: filtros.habitaciones,
-		metros_minimo: filtros.metros_minimo,
-		metros_maximo: filtros.metros_maximo,
+		precio_minimo: filtros.precio_minimo || "",
+		precio_maximo: filtros.precio_maximo || "",
+		tipo_inmueble: filtros.tipo_inmueble || "",
+		habitaciones: filtros.habitaciones || "",
+		metros_minimo: filtros.metros_minimo || "",
+		metros_maximo: filtros.metros_maximo || "",
 	};
 
 	var url = rutaApiPropiedades + "?" + new URLSearchParams(parametros).toString();

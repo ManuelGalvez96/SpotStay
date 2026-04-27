@@ -558,6 +558,14 @@ var asignarEventosModalNuevo = function() {
 
             if (precioSugerido) {
                 datosNuevoAlquiler.precioSugerido = precioSugerido;
+                var precioInput = document.getElementById('nuevoPrecio');
+                if (precioInput && !precioInput.value) {
+                    precioInput.value = parseFloat(precioSugerido).toFixed(2);
+                }
+                var sugerido = document.getElementById('precioSugerido');
+                if (sugerido) {
+                    sugerido.textContent = 'Precio sugerido segun la propiedad: € ' + parseFloat(precioSugerido).toFixed(2);
+                }
             }
         };
     }
@@ -626,6 +634,7 @@ var irAPaso = function(paso) {
     pasoItems.forEach(function(item, index) {
         var numPaso = index + 1;
         item.classList.remove('paso-activo', 'paso-completado');
+
         if (numPaso < paso) {
             item.classList.add('paso-completado');
         } else if (numPaso === paso) {
@@ -634,11 +643,10 @@ var irAPaso = function(paso) {
     });
 
     /* Actualizar label paso */
-    var label = document.getElementById('labelPasoActual');
-    if (label) {
-        label.textContent = 'Paso ' + paso + ' de ' + totalPasos;
+    var labelPaso = document.getElementById('labelPasoActual');
+    if (labelPaso) {
+        labelPaso.textContent = 'Paso ' + paso + ' de ' + totalPasos;
     }
-
 
     /* Mostrar/ocultar botones */
     var btnAnterior = document.getElementById('btnPasoAnterior');

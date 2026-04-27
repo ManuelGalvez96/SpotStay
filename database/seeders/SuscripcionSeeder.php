@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Suscripcion;
+use App\Models\Plan;
 use App\Models\Usuario;
 use Illuminate\Database\Seeder;
 
@@ -11,26 +12,26 @@ class SuscripcionSeeder extends Seeder
     public function run(): void
     {
         $suscripciones = [
-            ['plan' => 'basico', 'max_propiedades' => 3],
-            ['plan' => 'basico', 'max_propiedades' => 3],
-            ['plan' => 'profesional', 'max_propiedades' => 10],
-            ['plan' => 'profesional', 'max_propiedades' => 10],
-            ['plan' => 'profesional', 'max_propiedades' => 10],
-            ['plan' => 'premium', 'max_propiedades' => 30],
-            ['plan' => 'premium', 'max_propiedades' => 30],
-            ['plan' => 'basico', 'max_propiedades' => 3],
-            ['plan' => 'basico', 'max_propiedades' => 3],
-            ['plan' => 'profesional', 'max_propiedades' => 10],
-            ['plan' => 'profesional', 'max_propiedades' => 10],
-            ['plan' => 'premium', 'max_propiedades' => 30],
-            ['plan' => 'premium', 'max_propiedades' => 30],
-            ['plan' => 'basico', 'max_propiedades' => 3],
-            ['plan' => 'profesional', 'max_propiedades' => 10],
-            ['plan' => 'premium', 'max_propiedades' => 30],
-            ['plan' => 'basico', 'max_propiedades' => 3],
-            ['plan' => 'profesional', 'max_propiedades' => 10],
-            ['plan' => 'premium', 'max_propiedades' => 30],
-            ['plan' => 'basico', 'max_propiedades' => 3],
+            ['plan' => 'Básico'],
+            ['plan' => 'Básico'],
+            ['plan' => 'Pro'],
+            ['plan' => 'Pro'],
+            ['plan' => 'Pro'],
+            ['plan' => 'Profesional'],
+            ['plan' => 'Profesional'],
+            ['plan' => 'Básico'],
+            ['plan' => 'Básico'],
+            ['plan' => 'Pro'],
+            ['plan' => 'Pro'],
+            ['plan' => 'Profesional'],
+            ['plan' => 'Profesional'],
+            ['plan' => 'Básico'],
+            ['plan' => 'Pro'],
+            ['plan' => 'Profesional'],
+            ['plan' => 'Básico'],
+            ['plan' => 'Pro'],
+            ['plan' => 'Profesional'],
+            ['plan' => 'Básico'],
         ];
 
         $arrendadores = Usuario::whereHas('roles', function ($query) {
@@ -39,18 +40,27 @@ class SuscripcionSeeder extends Seeder
 
         foreach ($suscripciones as $index => $data) {
             if (isset($arrendadores[$index])) {
-                Suscripcion::firstOrCreate(
-                    ['id_usuario_fk' => $arrendadores[$index], 'plan_suscripcion' => $data['plan']],
-                    [
-                        'plan_suscripcion' => $data['plan'],
-                        'max_propiedades_suscripcion' => $data['max_propiedades'],
-                        'inicio_suscripcion' => now()->toDateString(),
-                        'fin_suscripcion' => now()->addYear()->toDateString(),
-                        'estado_suscripcion' => 'activa',
-                        'creado_suscripcion' => now(),
-                        'actualizado_suscripcion' => now(),
-                    ]
-                );
+                $nombrePlan = $data['plan'] === 'Profesional' ? 'Pro' : $data['plan'];
+                $plan = Plan::where('nombre_plan', $nombrePlan)->first();
+                
+                if ($plan) {
+                    $slugPlan = mb_strtolower((string) $plan->slug_plan);
+
+                    Suscripcion::firstOrCreate(
+                        ['id_usuario_fk' => $arrendadores[$index], 'id_plan_fk' => $plan->id_plan],
+                        [
+                            'plan_suscripcion' => $slugPlan,
+                            'id_plan_fk' => $plan->id_plan,
+                            'max_propiedades_suscripcion' => (int) $plan->max_propiedades_plan,
+                            'precio_pagado_suscripcion' => $plan->precio_plan,
+                            'inicio_suscripcion' => now()->toDateString(),
+                            'fin_suscripcion' => now()->addYear()->toDateString(),
+                            'estado_suscripcion' => 'activa',
+                            'creado_suscripcion' => now(),
+                            'actualizado_suscripcion' => now(),
+                        ]
+                    );
+                }
             }
         }
     }

@@ -11,34 +11,34 @@ class PropiedadSeeder extends Seeder
 {
     public function run(): void
     {
-        $ciudades = ['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao', 'Málaga'];
+        $ciudades = ['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao', 'Malaga'];
 
         $arrendadores = [
-            ['email' => 'Jlavignole@spotstay.com', 'nombre' => 'Jaume Lavignole'],
-            ['email' => 'IVázquez@spotstay.com', 'nombre' => 'Isabel Vázquez'],
-            ['email' => 'ERuiz@spotstay.com', 'nombre' => 'Enrique Ruiz'],
-            ['email' => 'MGarcía@spotstay.com', 'nombre' => 'María García'],
-            ['email' => 'JJiménez@spotstay.com', 'nombre' => 'Jorge Jiménez'],
-            ['email' => 'PNúñez@spotstay.com', 'nombre' => 'Patricia Núñez'],
-            ['email' => 'AMoreno@spotstay.com', 'nombre' => 'Alejandro Moreno'],
-            ['email' => 'EVargas@spotstay.com', 'nombre' => 'Elena Vargas'],
-            ['email' => 'SNavarro@spotstay.com', 'nombre' => 'Sergio Navarro'],
-            ['email' => 'GCampos@spotstay.com', 'nombre' => 'Gloria Campos'],
-            ['email' => 'RIglesias@spotstay.com', 'nombre' => 'Rafael Iglesias'],
-            ['email' => 'CMolina@spotstay.com', 'nombre' => 'Catalina Molina'],
-            ['email' => 'IVega@spotstay.com', 'nombre' => 'Iago Vega'],
-            ['email' => 'LHerrera@spotstay.com', 'nombre' => 'Lorena Herrera'],
-            ['email' => 'VGutierrez@spotstay.com', 'nombre' => 'Víctor Gutierrez'],
-            ['email' => 'SRamos@spotstay.com', 'nombre' => 'Sandra Ramos'],
-            ['email' => 'LFlores@spotstay.com', 'nombre' => 'Lucas Flores'],
-            ['email' => 'VCabrera@spotstay.com', 'nombre' => 'Valeria Cabrera'],
-            ['email' => 'MRamírez@spotstay.com', 'nombre' => 'Martín Ramírez'],
-            ['email' => 'SCortés@spotstay.com', 'nombre' => 'Sofía Cortés'],
-            ['email' => 'ASoto@spotstay.com', 'nombre' => 'Andrés Soto'],
-            ['email' => 'DDelgado@spotstay.com', 'nombre' => 'Daniela Delgado'],
-            ['email' => 'CParra@spotstay.com', 'nombre' => 'Cristian Parra'],
-            ['email' => 'NCastro@spotstay.com', 'nombre' => 'Natalia Castro'],
-            ['email' => 'GRojas@spotstay.com', 'nombre' => 'Guillermo Rojas'],
+            ['email' => 'jlavignole@spotstay.com', 'nombre' => 'Jaume Lavignole'],
+            ['email' => 'ivazquez@spotstay.com', 'nombre' => 'Isabel Vázquez'],
+            ['email' => 'eruiz@spotstay.com', 'nombre' => 'Enrique Ruiz'],
+            ['email' => 'mgarcia@spotstay.com', 'nombre' => 'María García'],
+            ['email' => 'jjimenez@spotstay.com', 'nombre' => 'Jorge Jiménez'],
+            ['email' => 'pnunez@spotstay.com', 'nombre' => 'Patricia Núñez'],
+            ['email' => 'amoreno@spotstay.com', 'nombre' => 'Alejandro Moreno'],
+            ['email' => 'evargas@spotstay.com', 'nombre' => 'Elena Vargas'],
+            ['email' => 'snavarro@spotstay.com', 'nombre' => 'Sergio Navarro'],
+            ['email' => 'gcampos@spotstay.com', 'nombre' => 'Gloria Campos'],
+            ['email' => 'riglesias@spotstay.com', 'nombre' => 'Rafael Iglesias'],
+            ['email' => 'cmolina@spotstay.com', 'nombre' => 'Catalina Molina'],
+            ['email' => 'ivega@spotstay.com', 'nombre' => 'Iago Vega'],
+            ['email' => 'lherrera@spotstay.com', 'nombre' => 'Lorena Herrera'],
+            ['email' => 'vgutierrez@spotstay.com', 'nombre' => 'Víctor Gutiérrez'],
+            ['email' => 'sramos@spotstay.com', 'nombre' => 'Sandra Ramos'],
+            ['email' => 'lflores@spotstay.com', 'nombre' => 'Lucas Flores'],
+            ['email' => 'vcabrera@spotstay.com', 'nombre' => 'Valeria Cabrera'],
+            ['email' => 'mramirez@spotstay.com', 'nombre' => 'Martín Ramírez'],
+            ['email' => 'scortes@spotstay.com', 'nombre' => 'Sofía Cortés'],
+            ['email' => 'asoto@spotstay.com', 'nombre' => 'Andrés Soto'],
+            ['email' => 'ddelgado@spotstay.com', 'nombre' => 'Daniela Delgado'],
+            ['email' => 'cparra@spotstay.com', 'nombre' => 'Cristian Parra'],
+            ['email' => 'ncastro@spotstay.com', 'nombre' => 'Natalia Castro'],
+            ['email' => 'grojas@spotstay.com', 'nombre' => 'Guillermo Rojas'],
         ];
 
         $gestores = Usuario::whereHas('roles', function ($q) {
@@ -76,7 +76,6 @@ class PropiedadSeeder extends Seeder
                 'lng' => $this->generarLongitud($ciudades[$counter % count($ciudades)]),
                 'descripcion' => 'Piso completamente equipado en zona céntrica con acceso a transporte público.',
                 'precio' => rand(60, 250) * 10, // 600-2500
-                'gastos' => json_encode($this->generarGastos()),
                 'estado' => 'borrador',
                 'creado' => now()->subDays(rand(30, 90)),
             ];
@@ -96,7 +95,6 @@ class PropiedadSeeder extends Seeder
                 'lng' => $this->generarLongitud($ciudades[($counter + 1) % count($ciudades)]),
                 'descripcion' => 'Apartamento moderno con todas las comodidades en pleno centro urbano.',
                 'precio' => rand(60, 250) * 10,
-                'gastos' => json_encode($this->generarGastos()),
                 'estado' => $counter % 2 === 0 ? 'alquilada' : 'publicada',
                 'creado' => now()->subDays(rand(5, 60)),
             ];
@@ -117,7 +115,6 @@ class PropiedadSeeder extends Seeder
                     'lng' => $this->generarLongitud($ciudades[($counter + 2) % count($ciudades)]),
                     'descripcion' => 'Vivienda amplia compartida, ideal para grupos de amigos o compañeros de trabajo.',
                     'precio' => rand(60, 180) * 10,
-                    'gastos' => json_encode($this->generarGastos()),
                     'estado' => 'alquilada',
                     'creado' => now()->subDays(rand(10, 120)),
                 ];
@@ -145,7 +142,6 @@ class PropiedadSeeder extends Seeder
                     'longitud_propiedad' => $data['lng'],
                     'descripcion_propiedad' => $data['descripcion'],
                     'precio_propiedad' => $data['precio'],
-                    'gastos_propiedad' => $data['gastos'],
                     'estado_propiedad' => $data['estado'],
                     'creado_propiedad' => $data['creado'],
                     'actualizado_propiedad' => $data['creado'],
@@ -190,7 +186,7 @@ class PropiedadSeeder extends Seeder
             'Valencia' => ['46001', '46002', '46003', '46004'],
             'Sevilla' => ['41001', '41002', '41003', '41004'],
             'Bilbao' => ['48001', '48002', '48003', '48004'],
-            'Málaga' => ['29001', '29002', '29005', '29007'],
+            'Malaga' => ['29001', '29002', '29005', '29007'],
         ];
         $codigos = $cps[$ciudad] ?? ['00000'];
         return $codigos[array_rand($codigos)];
@@ -204,7 +200,7 @@ class PropiedadSeeder extends Seeder
             'Valencia' => 39.4699,
             'Sevilla' => 37.3891,
             'Bilbao' => 43.2630,
-            'Málaga' => 36.7213,
+            'Malaga' => 36.7213,
         ];
         return $lats[$ciudad] + (rand(-100, 100) / 1000);
     }
@@ -217,24 +213,9 @@ class PropiedadSeeder extends Seeder
             'Valencia' => -0.3761,
             'Sevilla' => -5.9845,
             'Bilbao' => -2.9350,
-            'Málaga' => -4.4214,
+            'Malaga' => -4.4214,
         ];
         return $lngs[$ciudad] + (rand(-100, 100) / 1000);
     }
-
-    private function generarGastos(): array
-    {
-        $gastos = [
-            'agua' => rand(20, 40),
-            'luz' => rand(40, 80),
-            'comunidad' => rand(30, 70),
-        ];
-        
-        // Algunos incluyen gas (30% de probabilidad)
-        if (rand(0, 2) === 0) {
-            $gastos['gas'] = rand(20, 50);
-        }
-
-        return $gastos;
-    }
 }
+

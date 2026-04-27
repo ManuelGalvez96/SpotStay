@@ -221,6 +221,11 @@
     background: #DC2626;
 }
 
+.badge-inactiva {
+    background: #DBEAFE;
+    color: #1D4ED8;
+}
+
 .acciones-rapidas {
     display: flex;
     gap: 8px;

@@ -80,7 +80,6 @@ class ArrendadorDemoSeeder extends Seeder
             'longitud_propiedad' => -3.7074,
             'descripcion_propiedad' => 'Piso amplio en el centro de Madrid',
             'precio_propiedad' => 1200.00,
-            'gastos_propiedad' => json_encode(['agua' => 30, 'luz' => 50, 'comunidad' => 40]),
             'estado_propiedad' => 'alquilada',
         ]);
 
@@ -96,7 +95,6 @@ class ArrendadorDemoSeeder extends Seeder
             'longitud_propiedad' => -3.7043,
             'descripcion_propiedad' => 'Estudio moderno en zona centrica',
             'precio_propiedad' => 800.00,
-            'gastos_propiedad' => json_encode(['agua' => 25, 'luz' => 40, 'comunidad' => 30]),
             'estado_propiedad' => 'publicada',
         ]);
 
@@ -167,7 +165,6 @@ class ArrendadorDemoSeeder extends Seeder
                 'longitud_propiedad' => $data['longitud_propiedad'],
                 'descripcion_propiedad' => $data['descripcion_propiedad'],
                 'precio_propiedad' => $data['precio_propiedad'],
-                'gastos_propiedad' => $data['gastos_propiedad'],
                 'estado_propiedad' => $data['estado_propiedad'],
                 'creado_propiedad' => Carbon::now(),
                 'actualizado_propiedad' => Carbon::now(),

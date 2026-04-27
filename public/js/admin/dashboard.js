@@ -399,16 +399,15 @@ function rellenarModalSolicitud(datos) {
     var emailEl = document.getElementById('modalEmailSolicitudDash');
     if (emailEl) emailEl.textContent = datos.email_usuario;
     
-    var datosObj = JSON.parse(datos.datos_solicitud_arrendador || '{}');
     var ciudadEl = document.getElementById('modalCiudadSolicitudDash');
     if (ciudadEl) {
-        ciudadEl.innerHTML = '<i class="bi bi-geo-alt"></i> ' + (datosObj.ciudad || 'No disponible');
+        ciudadEl.innerHTML = '<i class="bi bi-geo-alt"></i> ' + (datos.direccion_fiscal_solicitud || 'No disponible');
     }
     
     // Rellenar datos de propiedad
     var direccionEl = document.getElementById('modalDireccionSolicitudDash');
     if (direccionEl) {
-        direccionEl.textContent = datosObj.direccion || '—';
+        direccionEl.textContent = datos.tipo_arrendador_solicitud || '—';
     }
     
     // Actualizar estado

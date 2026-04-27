@@ -33,6 +33,12 @@ body {
     font-size: 16px;
 }
 
+.topbar-logo-img {
+    height: 32px;
+    max-width: 150px;
+    object-fit: contain;
+}
+
 .topbar-central {
     display: flex;
     gap: 4px;

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -158,7 +159,7 @@ class UsuarioController extends Controller
                     ];
                 }
             } catch (\Exception $e) {
-                \Log::error('Error obteniendo propiedades: ' . $e->getMessage());
+                Log::error('Error obteniendo propiedades: ' . $e->getMessage());
             }
 
             // Obtener total de alquileres
@@ -171,7 +172,7 @@ class UsuarioController extends Controller
                     })
                     ->count();
             } catch (\Exception $e) {
-                \Log::error('Error obteniendo alquileres: ' . $e->getMessage());
+                Log::error('Error obteniendo alquileres: ' . $e->getMessage());
             }
 
             // Obtener suscripción
@@ -184,7 +185,7 @@ class UsuarioController extends Controller
                     $suscripcionNombre = $suscripcion->nombre_suscripcion;
                 }
             } catch (\Exception $e) {
-                \Log::error('Error obteniendo suscripción: ' . $e->getMessage());
+                Log::error('Error obteniendo suscripción: ' . $e->getMessage());
             }
 
             return response()->json([
@@ -203,7 +204,7 @@ class UsuarioController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error en UsuarioController@show: ' . $e->getMessage() . ' - ' . $e->getFile() . ':' . $e->getLine());
+            Log::error('Error en UsuarioController@show: ' . $e->getMessage() . ' - ' . $e->getFile() . ':' . $e->getLine());
             return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
         }
     }

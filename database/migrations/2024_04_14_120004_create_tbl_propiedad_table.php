@@ -38,8 +38,11 @@ return new class extends Migration {
             $table->boolean('calefaccion_propiedad')->default(false);
             $table->boolean('trastero_propiedad')->default(false);
             $table->string('adicional_propiedad', 255)->nullable();
-            $table->json('gastos_propiedad')->nullable();
+            $table->unsignedTinyInteger('banos_propiedad')->nullable();
+            $table->unsignedBigInteger('id_admin_aprueba_fk')->nullable();
             $table->string('estado_propiedad', 30)->default('borrador');
+            $table->text('notas_admin_propiedad')->nullable();
+            $table->timestamp('aprobada_propiedad')->nullable();
             $table->timestamp('creado_propiedad')->nullable();
             $table->timestamp('actualizado_propiedad')->nullable();
 
@@ -49,6 +52,7 @@ return new class extends Migration {
             $table->index('tipo_propiedad');
             $table->index('habitaciones_propiedad');
             $table->index('metros_cuadrados_propiedad');
+            $table->index('ciudad_propiedad');
 
             // Foreign keys
             $table->foreign('id_arrendador_fk')
@@ -57,6 +61,9 @@ return new class extends Migration {
             $table->foreign('id_gestor_fk')
                 ->references('id_usuario')->on('tbl_usuario')
                 ->onDelete('restrict');
+            $table->foreign('id_admin_aprueba_fk')
+                ->references('id_usuario')->on('tbl_usuario')
+                ->onDelete('set null');
         });
     }
 

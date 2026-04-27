@@ -22,7 +22,21 @@ class SolicitudArrendador extends Model
     protected $fillable = [
         'id_usuario_fk',
         'id_admin_revisa_fk',
-        'datos_solicitud_arrendador',
+        'telefono_solicitud',
+        'fecha_nacimiento_solicitud',
+        'tipo_documento_solicitud',
+        'numero_documento_solicitud',
+        'iban_solicitud',
+        'titular_cuenta_solicitud',
+        'nif_solicitud',
+        'direccion_fiscal_solicitud',
+        'tipo_arrendador_solicitud',
+        'descripcion_solicitud',
+        'num_propiedades_previstas_solicitud',
+        'es_propietario_solicitud',
+        'acepta_terminos_solicitud',
+        'acepta_veracidad_solicitud',
+        'fecha_aceptacion_solicitud',
         'estado_solicitud_arrendador',
         'notas_solicitud_arrendador',
         'creado_solicitud_arrendador',
@@ -30,7 +44,12 @@ class SolicitudArrendador extends Model
     ];
 
     protected $casts = [
-        'datos_solicitud_arrendador' => 'array',
+        'fecha_nacimiento_solicitud' => 'date',
+        'es_propietario_solicitud' => 'boolean',
+        'acepta_terminos_solicitud' => 'boolean',
+        'acepta_veracidad_solicitud' => 'boolean',
+        'fecha_aceptacion_solicitud' => 'date',
+        'num_propiedades_previstas_solicitud' => 'integer',
         'creado_solicitud_arrendador' => 'datetime',
         'actualizado_solicitud_arrendador' => 'datetime',
     ];

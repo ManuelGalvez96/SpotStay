@@ -23,6 +23,7 @@ class Propiedad extends Model
     protected $fillable = [
         'id_arrendador_fk',
         'id_gestor_fk',
+        'id_admin_aprueba_fk',
         'titulo_propiedad',
         'calle_propiedad',
         'numero_propiedad',
@@ -34,17 +35,20 @@ class Propiedad extends Model
         'longitud_propiedad',
         'descripcion_propiedad',
         'precio_propiedad',
-        'gastos_propiedad',
+        'banos_propiedad',
+        'notas_admin_propiedad',
+        'aprobada_propiedad',
         'estado_propiedad',
         'creado_propiedad',
         'actualizado_propiedad',
     ];
 
     protected $casts = [
-        'gastos_propiedad' => 'array',
         'latitud_propiedad' => 'decimal:7',
         'longitud_propiedad' => 'decimal:7',
         'precio_propiedad' => 'decimal:2',
+        'banos_propiedad' => 'integer',
+        'aprobada_propiedad' => 'boolean',
         'creado_propiedad' => 'datetime',
         'actualizado_propiedad' => 'datetime',
     ];

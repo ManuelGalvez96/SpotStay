@@ -134,7 +134,6 @@
                         continue;
                     }
                     $contadorSolicitudes++;
-                    $datos = json_decode($solicitud->datos_solicitud_arrendador);
                     $partes = explode(' ', $solicitud->nombre_usuario);
                     $iniciales = strtoupper(substr($partes[0], 0, 1)) . 
                                  strtoupper(substr($partes[1] ?? '', 0, 1));
@@ -143,7 +142,7 @@
                     <div class="solicitud-avatar avatar-default">{{ $iniciales }}</div>
                     <div class="solicitud-info">
                         <p class="solicitud-nombre">{{ $solicitud->nombre_usuario }}</p>
-                        <p class="solicitud-ciudad">{{ $datos->ciudad ?? 'N/A' }}</p>
+                        <p class="solicitud-ciudad">{{ $solicitud->direccion_fiscal_solicitud ?? 'N/A' }}</p>
                     </div>
                     <div class="solicitud-meta">
                         <span class="solicitud-tiempo">{{ \Carbon\Carbon::parse($solicitud->creado_solicitud_arrendador)->diffForHumans() }}</span>
@@ -212,8 +211,7 @@
             <div class="timeline-linea"></div>
             @forelse($actividadReciente as $notif)
             @php
-                $datos = json_decode($notif->datos_notificacion);
-                $colorTipo = match($notif->tipo_notificacion) {
+                $colorTipo = $notif->color_notificacion ?? match($notif->tipo_notificacion) {
                     'nueva_solicitud' => '#035498',
                     'alquiler_pendiente' => '#1AA068',
                     default => '#EF4444'
@@ -222,7 +220,7 @@
             <div class="timeline-item">
                 <div class="timeline-punto" style="background: {{ $colorTipo }};"></div>
                 <div class="timeline-contenido">
-                    <p class="timeline-texto">{{ $datos->titulo ?? 'Actividad' }}</p>
+                    <p class="timeline-texto">{{ $notif->titulo_notificacion ?? 'Actividad' }}</p>
                     <span class="timeline-hora">{{ \Carbon\Carbon::parse($notif->creado_notificacion)->diffForHumans() }}</span>
                 </div>
             </div>

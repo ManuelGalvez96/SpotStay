@@ -174,13 +174,10 @@
         <div class="timeline">
             <div class="timeline-linea"></div>
             @forelse($notificaciones as $notificacion)
-                @php
-                    $datos = json_decode($notificacion->datos_notificacion);
-                @endphp
                 <div class="timeline-item">
-                    <div class="timeline-punto" style="background:#035498;"></div>
+                    <div class="timeline-punto" style="background:{{ $notificacion->color_notificacion ?? '#035498' }};"></div>
                     <div class="timeline-contenido">
-                        <p class="timeline-texto">{{ $datos->titulo ?? 'Actualización operativa' }}</p>
+                        <p class="timeline-texto">{{ $notificacion->titulo_notificacion ?? 'Actualización operativa' }}</p>
                         <span class="timeline-hora">{{ \Carbon\Carbon::parse($notificacion->creado_notificacion)->diffForHumans() }}</span>
                     </div>
                 </div>

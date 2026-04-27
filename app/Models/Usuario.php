@@ -31,6 +31,12 @@ class Usuario extends Authenticatable
         'email_usuario',
         'contrasena_usuario',
         'telefono_usuario',
+        'dni_usuario',
+        'fecha_nacimiento_usuario',
+        'iban_usuario',
+        'direccion_fiscal_usuario',
+        'tipo_arrendador_usuario',
+        'verificado_identidad_usuario',
         'avatar_usuario',
         'activo_usuario',
         'verificado_usuario',
@@ -46,6 +52,8 @@ class Usuario extends Authenticatable
 
     protected $casts = [
         'activo_usuario' => 'boolean',
+        'verificado_identidad_usuario' => 'boolean',
+        'fecha_nacimiento_usuario' => 'date',
         'verificado_usuario' => 'datetime',
         'creado_usuario' => 'datetime',
         'actualizado_usuario' => 'datetime',

@@ -14,7 +14,13 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_notificacion')->autoIncrement()->primary();
             $table->unsignedBigInteger('id_usuario_fk');
             $table->string('tipo_notificacion', 100);
-            $table->json('datos_notificacion');
+            $table->string('titulo_notificacion', 200);
+            $table->text('mensaje_notificacion');
+            $table->string('url_notificacion', 500)->nullable();
+            $table->string('icono_notificacion', 50)->nullable();
+            $table->string('color_notificacion', 20)->nullable();
+            $table->string('tipo_entidad_notificacion', 50)->nullable();
+            $table->unsignedBigInteger('id_entidad_notificacion')->nullable();
             $table->boolean('leida_notificacion')->default(false);
             $table->timestamp('leida_en_notificacion')->nullable();
             $table->timestamp('creado_notificacion')->nullable();

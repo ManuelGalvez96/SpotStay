@@ -853,6 +853,19 @@
     background: #FEE2E2;
 }
 
+.btn-desactivar:disabled,
+.btn-desactivar.is-disabled {
+    background: #F3F4F6;
+    border-color: #E5E7EB;
+    color: #9CA3AF;
+    cursor: not-allowed;
+}
+
+.btn-desactivar:disabled:hover,
+.btn-desactivar.is-disabled:hover {
+    background: #F3F4F6;
+}
+
 /* ════════════════════════════════════════ */
 /* RESPONSIVE */
 /* ════════════════════════════════════════ */

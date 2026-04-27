@@ -349,6 +349,25 @@ class PropiedadController extends Controller
 
     public function desactivar($id)
     {
+        $propiedad = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->select('id_propiedad', 'estado_propiedad')
+            ->first();
+
+        if (!$propiedad) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Propiedad no encontrada.'
+            ], 404);
+        }
+
+        if ($propiedad->estado_propiedad === 'alquilada') {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede desactivar una propiedad alquilada.'
+            ], 422);
+        }
+
         DB::table('tbl_propiedad')
             ->where('id_propiedad', $id)
             ->update(['estado_propiedad' => 'inactiva']);

@@ -141,3 +141,35 @@ body {
   .property-card { flex-direction: column; }
   .property-actions { justify-content: flex-start; }
 }
+/* Homologacion visual con Inquilino */
+body {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.page-hero,
+.panel,
+.stat-card,
+.property-card {
+  border-color: #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+}
+
+.eyebrow,
+.hero-copy,
+.property-meta,
+.empty-state,
+.stat-card small {
+  color: #64748b;
+}
+
+.btn-primary {
+  background: #1d4ed8;
+}
+
+.btn-volver,
+.mini-link,
+.mini-button {
+  border-color: #e5e7eb;
+}

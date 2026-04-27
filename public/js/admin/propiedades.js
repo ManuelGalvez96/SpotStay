@@ -6,6 +6,38 @@ var csrfToken;
 var paginaActual = 1;
 var totalPaginas = 1;
 
+var esEstadoAlquilada = function(estado) {
+    return String(estado || '').trim().toLowerCase() === 'alquilada';
+};
+
+var actualizarEstadoBotonDesactivar = function(estado) {
+    var btnDesactivarPropiedad = document.getElementById('btnDesactivarPropiedad');
+    var modalPropiedad = document.getElementById('modalPropiedad');
+    if (!btnDesactivarPropiedad) {
+        return;
+    }
+
+    var estadoNormalizado = String(estado || '').trim().toLowerCase();
+    if (modalPropiedad) {
+        modalPropiedad.setAttribute('data-estado-propiedad', estadoNormalizado);
+    }
+    btnDesactivarPropiedad.setAttribute('data-estado-propiedad', estadoNormalizado);
+
+    if (esEstadoAlquilada(estadoNormalizado)) {
+        btnDesactivarPropiedad.disabled = true;
+        btnDesactivarPropiedad.classList.add('is-disabled');
+        btnDesactivarPropiedad.setAttribute('aria-disabled', 'true');
+        btnDesactivarPropiedad.title = 'No se puede desactivar una propiedad alquilada';
+        btnDesactivarPropiedad.textContent = 'No disponible (alquilada)';
+    } else {
+        btnDesactivarPropiedad.disabled = false;
+        btnDesactivarPropiedad.classList.remove('is-disabled');
+        btnDesactivarPropiedad.setAttribute('aria-disabled', 'false');
+        btnDesactivarPropiedad.title = '';
+        btnDesactivarPropiedad.textContent = 'Desactivar propiedad';
+    }
+};
+
 /* ── window.onload ── */
 window.onload = function() {
     csrfToken = document.querySelector('meta[name=csrf-token]').content;
@@ -197,6 +229,8 @@ var asignarEventosTabla = function() {
 
 /* ── Abrir modal ── */
 var abrirModal = function(id) {
+    actualizarEstadoBotonDesactivar('alquilada');
+
     fetch('/admin/propiedades/' + id)
         .then(function(response) {
             if (!response.ok) throw new Error('Error al cargar propiedad');
@@ -280,6 +314,8 @@ var abrirModal = function(id) {
 
             document.getElementById('modalDireccion').setAttribute('data-propiedad-id', String(id));
 
+            actualizarEstadoBotonDesactivar(propiedad.estado_propiedad);
+
             var overlay = document.getElementById('modalOverlay');
             var modal = document.getElementById('modalPropiedad');
             overlay.classList.add('visible');
@@ -318,6 +354,18 @@ var asignarEventosModal = function() {
 
     btnDesactivarPropiedad.onclick = function() {
         var propiedadId = parseInt(document.getElementById('modalDireccion').getAttribute('data-propiedad-id') || '1');
+        var modalPropiedad = document.getElementById('modalPropiedad');
+        var estadoBoton = btnDesactivarPropiedad.getAttribute('data-estado-propiedad') || '';
+        var estadoModal = modalPropiedad ? (modalPropiedad.getAttribute('data-estado-propiedad') || '') : '';
+
+        if (btnDesactivarPropiedad.disabled || esEstadoAlquilada(estadoBoton) || esEstadoAlquilada(estadoModal)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Acción no permitida',
+                text: 'No puedes desactivar una propiedad alquilada.'
+            });
+            return;
+        }
         desactivarPropiedad(propiedadId);
     };
 
@@ -340,36 +388,87 @@ var asignarEventosModal = function() {
 /* ── Desactivar propiedad ── */
 var desactivarPropiedad = function(id) {
     var url = '/admin/propiedades/' + id + '/desactivar';
-    var data = JSON.stringify({ _method: 'PUT' });
+    var formData = new FormData();
+    formData.append('_token', csrfToken);
 
     fetch(url, {
         method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': csrfToken,
-            'Content-Type': 'application/json'
-        },
-        body: data
+        body: formData
     })
     .then(function(response) {
-        return response.json();
+        return response.text().then(function(texto) {
+            var data = null;
+            try {
+                data = JSON.parse(texto);
+            } catch (e) {
+                data = null;
+            }
+
+            return {
+                ok: response.ok,
+                status: response.status,
+                data: data
+            };
+        });
     })
-    .then(function(data) {
-        if (data.success) {
+    .then(function(resultado) {
+        if (resultado.ok && resultado.data && resultado.data.success) {
             var row = document.querySelector('tr[data-id="' + id + '"]');
             if (row) {
                 row.classList.add('fila-inactiva');
+
+                var badgeTabla = row.querySelector('.badge-estado');
+                if (badgeTabla) {
+                    badgeTabla.className = 'badge-estado badge-inactiva';
+                    badgeTabla.textContent = 'Inactiva';
+                }
             }
+
+            var badgeModal = document.getElementById('modalBadgeEstado');
+            if (badgeModal) {
+                badgeModal.className = 'badge-estado badge-inactiva';
+                badgeModal.textContent = 'Inactiva';
+            }
+
+            actualizarEstadoBotonDesactivar('inactiva');
+
             cerrarModal();
+            return;
         }
+
+        Swal.fire({
+            icon: 'warning',
+            title: 'No se pudo desactivar',
+            text: (resultado.data && resultado.data.message)
+                ? resultado.data.message
+                : 'La propiedad no se pudo desactivar (' + resultado.status + ').'
+        });
     })
     .catch(function(error) {
         console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo desactivar la propiedad.'
+        });
     });
 };
 
 /* ── Confirmar eliminar ── */
 var confirmarEliminar = function(id) {
-    if (confirm('¿Estás seguro de que deseas eliminar esta propiedad?')) {
+    Swal.fire({
+        icon: 'warning',
+        title: '¿Eliminar propiedad?',
+        text: 'Esta acción no se puede deshacer.',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#dc2626'
+    }).then(function(resultado) {
+        if (!resultado.isConfirmed) {
+            return;
+        }
+
         var url = '/admin/propiedades/' + id;
 
         fetch(url, {
@@ -387,12 +486,32 @@ var confirmarEliminar = function(id) {
                 if (row) {
                     row.parentNode.removeChild(row);
                 }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Eliminada',
+                    text: 'La propiedad se eliminó correctamente.',
+                    timer: 1300,
+                    showConfirmButton: false
+                });
+                return;
             }
+
+            Swal.fire({
+                icon: 'error',
+                title: 'No se pudo eliminar',
+                text: data.message || 'La propiedad no se pudo eliminar.'
+            });
         })
         .catch(function(error) {
             console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Ocurrió un error al eliminar la propiedad.'
+            });
         });
-    }
+    });
 };
 
 /* ── Asignar eventos a paginación ── */

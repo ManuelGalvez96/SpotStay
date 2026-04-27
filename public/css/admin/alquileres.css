@@ -464,7 +464,7 @@
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     display: none;
-    z-index: 1000;
+    z-index: 10001;
     opacity: 0;
     pointer-events: none;
     transition: all 0.2s;

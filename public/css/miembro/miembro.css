@@ -993,7 +993,8 @@ body.pagina-miembro {
 	display: none;
 	/* Oculto por defecto */
 	flex-direction: column;
-	z-index: 100;
+	z-index: 999;
+	pointer-events: auto;
 }
 
 .submenu-perfil.activo {

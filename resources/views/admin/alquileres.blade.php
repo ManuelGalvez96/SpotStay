@@ -198,12 +198,16 @@
 
                     <td>
                         <div class="acciones-tabla">
-                            <button class="btn-accion btn-ver-alq" data-id="{{ $alquiler->id_alquiler }}">
+                            <button class="btn-accion btn-ver-alq" data-id="{{ $alquiler->id_alquiler }}" title="Ver detalle">
                                 <i class="bi bi-eye"></i>
                             </button>
                             @if($alquiler->estado_alquiler === 'pendiente')
-                                <button class="btn-aprobar-alq" data-id="{{ $alquiler->id_alquiler }}">✓ Aprobar</button>
-                                <button class="btn-rechazar-alq" data-id="{{ $alquiler->id_alquiler }}">✕ Rechazar</button>
+                                <button class="btn-accion btn-editar btn-aprobar-alq" data-id="{{ $alquiler->id_alquiler }}" title="Aprobar">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <div class="toggle-switch activo btn-rechazar-alq" data-id="{{ $alquiler->id_alquiler }}" title="Rechazar">
+                                    <div class="toggle-circulo"></div>
+                                </div>
                             @endif
                         </div>
                     </td>

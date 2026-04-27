@@ -6,10 +6,36 @@
 	--success: #18a672;
 }
 
+/* Ajuste para navbar fijo */
+.contenido-miembro {
+	padding-top: 20px !important;
+}
+
 .contenedor-ver-propiedad {
 	max-width: 1200px;
 	margin: 0 auto;
 	padding: 20px;
+}
+
+/* Asegurar que los modales Bootstrap funcionen correctamente */
+.modal {
+	z-index: 1050 !important;
+	pointer-events: auto !important;
+}
+
+.modal-backdrop {
+	z-index: 1040 !important;
+	pointer-events: auto !important;
+}
+
+.modal.show {
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+}
+
+.modal-dialog {
+	pointer-events: auto !important;
 }
 
 /* Navegación y Cabecera */
@@ -365,6 +391,40 @@
 .btn-resolver:hover {
 	transform: scale(1.2);
 	color: #047857;
+}
+
+/* ===== MODAL BOOTSTRAP - Asegurar interactividad ===== */
+.modal {
+	z-index: 1050 !important;
+	pointer-events: auto !important;
+}
+
+.modal-backdrop {
+	z-index: 1040 !important;
+	pointer-events: auto !important;
+}
+
+.modal.show {
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+}
+
+.modal-dialog {
+	pointer-events: auto !important;
+}
+
+.modal-content {
+	pointer-events: auto !important;
+}
+
+.btn-close {
+	pointer-events: auto !important;
+}
+
+.form-control,
+.form-select {
+	pointer-events: auto !important;
 }
 
 /* Responsive */

@@ -27,7 +27,7 @@ class PrecioGastoController extends Controller
             ->select(
                 'id_propiedad',
                 'titulo_propiedad',
-                'direccion_propiedad',
+                DB::raw($this->obtenerSelectDireccionPropiedad()),
                 'ciudad_propiedad',
                 'estado_propiedad',
                 'gastos_propiedad',
@@ -145,5 +145,25 @@ class PrecioGastoController extends Controller
         }
 
         return mb_strtoupper(mb_substr(trim($nombre), 0, 1));
+    }
+
+    private function obtenerSelectDireccionPropiedad(string $aliasTabla = 'tbl_propiedad'): string
+    {
+        if (Schema::hasColumn('tbl_propiedad', 'direccion_propiedad')) {
+            return "{$aliasTabla}.direccion_propiedad as direccion_propiedad";
+        }
+
+        $partes = [];
+        foreach (['calle_propiedad', 'numero_propiedad', 'piso_propiedad', 'puerta_propiedad'] as $columna) {
+            if (Schema::hasColumn('tbl_propiedad', $columna)) {
+                $partes[] = "NULLIF(TRIM({$aliasTabla}.{$columna}), '')";
+            }
+        }
+
+        if (empty($partes)) {
+            return "'' as direccion_propiedad";
+        }
+
+        return 'TRIM(CONCAT_WS(\' \' , ' . implode(', ', $partes) . ')) as direccion_propiedad';
     }
 }

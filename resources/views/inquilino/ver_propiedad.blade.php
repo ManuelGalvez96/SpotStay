@@ -273,8 +273,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/miembro/miembro.js') }}"></script>
     <script src="{{ asset('js/inquilino/validacion_incidencia.js') }}"></script>
+    <script src="{{ asset('js/inquilino/modal_fix.js') }}"></script>
 </body>
-
-</html>
 
 </html>

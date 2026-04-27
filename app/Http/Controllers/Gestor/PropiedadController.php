@@ -445,64 +445,6 @@ class PropiedadController extends Controller
         }
     }
 
-    private function sincronizarGastosBaseDePropiedad(object $propiedad, int $gestorId): void
-    {
-        $gastosRaw = $propiedad->gastos_propiedad ?? null;
-        if (!$gastosRaw) {
-            return;
-        }
-
-        $gastos = json_decode((string) $gastosRaw, true);
-        if (!is_array($gastos) || empty($gastos)) {
-            return;
-        }
-
-        $inicioBase = $propiedad->creado_propiedad
-            ? Carbon::parse((string) $propiedad->creado_propiedad)->startOfMonth()->toDateString()
-            : Carbon::today()->startOfMonth()->toDateString();
-
-        foreach ($gastos as $concepto => $importe) {
-            $importeNormalizado = (float) $importe;
-            if ($importeNormalizado <= 0) {
-                continue;
-            }
-
-            $conceptoTexto = trim((string) $concepto);
-            if ($conceptoTexto === '') {
-                continue;
-            }
-
-            $conceptoCanonico = strtolower($conceptoTexto);
-
-            $existe = DB::table('tbl_gasto')
-                ->where('id_propiedad_fk', (int) $propiedad->id_propiedad)
-                ->whereRaw('LOWER(concepto_gasto) = ?', [$conceptoCanonico])
-                ->exists();
-
-            if ($existe) {
-                continue;
-            }
-
-            DB::table('tbl_gasto')->insert([
-                'id_propiedad_fk' => (int) $propiedad->id_propiedad,
-                'id_alquiler_fk' => null,
-                'id_gestor_fk' => $gestorId,
-                'concepto_gasto' => ucfirst($conceptoTexto),
-                'categoria_gasto' => 'base_propiedad',
-                'importe_estimado' => round($importeNormalizado, 2),
-                'ambito_gasto' => 'propiedad',
-                'pagador_gasto' => 'inquilino',
-                'periodicidad_gasto' => 'mensual',
-                'dia_vencimiento' => 5,
-                'fecha_inicio_gasto' => $inicioBase,
-                'fecha_fin_gasto' => null,
-                'estado_gasto' => 'activo',
-                'creado_gasto' => now(),
-                'actualizado_gasto' => now(),
-            ]);
-        }
-    }
-
     private function crearCuotaMensualConDetalles(
         int $gastoId,
         Carbon $mes,
@@ -658,7 +600,6 @@ class PropiedadController extends Controller
 
         if ($gastosHabilitados) {
             $propiedadId = (int) $propiedad->id_propiedad;
-            $this->sincronizarGastosBaseDePropiedad($propiedad, $gestorId);
             $this->normalizarPagadoresSoloInquilinos($propiedadId, $gestorId);
             $this->ensureCuotasMensualesGeneradas($propiedadId, $gestorId);
 

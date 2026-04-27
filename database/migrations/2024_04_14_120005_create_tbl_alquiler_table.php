@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_admin_aprueba_fk')->nullable();
             $table->date('fecha_inicio_alquiler');
             $table->date('fecha_fin_alquiler')->nullable();
+            $table->decimal('precio_alquiler', 8, 2)->nullable();
             $table->string('estado_alquiler', 30)->default('pendiente');
             $table->timestamp('aprobado_alquiler')->nullable();
             $table->timestamp('creado_alquiler')->nullable();

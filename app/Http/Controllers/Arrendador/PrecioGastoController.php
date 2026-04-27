@@ -15,7 +15,6 @@ class PrecioGastoController extends Controller
     public function inicio(Request $request): View
     {
         $arrendadorId = $this->obtenerIdArrendador($request);
-        $columnaPrecio = $this->obtenerColumnaPrecioPropiedad();
 
         $arrendador = DB::table('tbl_usuario')
             ->where('id_usuario', $arrendadorId)
@@ -30,8 +29,7 @@ class PrecioGastoController extends Controller
                 'direccion_propiedad',
                 'ciudad_propiedad',
                 'estado_propiedad',
-                'gastos_propiedad',
-                DB::raw("{$columnaPrecio} as precio_propiedad")
+                DB::raw("'—' as gastos_propiedad")
             )
             ->orderByDesc('creado_propiedad')
             ->paginate(10);
@@ -40,6 +38,7 @@ class PrecioGastoController extends Controller
             ->where('id_arrendador_fk', $arrendadorId)
             ->count();
 
+        $columnaPrecio = $this->obtenerColumnaPrecioPropiedad();
         $precioMedio = (float) DB::table('tbl_propiedad')
             ->where('id_arrendador_fk', $arrendadorId)
             ->avg($columnaPrecio);
@@ -51,6 +50,7 @@ class PrecioGastoController extends Controller
             'propiedades' => $propiedades,
             'totalPropiedades' => $totalPropiedades,
             'precioMedio' => $precioMedio,
+            'mensaje_informativo' => 'La gestión de gastos por propiedad ha sido removida. Para consultas sobre gastos, contacta con tu gestor asignado.',
         ]);
     }
 
@@ -60,7 +60,6 @@ class PrecioGastoController extends Controller
 
         $datos = $request->validate([
             'precio_propiedad' => ['required', 'numeric', 'min:0'],
-            'gastos_propiedad' => ['nullable', 'string', 'max:4000'],
         ]);
 
         $propiedad = DB::table('tbl_propiedad')
@@ -71,7 +70,7 @@ class PrecioGastoController extends Controller
         if (!$propiedad) {
             return response()->json([
                 'success' => false,
-                'message' => 'No se encontro la propiedad.',
+                'message' => 'No se encontró la propiedad.',
             ], 404);
         }
 
@@ -81,13 +80,12 @@ class PrecioGastoController extends Controller
             ->where('id_propiedad', $id)
             ->update([
                 $columnaPrecio => (float) $datos['precio_propiedad'],
-                'gastos_propiedad' => $this->normalizarGastos($datos['gastos_propiedad'] ?? null),
                 'actualizado_propiedad' => Carbon::now(),
             ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Precio y gastos actualizados.',
+            'message' => 'Precio actualizado correctamente.',
         ]);
     }
 
@@ -120,22 +118,6 @@ class PrecioGastoController extends Controller
         }
 
         return 'precio_propiedad';
-    }
-
-    private function normalizarGastos(?string $gastos): ?string
-    {
-        if ($gastos === null || trim($gastos) === '') {
-            return null;
-        }
-
-        $texto = trim($gastos);
-        $decodificado = json_decode($texto, true);
-
-        if (json_last_error() === JSON_ERROR_NONE) {
-            return json_encode($decodificado);
-        }
-
-        return $texto;
     }
 
     private function obtenerInicialAvatar(?string $nombre): string

@@ -58,7 +58,6 @@ class DashboardController extends Controller
             ->select(
               'tbl_solicitud_arrendador.id_solicitud_arrendador',
               'tbl_usuario.nombre_usuario',
-              'tbl_solicitud_arrendador.datos_solicitud_arrendador',
               'tbl_solicitud_arrendador.creado_solicitud_arrendador'
             )
             ->orderBy('tbl_solicitud_arrendador.creado_solicitud_arrendador', 'desc')

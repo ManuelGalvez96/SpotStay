@@ -51,11 +51,8 @@ class PropiedadController extends Controller
             'longitud_propiedad' => ['nullable', 'numeric'],
             'descripcion_propiedad' => ['nullable', 'string'],
             'precio_propiedad' => ['required', 'numeric', 'min:0'],
-            'gastos_propiedad' => ['nullable', 'string'],
             'estado_propiedad' => ['required', 'in:borrador,publicada,inactiva,alquilada'],
         ]);
-
-        $gastos = $this->normalizarGastos($datos['gastos_propiedad'] ?? null);
 
         $datosPropiedad = [
             'id_arrendador_fk' => $arrendadorId,
@@ -68,7 +65,6 @@ class PropiedadController extends Controller
             'longitud_propiedad' => $datos['longitud_propiedad'] ?? null,
             'descripcion_propiedad' => $datos['descripcion_propiedad'] ?? null,
             $columnaPrecio => $datos['precio_propiedad'],
-            'gastos_propiedad' => $gastos,
             'estado_propiedad' => $datos['estado_propiedad'],
             'actualizado_propiedad' => Carbon::now(),
         ];
@@ -224,7 +220,6 @@ class PropiedadController extends Controller
                 'longitud_propiedad',
                 'descripcion_propiedad',
                 DB::raw("{$columnaPrecio} as precio_propiedad"),
-                'gastos_propiedad',
                 'estado_propiedad'
             )
             ->first();
@@ -291,20 +286,6 @@ class PropiedadController extends Controller
         }
 
         return 'precio_propiedad';
-    }
-
-    private function normalizarGastos(?string $gastos): ?string
-    {
-        if ($gastos === null || trim($gastos) === '') {
-            return null;
-        }
-
-        $decodificado = json_decode($gastos, true);
-        if (json_last_error() === JSON_ERROR_NONE) {
-            return json_encode($decodificado);
-        }
-
-        return $gastos;
     }
 
     private function obtenerInicialAvatar(?string $nombre): string

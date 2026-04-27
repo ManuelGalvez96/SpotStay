@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
 
-class ChatController extends Controller
+class MensajesController extends Controller
 {
     public function index()
     {
@@ -19,7 +19,7 @@ class ChatController extends Controller
 
         $conversaciones = $this->obtenerConversacionesUsuario($usuarioId);
 
-        return view('miembro.chat', [
+        return view('miembro.mensajes', [
             'conversaciones' => $conversaciones,
             'conversacionActiva' => null,
             'mensajes' => collect(),
@@ -45,7 +45,7 @@ class ChatController extends Controller
 
         $conversaciones = $this->obtenerConversacionesUsuario($usuarioId);
 
-        return view('miembro.chat', [
+        return view('miembro.mensajes', [
             'conversaciones' => $conversaciones,
             'conversacionActiva' => $conversacionActiva,
             'mensajes' => $conversacionActiva->mensajes,
@@ -98,7 +98,7 @@ class ChatController extends Controller
             ]);
         }
 
-        return redirect()->route('miembro.chat.show', ['id' => $conversacion->id_conversacion]);
+        return redirect()->route('miembro.mensajes.show', ['id' => $conversacion->id_conversacion]);
     }
 
     public function enviarMensaje(Request $request, $id)
@@ -121,7 +121,7 @@ class ChatController extends Controller
 
         $ahora = Carbon::now();
 
-        Mensaje::create([
+        $mensaje = Mensaje::create([
             'id_conversacion_fk' => $conversacion->id_conversacion,
             'id_remitente_fk' => $usuarioId,
             'cuerpo_mensaje' => $request->input('mensaje'),
@@ -140,7 +140,52 @@ class ChatController extends Controller
                 'ultima_lectura_conv_usuario' => $ahora,
             ]);
 
-        return redirect()->route('miembro.chat.show', ['id' => $conversacion->id_conversacion]);
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'ok' => true,
+                'mensaje' => [
+                    'id_mensaje' => $mensaje->id_mensaje,
+                    'cuerpo_mensaje' => $mensaje->cuerpo_mensaje,
+                    'fecha' => optional($mensaje->creado_mensaje)->format('d/m/Y H:i'),
+                    'es_mio' => true,
+                ],
+            ]);
+        }
+
+        return redirect()->route('miembro.mensajes.show', ['id' => $conversacion->id_conversacion]);
+    }
+
+    public function obtenerMensajes($id)
+    {
+        $usuarioId = Auth::id();
+
+        $conversacion = Conversacion::with('participantes')
+            ->findOrFail($id);
+
+        $esParticipante = $conversacion->participantes
+            ->contains('id_usuario', $usuarioId);
+
+        if (!$esParticipante) {
+            abort(403);
+        }
+
+        $mensajes = Mensaje::where('id_conversacion_fk', $conversacion->id_conversacion)
+            ->orderBy('creado_mensaje', 'asc')
+            ->get()
+            ->map(function ($mensaje) use ($usuarioId) {
+                return [
+                    'id_mensaje' => $mensaje->id_mensaje,
+                    'cuerpo_mensaje' => $mensaje->cuerpo_mensaje,
+                    'fecha' => optional($mensaje->creado_mensaje)->format('d/m/Y H:i'),
+                    'es_mio' => (int) $mensaje->id_remitente_fk === (int) $usuarioId,
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'ok' => true,
+            'mensajes' => $mensajes,
+        ]);
     }
 
     private function obtenerConversacionesUsuario($usuarioId)

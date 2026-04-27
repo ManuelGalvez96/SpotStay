@@ -67,7 +67,7 @@
                 <li><a href="/miembro/inicio" class="enlace-nav"><i class="bi bi-house-door"></i> Inicio</a></li>
                 <li><a href="#" class="enlace-nav"><i class="bi bi-plus-circle"></i> Registra tus Propiedades</a></li>
                 <li><a href="#" class="enlace-nav"><i class="bi bi-journal-text"></i> Alquileres</a></li>
-                <li><a href="#" class="enlace-nav"><i class="bi bi-chat-dots"></i> Mensajes</a></li>
+                <li><a href="#" class="enlace-nav"><i class="bi bi-mensajes-dots"></i> Mensajes</a></li>
                 @if ($esInquilino)
                 <li><a href="{{ route('gestionar_propiedades') }}" class="enlace-nav activo"><i class="bi bi-building-gear"></i> Gestionar</a></li>
                 @endif

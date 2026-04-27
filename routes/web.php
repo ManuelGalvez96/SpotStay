@@ -5,7 +5,7 @@ use App\Http\Controllers\Miembro\HomeController;
 use App\Http\Controllers\Miembro\DetallePropiedadController;
 use App\Http\Controllers\Miembro\MapaController;
 use App\Http\Controllers\Miembro\SolicitudAlquilerController;
-use App\Http\Controllers\Miembro\ChatController;
+use App\Http\Controllers\Miembro\MensajesController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -113,14 +113,15 @@ Route::middleware(['role:gestor'])->group(function () {
     Route::post('/gestor/incidencias/{id}/presupuesto', [GestorIncidenciaController::class, 'crearPresupuesto']);
 });
 
-Route::middleware(['role:miembro,inquilino,arrendador'])->group(function () {
+Route::middleware(['role:miembro,inquilino,propietario,arrendador'])->group(function () {
     Route::get('/miembro/inicio', [HomeController::class, 'index']);
     Route::get('/miembro/propiedad/{id}', [DetallePropiedadController::class, 'show'])->name('miembro.detalle_propiedad');
     Route::post('/miembro/propiedad/{id}/solicitud-alquiler', [SolicitudAlquilerController::class, 'store'])->name('miembro.solicitud_alquiler.store');
-    Route::post('/miembro/propiedad/{id}/chat', [ChatController::class, 'iniciarDesdePropiedad'])->name('miembro.chat.iniciar');
-    Route::get('/miembro/chat', [ChatController::class, 'index'])->name('miembro.chat.index');
-    Route::get('/miembro/chat/{id}', [ChatController::class, 'show'])->name('miembro.chat.show');
-    Route::post('/miembro/chat/{id}/mensaje', [ChatController::class, 'enviarMensaje'])->name('miembro.chat.enviar');
+    Route::post('/miembro/propiedad/{id}/chat', [MensajesController::class, 'iniciarDesdePropiedad'])->name('miembro.mensajes.iniciar');
+    Route::get('/miembro/chat', [MensajesController::class, 'index'])->name('miembro.mensajes.index');
+    Route::get('/miembro/chat/{id}', [MensajesController::class, 'show'])->name('miembro.mensajes.show');
+    Route::get('/miembro/chat/{id}/mensajes', [MensajesController::class, 'obtenerMensajes'])->name('miembro.mensajes.mensajes');
+    Route::post('/miembro/chat/{id}/mensaje', [MensajesController::class, 'enviarMensaje'])->name('miembro.mensajes.enviar');
     Route::get('/miembro/registrar-propiedad', function () {
         return view('miembro.registrar_propiedad');
     })->name('miembro.registrar-propiedad');

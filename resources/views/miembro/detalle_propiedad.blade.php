@@ -120,9 +120,9 @@
                         </div>
                     </div>
 
-                    <form action="{{ route('miembro.chat.iniciar', ['id' => $id]) }}" method="POST">
+                    <form action="{{ route('miembro.mensajes.iniciar', ['id' => $id]) }}" method="POST">
                         @csrf
-                        <button class="boton-contacto" type="submit">Contactar por chat <i class="bi bi-chat-left-text"></i></button>
+                        <button class="boton-contacto" type="submit">Contactar por chat <i class="bi bi-mensajes-left-text"></i></button>
                     </form>
 
                     <h2>Solicitar alquiler</h2>

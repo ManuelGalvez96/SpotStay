@@ -81,7 +81,7 @@
                     </select>
                 </label>
                 <label>
-                    Concepto <span class="texto-opcional">(opcional)</span>
+                    Concepto (opcional)
                     <input type="text" name="concepto_gasto" value="{{ old('concepto_gasto') }}" maxlength="200" placeholder="Ej: recibo de electricidad" />
                 </label>
                 <label>

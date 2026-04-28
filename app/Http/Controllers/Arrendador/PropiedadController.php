@@ -286,13 +286,6 @@ class PropiedadController extends Controller
 
     private function obtenerColumnaPrecioPropiedad(): string
     {
-        if (Schema::hasColumn('tbl_propiedad', 'precio_propiedad')) {
-            return 'precio_propiedad';
-        }
-
-        if (Schema::hasColumn('tbl_propiedad', 'precio_mensual_propiedad')) {
-            return 'precio_mensual_propiedad';
-        }
 
         return 'precio_propiedad';
     }

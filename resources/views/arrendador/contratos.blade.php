@@ -87,7 +87,7 @@
                                 @endif
 
                                 @if (!empty($contrato->url_pdf_contrato))
-                                    <a class="btn-ver" href="{{ asset($contrato->url_pdf_contrato) }}" target="_blank">Ver PDF</a>
+                                    <a class="btn-ver" href="{{ route('arrendador.contratos.descargar-pdf', ['id' => $contrato->id_contrato, 'arrendador_id' => $arrendadorId]) }}" target="_blank">Ver PDF</a>
                                 @endif
                             </div>
                         </td>

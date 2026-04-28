@@ -21,6 +21,8 @@ class PrecioGastoController extends Controller
             ->select('id_usuario', 'nombre_usuario', 'email_usuario')
             ->first();
 
+        $columnaPrecio = $this->obtenerColumnaPrecioPropiedad();
+
         $propiedades = DB::table('tbl_propiedad')
             ->where('id_arrendador_fk', $arrendadorId)
             ->select(
@@ -29,6 +31,7 @@ class PrecioGastoController extends Controller
                 DB::raw($this->obtenerSelectDireccionPropiedad()),
                 'ciudad_propiedad',
                 'estado_propiedad',
+                DB::raw("{$columnaPrecio} as precio_propiedad"),
                 DB::raw("'—' as gastos_propiedad")
             )
             ->orderByDesc('creado_propiedad')
@@ -37,8 +40,6 @@ class PrecioGastoController extends Controller
         $totalPropiedades = DB::table('tbl_propiedad')
             ->where('id_arrendador_fk', $arrendadorId)
             ->count();
-
-        $columnaPrecio = $this->obtenerColumnaPrecioPropiedad();
         $precioMedio = (float) DB::table('tbl_propiedad')
             ->where('id_arrendador_fk', $arrendadorId)
             ->avg($columnaPrecio);
@@ -109,13 +110,6 @@ class PrecioGastoController extends Controller
 
     private function obtenerColumnaPrecioPropiedad(): string
     {
-        if (Schema::hasColumn('tbl_propiedad', 'precio_propiedad')) {
-            return 'precio_propiedad';
-        }
-
-        if (Schema::hasColumn('tbl_propiedad', 'precio_mensual_propiedad')) {
-            return 'precio_mensual_propiedad';
-        }
 
         return 'precio_propiedad';
     }

@@ -109,11 +109,17 @@ class PdfMonkeyService
 
     private function solicitud()
     {
-        return Http::baseUrl((string) config('pdfmonkey.base_url'))
+        $solicitud = Http::baseUrl((string) config('pdfmonkey.base_url'))
             ->acceptJson()
             ->asJson()
             ->withToken((string) config('pdfmonkey.api_key'))
             ->timeout((int) config('pdfmonkey.timeout', 30))
             ->connectTimeout((int) config('pdfmonkey.connect_timeout', 10));
+
+        if (!config('pdfmonkey.verify_ssl', true) || app()->environment('local')) {
+            $solicitud = $solicitud->withoutVerifying();
+        }
+
+        return $solicitud;
     }
 }

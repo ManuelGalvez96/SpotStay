@@ -6,12 +6,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use App\Models\Alquiler;
 use App\Models\AlquilerCuota;
 use App\Models\Contrato;
 use App\Models\Pago;
+use App\Services\PdfMonkeyService;
 
 class AlquilerController extends Controller
 {
@@ -372,6 +374,9 @@ class AlquilerController extends Controller
                 ]);
 
             $this->generarCuotasAlAprobar($alquiler);
+            
+            // Generar contrato con PDF
+            $this->generarContratoConPDF($alquiler);
 
             DB::commit();
             return response()->json(['success' => true]);
@@ -683,6 +688,111 @@ class AlquilerController extends Controller
             );
 
             $cursor->addMonth();
+        }
+    }
+
+    private function generarContratoConPDF(object $alquiler): void
+    {
+        // Obtener datos completos del alquiler
+        $datosAlquiler = DB::table('tbl_alquiler as a')
+            ->join('tbl_usuario as arrendador', 'a.id_arrendador_fk', '=', 'arrendador.id_usuario')
+            ->join('tbl_usuario as inquilino', 'a.id_inquilino_fk', '=', 'inquilino.id_usuario')
+            ->join('tbl_propiedad as p', 'a.id_propiedad_fk', '=', 'p.id_propiedad')
+            ->where('a.id_alquiler', $alquiler->id_alquiler)
+            ->select(
+                'a.id_alquiler',
+                'a.fecha_inicio_alquiler',
+                'a.fecha_fin_alquiler',
+                'arrendador.nombre_usuario as nombre_arrendador',
+                'arrendador.email_usuario as email_arrendador',
+                'inquilino.nombre_usuario as nombre_inquilino',
+                'inquilino.email_usuario as email_inquilino',
+                'p.titulo_propiedad',
+                'p.direccion_propiedad',
+                'p.ciudad_propiedad',
+                'p.precio_propiedad'
+            )
+            ->first();
+
+        if (!$datosAlquiler) {
+            return;
+        }
+
+        try {
+            // Preparar datos para PdfMonkey
+            $pdfMonkey = new PdfMonkeyService();
+            
+            if (!$pdfMonkey->estaConfigurado()) {
+                return;
+            }
+
+            $precioMensual = (float) ($datosAlquiler->precio_propiedad ?? 0);
+            $fianza = $precioMensual * 2;
+
+            $datosContrato = [
+                'nombre_arrendador' => $datosAlquiler->nombre_arrendador,
+                'email_arrendador' => $datosAlquiler->email_arrendador,
+                'nombre_inquilino' => $datosAlquiler->nombre_inquilino,
+                'email_inquilino' => $datosAlquiler->email_inquilino,
+                'titulo_propiedad' => $datosAlquiler->titulo_propiedad,
+                'direccion_propiedad' => $datosAlquiler->direccion_propiedad,
+                'ciudad_propiedad' => $datosAlquiler->ciudad_propiedad,
+                'precio_mensual' => number_format($precioMensual, 2, '.', ''),
+                'fianza' => number_format($fianza, 2, '.', ''),
+                'fecha_inicio' => Carbon::parse($datosAlquiler->fecha_inicio_alquiler)->format('d/m/Y'),
+                'fecha_fin' => $datosAlquiler->fecha_fin_alquiler 
+                    ? Carbon::parse($datosAlquiler->fecha_fin_alquiler)->format('d/m/Y')
+                    : 'Indefinida',
+                'fecha_generacion' => Carbon::now()->format('d/m/Y'),
+            ];
+
+            // Generar PDF sincronizado
+            $respuesta = $pdfMonkey->crearDocumentoSincronizado(
+                $datosContrato,
+                $pdfMonkey->construirMeta([], 'contrato_' . $alquiler->id_alquiler . '.pdf')
+            );
+
+            if (isset($respuesta['document_card']['download_url'])) {
+                $urlPdf = $respuesta['document_card']['download_url'];
+
+                // Crear registro de contrato
+                $datosContratoBD = [
+                    'id_alquiler_fk' => $alquiler->id_alquiler,
+                    'url_pdf_contrato' => $urlPdf ?? '',
+                    'estado_contrato' => 'pendiente',
+                    'creado_contrato' => Carbon::now(),
+                ];
+
+                if (Schema::hasColumn('tbl_contrato', 'actualizado_contrato')) {
+                    $datosContratoBD['actualizado_contrato'] = Carbon::now();
+                }
+
+                DB::table('tbl_contrato')->insertOrIgnore($datosContratoBD);
+
+                return;
+            }
+
+            if (isset($respuesta['document']) && isset($respuesta['document']['id'])) {
+                $idDocumentoPdf = $respuesta['document']['id'];
+                $urlPdf = $pdfMonkey->obtenerUrlDescarga($idDocumentoPdf);
+
+                // Crear registro de contrato
+                $datosContratoBD = [
+                    'id_alquiler_fk' => $alquiler->id_alquiler,
+                    'url_pdf_contrato' => $urlPdf ?? '',
+                    'estado_contrato' => 'pendiente',
+                    'creado_contrato' => Carbon::now(),
+                ];
+
+                if (Schema::hasColumn('tbl_contrato', 'actualizado_contrato')) {
+                    $datosContratoBD['actualizado_contrato'] = Carbon::now();
+                }
+
+                DB::table('tbl_contrato')->insertOrIgnore($datosContratoBD);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error al generar PDF del contrato: ' . $e->getMessage());
+            // No romper la transacción si falla el PDF
         }
     }
 

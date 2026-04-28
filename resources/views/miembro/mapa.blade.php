@@ -4,56 +4,19 @@
 		<meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
-		<title>SpotStay | Mapa de Propiedades</title>
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+		<title>SpotStay | Mapa</title>
 		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 		<link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}" />
 	</head>
 	<body class="pagina-mapa">
-
-		<header class="encabezado-miembro" id="encabezado-miembro">
-			<div class="contenedor-encabezado-miembro">
-				<div class="marca-miembro">
-					<img src="/img/logo.png" alt="SpotStay Logo" />
+		<header class="encabezado-mapa" id="encabezado-mapa">
+			<div class="contenedor-encabezado">
+				<div class="logo-spotstay">
+					<img src="/img/logo.png"/>
 				</div>
-
-				<div class="acciones-miembro">
-					<button class="boton-icono" type="button" aria-label="Notificaciones">
-						<i class="bi bi-bell" aria-hidden="true"></i>
-					</button>
-					<div class="perfil-miembro" id="boton-perfil">
-						<span class="nombre-miembro">{{ $nombreUsuario }}</span>
-						@if ($tieneFoto)
-						<img class="foto-perfil" src="{{ $fotoUsuario }}" alt="Foto de perfil" />
-						@else
-						<div class="inicial-perfil" aria-hidden="true">{{ $inicialUsuario }}</div>
-						@endif
-
-						<div class="submenu-perfil" id="submenu-perfil">
-							<a href="#" class="item-submenu"><i class="bi bi-person"></i> Mi Perfil</a>
-							<a href="#" class="item-submenu"><i class="bi bi-gear"></i> Configuración</a>
-							<div class="separador-submenu"></div>
-							<a href="{{ route('logout') }}" class="item-submenu" style="color: red;"><i class="bi bi-box-arrow-right" style="color: red"></i> Cerrar Sesión</a>
-						</div>
-					</div>
-				</div>
+				<div class="texto-encabezado">Busqueda por mapa</div>
 			</div>
 		</header>
-
-		<nav class="navegacion-horizontal">
-			<div class="contenedor-nav">
-				<ul class="lista-nav">
-					<li><a href="/miembro/inicio" class="enlace-nav"><i class="bi bi-house-door"></i> Inicio</a></li>
-					<li><a href="#" class="enlace-nav"><i class="bi bi-plus-circle"></i> Registra tus Propiedades</a></li>
-					<li><a href="#" class="enlace-nav"><i class="bi bi-journal-text"></i> Alquileres</a></li>
-					<li><a href="#" class="enlace-nav"><i class="bi bi-chat-dots"></i> Mensajes</a></li>
-					<li><a href="{{ route('miembro.mapa') }}" class="enlace-nav activo"><i class="bi bi-map"></i> Mapa</a></li>
-					@if ($esInquilino)
-					<li><a href="{{ route('gestionar_propiedades') }}" class="enlace-nav"><i class="bi bi-building-gear"></i> Gestionar</a></li>
-					@endif
-				</ul>
-			</div>
-		</nav>
 
 		<main class="contenido-mapa">
 			<aside class="panel-filtros" id="panel-filtros">
@@ -93,6 +56,8 @@
 						<input type="number" id="metros-maximo" class="campo-filtro" placeholder="Max" min="0" />
 					</div>
 				</div>
+
+				<button class="boton-aplicar" id="boton-aplicar-filtros" type="button">Aplicar filtros</button>
 			</aside>
 
 			<section class="contenedor-mapa">

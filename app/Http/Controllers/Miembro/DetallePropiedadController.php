@@ -51,18 +51,7 @@ class DetallePropiedadController extends Controller
             ->where('id_usuario', $propiedad->id_arrendador_fk)
             ->first();
 
-        // Variables de usuario para el header/nav estándar
-        $usuario = \Illuminate\Support\Facades\Auth::user();
-        $nombreUsuario  = $usuario ? ($usuario->nombre_usuario ?? $usuario->email ?? '') : '';
-        $tieneFoto      = $usuario && !empty($usuario->foto_usuario);
-        $fotoUsuario    = $tieneFoto ? asset('storage/' . $usuario->foto_usuario) : '';
-        $inicialUsuario = $nombreUsuario !== '' ? strtoupper(substr($nombreUsuario, 0, 1)) : '';
-        $esInquilino    = $usuario && $usuario->alquileres()->where('estado_alquiler', 'activo')->exists();
-
-        return view('miembro.detalle_propiedad', compact(
-            'id', 'propiedad', 'fotosPropiedad', 'arrendador',
-            'nombreUsuario', 'tieneFoto', 'fotoUsuario', 'inicialUsuario', 'esInquilino'
-        ));
+        return view('miembro.detalle_propiedad', compact('id', 'propiedad', 'fotosPropiedad', 'arrendador'));
     }
     public function cargarFotos($id)
     {

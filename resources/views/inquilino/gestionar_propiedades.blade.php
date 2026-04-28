@@ -123,7 +123,6 @@
         </section>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('js/miembro/miembro.js') }}"></script>
     <script src="{{ asset('js/inquilino/filtros_gestion.js') }}"></script>
     <script src="{{ asset('js/inquilino/inquilino.js') }}"></script>

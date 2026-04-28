@@ -17,26 +17,18 @@
     <!-- HEADER IDÉNTICO A MIEMBRO -->
     <header class="encabezado-miembro" id="encabezado-miembro">
         <div class="contenedor-encabezado-miembro">
-            <!-- Bloque de Mensajes de Feedback -->
-            @if(session('success'))
-            <div class="header-error-msg header-feedback-msg">
-                <div class="alert alert-success-feedback">
-                    {!! session('success') !!}
-                </div>
+            <div class="marca-miembro">
+                <img src="/img/logo.png" alt="SpotStay Logo" />
             </div>
-            @endif
 
             @if(session('error'))
-            <div class="header-error-msg header-feedback-msg">
+            <div class="header-error-msg">
                 <div class="alert alert-error">
                     {!! session('error') !!}
                 </div>
             </div>
             @endif
 
-            <div class="marca-miembro">
-                <img src="/img/logo.png" alt="SpotStay Logo" />
-            </div>
             <div class="acciones-miembro">
                 <button class="boton-icono" type="button" aria-label="Notificaciones">
                     <i class="bi bi-bell" aria-hidden="true"></i>
@@ -52,13 +44,15 @@
                     <div class="submenu-perfil" id="submenu-perfil">
                         <a href="#" class="item-submenu"><i class="bi bi-person"></i> Mi Perfil</a>
                         <a href="#" class="item-submenu"><i class="bi bi-gear"></i> Configuración</a>
+
                         <div class="separador-submenu"></div>
-                        <a href="{{ route('logout') }}" class="item-submenu item-submenu-danger"><i class="bi bi-box-arrow-right icon-danger"></i> Cerrar Sesión</a>
+                        <a href="{{ route('logout') }}" class="item-submenu" style="color: red;"><i class="bi bi-box-arrow-right" style="color: red"></i> Cerrar Sesión</a>
                     </div>
                 </div>
             </div>
         </div>
     </header>
+
 
     <!-- NAVBAR HORIZONTAL IDÉNTICO A MIEMBRO -->
     <nav class="navegacion-horizontal">
@@ -66,14 +60,14 @@
             <ul class="lista-nav">
                 <li><a href="/miembro/inicio" class="enlace-nav"><i class="bi bi-house-door"></i> Inicio</a></li>
                 <li><a href="#" class="enlace-nav"><i class="bi bi-plus-circle"></i> Registra tus Propiedades</a></li>
-                <li><a href="#" class="enlace-nav"><i class="bi bi-journal-text"></i> Alquileres</a></li>
-                <li><a href="#" class="enlace-nav"><i class="bi bi-chat-dots"></i> Mensajes</a></li>
+
                 @if ($esInquilino)
                 <li><a href="{{ route('gestionar_propiedades') }}" class="enlace-nav activo"><i class="bi bi-building-gear"></i> Gestionar</a></li>
                 @endif
             </ul>
         </div>
     </nav>
+
 
     <main class="contenido-miembro">
         <div class="contenedor-ver-propiedad">
@@ -166,10 +160,6 @@
                                 <p class="nota">Tu contrato vence el <strong>{{ $fechaFinContrato }}</strong>.</p>
                                 @endif
                                 <p class="nota nota-fin-contrato">Contacta con el propietario para renovar o gestionar la salida.</p>
-                                <a href="{{ route('inquilino.ver_propiedad', $alquiler->id_propiedad) }}#chat"
-                                    class="btn-accion btn-contactar">
-                                    <i class="bi bi-chat-left-text"></i> Contactar al Propietario
-                                </a>
                         </div>
                     </div>
                     @elseif ($esIndefinido)
@@ -187,22 +177,31 @@
                             @else
                             <p class="nota pago-requerido"><strong>¡Paga ya!</strong> El plazo de este mes vence hoy.</p>
                             @endif
-                            <button class="btn-accion btn-pago bg-pago-requerido">Pagar Cuota Ahora</button>
+                            <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId ?? 0) }}" class="form-pago-cuota" data-monto="{{ number_format($totalDeuda, 2, ',', '.') }}€">
+                                @csrf
+                                <button type="submit" class="btn-accion btn-pago bg-pago-requerido" {{ empty($cuotaPendienteId) ? 'disabled' : '' }}>Pagar Cuota Ahora</button>
+                            </form>
                             @elseif ($estadoPagoActual === 'pagado')
                             <span class="label pago-exito">PAGO REALIZADO CON ÉXITO</span>
                             <span class="valor-kpi pago-exito"><i class="bi bi-check-circle-fill icono-check-pago"></i></span>
-                            <p class="nota pago-exito">Espera al siguiente mes.</p>
-                            <p class="nota mt-10">El siguiente pago empieza en: <strong>{{ $diasRestantesMes + 1 }} días</strong> para el mes que viene.</p>
+                            <p class="nota pago-exito">Espera a la siguiente fecha de pago. ({{ $fechaProximoPago }})</p>
+                            <p class="nota mt-10 pago-exito">Estado de cuenta: <strong>Al día</strong></p>
                             @else
                             <span class="label">PRÓXIMO PAGO EN</span>
                             <span class="valor-kpi">{{ $diasRestantesMes }} días</span>
                             @if ($numPagosAtrasados > 0)
                             <p class="nota pago-aviso">⚠️ Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso.<br> El total a pagar (incluyendo este mes) es de <strong>{{ number_format($totalDeuda, 2, ',', '.') }}€</strong>.</p>
                             @else
-                            <p class="nota">Vence a final de mes.</p>
+                            <p class="nota pago-aviso">Vence a final de mes.</p>
                             @endif
-                            <button class="btn-accion btn-pago">Pagar Ahora</button>
+                            <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId ?? 0) }}" class="form-pago-cuota" data-monto="{{ number_format($totalDeuda, 2, ',', '.') }}€">
+                                @csrf
+                                <button type="submit" class="btn-accion btn-pago" {{ empty($cuotaPendienteId) ? 'disabled' : '' }}>Pagar Ahora</button>
+                            </form>
                             @endif
+                            <button type="button" class="btn-accion w-100 mt-3" data-bs-toggle="modal" data-bs-target="#modalHistorialPagos" style="background-color: var(--fondo-suave); color: var(--texto); border: 1px solid var(--borde); display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: var(--radio); height: 44px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+                                <i class="bi bi-clock-history"></i> Ver Historial de Pagos
+                            </button>
                         </div>
                     </div>
                     @else
@@ -220,12 +219,15 @@
                             @else
                             <p class="nota pago-requerido"><strong>¡Paga ya!</strong> El plazo vence hoy.</p>
                             @endif
-                            <button class="btn-accion btn-pago bg-pago-requerido">Pagar Cuota Ahora</button>
+                            <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId ?? 0) }}" class="form-pago-cuota" data-monto="{{ number_format($totalDeuda, 2, ',', '.') }}€">
+                                @csrf
+                                <button type="submit" class="btn-accion btn-pago bg-pago-requerido" {{ empty($cuotaPendienteId) ? 'disabled' : '' }}>Pagar Cuota Ahora</button>
+                            </form>
                             @elseif ($estadoPagoActual === 'pagado')
                             <span class="label pago-exito">PAGO REALIZADO CON ÉXITO</span>
                             <span class="valor-kpi pago-exito"><i class="bi bi-check-circle-fill icono-check-pago"></i></span>
-                            <p class="nota pago-exito">Vence el {{ $fechaProximoPago }}</p>
-                            <p class="nota mt-10">Estado de cuenta: <strong>Al día</strong></p>
+                            <p class="nota pago-exito">Espera a la siguiente fecha de pago.<br> ({{ $fechaProximoPago }})</p>
+                            <p class="nota mt-10 pago-exito">Estado de cuenta: <strong>Al día</strong></p>
                             @else
                             <span class="label">PRÓXIMO PAGO EN</span>
                             <span class="valor-kpi">{{ $diasParaPago }} días</span>
@@ -236,18 +238,17 @@
                             @endif
 
                             @if (!empty($cuotaPendienteId))
-                            <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId) }}" class="form-pago-cuota" data-monto="{{ number_format($totalDeuda, 2, ',', '.') }} €">
+                            <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId) }}" class="form-pago-cuota" data-monto="{{ number_format($totalDeuda, 2, ',', '.') }}€">
                                 @csrf
                                 <button class="btn-accion btn-pago" type="submit">Pagar Cuota Ahora</button>
                             </form>
                             @else
                             <button class="btn-accion btn-pago" type="button" disabled>Sin cuotas pendientes</button>
                             @endif
-                            {{-- Botón Ver Historial --}}
-                            <button class="btn-accion btn-historial" type="button" data-bs-toggle="modal" data-bs-target="#modalHistorialPagos">
+                            @endif
+                            <button type="button" class="btn-accion w-100 mt-3" data-bs-toggle="modal" data-bs-target="#modalHistorialPagos" style="background-color: var(--fondo-suave); color: var(--texto); border: 1px solid var(--borde); display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: var(--radio); height: 44px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
                                 <i class="bi bi-clock-history"></i> Ver Historial de Pagos
                             </button>
-                            @endif
                         </div>
                     </div>
                     @endif
@@ -267,68 +268,63 @@
                         </div>
                     </div>
 
+                    <!-- Propietario -->
+                    <div class="card-gestion propietario">
+                        <div class="card-icon">
+                            <i class="bi bi-person-badge"></i>
+                        </div>
+                        <div class="card-body">
+                            <span class="label">PROPIETARIO</span>
+                            <span class="valor-estado">{{ $alquiler->nombre_propietario ?? 'No disponible' }}</span>
+                            <p class="nota">Si tienes alguna duda o problema, comunícate directamente con él.</p>
+                            <form method="POST" action="#" class="m-0 w-100 mt-2">
+                                @csrf
+                                <button type="submit" class="btn-accion w-100 text-center" style="background-color: transparent; border: 1px solid var(--borde); color: var(--primario); border-radius: var(--radio); height: 44px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+                                    <i class="bi bi-chat-dots"></i> Contactar al Propietario
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
                     <!-- Incidencias -->
                     <div class="card-gestion incidencias">
                         <div class="cabecera-card">
                             <h3><i class="bi bi-tools"></i> Gestor de Incidencias</h3>
-                            @if($esInquilino)
                             <button class="btn-reportar" data-bs-toggle="modal" data-bs-target="#modalReportar">
                                 <i class="bi bi-plus-lg"></i> Reportar
                             </button>
-                            @endif
                         </div>
-                        <div class="lista-incidencias">
+                        <div class="filtros-incidencias-container">
+                            <select id="filtro-autor" class="select-filtro-mini">
+                                <option value="todas">Todas las incidencias</option>
+                                <option value="mias">Mis reportes</option>
+                            </select>
+                            <select id="filtro-estado" class="select-filtro-mini">
+                                <option value="todas">Todos los estados</option>
+                                <option value="abierta">Abiertas</option>
+                                <option value="en_proceso">En proceso</option>
+                                <option value="resuelta">Resueltas</option>
+                            </select>
+                        </div>
+                        <div class="lista-incidencias" id="contenedor-lista-incidencias" data-propiedad-id="{{ $alquiler->id_propiedad }}">
                             @forelse ($incidencias as $incidencia)
                             <div class="item-incidencia">
                                 <div class="incidencia-info">
-                                    <span class="titulo">{{ $incidencia->titulo_incidencia }}</span>
+                                    <span class="titulo btn-detalle-incidencia"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalDetalleIncidencia"
+                                        data-id="{{ $incidencia->id_incidencia }}">
+                                        {{ $incidencia->titulo_incidencia }}
+                                    </span>
                                     <span class="fecha">{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y') }}</span>
-                                    @if(isset($incidencia->presupuesto_importe_incidencia) && !is_null($incidencia->presupuesto_importe_incidencia))
-                                    <span class="fecha">Presupuesto: {{ number_format((float) $incidencia->presupuesto_importe_incidencia, 2, ',', '.') }} EUR</span>
-                                    @endif
                                 </div>
                                 <div class="incidencia-acciones">
                                     <span class="estado-tag {{ $incidencia->estado_incidencia }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span>
 
-                                    @if($esArrendador)
-                                        @if($incidencia->estado_incidencia === 'esperando_decision')
-                                        <form action="{{ route('inquilino.decision_pago_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline-flex; gap: 6px; align-items: center;">
-                                            @csrf
-                                            <select name="responsable_pago" class="form-select form-select-sm" required>
-                                                <option value="">Quién paga</option>
-                                                <option value="arrendador">Arrendador</option>
-                                                <option value="inquilino">Inquilino</option>
-                                            </select>
-                                            <button type="submit" class="btn-resolver" title="Confirmar decisión">
-                                                <i class="bi bi-check2-square"></i>
-                                            </button>
-                                        </form>
-                                        @elseif($incidencia->estado_incidencia === 'esperando_pago' && $incidencia->responsable_pago_incidencia === 'arrendador')
-                                        <form action="{{ route('inquilino.pagar_presupuesto_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline;">
-                                            @csrf
-                                            <button type="submit" class="btn-resolver" title="Pagar presupuesto">
-                                                <i class="bi bi-credit-card"></i>
-                                            </button>
-                                        </form>
-                                        @else
-                                        <small>Esperando siguiente paso del flujo.</small>
-                                        @endif
-                                    @elseif($esInquilino)
-                                        @if($incidencia->estado_incidencia === 'esperando_pago' && $incidencia->responsable_pago_incidencia === 'inquilino' && $incidencia->id_reporta_fk == (auth()->user()->id_usuario ?? 0))
-                                        <form action="{{ route('inquilino.pagar_presupuesto_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline;">
-                                            @csrf
-                                            <button type="submit" class="btn-resolver" title="Pagar presupuesto">
-                                                <i class="bi bi-credit-card"></i>
-                                            </button>
-                                        </form>
-                                        @elseif($incidencia->estado_incidencia === 'resuelta' && $incidencia->id_reporta_fk == (auth()->user()->id_usuario ?? 0))
-                                        <form action="{{ route('inquilino.cerrar_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline;">
-                                            @csrf
-                                            <button type="submit" class="btn-resolver" title="Confirmar solución y cerrar">
-                                                <i class="bi bi-check-circle"></i>
-                                            </button>
-                                        </form>
-                                        @endif
+                                    @if($incidencia->id_reporta_fk == auth()->id() && $incidencia->estado_incidencia != 'resuelta')
+                                    <button type="button" class="btn-resolver" title="Marcar como resuelta" onclick="cerrarIncidencia({{ $incidencia->id_incidencia }})">
+                                        <i class="bi bi-check-circle"></i>
+                                    </button>
                                     @endif
                                 </div>
                             </div>
@@ -349,7 +345,7 @@
     <div class="modal fade" id="modalReportar" tabindex="-1" aria-labelledby="modalReportarLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <form action="{{ route('inquilino.reportar_incidencia', $alquiler->id_propiedad) }}" method="POST">
+                <form id="form-reportar-incidencia" action="{{ route('inquilino.reportar_incidencia', $alquiler->id_propiedad) }}" method="POST">
                     @csrf
                     <div class="modal-header">
                         <h5 class="modal-title" id="modalReportarLabel">Reportar Nueva Incidencia</h5>
@@ -392,7 +388,7 @@
                             <span id="error-descripcion" class="text-danger small"></span>
                         </div>
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer justify-content-center">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" id="boton-enviar" class="btn btn-primary btn-login-desabilitado btn-enviar-reporte" disabled>Enviar Reporte</button>
                     </div>
@@ -400,42 +396,47 @@
             </div>
         </div>
     </div>
-
-    {{-- Modal Historial de Pagos --}}
-    <div class="modal fade" id="modalHistorialPagos" tabindex="-1" aria-labelledby="modalHistorialLabel" aria-hidden="true">
+    <!-- MODAL HISTORIAL DE PAGOS -->
+    <div class="modal fade" id="modalHistorialPagos" tabindex="-1" aria-labelledby="modalHistorialPagosLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalHistorialLabel"><i class="bi bi-receipt"></i> Historial de Pagos</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    <h5 class="modal-title" id="modalHistorialPagosLabel"><i class="bi bi-clock-history"></i> Historial de Pagos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    @if ($historialPagos->isNotEmpty())
-                    <table class="table table-striped table-sm">
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Concepto</th>
-                                <th>Importe</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($historialPagos as $pago)
-                            <tr>
-                                <td>{{ \Carbon\Carbon::parse($pago->creado_pago)->format('d/m/Y') }}</td>
-                                <td>{{ $pago->concepto_pago }}</td>
-                                <td>{{ number_format((float) $pago->importe_pago, 2, ',', '.') }} €</td>
-                                <td><span class="badge bg-success">{{ ucfirst($pago->estado_pago) }}</span></td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                <div class="modal-body p-0">
+                    @if($historialPagos->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-3">Fecha</th>
+                                        <th>Concepto</th>
+                                        <th>Referencia</th>
+                                        <th class="text-end">Importe</th>
+                                        <th class="text-center pe-3">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($historialPagos as $pago)
+                                        <tr>
+                                            <td class="ps-3 align-middle">{{ \Carbon\Carbon::parse($pago->creado_pago)->format('d/m/Y') }}</td>
+                                            <td class="align-middle">{{ $pago->concepto_pago }}</td>
+                                            <td class="align-middle"><small class="text-muted">{{ $pago->referencia_pago }}</small></td>
+                                            <td class="text-end fw-bold align-middle">{{ number_format($pago->importe_pago, 2, ',', '.') }} €</td>
+                                            <td class="text-center pe-3 align-middle">
+                                                <span class="badge bg-success">Completado</span>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     @else
-                    <div class="text-center py-4">
-                        <i class="bi bi-inbox fs-1 text-muted"></i>
-                        <p class="mt-2 text-muted">No hay pagos registrados todavía.</p>
-                    </div>
+                        <div class="p-5 text-center text-muted">
+                            <i class="bi bi-receipt display-4 d-block mb-3 opacity-50"></i>
+                            <p class="fs-5">Aún no tienes pagos registrados en el historial para esta propiedad.</p>
+                        </div>
                     @endif
                 </div>
                 <div class="modal-footer">
@@ -444,12 +445,14 @@
             </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    @include('inquilino.partials.modal_detalle_incidencia')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/miembro/miembro.js') }}"></script>
     <script src="{{ asset('js/inquilino/validacion_incidencia.js') }}"></script>
+    <script src="{{ asset('js/inquilino/modal_fix.js') }}"></script>
     <script src="{{ asset('js/inquilino/inquilino.js') }}"></script>
+    <script src="{{ asset('js/inquilino/filtros-incidencias.js') }}"></script>
 </body>
 
 </html>

@@ -17,7 +17,6 @@ use App\Http\Controllers\inquilino\InquilinoController;
 use App\Http\Controllers\Gestor\DashboardController as GestorDashboardController;
 use App\Http\Controllers\Gestor\IncidenciaController as GestorIncidenciaController;
 use App\Http\Controllers\Gestor\PropiedadController as GestorPropiedadController;
-use App\Http\Controllers\Arrendador\MensajeController;
 
 // Rutas Públicas
 Route::get('/', function () {
@@ -112,19 +111,18 @@ Route::middleware(['role:gestor'])->group(function () {
     Route::post('/gestor/incidencias/{id}/presupuesto', [GestorIncidenciaController::class, 'crearPresupuesto']);
 });
 
-// Rutas de mensajería (permitir acceso desde la vista miembro para abrir chat con arrendador)
-Route::get('/arrendador/mensajes', [MensajeController::class, 'inicio']);
-Route::get('/arrendador/mensajes/{id}', [MensajeController::class, 'mostrar']);
-Route::post('/arrendador/mensajes/{id}', [MensajeController::class, 'enviar']);
-
 Route::middleware(['role:miembro,inquilino,propietario'])->group(function () {
     Route::get('/miembro/inicio', [HomeController::class, 'index']);
     Route::get('/miembro/propiedad/{id}', [DetallePropiedadController::class, 'show'])->name('miembro.detalle_propiedad');
-    Route::get('/miembro/mapa', [MapaController::class, 'index'])->name('miembro.mapa');
+    Route::get('/miembro/mapa', function () {
+        return view('miembro.mapa');
+    });
 
     Route::get('/inquilino/gestionar-propiedades', [InquilinoController::class, 'gestionarPropiedades'])->name('gestionar_propiedades');
     Route::get('/inquilino/propiedad/{id}', [InquilinoController::class, 'verPropiedad'])->name('inquilino.ver_propiedad');
     Route::get('/inquilino/incidencia/{id}', [InquilinoController::class, 'verIncidencia'])->name('inquilino.ver_incidencia');
+    Route::get('/inquilino/propiedad/{id}/incidencias', [InquilinoController::class, 'getIncidencias'])->name('inquilino.get_incidencias');
+    Route::get('/inquilino/incidencia/{id}/detalle', [InquilinoController::class, 'getDetalleIncidencia'])->name('inquilino.get_detalle_incidencia');
     Route::post('/inquilino/cuotas/{cuotaId}/pagar', [InquilinoController::class, 'pagarCuotaAlquiler'])->name('inquilino.pagar_cuota');
     Route::post('/inquilino/propiedad/{id}/incidencia', [InquilinoController::class, 'reportarIncidencia'])->name('inquilino.reportar_incidencia');
     Route::post('/inquilino/incidencia/{id}/decision-pago', [InquilinoController::class, 'decidirPagoIncidencia'])->name('inquilino.decision_pago_incidencia');

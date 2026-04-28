@@ -4,33 +4,10 @@ namespace App\Http\Controllers\Miembro;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class MapaController extends Controller
 {
-    /**
-     * Muestra la vista del mapa con las variables de usuario para el header/nav estándar.
-     */
-    public function index()
-    {
-        $usuario = Auth::user();
-        $nombreUsuario = $usuario ? ($usuario->nombre_usuario ?? $usuario->email ?? '') : '';
-        $tieneFoto    = $usuario && !empty($usuario->foto_usuario);
-        $fotoUsuario  = $tieneFoto ? asset('storage/' . $usuario->foto_usuario) : '';
-        $inicialUsuario = $nombreUsuario !== '' ? strtoupper(substr($nombreUsuario, 0, 1)) : '';
-        $esInquilino  = $usuario && $usuario->alquileres()->where('estado_alquiler', 'activo')->exists();
-
-        return view('miembro.mapa', compact(
-            'nombreUsuario',
-            'tieneFoto',
-            'fotoUsuario',
-            'inicialUsuario',
-            'esInquilino'
-        ));
-    }
-
-
     public function propiedades(Request $request)
     {
         $query = DB::table('tbl_propiedad')

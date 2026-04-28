@@ -128,6 +128,40 @@ class AlquilerSeeder extends Seeder
                 }
             }
         }
+
+        // Asegurar que el usuario snebot@spotstay.com tenga al menos un alquiler activo
+        $usuarioSnebot = Usuario::where('email_usuario', 'snebot@spotstay.com')->first();
+        if ($usuarioSnebot) {
+            $propiedadParaSnebot = Propiedad::where('id_arrendador_fk', '<>', $usuarioSnebot->id_usuario)
+                ->inRandomOrder()
+                ->first() ?? Propiedad::first();
+
+            if ($propiedadParaSnebot) {
+                $fechaInicio = now()->subMonth()->startOfMonth();
+                $fechaFin = now()->addMonths(11)->endOfMonth();
+                $admin = $admins->isEmpty() ? null : $admins->random();
+
+                $alquiler = Alquiler::updateOrCreate(
+                    [
+                        'id_propiedad_fk' => $propiedadParaSnebot->id_propiedad,
+                        'id_inquilino_fk' => $usuarioSnebot->id_usuario,
+                    ],
+                    [
+                        'fecha_inicio_alquiler' => $fechaInicio->format('Y-m-d'),
+                        'fecha_fin_alquiler' => $fechaFin->format('Y-m-d'),
+                        'estado_alquiler' => 'activo',
+                        'id_admin_aprueba_fk' => $admin?->id_usuario,
+                        'aprobado_alquiler' => $fechaInicio->copy()->subDays(5),
+                        'creado_alquiler' => $fechaInicio->copy()->subDays(10),
+                        'actualizado_alquiler' => now(),
+                    ]
+                );
+
+                if ($alquiler) {
+                    $this->generarCuotas($alquiler);
+                }
+            }
+        }
     }
 
     private function generarCuotas(Alquiler $alquiler): void

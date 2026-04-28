@@ -1,10 +1,32 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Iniciar el cálculo en la primera carga
+// Interceptar formularios de pago para mostrar confirmación con SweetAlert
+window.onload = function () {
     iniciarTemporizadorAlquileres();
-
-    // Configurar el intervalo para actualizar cada 1 minuto
     setInterval(iniciarTemporizadorAlquileres, 60000);
-});
+
+    var formulariosPago = document.querySelectorAll('.form-pago-cuota');
+    formulariosPago.forEach(function (form) {
+        form.onsubmit = function (e) {
+            e.preventDefault();
+            var monto = form.getAttribute('data-monto') || 'la cuota';
+            Swal.fire({
+                title: '¿Realizar pago?',
+                text: 'Vas a proceder al pago de ' + monto + ' correspondiente al alquiler.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2b62a8',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, pagar',
+                cancelButtonText: 'Cancelar'
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        };
+    });
+};
+
+
 
 function iniciarTemporizadorAlquileres() {
     const nodosTemporizador = document.querySelectorAll('.js-tiempo-restante');

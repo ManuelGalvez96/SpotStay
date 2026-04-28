@@ -17,6 +17,7 @@ use App\Http\Controllers\inquilino\InquilinoController;
 use App\Http\Controllers\Gestor\DashboardController as GestorDashboardController;
 use App\Http\Controllers\Gestor\IncidenciaController as GestorIncidenciaController;
 use App\Http\Controllers\Gestor\PropiedadController as GestorPropiedadController;
+use App\Http\Controllers\Arrendador\MensajeController;
 
 // Rutas Públicas
 Route::get('/', function () {
@@ -111,12 +112,15 @@ Route::middleware(['role:gestor'])->group(function () {
     Route::post('/gestor/incidencias/{id}/presupuesto', [GestorIncidenciaController::class, 'crearPresupuesto']);
 });
 
+// Rutas de mensajería (permitir acceso desde la vista miembro para abrir chat con arrendador)
+Route::get('/arrendador/mensajes', [MensajeController::class, 'inicio']);
+Route::get('/arrendador/mensajes/{id}', [MensajeController::class, 'mostrar']);
+Route::post('/arrendador/mensajes/{id}', [MensajeController::class, 'enviar']);
+
 Route::middleware(['role:miembro,inquilino,propietario'])->group(function () {
     Route::get('/miembro/inicio', [HomeController::class, 'index']);
     Route::get('/miembro/propiedad/{id}', [DetallePropiedadController::class, 'show'])->name('miembro.detalle_propiedad');
-    Route::get('/miembro/mapa', function () {
-        return view('miembro.mapa');
-    });
+    Route::get('/miembro/mapa', [MapaController::class, 'index'])->name('miembro.mapa');
 
     Route::get('/inquilino/gestionar-propiedades', [InquilinoController::class, 'gestionarPropiedades'])->name('gestionar_propiedades');
     Route::get('/inquilino/propiedad/{id}', [InquilinoController::class, 'verPropiedad'])->name('inquilino.ver_propiedad');

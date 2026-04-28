@@ -22,6 +22,7 @@
             </div>
         </div>
 
+        {{-- Alerta: pagos atrasados --}}
         @if(($alquiler->pago_atrasado ?? 0) > 0)
         <div class="alerta-pago-atrasado">
             <i class="bi bi-exclamation-triangle-fill"></i>
@@ -31,6 +32,20 @@
         </div>
         @endif
 
+        {{-- Alerta: pago pagado al día --}}
+        @if(($alquiler->estado_pago_actual ?? 'pagado') === 'pagado' && ($alquiler->pago_atrasado ?? 0) === 0)
+        <div class="alerta-pago-pagado">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>
+                Alquiler pagado.
+                @if(($alquiler->dias_para_pago ?? 0) > 0)
+                    Próximo pago en <strong>{{ $alquiler->dias_para_pago }} días</strong>.
+                @endif
+            </span>
+        </div>
+        @endif
+
+        {{-- Alerta: fin de contrato próximo --}}
         @if ($alquiler->mostrarAlertaFin)
         <div class="alerta-fin-contrato {{ $alquiler->haExpirado ? 'estado-expirado' : '' }}">
             <i class="bi bi-clock-history"></i>
@@ -52,17 +67,42 @@
         </div>
         @endif
 
-        <div class="acciones-gestion">
-            <a href="{{ route('inquilino.ver_propiedad', $alquiler->id_propiedad) }}" class="btn-inquilino btn-secundario">Ver Detalles</a>
+        {{-- Botones de acción --}}
+        <div class="acciones-gestion" style="display: flex; gap: 10px;">
+            <a href="{{ route('inquilino.ver_propiedad', $alquiler->id_propiedad) }}"
+               class="btn-inquilino btn-secundario"
+               style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center;">
+                Ver Detalles
+            </a>
+
             @if ($alquiler->mostrarAlertaFin || $alquiler->estado_alquiler != 'activo')
-            <a href="mailto:" class="btn-inquilino btn-secundario btn-contactar-grid"><i class="bi bi-envelope icon-me"></i> Contactar</a>
+            <a href="{{ route('inquilino.ver_propiedad', $alquiler->id_propiedad) }}#chat"
+               class="btn-inquilino btn-primario"
+               style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <i class="bi bi-chat-left-text"></i> Contactar
+            </a>
+
             @elseif(($alquiler->estado_pago_actual ?? 'pagado') === 'pendiente' && !empty($alquiler->cuota_pendiente_id))
-            <form method="POST" action="{{ route('inquilino.pagar_cuota', $alquiler->cuota_pendiente_id) }}" class="form-pago-grid">
+            <form method="POST"
+                  action="{{ route('inquilino.pagar_cuota', $alquiler->cuota_pendiente_id) }}"
+                  class="form-pago-cuota"
+                  data-monto="{{ number_format($alquiler->precio_propiedad, 2, ',', '.') }} €"
+                  style="flex: 1; display: contents;">
                 @csrf
-                <button type="submit" class="btn-inquilino btn-primario">Pagar Recibo</button>
+                <button type="submit"
+                        class="btn-inquilino btn-primario"
+                        style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                    Pagar Recibo
+                </button>
             </form>
+
             @else
-            <button class="btn-inquilino btn-secundario" type="button" disabled>Al día</button>
+            <button class="btn-inquilino btn-secundario"
+                    type="button"
+                    disabled
+                    style="flex: 1;">
+                Al día
+            </button>
             @endif
         </div>
     </div>

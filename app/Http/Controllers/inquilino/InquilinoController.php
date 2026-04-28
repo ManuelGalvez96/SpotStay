@@ -4,7 +4,6 @@ namespace App\Http\Controllers\inquilino;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\Alquiler;
 use App\Models\AlquilerCuota;
 use App\Models\Pago;
 use Illuminate\Support\Facades\Auth;
@@ -126,17 +125,14 @@ class InquilinoController extends Controller
 
         $alquileres = $query->select(
             'tbl_propiedad.*',
-            DB::raw("TRIM(CONCAT_WS(', ', 
-                TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), 
-                NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), 
-                NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta ')
-            )) as direccion_propiedad"),
             DB::raw('MIN(tbl_fotos.ruta_foto) as ruta_foto'),
             DB::raw('MIN(tbl_alquiler.id_alquiler) as id_alquiler'),
             DB::raw('MIN(tbl_alquiler.estado_alquiler) as estado_alquiler'),
-            DB::raw('MIN(tbl_alquiler.fecha_inicio_alquiler) as fecha_inicio_alquiler'),
             DB::raw('MIN(CASE WHEN tbl_alquiler.id_inquilino_fk = ' . $userId . ' THEN tbl_alquiler.fecha_fin_alquiler END) as fecha_fin_alquiler'),
-            DB::raw('(SELECT COUNT(*) FROM tbl_incidencia WHERE id_propiedad_fk = tbl_propiedad.id_propiedad AND estado_incidencia IN ("abierta", "en_proceso")) as total_incidencias_propiedad')
+            DB::raw('(SELECT COUNT(*) FROM tbl_incidencia WHERE id_propiedad_fk = tbl_propiedad.id_propiedad AND estado_incidencia IN ("abierta", "en_proceso")) as total_incidencias_propiedad'),
+            DB::raw('(SELECT COUNT(*) FROM tbl_alquiler_cuota c INNER JOIN tbl_alquiler a ON a.id_alquiler = c.id_alquiler_fk WHERE a.id_propiedad_fk = tbl_propiedad.id_propiedad AND a.id_inquilino_fk = ' . $userId . ' AND c.estado = "atrasado") as pago_atrasado'),
+            DB::raw('(SELECT c.id_alquiler_cuota FROM tbl_alquiler_cuota c INNER JOIN tbl_alquiler a ON a.id_alquiler = c.id_alquiler_fk WHERE a.id_propiedad_fk = tbl_propiedad.id_propiedad AND a.id_inquilino_fk = ' . $userId . ' AND c.estado IN ("pendiente", "atrasado") ORDER BY c.mes_cuota ASC LIMIT 1) as cuota_pendiente_id'),
+            DB::raw('(SELECT IFNULL(SUM(c.importe_base), 0) FROM tbl_alquiler_cuota c INNER JOIN tbl_alquiler a ON a.id_alquiler = c.id_alquiler_fk WHERE a.id_propiedad_fk = tbl_propiedad.id_propiedad AND a.id_inquilino_fk = ' . $userId . ' AND c.estado IN ("pendiente", "atrasado")) as total_deuda')
         )
             ->groupBy('tbl_propiedad.id_propiedad')
             ->get();
@@ -149,30 +145,9 @@ class InquilinoController extends Controller
             $alquiler->diasFinContrato = null;
             $alquiler->esMismoDia = false;
             $alquiler->tiempoRestanteHoy = null;
-            $alquiler->banner_foto_url = $alquiler->ruta_foto
-                ? asset('public/img/' . $alquiler->ruta_foto)
-                : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
-            $alquiler->estado_pago_actual = 'pagado';
-            $alquiler->dias_para_pago = 0;
-            $alquiler->fecha_proximo_pago = null;
-            $alquiler->num_pagos_atrasados = 0;
-            $alquiler->total_deuda = 0;
-            $alquiler->cuota_pendiente_id = null;
-            $alquiler->pago_atrasado = 0;
 
             $alquiler->haExpirado = false;
             $alquiler->diasExpirado = null;
-
-            if (!empty($alquiler->id_alquiler)) {
-                $resumenPago = $this->obtenerResumenPagoAlquiler((int) $alquiler->id_alquiler, $alquiler->fecha_inicio_alquiler);
-                $alquiler->estado_pago_actual = $resumenPago['estado_pago_actual'];
-                $alquiler->dias_para_pago = $resumenPago['dias_para_pago'];
-                $alquiler->fecha_proximo_pago = $resumenPago['fecha_proximo_pago'];
-                $alquiler->num_pagos_atrasados = $resumenPago['num_pagos_atrasados'];
-                $alquiler->total_deuda = $resumenPago['total_deuda'];
-                $alquiler->cuota_pendiente_id = $resumenPago['cuota_pendiente_id'];
-                $alquiler->pago_atrasado = $resumenPago['num_pagos_atrasados'];
-            }
 
             if (!empty($alquiler->fecha_fin_alquiler)) {
                 $fin = \Carbon\Carbon::parse($alquiler->fecha_fin_alquiler)->startOfDay();
@@ -243,11 +218,6 @@ class InquilinoController extends Controller
             ->select(
                 'tbl_alquiler.*',
                 'tbl_propiedad.*',
-                DB::raw("TRIM(CONCAT_WS(', ', 
-                    TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), 
-                    NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), 
-                    NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta ')
-                )) as direccion_propiedad"),
                 'tbl_contrato.url_pdf_contrato',
                 'tbl_contrato.estado_contrato as estado_contrato_pdf'
             )
@@ -270,13 +240,6 @@ class InquilinoController extends Controller
         $fotos = DB::table('tbl_fotos')
             ->where('id_propiedad_fk', $id)
             ->get();
-
-        $fotos = $fotos->map(function ($foto) {
-            $foto->url_foto = asset('public/img/' . $foto->ruta_foto);
-            return $foto;
-        });
-
-        $fotoPrincipal = $fotos->isNotEmpty() ? $fotos->first()->url_foto : null;
 
         // 3. Detectar si el contrato finaliza en menos de 30 días
         $proximaFinalizacion = false;
@@ -315,19 +278,63 @@ class InquilinoController extends Controller
         }
 
         // 4. Próximo pago (basado en cuotas de alquiler)
-        $resumenPago = $this->obtenerResumenPagoAlquiler((int) $alquiler->id_alquiler, $alquiler->fecha_inicio_alquiler);
-        $estadoPagoActual = $resumenPago['estado_pago_actual'];
-        $diasParaPago = $resumenPago['dias_para_pago'];
-        $fechaProximoPago = $resumenPago['fecha_proximo_pago'];
-        $numPagosAtrasados = $resumenPago['num_pagos_atrasados'];
-        $totalDeuda = $resumenPago['total_deuda'];
-        $cuotaPendienteId = $resumenPago['cuota_pendiente_id'];
+        $pagosPendientes = AlquilerCuota::query()
+            ->where('id_alquiler_fk', $alquiler->id_alquiler)
+            ->whereIn('estado', ['pendiente', 'atrasado'])
+            ->orderBy('mes_cuota', 'asc')
+            ->get();
 
-        // 4. Incidencias (Todas las de la propiedad)
+        $inicioMesActual = Carbon::now()->startOfMonth()->toDateString();
+        $numPagosAtrasados = $pagosPendientes->where('mes_cuota', '<', $inicioMesActual)->count();
+
+        $totalDeuda = 0;
+        $proximoPago = $pagosPendientes->first();
+
+        if ($proximoPago && $proximoPago->mes_cuota) {
+            $fechaPago = Carbon::parse($proximoPago->mes_cuota)->day(1);
+            $diasParaPago = Carbon::now()->diffInDays($fechaPago, false);
+            $diasParaPago = $diasParaPago < 0 ? 0 : round($diasParaPago);
+            $fechaProximoPago = $fechaPago->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
+            
+            // Verificamos si el pago pendiente es de este mes (o anterior) o de un mes futuro
+            $mesActualStr = Carbon::now()->format('Y-m');
+            $mesPagoStr = $fechaPago->format('Y-m');
+            
+            if ($mesPagoStr > $mesActualStr) {
+                // El recibo pendiente es para el futuro, así que el mes actual está pagado
+                $estadoPagoActual = 'pagado';
+                $totalDeuda = 0; // Si el mes actual está pagado, no hay deuda "acumulada" exigible hoy
+            } else {
+                // El recibo pendiente es de este mes o de meses pasados (deuda acumulada)
+                $estadoPagoActual = 'pendiente';
+                // Sumamos todos los pagos pendientes hasta hoy
+                $totalDeuda = $pagosPendientes->where('mes_cuota', '<=', Carbon::now()->endOfMonth()->format('Y-m-d'))->sum('importe_base');
+            }
+        } else {
+            $totalDeuda = 0;
+            $diasParaPago = 0;
+            $fechaProximoPago = Carbon::now()->addMonth()->day(1)->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
+            $estadoPagoActual = 'pagado';
+        }
+
+        // Cuota pendiente ID (para los formularios de pago de la vista)
+        $cuotaPendienteId = $proximoPago ? (int) $proximoPago->id_alquiler_cuota : null;
+
+        // Foto principal de la propiedad
+        $fotoPrincipal = $fotos->first() ? asset('storage/' . $fotos->first()->ruta_foto) : null;
+
+        // Incidencias de la propiedad
         $incidencias = DB::table('tbl_incidencia')
             ->where('id_propiedad_fk', $id)
             ->orderBy('creado_incidencia', 'desc')
             ->get();
+
+        // Historial de pagos
+        $historialPagos = collect(DB::table('tbl_pago')
+            ->where('id_pagador_fk', $usuario->id_usuario)
+            ->where('id_alquiler_fk', (int) $alquiler->id_alquiler)
+            ->orderByDesc('creado_pago')
+            ->get());
 
         return view('inquilino.ver_propiedad', [
             'nombreUsuario'       => $nombreUsuario,
@@ -351,6 +358,7 @@ class InquilinoController extends Controller
             'incidencias'         => $incidencias,
             'esInquilino'         => $esInquilino,
             'esArrendador'        => $esArrendador,
+            'historialPagos'      => $historialPagos,
             'pdfEjemplo'          => 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
         ]);
     }
@@ -541,7 +549,8 @@ class InquilinoController extends Controller
 
         try {
             DB::transaction(function () use ($cuotaId, $userId) {
-                $cuota = AlquilerCuota::query()
+                // 1. Verificar que la cuota base pertenece al inquilino
+                $cuotaBase = AlquilerCuota::query()
                     ->join('tbl_alquiler', 'tbl_alquiler.id_alquiler', '=', 'tbl_alquiler_cuota.id_alquiler_fk')
                     ->where('tbl_alquiler_cuota.id_alquiler_cuota', $cuotaId)
                     ->where('tbl_alquiler.id_inquilino_fk', $userId)
@@ -550,104 +559,113 @@ class InquilinoController extends Controller
                     ->lockForUpdate()
                     ->first();
 
-                if (!$cuota) {
+                if (!$cuotaBase) {
                     throw new \Exception('La cuota no existe o no pertenece al inquilino.');
                 }
 
-                if ((string) $cuota->estado === 'pagado') {
-                    throw new \Exception('Esta cuota ya está pagada');
+                // 2. Mes vigente
+                $hoy = now();
+                $mesVigente = Carbon::create($hoy->year, $hoy->month, 1);
+
+                // 3. Buscar TODAS las cuotas pendientes/atrasadas hasta el mes vigente (inclusive)
+                $cuotasAPagar = AlquilerCuota::where('id_alquiler_fk', (int) $cuotaBase->id_alquiler_fk)
+                    ->whereIn('estado', ['pendiente', 'atrasado'])
+                    ->lockForUpdate()
+                    ->get()
+                    ->filter(function (AlquilerCuota $c) use ($mesVigente) {
+                        return Carbon::parse((string) $c->mes_cuota)->format('Y-m') <= $mesVigente->format('Y-m');
+                    })
+                    ->sortBy('mes_cuota');
+
+                if ($cuotasAPagar->isEmpty()) {
+                    throw new \Exception('No hay cuotas pendientes para pagar.');
                 }
 
-                Pago::create([
-                    'id_pagador_fk' => $userId,
-                    'id_alquiler_fk' => (int) $cuota->id_alquiler,
-                    'id_alquiler_cuota_fk' => (int) $cuota->id_alquiler_cuota,
-                    'tipo_pago' => 'alquiler',
-                    'concepto_pago' => 'Cuota alquiler ' . Carbon::parse((string) $cuota->mes_cuota)->format('m/Y'),
-                    'importe_pago' => (float) $cuota->importe_base,
-                    'mes_pago' => Carbon::parse((string) $cuota->mes_cuota)->startOfMonth()->toDateString(),
-                    'estado_pago' => 'pagado',
-                    'referencia_pago' => 'ALQ-' . (int) $cuota->id_alquiler . '-' . now()->format('YmdHis'),
-                    'fecha_confirmacion_pago' => now(),
-                    'creado_pago' => now(),
-                    'actualizado_pago' => now(),
-                ]);
+                // 4. Procesar cada cuota individualmente
+                foreach ($cuotasAPagar as $cuota) {
+                    if ((string) $cuota->estado === 'pagado') {
+                        continue;
+                    }
 
-                AlquilerCuota::where('id_alquiler_cuota', (int) $cuota->id_alquiler_cuota)
-                    ->update([
-                        'estado' => 'pagado',
-                        'pagado_en' => now(),
-                        'updated_at' => now(),
+                    Pago::create([
+                        'id_pagador_fk'          => $userId,
+                        'id_alquiler_fk'          => (int) $cuota->id_alquiler_fk,
+                        'id_alquiler_cuota_fk'    => (int) $cuota->id_alquiler_cuota,
+                        'tipo_pago'               => 'alquiler',
+                        'concepto_pago'           => 'Cuota alquiler ' . Carbon::parse((string) $cuota->mes_cuota)->format('m/Y'),
+                        'importe_pago'            => (float) $cuota->importe_base,
+                        'mes_pago'                => Carbon::parse((string) $cuota->mes_cuota)->startOfMonth()->toDateString(),
+                        'estado_pago'             => 'pagado',
+                        'referencia_pago'         => 'ALQ-' . (int) $cuota->id_alquiler_fk . '-' . now()->format('YmdHis') . '-' . $cuota->id_alquiler_cuota,
+                        'fecha_confirmacion_pago' => now(),
+                        'creado_pago'             => now(),
+                        'actualizado_pago'        => now(),
                     ]);
 
-                if (Schema::hasTable('tbl_gasto_cuota') && Schema::hasTable('tbl_gasto_cuota_detalle')) {
-                    $detallesGasto = DB::table('tbl_gasto_cuota_detalle')
-                        ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
-                        ->where('tbl_gasto_cuota_detalle.id_alquiler_fk', (int) $cuota->id_alquiler)
-                        ->where('tbl_gasto_cuota.mes_cuota', Carbon::parse((string) $cuota->mes_cuota)->startOfMonth()->toDateString())
-                        ->where('tbl_gasto_cuota_detalle.id_pagador_fk', $userId)
-                        ->where('tbl_gasto_cuota_detalle.estado_detalle', '!=', 'pagado')
-                        ->select(
-                            'tbl_gasto_cuota_detalle.id_gasto_cuota_detalle',
-                            'tbl_gasto_cuota_detalle.id_gasto_cuota_fk',
-                            'tbl_gasto_cuota_detalle.importe_detalle'
-                        )
-                        ->lockForUpdate()
-                        ->get();
-
-                    foreach ($detallesGasto as $detalle) {
-                        Pago::create([
-                            'id_pagador_fk' => $userId,
-                            'id_alquiler_fk' => (int) $cuota->id_alquiler,
-                            'id_gasto_cuota_detalle_fk' => (int) $detalle->id_gasto_cuota_detalle,
-                            'id_gasto_cuota_fk' => (int) $detalle->id_gasto_cuota_fk,
-                            'tipo_pago' => 'gasto',
-                            'concepto_pago' => 'Gasto servicios ' . Carbon::parse((string) $cuota->mes_cuota)->format('m/Y'),
-                            'importe_pago' => (float) $detalle->importe_detalle,
-                            'mes_pago' => Carbon::parse((string) $cuota->mes_cuota)->startOfMonth()->toDateString(),
-                            'estado_pago' => 'pagado',
-                            'referencia_pago' => 'GST-' . (int) $detalle->id_gasto_cuota_detalle . '-' . now()->format('YmdHis'),
-                            'fecha_confirmacion_pago' => now(),
-                            'creado_pago' => now(),
-                            'actualizado_pago' => now(),
+                    AlquilerCuota::where('id_alquiler_cuota', (int) $cuota->id_alquiler_cuota)
+                        ->update([
+                            'estado'     => 'pagado',
+                            'pagado_en'  => now(),
+                            'updated_at' => now(),
                         ]);
 
-                        DB::table('tbl_gasto_cuota_detalle')
-                            ->where('id_gasto_cuota_detalle', (int) $detalle->id_gasto_cuota_detalle)
-                            ->update([
-                                'estado_detalle' => 'pagado',
-                                'pagado_detalle' => now(),
-                                'actualizado_detalle' => now(),
+                    if (Schema::hasTable('tbl_gasto_cuota') && Schema::hasTable('tbl_gasto_cuota_detalle')) {
+                        $detallesGasto = DB::table('tbl_gasto_cuota_detalle')
+                            ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
+                            ->where('tbl_gasto_cuota_detalle.id_alquiler_fk', (int) $cuota->id_alquiler_fk)
+                            ->where('tbl_gasto_cuota.mes_cuota', Carbon::parse((string) $cuota->mes_cuota)->startOfMonth()->toDateString())
+                            ->where('tbl_gasto_cuota_detalle.id_pagador_fk', $userId)
+                            ->where('tbl_gasto_cuota_detalle.estado_detalle', '!=', 'pagado')
+                            ->select(
+                                'tbl_gasto_cuota_detalle.id_gasto_cuota_detalle',
+                                'tbl_gasto_cuota_detalle.id_gasto_cuota_fk',
+                                'tbl_gasto_cuota_detalle.importe_detalle'
+                            )
+                            ->lockForUpdate()
+                            ->get();
+
+                        foreach ($detallesGasto as $detalle) {
+                            Pago::create([
+                                'id_pagador_fk'             => $userId,
+                                'id_alquiler_fk'            => (int) $cuota->id_alquiler_fk,
+                                'id_gasto_cuota_detalle_fk' => (int) $detalle->id_gasto_cuota_detalle,
+                                'id_gasto_cuota_fk'         => (int) $detalle->id_gasto_cuota_fk,
+                                'tipo_pago'                 => 'gasto',
+                                'concepto_pago'             => 'Gasto servicios ' . Carbon::parse((string) $cuota->mes_cuota)->format('m/Y'),
+                                'importe_pago'              => (float) $detalle->importe_detalle,
+                                'mes_pago'                  => Carbon::parse((string) $cuota->mes_cuota)->startOfMonth()->toDateString(),
+                                'estado_pago'               => 'pagado',
+                                'referencia_pago'           => 'GST-' . (int) $detalle->id_gasto_cuota_detalle . '-' . now()->format('YmdHis'),
+                                'fecha_confirmacion_pago'   => now(),
+                                'creado_pago'               => now(),
+                                'actualizado_pago'          => now(),
                             ]);
 
-                        $totalDetalles = DB::table('tbl_gasto_cuota_detalle')
-                            ->where('id_gasto_cuota_fk', (int) $detalle->id_gasto_cuota_fk)
-                            ->count();
+                            DB::table('tbl_gasto_cuota_detalle')
+                                ->where('id_gasto_cuota_detalle', (int) $detalle->id_gasto_cuota_detalle)
+                                ->update([
+                                    'estado_detalle'      => 'pagado',
+                                    'pagado_detalle'      => now(),
+                                    'actualizado_detalle' => now(),
+                                ]);
 
-                        $totalPagados = DB::table('tbl_gasto_cuota_detalle')
-                            ->where('id_gasto_cuota_fk', (int) $detalle->id_gasto_cuota_fk)
-                            ->where('estado_detalle', 'pagado')
-                            ->count();
+                            $totalDetalles = DB::table('tbl_gasto_cuota_detalle')->where('id_gasto_cuota_fk', (int) $detalle->id_gasto_cuota_fk)->count();
+                            $totalPagados  = DB::table('tbl_gasto_cuota_detalle')->where('id_gasto_cuota_fk', (int) $detalle->id_gasto_cuota_fk)->where('estado_detalle', 'pagado')->count();
+                            $estadoCuota   = $totalDetalles > 0 && $totalPagados === $totalDetalles ? 'pagado' : ($totalPagados > 0 ? 'parcial' : 'pendiente');
 
-                        $estadoCuota = 'pendiente';
-                        if ($totalDetalles > 0 && $totalPagados === $totalDetalles) {
-                            $estadoCuota = 'pagado';
-                        } elseif ($totalPagados > 0) {
-                            $estadoCuota = 'parcial';
+                            DB::table('tbl_gasto_cuota')
+                                ->where('id_gasto_cuota', (int) $detalle->id_gasto_cuota_fk)
+                                ->update([
+                                    'estado_cuota'    => $estadoCuota,
+                                    'pagado_cuota'    => $estadoCuota === 'pagado' ? now() : null,
+                                    'actualizado_cuota' => now(),
+                                ]);
                         }
-
-                        DB::table('tbl_gasto_cuota')
-                            ->where('id_gasto_cuota', (int) $detalle->id_gasto_cuota_fk)
-                            ->update([
-                                'estado_cuota' => $estadoCuota,
-                                'pagado_cuota' => $estadoCuota === 'pagado' ? now() : null,
-                                'actualizado_cuota' => now(),
-                            ]);
                     }
                 }
             });
 
-            return redirect()->back()->with('success', 'Cuota pagada correctamente.');
+            return redirect()->back()->with('success', 'Pago realizado correctamente.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
@@ -692,87 +710,6 @@ class InquilinoController extends Controller
                 ]);
         }
     }
-
-        private function obtenerResumenPagoAlquiler(int $alquilerId, $fechaInicio = null): array
-        {
-            $hoy = Carbon::today();
-            
-            // Obtener fecha de inicio si no se pasó
-            if (!$fechaInicio) {
-                $alquiler = Alquiler::find($alquilerId);
-                $fechaInicio = $alquiler?->fecha_inicio_alquiler;
-            }
-
-            $fechaInicio = Carbon::parse($fechaInicio ?? now());
-            $diaInicio = (int) $fechaInicio->format('d');
-
-            // Determinar el mes de cuota vigente basado en período de 23 del mes anterior al 22 del mes actual
-            $mesVigente = $hoy->copy();
-            
-            // Si hoy es menor al día de inicio: estamos en el período del mes anterior
-            if ((int) $hoy->format('d') < $diaInicio) {
-                $mesVigente = $hoy->copy()->subMonth();
-            }
-
-            $inicioMesActual = $hoy->copy()->startOfMonth();
-            $finMesActual = $hoy->copy()->endOfMonth();
-
-            // Buscar cuota vigente (del mes calculado)
-            $cuotasAlquiler = AlquilerCuota::query()
-                ->where('id_alquiler_fk', $alquilerId)
-                ->orderBy('mes_cuota', 'asc')
-                ->get();
-
-            // Encontrar cuota vigente: la que tenga mes_cuota coincidiendo con mes vigente
-            $cuotaVigente = $cuotasAlquiler->first(function (AlquilerCuota $cuota) use ($mesVigente) {
-                return Carbon::parse((string) $cuota->mes_cuota)->format('Y-m') === $mesVigente->format('Y-m');
-            });
-
-            // Si no hay cuota vigente en ese mes, buscar pendiente/atrasada más antigua
-            if (!$cuotaVigente) {
-                $cuotaVigente = $cuotasAlquiler->first(function (AlquilerCuota $cuota) {
-                    return in_array($cuota->estado, ['pendiente', 'atrasado']);
-                });
-            }
-
-            $cuotaReferencia = $cuotaVigente;
-            $estadoPagoActual = $cuotaVigente && in_array($cuotaVigente->estado, ['pendiente', 'atrasado']) ? 'pendiente' : 'pagado';
-            
-            $diasParaPago = 0;
-            $fechaProximoPago = $hoy->copy()->addMonth()->day($diaInicio)->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
-
-            if ($cuotaReferencia) {
-                // Fecha de vencimiento = día de inicio del siguiente mes (exactamente 1 mes después del inicio)
-                $fechaVencimiento = Carbon::parse((string) $cuotaReferencia->mes_cuota)
-                    ->addMonth()
-                    ->day($diaInicio)
-                    ->startOfDay();
-
-                $diasParaPago = Carbon::now()->diffInDays($fechaVencimiento, false);
-                $diasParaPago = $diasParaPago < 0 ? 0 : (int) round($diasParaPago);
-                $fechaProximoPago = $fechaVencimiento->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
-            }
-
-            // Contar pagos atrasados
-            $cuotasPendientes = $cuotasAlquiler->filter(function (AlquilerCuota $c) {
-                return in_array($c->estado, ['pendiente', 'atrasado']);
-            });
-
-            $numPagosAtrasados = $cuotasPendientes->filter(function (AlquilerCuota $c) use ($mesVigente) {
-                return Carbon::parse((string) $c->mes_cuota)->format('Y-m') < $mesVigente->format('Y-m');
-            })->count();
-
-            $totalDeuda = (float) $cuotasPendientes->sum('importe_base');
-
-            return [
-                'estado_pago_actual' => $estadoPagoActual,
-                'dias_para_pago' => $diasParaPago,
-                'fecha_proximo_pago' => $fechaProximoPago,
-                'num_pagos_atrasados' => $numPagosAtrasados,
-                'total_deuda' => $totalDeuda,
-                'cuota_pendiente_id' => $cuotaVigente?->id_alquiler_cuota,
-            ];
-        }
 
     /**
      * Permite al inquilino cerrar una incidencia que él mismo ha reportado.

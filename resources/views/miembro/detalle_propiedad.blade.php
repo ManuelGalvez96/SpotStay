@@ -17,9 +17,44 @@
             <div class="marca-miembro">
                 <img src="/img/logo.png" alt="SpotStay" />
             </div>
-            <div class="acciones-miembro"></div>
+            <div class="acciones-miembro">
+                <button class="boton-icono" type="button" aria-label="Notificaciones">
+                    <i class="bi bi-bell" aria-hidden="true"></i>
+                </button>
+                <div class="perfil-miembro" id="boton-perfil">
+                    <span class="nombre-miembro">{{ $nombreUsuario }}</span>
+                    @if ($tieneFoto)
+                    <img class="foto-perfil" src="{{ $fotoUsuario }}" alt="Foto de perfil" />
+                    @else
+                    <div class="inicial-perfil" aria-hidden="true">{{ $inicialUsuario }}</div>
+                    @endif
+
+                    <div class="submenu-perfil" id="submenu-perfil">
+                        <a href="#" class="item-submenu"><i class="bi bi-person"></i> Mi Perfil</a>
+                        <a href="#" class="item-submenu"><i class="bi bi-gear"></i> Configuración</a>
+                        <div class="separador-submenu"></div>
+                        <a href="{{ route('logout') }}" class="item-submenu" style="color: red;"><i class="bi bi-box-arrow-right" style="color: red"></i> Cerrar Sesión</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
+
+    <nav class="navegacion-horizontal">
+        <div class="contenedor-nav">
+            <ul class="lista-nav">
+                <li><a href="/miembro/inicio" class="enlace-nav activo"><i class="bi bi-house-door"></i> Inicio</a></li>
+                <li><a href="#" class="enlace-nav"><i class="bi bi-plus-circle"></i> Registra tus Propiedades</a></li>
+                <li><a href="#" class="enlace-nav"><i class="bi bi-journal-text"></i> Alquileres</a></li>
+                <li><a href="#" class="enlace-nav"><i class="bi bi-chat-dots"></i> Mensajes</a></li>
+                <li><a href="{{ route('miembro.mapa') }}" class="enlace-nav"><i class="bi bi-map"></i> Mapa</a></li>
+                @if ($esInquilino)
+                <li><a href="{{ route('gestionar_propiedades') }}" class="enlace-nav"><i class="bi bi-building-gear"></i> Gestionar</a></li>
+                @endif
+            </ul>
+        </div>
+    </nav>
+
 
     <main class="contenido-miembro contenido-detalle">
         @if ($propiedad)
@@ -120,9 +155,19 @@
                         </div>
                     </div>
 
-                    <button class="boton-contacto" type="button">
-                        Contactar por chat <i class="bi bi-chat-left-text"></i>
-                    </button>
+                    <div class="contacto-acciones">
+                        <div class="tarjeta-pago-extra">
+                            <div class="tarjeta-pago-contenido">
+                                <h3>Pago extra</h3>
+                                <p>Realiza un pago adicional o revisa cargos extra relacionados con esta propiedad.</p>
+                                <a href="#" class="btn btn-outline boton-pago-extra" data-propiedad-id="{{ $propiedad->id_propiedad }}">Pagar extra</a>
+                            </div>
+                        </div>
+
+                        <a href="/arrendador/mensajes?arrendador_id={{ $arrendador->id_usuario }}" class="boton-contacto btn btn-primary" data-arrendador-id="{{ $arrendador->id_usuario }}">
+                            Contactar por chat <i class="bi bi-chat-left-text"></i>
+                        </a>
+                    </div>
                 </div>
             </section>
 

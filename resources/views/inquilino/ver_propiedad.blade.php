@@ -166,8 +166,9 @@
                                 <p class="nota">Tu contrato vence el <strong>{{ $fechaFinContrato }}</strong>.</p>
                                 @endif
                                 <p class="nota nota-fin-contrato">Contacta con el propietario para renovar o gestionar la salida.</p>
-                                <a href="mailto:" class="btn-accion btn-contactar">
-                                    <i class="bi bi-envelope"></i> Contactar al Propietario
+                                <a href="{{ route('inquilino.ver_propiedad', $alquiler->id_propiedad) }}#chat"
+                                    class="btn-accion btn-contactar">
+                                    <i class="bi bi-chat-left-text"></i> Contactar al Propietario
                                 </a>
                         </div>
                     </div>
@@ -212,36 +213,40 @@
                         </div>
                         <div class="card-body">
                             @if ($diasParaPago === 0 && $estadoPagoActual === 'pendiente')
-                                <span class="label pago-requerido">¡PAGO REQUERIDO!</span>
-                                <span class="valor-kpi pago-requerido">HOY</span>
-                                @if ($numPagosAtrasados > 0)
-                                    <p class="nota pago-requerido"><strong>¡Paga ya!</strong> Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso más este mes (Total: <strong>{{ number_format($totalDeuda, 2, ',', '.') }}€</strong>).</p>
-                                @else
-                                    <p class="nota pago-requerido"><strong>¡Paga ya!</strong> El plazo vence hoy.</p>
-                                @endif
-                                <button class="btn-accion btn-pago bg-pago-requerido">Pagar Cuota Ahora</button>
-                            @elseif ($estadoPagoActual === 'pagado')
-                                <span class="label pago-exito">PAGO REALIZADO CON ÉXITO</span>
-                                <span class="valor-kpi pago-exito"><i class="bi bi-check-circle-fill icono-check-pago"></i></span>
-                                <p class="nota pago-exito">Vence el {{ $fechaProximoPago }}</p>
-                                <p class="nota mt-10">Estado de cuenta: <strong>Al día</strong></p>
+                            <span class="label pago-requerido">¡PAGO REQUERIDO!</span>
+                            <span class="valor-kpi pago-requerido">HOY</span>
+                            @if ($numPagosAtrasados > 0)
+                            <p class="nota pago-requerido"><strong>¡Paga ya!</strong> Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso más este mes (Total: <strong>{{ number_format($totalDeuda, 2, ',', '.') }}€</strong>).</p>
                             @else
-                                <span class="label">PRÓXIMO PAGO EN</span>
-                                <span class="valor-kpi">{{ $diasParaPago }} días</span>
-                                @if ($numPagosAtrasados > 0)
-                                    <p class="nota pago-aviso">⚠️ Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso. Se acumulará un total de <strong>{{ number_format($totalDeuda, 2, ',', '.') }}€</strong>.</p>
-                                @else
-                                    <p class="nota">Vence el {{ $fechaProximoPago }}</p>
-                                @endif
-                                
-                                @if (!empty($cuotaPendienteId))
-                                    <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId) }}" class="form-pago-detalle">
-                                        @csrf
-                                        <button class="btn-accion btn-pago" type="submit">Pagar Cuota Ahora</button>
-                                    </form>
-                                @else
-                                    <button class="btn-accion btn-pago" type="button" disabled>Sin cuotas pendientes</button>
-                                @endif
+                            <p class="nota pago-requerido"><strong>¡Paga ya!</strong> El plazo vence hoy.</p>
+                            @endif
+                            <button class="btn-accion btn-pago bg-pago-requerido">Pagar Cuota Ahora</button>
+                            @elseif ($estadoPagoActual === 'pagado')
+                            <span class="label pago-exito">PAGO REALIZADO CON ÉXITO</span>
+                            <span class="valor-kpi pago-exito"><i class="bi bi-check-circle-fill icono-check-pago"></i></span>
+                            <p class="nota pago-exito">Vence el {{ $fechaProximoPago }}</p>
+                            <p class="nota mt-10">Estado de cuenta: <strong>Al día</strong></p>
+                            @else
+                            <span class="label">PRÓXIMO PAGO EN</span>
+                            <span class="valor-kpi">{{ $diasParaPago }} días</span>
+                            @if ($numPagosAtrasados > 0)
+                            <p class="nota pago-aviso">⚠️ Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso. Se acumulará un total de <strong>{{ number_format($totalDeuda, 2, ',', '.') }}€</strong>.</p>
+                            @else
+                            <p class="nota">Vence el {{ $fechaProximoPago }}</p>
+                            @endif
+
+                            @if (!empty($cuotaPendienteId))
+                            <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId) }}" class="form-pago-cuota" data-monto="{{ number_format($totalDeuda, 2, ',', '.') }} €">
+                                @csrf
+                                <button class="btn-accion btn-pago" type="submit">Pagar Cuota Ahora</button>
+                            </form>
+                            @else
+                            <button class="btn-accion btn-pago" type="button" disabled>Sin cuotas pendientes</button>
+                            @endif
+                            {{-- Botón Ver Historial --}}
+                            <button class="btn-accion btn-historial" type="button" data-bs-toggle="modal" data-bs-target="#modalHistorialPagos">
+                                <i class="bi bi-clock-history"></i> Ver Historial de Pagos
+                            </button>
                             @endif
                         </div>
                     </div>
@@ -267,9 +272,9 @@
                         <div class="cabecera-card">
                             <h3><i class="bi bi-tools"></i> Gestor de Incidencias</h3>
                             @if($esInquilino)
-                                <button class="btn-reportar" data-bs-toggle="modal" data-bs-target="#modalReportar">
-                                    <i class="bi bi-plus-lg"></i> Reportar
-                                </button>
+                            <button class="btn-reportar" data-bs-toggle="modal" data-bs-target="#modalReportar">
+                                <i class="bi bi-plus-lg"></i> Reportar
+                            </button>
                             @endif
                         </div>
                         <div class="lista-incidencias">
@@ -279,7 +284,7 @@
                                     <span class="titulo">{{ $incidencia->titulo_incidencia }}</span>
                                     <span class="fecha">{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y') }}</span>
                                     @if(isset($incidencia->presupuesto_importe_incidencia) && !is_null($incidencia->presupuesto_importe_incidencia))
-                                        <span class="fecha">Presupuesto: {{ number_format((float) $incidencia->presupuesto_importe_incidencia, 2, ',', '.') }} EUR</span>
+                                    <span class="fecha">Presupuesto: {{ number_format((float) $incidencia->presupuesto_importe_incidencia, 2, ',', '.') }} EUR</span>
                                     @endif
                                 </div>
                                 <div class="incidencia-acciones">
@@ -287,50 +292,42 @@
 
                                     @if($esArrendador)
                                         @if($incidencia->estado_incidencia === 'esperando_decision')
-                                            <form action="{{ route('inquilino.decision_pago_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline-flex; gap: 6px; align-items: center;">
-                                                @csrf
-                                                <select name="responsable_pago" class="form-select form-select-sm" required>
-                                                    <option value="">Quién paga</option>
-                                                    <option value="arrendador">Arrendador</option>
-                                                    <option value="inquilino">Inquilino</option>
-                                                </select>
-                                                <button type="submit" class="btn-resolver" title="Confirmar decisión">
-                                                    <i class="bi bi-check2-square"></i>
-                                                </button>
-                                            </form>
+                                        <form action="{{ route('inquilino.decision_pago_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline-flex; gap: 6px; align-items: center;">
+                                            @csrf
+                                            <select name="responsable_pago" class="form-select form-select-sm" required>
+                                                <option value="">Quién paga</option>
+                                                <option value="arrendador">Arrendador</option>
+                                                <option value="inquilino">Inquilino</option>
+                                            </select>
+                                            <button type="submit" class="btn-resolver" title="Confirmar decisión">
+                                                <i class="bi bi-check2-square"></i>
+                                            </button>
+                                        </form>
                                         @elseif($incidencia->estado_incidencia === 'esperando_pago' && $incidencia->responsable_pago_incidencia === 'arrendador')
-                                            <form action="{{ route('inquilino.pagar_presupuesto_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline;">
-                                                @csrf
-                                                <button type="submit" class="btn-resolver" title="Pagar presupuesto">
-                                                    <i class="bi bi-credit-card"></i>
-                                                </button>
-                                            </form>
+                                        <form action="{{ route('inquilino.pagar_presupuesto_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline;">
+                                            @csrf
+                                            <button type="submit" class="btn-resolver" title="Pagar presupuesto">
+                                                <i class="bi bi-credit-card"></i>
+                                            </button>
+                                        </form>
                                         @else
-                                            <small>Esperando siguiente paso del flujo.</small>
+                                        <small>Esperando siguiente paso del flujo.</small>
                                         @endif
                                     @elseif($esInquilino)
                                         @if($incidencia->estado_incidencia === 'esperando_pago' && $incidencia->responsable_pago_incidencia === 'inquilino' && $incidencia->id_reporta_fk == (auth()->user()->id_usuario ?? 0))
-                                            <form action="{{ route('inquilino.pagar_presupuesto_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline;">
-                                                @csrf
-                                                <button type="submit" class="btn-resolver" title="Pagar presupuesto">
-                                                    <i class="bi bi-credit-card"></i>
-                                                </button>
-                                            </form>
+                                        <form action="{{ route('inquilino.pagar_presupuesto_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline;">
+                                            @csrf
+                                            <button type="submit" class="btn-resolver" title="Pagar presupuesto">
+                                                <i class="bi bi-credit-card"></i>
+                                            </button>
+                                        </form>
                                         @elseif($incidencia->estado_incidencia === 'resuelta' && $incidencia->id_reporta_fk == (auth()->user()->id_usuario ?? 0))
-                                            <form action="{{ route('inquilino.cerrar_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline;">
-                                                @csrf
-                                                <button type="submit" class="btn-resolver" title="Confirmar solución y cerrar">
-                                                    <i class="bi bi-check-circle"></i>
-                                                </button>
-                                            </form>
-                                        @elseif($incidencia->estado_incidencia === 'esperando_decision')
-                                            <small>Pendiente de decisión del arrendador.</small>
-                                        @elseif($incidencia->estado_incidencia === 'esperando_pago' && $incidencia->responsable_pago_incidencia === 'arrendador')
-                                            <small>Esperando pago del arrendador.</small>
-                                        @elseif($incidencia->estado_incidencia === 'cerrada')
-                                            <small>Incidencia cerrada.</small>
-                                        @else
-                                            <small>Esperando gestión del responsable asignado.</small>
+                                        <form action="{{ route('inquilino.cerrar_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline;">
+                                            @csrf
+                                            <button type="submit" class="btn-resolver" title="Confirmar solución y cerrar">
+                                                <i class="bi bi-check-circle"></i>
+                                            </button>
+                                        </form>
                                         @endif
                                     @endif
                                 </div>
@@ -404,7 +401,52 @@
         </div>
     </div>
 
+    {{-- Modal Historial de Pagos --}}
+    <div class="modal fade" id="modalHistorialPagos" tabindex="-1" aria-labelledby="modalHistorialLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalHistorialLabel"><i class="bi bi-receipt"></i> Historial de Pagos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    @if ($historialPagos->isNotEmpty())
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Concepto</th>
+                                <th>Importe</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($historialPagos as $pago)
+                            <tr>
+                                <td>{{ \Carbon\Carbon::parse($pago->creado_pago)->format('d/m/Y') }}</td>
+                                <td>{{ $pago->concepto_pago }}</td>
+                                <td>{{ number_format((float) $pago->importe_pago, 2, ',', '.') }} €</td>
+                                <td><span class="badge bg-success">{{ ucfirst($pago->estado_pago) }}</span></td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    @else
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox fs-1 text-muted"></i>
+                        <p class="mt-2 text-muted">No hay pagos registrados todavía.</p>
+                    </div>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('js/miembro/miembro.js') }}"></script>
     <script src="{{ asset('js/inquilino/validacion_incidencia.js') }}"></script>
     <script src="{{ asset('js/inquilino/inquilino.js') }}"></script>

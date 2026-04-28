@@ -32,11 +32,22 @@ function iniciarMapa() {
 }
 
 function configurarFiltros() {
-	if (!window.FiltrosMiembro || typeof window.FiltrosMiembro.registrarBotonAplicar !== "function") {
-		return;
-	}
+	var timerFiltros = null;
 
-	window.FiltrosMiembro.registrarBotonAplicar("boton-aplicar-filtros", cargarPropiedades);
+	var inputsTexto = ['precio-minimo', 'precio-maximo', 'numero-habitaciones', 'metros-minimo', 'metros-maximo'];
+	inputsTexto.forEach(function (id) {
+		var el = document.getElementById(id);
+		if (!el) return;
+		el.oninput = function () {
+			clearTimeout(timerFiltros);
+			timerFiltros = setTimeout(cargarPropiedades, 500);
+		};
+	});
+
+	var selectTipo = document.getElementById('tipo-inmueble');
+	if (selectTipo) {
+		selectTipo.onchange = cargarPropiedades;
+	}
 }
 
 function obtenerFiltros() {

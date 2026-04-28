@@ -8,99 +8,110 @@
 
 @section('content')
 <div class="hero-admin">
-    <div class="hero-content">
-        <h1>Configuración general</h1>
-        <p>Ajustes visibles del panel administrativo organizados por secciones</p>
-    </div>
+    <h1>Configuración general</h1>
+    <p>Administra los ajustes globales del panel de administración</p>
     <div class="hero-deco hero-deco-1"></div>
     <div class="hero-deco hero-deco-2"></div>
     <div class="hero-deco hero-deco-3"></div>
 </div>
 
-<div class="configuracion-admin">
-    <div class="configuracion-resumen">
-        <div class="configuracion-bloque">
-            <small>Apariencia</small>
-            <strong>Identidad visual</strong>
-            <span>Colores, iconos, cabecera y coherencia visual del panel.</span>
+<div class="kpi-grid-pequeno">
+    <div class="kpi-mini">
+        <div class="kpi-mini-icono kpi-mini-azul">
+            <i class="bi bi-palette"></i>
         </div>
-        <div class="configuracion-bloque">
-            <small>Cuenta</small>
-            <strong>Sesión y perfil</strong>
-            <span>Datos del administrador, acceso y seguridad básica.</span>
-        </div>
-        <div class="configuracion-bloque">
-            <small>Notificaciones</small>
-            <strong>Alertas internas</strong>
-            <span>Mensajes, avisos y preferencias de comunicación.</span>
-        </div>
-        <div class="configuracion-bloque">
-            <small>Sistema</small>
-            <strong>Estado general</strong>
-            <span>Parámetros técnicos, mantenimiento y configuración base.</span>
+        <div class="kpi-mini-datos">
+            <span class="kpi-mini-numero">4</span>
+            <span class="kpi-mini-label">Bloques de apariencia</span>
         </div>
     </div>
 
-    <div class="configuracion-grid">
-        <section class="configuracion-card">
-            <h2>Apariencia</h2>
-            <p>Define cómo se ve el panel para mantener una experiencia consistente.</p>
-            <div class="configuracion-lista">
-                <div class="configuracion-item">
-                    <h3>Paleta principal</h3>
-                    <span>Colores corporativos, contraste y estados visuales del admin.</span>
-                </div>
-                <div class="configuracion-item">
-                    <h3>Cabecera y navegación</h3>
-                    <span>Estado activo de iconos, fondos y jerarquía de navegación.</span>
-                </div>
-            </div>
-        </section>
+    <div class="kpi-mini">
+        <div class="kpi-mini-icono kpi-mini-verde">
+            <i class="bi bi-person-badge"></i>
+        </div>
+        <div class="kpi-mini-datos">
+            <span class="kpi-mini-numero">3</span>
+            <span class="kpi-mini-label">Ajustes de cuenta</span>
+        </div>
+    </div>
 
-        <section class="configuracion-card">
-            <h2>Cuenta</h2>
-            <p>Centraliza los ajustes personales y de seguridad del administrador.</p>
-            <div class="configuracion-lista">
-                <div class="configuracion-item">
-                    <h3>Perfil</h3>
-                    <span>Nombre, correo, avatar y estado del usuario administrador.</span>
-                </div>
-                <div class="configuracion-item">
-                    <h3>Acceso</h3>
-                    <span>Control de sesión y cierre seguro de la cuenta activa.</span>
-                </div>
-            </div>
-        </section>
+    <div class="kpi-mini">
+        <div class="kpi-mini-icono kpi-mini-naranja">
+            <i class="bi bi-bell"></i>
+        </div>
+        <div class="kpi-mini-datos">
+            <span class="kpi-mini-numero kpi-mini-numero-naranja">5</span>
+            <span class="kpi-mini-label">Reglas de notificación</span>
+        </div>
+    </div>
 
-        <section class="configuracion-card">
-            <h2>Notificaciones</h2>
-            <p>Agrupa avisos operativos y mensajes que requieren revisión.</p>
-            <div class="configuracion-lista">
-                <div class="configuracion-item">
-                    <h3>Alertas del sistema</h3>
-                    <span>Notificaciones de solicitudes, incidencias y eventos críticos.</span>
-                </div>
-                <div class="configuracion-item">
-                    <h3>Alertas visuales</h3>
-                    <span>Uso del oso, modales y mensajes coherentes con el panel.</span>
-                </div>
-            </div>
-        </section>
+    <div class="kpi-mini">
+        <div class="kpi-mini-icono kpi-mini-rojo">
+            <i class="bi bi-cpu"></i>
+        </div>
+        <div class="kpi-mini-datos">
+            <span class="kpi-mini-numero kpi-mini-numero-rojo">6</span>
+            <span class="kpi-mini-label">Parámetros de sistema</span>
+        </div>
+    </div>
+</div>
 
-        <section class="configuracion-card">
-            <h2>Sistema</h2>
-            <p>Describe ajustes técnicos y de mantenimiento de la plataforma.</p>
-            <div class="configuracion-lista">
-                <div class="configuracion-item">
-                    <h3>Estado general</h3>
-                    <span>Control de versión, mantenimiento y parámetros base.</span>
+<div class="card-admin">
+    <div class="tabla-header">
+        <span class="info-paginacion">Secciones disponibles de configuración</span>
+    </div>
+
+    <div class="configuracion-admin-body">
+        <div class="configuracion-grid">
+            <section class="configuracion-card-seccion">
+                <div class="configuracion-cabecera-seccion">
+                    <span class="configuracion-icono icono-azul"><i class="bi bi-palette"></i></span>
+                    <h2>Apariencia</h2>
                 </div>
-                <div class="configuracion-item">
-                    <h3>Operativa interna</h3>
-                    <span>Configuración de procesos y reglas administrativas globales.</span>
+                <ul>
+                    <li>Colores y estilo visual del panel.</li>
+                    <li>Comportamiento visual de cabecera y navegación.</li>
+                    <li>Consistencia de componentes de interfaz.</li>
+                </ul>
+            </section>
+
+            <section class="configuracion-card-seccion">
+                <div class="configuracion-cabecera-seccion">
+                    <span class="configuracion-icono icono-verde"><i class="bi bi-person-badge"></i></span>
+                    <h2>Cuenta</h2>
                 </div>
-            </div>
-        </section>
+                <ul>
+                    <li>Información del perfil administrativo.</li>
+                    <li>Seguridad básica de acceso y sesión.</li>
+                    <li>Preferencias operativas de la cuenta.</li>
+                </ul>
+            </section>
+
+            <section class="configuracion-card-seccion">
+                <div class="configuracion-cabecera-seccion">
+                    <span class="configuracion-icono icono-naranja"><i class="bi bi-bell"></i></span>
+                    <h2>Notificaciones</h2>
+                </div>
+                <ul>
+                    <li>Alertas internas de solicitudes e incidencias.</li>
+                    <li>Canales y frecuencia de avisos.</li>
+                    <li>Prioridades y umbrales de comunicación.</li>
+                </ul>
+            </section>
+
+            <section class="configuracion-card-seccion">
+                <div class="configuracion-cabecera-seccion">
+                    <span class="configuracion-icono icono-rojo"><i class="bi bi-cpu"></i></span>
+                    <h2>Sistema</h2>
+                </div>
+                <ul>
+                    <li>Parámetros generales de operación.</li>
+                    <li>Mantenimiento y estado del entorno.</li>
+                    <li>Reglas globales del panel administrativo.</li>
+                </ul>
+            </section>
+        </div>
     </div>
 </div>
 @endsection

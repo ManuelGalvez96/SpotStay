@@ -87,11 +87,11 @@
 
 /* KPI Mini Cards */
 .kpi-mini {
-    background: white;
+    background: linear-gradient(135deg, #035498, #1AA068);
     border-radius: 12px;
     padding: 16px;
-    border-left: 4px solid #035498;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border-left: 4px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 1px 3px rgba(3, 84, 152, 0.12);
     display: flex;
     gap: 12px;
     align-items: flex-start;
@@ -144,7 +144,7 @@
 .kpi-mini-numero {
     font-size: 24px;
     font-weight: 700;
-    color: #111827;
+    color: white;
 }
 
 .kpi-mini-numero-rojo {
@@ -161,7 +161,7 @@
 
 .kpi-mini-label {
     font-size: 12px;
-    color: #9CA3AF;
+    color: rgba(255, 255, 255, 0.82);
 }
 
 .kpi-urgente-fila {
@@ -790,8 +790,11 @@
     gap: 8px;
     margin-bottom: 16px;
     padding-bottom: 12px;
-    border-bottom: 1px solid rgba(0,0,0,0.08);
+    border-bottom: 1px solid rgba(255,255,255,0.18);
     flex-shrink: 0;
+    background: linear-gradient(90deg, #035498, #1AA068);
+    border-radius: 12px 12px 0 0;
+    padding: 12px 14px;
 }
 
 .kanban-punto {
@@ -820,7 +823,7 @@
 .kanban-col-header span:nth-child(2) {
     font-weight: 700;
     font-size: 14px;
-    color: #111827;
+    color: white;
     flex: 1;
 }
 
@@ -829,6 +832,12 @@
     padding: 3px 10px;
     border-radius: 20px;
     font-weight: 600;
+}
+
+.kanban-col-header .badge-kanban {
+    background: rgba(255, 255, 255, 0.18);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.22);
 }
 
 .badge-kanban-rojo {

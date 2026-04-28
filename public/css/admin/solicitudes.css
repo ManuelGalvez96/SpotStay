@@ -207,9 +207,9 @@ body {
 
 /* ── KPI Mini ── */
 .kpi-mini {
-    background: white;
+    background: linear-gradient(135deg, #035498, #1AA068);
     border-radius: 12px;
-    border: 1px solid #E5E7EB;
+    border: 1px solid rgba(255, 255, 255, 0.16);
     padding: 0 20px;
     display: flex;
     align-items: center;
@@ -219,7 +219,7 @@ body {
 }
 
 .kpi-mini:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 14px rgba(3, 84, 152, 0.18);
 }
 
 .kpi-mini-icono {
@@ -276,7 +276,7 @@ body {
 
 .kpi-mini-label {
     font-size: 12px;
-    color: #6B7280;
+    color: rgba(255, 255, 255, 0.82);
     margin: 0;
     margin-top: 2px;
 }
@@ -681,15 +681,15 @@ body {
 }
 
 .card-header-admin {
-    background: #F9FAFB;
+    background: linear-gradient(90deg, #035498, #1AA068);
     padding: 16px 20px;
-    border-bottom: 1px solid #E5E7EB;
+    border-bottom: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-weight: 600;
     font-size: 14px;
-    color: #111827;
+    color: white;
 }
 
 /* ── Card Estadísticas ── */
@@ -700,6 +700,14 @@ body {
 .card-estadisticas .card-header-admin {
     padding: 14px 16px;
     font-size: 13px;
+}
+
+.card-header-admin .badge-contador,
+.card-header-admin .badge-contador-verde,
+.card-header-admin .badge-contador-rojo {
+    background: rgba(255, 255, 255, 0.18);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.22);
 }
 
 /* ── Historial Lista ── */

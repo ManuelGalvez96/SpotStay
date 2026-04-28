@@ -75,15 +75,16 @@ body {
 
 /* ── Toolbar Admin ── */
 .toolbar-admin {
-    background: white;
+    background: linear-gradient(90deg, #035498, #1AA068);
     border-radius: 14px;
-    border: 1px solid #E5E7EB;
+    border: 1px solid rgba(255, 255, 255, 0.16);
     padding: 16px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 16px;
     margin-top: 24px;
+    box-shadow: 0 8px 24px rgba(3, 84, 152, 0.12);
 }
 
 .toolbar-izquierda {
@@ -207,9 +208,9 @@ body {
 
 /* ── KPI Mini ── */
 .kpi-mini {
-    background: white;
+    background: linear-gradient(135deg, #035498, #1AA068);
     border-radius: 12px;
-    border: 1px solid #E5E7EB;
+    border: 1px solid rgba(255, 255, 255, 0.16);
     padding: 0 20px;
     display: flex;
     align-items: center;
@@ -219,7 +220,13 @@ body {
 }
 
 .kpi-mini:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 14px rgba(3, 84, 152, 0.18);
+}
+
+.kpi-mini-icono,
+.kpi-mini .kpi-mini-icono {
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-icono {
@@ -261,22 +268,22 @@ body {
 .kpi-mini-numero {
     font-size: 24px;
     font-weight: 700;
-    color: #111827;
+    color: #ffffff;
     line-height: 1;
     margin: 0;
 }
 
 .kpi-mini-numero-rojo {
-    color: #EF4444;
+    color: #ffffff;
 }
 
 .kpi-mini-numero-naranja {
-    color: #D97706;
+    color: #ffffff;
 }
 
 .kpi-mini-label {
     font-size: 12px;
-    color: #6B7280;
+    color: rgba(255, 255, 255, 0.82);
     margin: 0;
     margin-top: 2px;
 }
@@ -296,12 +303,28 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 16px 24px;
-    border-bottom: 1px solid #E5E7EB;
-    background: #F9FAFB;
+    border-bottom: 0;
+    background: linear-gradient(90deg, #035498, #1AA068);
     font-size: 13px;
-    color: #6B7280;
+    color: white;
     flex-wrap: wrap;
     gap: 12px;
+}
+
+.tabla-header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tabla-header-titulo {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.tabla-header .info-paginacion {
+    color: rgba(255, 255, 255, 0.92);
 }
 
 /* ── Contenedor de números de página ── */

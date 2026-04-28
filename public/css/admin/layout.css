@@ -210,7 +210,7 @@ body {
 }
 
 .content-wrapper {
-    background: #F0F4F8;
+    background: linear-gradient(135deg, #E3F2FD 0%, #E8F5E9 100%);
     min-height: calc(100vh - 56px);
 }
 

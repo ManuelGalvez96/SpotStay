@@ -39,10 +39,6 @@
         </select>
     </div>
     <div class="toolbar-derecha">
-        <button id="btnExportar" class="btn-exportar">
-            <i class="bi bi-download"></i>
-            <span>Exportar</span>
-        </button>
         <button id="btnNuevoUsuario" class="btn-primario">
             <i class="bi bi-plus"></i>
             <span>Nuevo usuario</span>
@@ -96,15 +92,16 @@
 <!-- TABLA DE USUARIOS -->
 <div class="card-admin">
     <div class="tabla-header d-flex flex-wrap justify-content-between align-items-center gap-3">
-        <span id="contadorResultados" class="info-paginacion">{{ number_format($totalUsuarios) }} usuarios encontrados</span>
-    </div>
+        <div class="tabla-header-info">
+            <span class="tabla-header-titulo">Usuarios</span>
+            <span id="contadorResultados" class="info-paginacion">{{ number_format($totalUsuarios) }} usuarios encontrados</span>
+        </div>
 
-    @php
-        $totalPages = $usuarios->lastPage() ?? 1;
-        $paginaActual = $usuarios->currentPage() ?? 1;
-    @endphp
+        @php
+            $totalPages = $usuarios->lastPage() ?? 1;
+            $paginaActual = $usuarios->currentPage() ?? 1;
+        @endphp
 
-    <div class="tabla-paginacion-inicial d-flex justify-content-end mb-3">
         <nav aria-label="Paginación de usuarios">
             <ul class="pagination pagination-sm mb-0" id="paginas">
                 <li class="page-item {{ $paginaActual <= 1 ? 'disabled' : '' }}">

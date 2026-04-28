@@ -52,7 +52,7 @@ class PropiedadSeeder extends Seeder
         $propiedadesData = [];
         $counter = 0;
 
-        // Generar propiedades para cada arrendador
+        // Generar propiedades para cada arrendador con una mezcla realista de estados.
         foreach ($arrendadores as $arrendadorData) {
             $arrendador = Usuario::where('email_usuario', $arrendadorData['email'])->first();
             
@@ -60,79 +60,38 @@ class PropiedadSeeder extends Seeder
                 continue;
             }
 
-            // Cada arrendador tiene mínimo 2 propiedades
-            // Primera: estado 'borrador'
-            $propiedadesData[] = [
-                'arrendador_id' => $arrendador->id_usuario,
-                'gestor_id' => $gestores->get($counter % $gestores->count())->id_usuario,
-                'titulo' => $this->generarTitulo($counter),
-                'calle' => $this->generarCalle($counter),
-                'numero' => rand(1, 999),
-                'piso' => rand(0, 6),
-                'puerta' => chr(65 + rand(0, 4)), // A-E
-                'ciudad' => $ciudades[$counter % count($ciudades)],
-                'cp' => $this->generarCP($ciudades[$counter % count($ciudades)]),
-                'lat' => $this->generarLatitud($ciudades[$counter % count($ciudades)]),
-                'lng' => $this->generarLongitud($ciudades[$counter % count($ciudades)]),
-                'tipo' => ['Piso', 'Estudio', 'Casa', 'Loft'][rand(0, 3)],
-                'habitaciones' => rand(1, 4),
-                'm2' => rand(40, 150),
-                'descripcion' => 'Piso completamente equipado en zona céntrica con acceso a transporte público.',
-                'precio' => rand(60, 250) * 10, // 600-2500
-                'gastos' => json_encode($this->generarGastos()),
-                'estado' => 'borrador',
-                'creado' => now()->subDays(rand(30, 90)),
-            ];
+            $numeroPropiedades = rand(2, 4);
 
-            // Segunda: estado 'alquilada' o 'publicada'
-            $propiedadesData[] = [
-                'arrendador_id' => $arrendador->id_usuario,
-                'gestor_id' => $gestores->get(($counter + 1) % $gestores->count())->id_usuario,
-                'titulo' => $this->generarTitulo($counter + 1),
-                'calle' => $this->generarCalle($counter + 1),
-                'numero' => rand(1, 999),
-                'piso' => rand(0, 6),
-                'puerta' => chr(65 + rand(0, 4)),
-                'ciudad' => $ciudades[($counter + 1) % count($ciudades)],
-                'cp' => $this->generarCP($ciudades[($counter + 1) % count($ciudades)]),
-                'lat' => $this->generarLatitud($ciudades[($counter + 1) % count($ciudades)]),
-                'lng' => $this->generarLongitud($ciudades[($counter + 1) % count($ciudades)]),
-                'tipo' => ['Piso', 'Estudio', 'Casa', 'Loft'][rand(0, 3)],
-                'habitaciones' => rand(1, 4),
-                'm2' => rand(40, 150),
-                'descripcion' => 'Apartamento moderno con todas las comodidades en pleno centro urbano.',
-                'precio' => rand(60, 250) * 10,
-                'gastos' => json_encode($this->generarGastos()),
-                'estado' => $counter % 2 === 0 ? 'alquilada' : 'publicada',
-                'creado' => now()->subDays(rand(5, 60)),
-            ];
+            for ($i = 0; $i < $numeroPropiedades; $i++) {
+                $indiceGlobal = $counter + $i;
+                $ciudad = $ciudades[$indiceGlobal % count($ciudades)];
+                $estado = $this->generarEstadoPropiedad($i, $numeroPropiedades);
+                $gestor = $gestores->random();
 
-            // Tercera propiedad (algunos arrendadores): compartida con múltiples inquilinos
-            if ($counter % 3 === 0) {
                 $propiedadesData[] = [
                     'arrendador_id' => $arrendador->id_usuario,
-                    'gestor_id' => $gestores->get(($counter + 2) % $gestores->count())->id_usuario,
-                    'titulo' => $this->generarTitulo($counter + 2),
-                    'calle' => $this->generarCalle($counter + 2),
+                    'gestor_id' => $gestor->id_usuario,
+                    'titulo' => $this->generarTitulo($indiceGlobal) . ' - ' . $arrendador->id_usuario,
+                    'calle' => $this->generarCalle($indiceGlobal),
                     'numero' => rand(1, 999),
-                    'piso' => rand(0, 6),
-                    'puerta' => chr(65 + rand(0, 4)),
-                    'ciudad' => $ciudades[($counter + 2) % count($ciudades)],
-                    'cp' => $this->generarCP($ciudades[($counter + 2) % count($ciudades)]),
-                    'lat' => $this->generarLatitud($ciudades[($counter + 2) % count($ciudades)]),
-                    'lng' => $this->generarLongitud($ciudades[($counter + 2) % count($ciudades)]),
-                    'tipo' => ['Piso', 'Casa'][rand(0, 1)],
-                    'habitaciones' => rand(3, 6),
-                    'm2' => rand(80, 200),
-                    'descripcion' => 'Vivienda amplia compartida, ideal para grupos de amigos o compañeros de trabajo.',
-                    'precio' => rand(60, 180) * 10,
+                    'piso' => rand(0, 8),
+                    'puerta' => chr(65 + rand(0, 5)),
+                    'ciudad' => $ciudad,
+                    'cp' => $this->generarCP($ciudad),
+                    'lat' => $this->generarLatitud($ciudad),
+                    'lng' => $this->generarLongitud($ciudad),
+                    'tipo' => ['Piso', 'Estudio', 'Casa', 'Loft'][rand(0, 3)],
+                    'habitaciones' => rand(1, 5),
+                    'm2' => rand(35, 180),
+                    'descripcion' => $this->generarDescripcion($estado),
+                    'precio' => rand(550, 2400),
                     'gastos' => json_encode($this->generarGastos()),
-                    'estado' => 'alquilada',
-                    'creado' => now()->subDays(rand(10, 120)),
+                    'estado' => $estado,
+                    'creado' => $this->generarFechaCreacion($estado),
                 ];
             }
 
-            $counter += 3;
+            $counter += $numeroPropiedades;
         }
 
         // Insertar propiedades
@@ -164,6 +123,58 @@ class PropiedadSeeder extends Seeder
                 ]
             );
         }
+    }
+
+    private function generarEstadoPropiedad(int $indice, int $total): string
+    {
+        $roll = rand(1, 100);
+
+        if ($indice === 0) {
+            return match (true) {
+                $roll <= 35 => 'borrador',
+                $roll <= 75 => 'publicada',
+                $roll <= 95 => 'alquilada',
+                default => 'inactiva',
+            };
+        }
+
+        if ($indice === $total - 1) {
+            return match (true) {
+                $roll <= 15 => 'borrador',
+                $roll <= 55 => 'publicada',
+                $roll <= 90 => 'alquilada',
+                default => 'inactiva',
+            };
+        }
+
+        return match (true) {
+            $roll <= 20 => 'borrador',
+            $roll <= 55 => 'publicada',
+            $roll <= 85 => 'alquilada',
+            default => 'inactiva',
+        };
+    }
+
+    private function generarDescripcion(string $estado): string
+    {
+        return match ($estado) {
+            'borrador' => 'Propiedad en preparación, pendiente de validar fotografía, tarifas o disponibilidad.',
+            'publicada' => 'Vivienda lista para enseñar, con buena ubicación y servicios básicos activos.',
+            'alquilada' => 'Propiedad ocupada actualmente con contrato activo y mantenimiento regular.',
+            'inactiva' => 'Propiedad temporalmente fuera de mercado por reforma, revisión o cambio de inquilino.',
+            default => 'Vivienda con características estándar y ubicación céntrica.',
+        };
+    }
+
+    private function generarFechaCreacion(string $estado): string
+    {
+        return match ($estado) {
+            'borrador' => now()->subDays(rand(3, 45)),
+            'publicada' => now()->subDays(rand(10, 180)),
+            'alquilada' => now()->subDays(rand(60, 420)),
+            'inactiva' => now()->subDays(rand(30, 240)),
+            default => now()->subDays(rand(10, 120)),
+        };
     }
 
     private function generarTitulo(int $index): string

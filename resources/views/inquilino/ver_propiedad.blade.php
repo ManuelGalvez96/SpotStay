@@ -247,8 +247,6 @@
                     </div>
                     @endif
 
-                    @endif
-
                     <!-- Contrato -->
                     <div class="card-gestion contrato">
                         <div class="card-icon">
@@ -305,6 +303,14 @@
                                                 @csrf
                                                 <button type="submit" class="btn-resolver" title="Pagar presupuesto">
                                                     <i class="bi bi-credit-card"></i>
+                                                </button>
+                                            </form>
+                                        @else
+                                            <small>Esperando siguiente paso del flujo.</small>
+                                        @endif
+                                    @elseif($esInquilino)
+                                        @if($incidencia->estado_incidencia === 'esperando_pago' && $incidencia->responsable_pago_incidencia === 'inquilino' && $incidencia->id_reporta_fk == (auth()->user()->id_usuario ?? 0))
+                                            <form action="{{ route('inquilino.pagar_presupuesto_incidencia', $incidencia->id_incidencia) }}" method="POST" style="display: inline;">
                                                 @csrf
                                                 <button type="submit" class="btn-resolver" title="Pagar presupuesto">
                                                     <i class="bi bi-credit-card"></i>
@@ -325,6 +331,7 @@
                                             <small>Incidencia cerrada.</small>
                                         @else
                                             <small>Esperando gestión del responsable asignado.</small>
+                                        @endif
                                     @endif
                                 </div>
                             </div>

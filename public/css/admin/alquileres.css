@@ -152,23 +152,22 @@
 }
 
 .btn-accion {
-    width: 30px;
-    height: 30px;
+    background: transparent;
     border: none;
-    background: #F1F5F9;
-    border-radius: 6px;
     cursor: pointer;
-    color: #475569;
-    display: flex;
+    color: #9CA3AF;
+    font-size: 16px;
+    padding: 4px;
+    border-radius: 6px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
-    font-size: 14px;
+    transition: all 0.2s ease;
 }
 
 .btn-accion:hover {
-    background: #E0E7FF;
     color: #035498;
+    background: #EEF4FF;
 }
 
 .sin-resultados {
@@ -390,41 +389,47 @@
 }
 
 .btn-primario {
-    background: #667eea;
+    background: #035498;
     color: white;
     border: none;
     padding: 8px 16px;
     border-radius: 8px;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     gap: 6px;
 }
 
 .btn-primario:hover {
-    background: #5568d3;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    background: #024080;
+}
+
+.toolbar-derecha a.btn-primario {
+    text-decoration: none;
 }
 
 .btn-exportar {
-    background: #F3F4F6;
-    color: #111827;
-    border: 1px solid #E5E7EB;
+    border: 1px solid #035498;
+    color: #035498;
+    background: transparent;
     padding: 8px 16px;
     border-radius: 8px;
     font-size: 13px;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    font-weight: 500;
+    font-family: inherit;
 }
 
 .btn-exportar:hover {
-    background: #E5E7EB;
+    background: #EEF4FF;
+    color: #024080;
 }
 
 .modal-overlay {
@@ -713,7 +718,7 @@
 
 .acciones-tabla {
     display: flex;
-    gap: 6px;
+    gap: 8px;
     align-items: center;
 }
 
@@ -791,34 +796,71 @@
 
 /* ── Botones acción tabla ── */
 .btn-aprobar-alq {
-    background: none;
+    background: transparent;
     border: none;
     cursor: pointer;
-    color: #1AA068;
-    font-weight: 600;
-    font-size: 12px;
-    padding: 0;
-    margin-right: 8px;
-    transition: all 0.15s;
+    color: #9CA3AF;
+    font-size: 16px;
+    padding: 4px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
 }
 
 .btn-aprobar-alq:hover {
-    text-decoration: underline;
+    color: #035498;
+    background: #EEF4FF;
 }
 
 .btn-rechazar-alq {
-    background: none;
+    background: transparent;
     border: none;
     cursor: pointer;
-    color: #EF4444;
-    font-weight: 600;
-    font-size: 12px;
-    padding: 0;
-    transition: all 0.15s;
+    color: #9CA3AF;
+    font-size: 16px;
+    padding: 4px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
 }
 
 .btn-rechazar-alq:hover {
-    text-decoration: underline;
+    color: #035498;
+    background: #EEF4FF;
+}
+
+.toggle-switch {
+    width: 36px;
+    height: 20px;
+    border-radius: 10px;
+    background: #CBD5E1;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    display: inline-block;
+}
+
+.toggle-switch.activo {
+    background: #1AA068;
+}
+
+.toggle-circulo {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: left 0.2s ease;
+}
+
+.toggle-switch.activo .toggle-circulo {
+    left: 18px;
 }
 
 .btn-desactivar {

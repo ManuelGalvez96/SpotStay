@@ -1,27 +1,49 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Formulario de solicitud de Alquiler</title>
+    <title>SpotStay | Solicitud de Alquiler</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}" />
 </head>
-<body>
-    <form action="{{ route('solicitud-alquiler.store') }}" method="POST">
-        @csrf
-        <label for="nombre">Nombre:</label>
-        <input type="text" id="nombre" name="nombre" required><br><br>
+<body class="pagina-miembro">
+    <main class="contenido-miembro">
+        <section class="seccion-listado solicitud-seccion">
+            <div class="solicitud-contenedor">
+                <aside class="panel-filtros-miembro solicitud-panel">
+                    <h1 class="titulo-filtros">Formulario de solicitud de alquiler</h1>
+                    <p class="descripcion-filtros">Rellena tus datos y envia la solicitud.</p>
 
-        <label for="email">Correo electrónico:</label>
-        <input type="email" id="email" name="email" required><br><br>
+                    <form action="{{ route('solicitud-alquiler.store') }}" method="POST" class="filtros-miembro solicitud-formulario">
+                        @csrf
 
-        <label for="telefono">Número de teléfono:</label>
-        <input type="tel" id="telefono" name="telefono"><br><br>
+                        <div class="grupo-filtro solicitud-columna-doble">
+                            <label class="etiqueta-filtro" for="nombre">Nombre</label>
+                            <input class="campo-filtro" type="text" id="nombre" name="nombre" required>
+                        </div>
 
-        <label for="mensaje">Mensaje:</label><br>
-        <textarea id="mensaje" name="mensaje" rows="4" cols="50"></textarea><br><br>
+                        <div class="grupo-filtro solicitud-columna-doble">
+                            <label class="etiqueta-filtro" for="email">Correo electronico</label>
+                            <input class="campo-filtro" type="email" id="email" name="email" required>
+                        </div>
 
-        <input type="submit" value="Enviar Solicitud">
-    </form>
+                        <div class="grupo-filtro solicitud-columna-doble">
+                            <label class="etiqueta-filtro" for="telefono">Numero de telefono</label>
+                            <input class="campo-filtro" type="tel" id="telefono" name="telefono">
+                        </div>
+
+                        <div class="grupo-filtro solicitud-columna-completa">
+                            <label class="etiqueta-filtro" for="mensaje">Mensaje</label>
+                            <textarea class="campo-filtro" id="mensaje" name="mensaje" rows="4"></textarea>
+                        </div>
+
+                        <button class="boton-aplicar solicitud-boton" type="submit">Enviar solicitud</button>
+                    </form>
+                </aside>
+            </div>
+        </section>
+    </main>
 </body>
 </html>

@@ -120,8 +120,8 @@ var actualizarTablaAlquileres = function(alquileres) {
         var accionesPendiente = '';
 
         if (a.estado_alquiler === 'pendiente') {
-            accionesPendiente = '<button class="btn-aprobar-alq" data-id="' + a.id + '">✓ Aprobar</button>' +
-                               '<button class="btn-rechazar-alq" data-id="' + a.id + '">✕ Rechazar</button>';
+            accionesPendiente = '<button class="btn-accion btn-editar btn-aprobar-alq" data-id="' + a.id + '" title="Aprobar"><i class="bi bi-pencil"></i></button>' +
+                               '<div class="toggle-switch activo btn-rechazar-alq" data-id="' + a.id + '" title="Rechazar"><div class="toggle-circulo"></div></div>';
         }
 
         filas += '<tr data-id="' + a.id + '" class="' + filaInactiva + '">' +
@@ -131,7 +131,7 @@ var actualizarTablaAlquileres = function(alquileres) {
             '<td><span class="texto-fecha">' + formatearFecha(a.fecha_inicio_alquiler) + '</span></td>' +
             '<td><span class="texto-fecha">' + fin + '</span></td>' +
             '<td><span class="badge-estado badge-estado-' + a.estado_alquiler + '">' + capitalizar(a.estado_alquiler) + '</span></td>' +
-            '<td><div class="acciones-tabla"><button class="btn-accion btn-ver-alq" data-id="' + a.id + '"><i class="bi bi-eye"></i></button>' + accionesPendiente + '</div></td>' +
+            '<td><div class="acciones-tabla"><button class="btn-accion btn-ver-alq" data-id="' + a.id + '" title="Ver detalle"><i class="bi bi-eye"></i></button>' + accionesPendiente + '</div></td>' +
             '</tr>';
     }
 

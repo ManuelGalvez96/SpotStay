@@ -66,9 +66,9 @@ var filtrarPropiedades = function(pagina) {
     })
         .then(function(response) {
             if (!response.ok) {
-                throw new Error('Error HTTP ' + response.status);
+                throw new Error(' Error HTTP ' + response.status);
             }
-            return response.json();
+            return response.json(); 
         })
         .then(function(data) {
             actualizarTabla(data);
@@ -278,6 +278,8 @@ var abrirModal = function(id) {
             badgeEstado.className = 'badge-estado badge-' + propiedad.estado_propiedad;
             badgeEstado.textContent = propiedad.estado_propiedad.charAt(0).toUpperCase() + propiedad.estado_propiedad.slice(1);
 
+            document.getElementById('modalDireccion').setAttribute('data-propiedad-id', String(id));
+
             var overlay = document.getElementById('modalOverlay');
             var modal = document.getElementById('modalPropiedad');
             overlay.classList.add('visible');
@@ -320,7 +322,10 @@ var asignarEventosModal = function() {
     };
 
     btnEditarPropiedad.onclick = function() {
-        console.log('Abrir modal editar propiedad');
+        var propiedadId = parseInt(document.getElementById('modalDireccion').getAttribute('data-propiedad-id') || '0');
+        if (propiedadId > 0) {
+            editarPropiedad(propiedadId);
+        }
     };
 
     btnVerMapa.onclick = function() {
@@ -477,5 +482,8 @@ document.getElementById('btnExportar').onclick = function() {
 
 /* ── Función editarPropiedad (placeholder) ── */
 var editarPropiedad = function(id) {
-    console.log('Editar propiedad ' + id);
+    if (!id) {
+        return;
+    }
+    window.location.href = '/admin/propiedades/' + id + '/editar';
 };

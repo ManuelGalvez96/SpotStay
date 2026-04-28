@@ -8,106 +8,106 @@ use Illuminate\Support\Facades\Http;
 
 class PdfMonkeyService
 {
-    public function currentUser(): array
+    public function obtenerUsuarioActual(): array
     {
-        return $this->request()
+        return $this->solicitud()
             ->get('/current_user')
             ->throw()
             ->json();
     }
 
-    public function createDocument(array $payload, array $meta = [], ?string $templateId = null, ?string $status = null): array
+    public function crearDocumento(array $datos, array $meta = [], ?string $idPlantilla = null, ?string $estado = null): array
     {
-        $documentTemplateId = $templateId ?: (string) config('pdfmonkey.template_id');
-        $documentStatus = $status ?: (string) config('pdfmonkey.default_status', 'pending');
+        $idPlantillaDocumento = $idPlantilla ?: (string) config('pdfmonkey.template_id');
+        $estadoDocumento = $estado ?: (string) config('pdfmonkey.default_status', 'pending');
 
-        $response = $this->request()->post('/documents', [
+        $respuesta = $this->solicitud()->post('/documents', [
             'document' => [
-                'document_template_id' => $documentTemplateId,
-                'status' => $documentStatus,
-                'payload' => $payload,
+                'document_template_id' => $idPlantillaDocumento,
+                'status' => $estadoDocumento,
+                'payload' => $datos,
                 'meta' => $meta,
             ],
         ]);
 
-        $response->throw();
+        $respuesta->throw();
 
-        return $response->json();
+        return $respuesta->json();
     }
 
-    public function createDocumentSync(array $payload, array $meta = [], ?string $templateId = null): array
+    public function crearDocumentoSincronizado(array $datos, array $meta = [], ?string $idPlantilla = null): array
     {
-        $documentTemplateId = $templateId ?: (string) config('pdfmonkey.template_id');
+        $idPlantillaDocumento = $idPlantilla ?: (string) config('pdfmonkey.template_id');
 
-        $response = $this->request()->post('/documents/sync', [
+        $respuesta = $this->solicitud()->post('/documents/sync', [
             'document' => [
-                'document_template_id' => $documentTemplateId,
+                'document_template_id' => $idPlantillaDocumento,
                 'status' => 'pending',
-                'payload' => $payload,
+                'payload' => $datos,
                 'meta' => $meta,
             ],
         ]);
 
-        $response->throw();
-
-        return $response->json();
+        $respuesta->throw();
+ 
+        return $respuesta->json();
     }
 
-    public function getDocumentCard(string $documentId): array
+    public function obtenerTarjetaDocumento(string $idDocumento): array
     {
-        $response = $this->request()->get('/document_cards/' . $documentId);
-        $response->throw();
+        $respuesta = $this->solicitud()->get('/document_cards/' . $idDocumento);
+        $respuesta->throw();
 
-        return $response->json();
+        return $respuesta->json();
     }
 
-    public function getDocument(string $documentId): array
+    public function obtenerDocumento(string $idDocumento): array
     {
-        $response = $this->request()->get('/documents/' . $documentId);
-        $response->throw();
+        $respuesta = $this->solicitud()->get('/documents/' . $idDocumento);
+        $respuesta->throw();
 
-        return $response->json();
+        return $respuesta->json();
     }
 
-    public function downloadUrl(string $documentId): ?string
+    public function obtenerUrlDescarga(string $idDocumento): ?string
     {
-        $documentCard = $this->getDocumentCard($documentId);
+        $tarjetaDocumento = $this->obtenerTarjetaDocumento($idDocumento);
 
-        return $documentCard['document_card']['download_url'] ?? null;
+        return $tarjetaDocumento['document_card']['download_url'] ?? null;
     }
 
-    public function previewUrl(string $documentId): ?string
+    public function obtenerUrlVista(string $idDocumento): ?string
     {
-        $documentCard = $this->getDocumentCard($documentId);
+        $tarjetaDocumento = $this->obtenerTarjetaDocumento($idDocumento);
 
-        return $documentCard['document_card']['preview_url'] ?? null;
+        return $tarjetaDocumento['document_card']['preview_url'] ?? null;
     }
 
-    public function isConfigured(): bool
+    public function estaConfigurado(): bool
     {
         return filled(config('pdfmonkey.api_key')) && filled(config('pdfmonkey.template_id'));
     }
 
-    public function buildMeta(array $parts = [], ?string $filename = null): array
+    public function construirMeta(array $partes = [], ?string $nombreArchivo = null): array
     {
-        $meta = $parts;
+        $meta = $partes;
 
-        if ($filename) {
-            $meta['_filename'] = $filename;
+        if ($nombreArchivo) {
+            $meta['_filename'] = $nombreArchivo;
         }
 
         return $meta;
     }
 
-    public function buildFilename(string $baseName): string
+    public function construirNombreArchivo(string $nombreBase): string
     {
-        $prefix = trim((string) config('pdfmonkey.default_filename_prefix', 'spotstay'));
-        $sanitized = preg_replace('/[^A-Za-z0-9\-_. ]+/', '', $baseName) ?: 'documento';
+        $prefijo = trim((string) config('pdfmonkey.default_filename_prefix', 'spotstay'));
+        $sanitizado = preg_replace('/[^A-Za-z0-9\-_. ]+/', '', $nombreBase) ?: 'documento';
 
-        return trim($prefix . ' ' . $sanitized) . '.pdf';
+        return trim($prefijo . ' ' . $sanitizado) . '.pdf';
     }
 
-    private function request()
+    private function solicitud()
     {
         return Http::baseUrl((string) config('pdfmonkey.base_url'))
             ->acceptJson()

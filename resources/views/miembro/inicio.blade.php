@@ -55,8 +55,8 @@
         <div class="contenedor-nav">
             <ul class="lista-nav">
                 <li><a href="#" class="enlace-nav activo"><i class="bi bi-house-door"></i> Inicio</a></li>
-                <li><a href="{{ route('miembro.registrar-propiedad') }}" class="enlace-nav"><i class="bi bi-plus-circle"></i> Convertir en Arrendador</a></li>
-                <li><a href="{{ route('miembro.mensajes.index') }}" class="enlace-nav"><i class="bi bi-mensajes-dots"></i> Mensajes</a></li>
+                <li><a href="{{ route('miembro.arrendador.formulario') }}" class="enlace-nav"><i class="bi bi-plus-circle"></i> Convertir en Arrendador</a></li>
+                <li><a href="{{ route('miembro.mensajes.index') }}" class="enlace-nav"><i class="bi bi-chat-dots"></i> Mensajes</a></li>
                 <li><a href="#" class="enlace-nav"><i class="bi bi-gear"></i> Configuración</a></li>
                 @if ($esInquilino)
                 <li><a href="{{ route('gestionar_propiedades') }}" class="enlace-nav"><i class="bi bi-building-gear"></i> Gestionar</a></li>

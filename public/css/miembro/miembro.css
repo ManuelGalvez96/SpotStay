@@ -1140,7 +1140,8 @@ body.pagina-miembro {
 	display: none;
 	/* Oculto por defecto */
 	flex-direction: column;
-	z-index: 100;
+	z-index: 999;
+	pointer-events: auto;
 }
 
 .submenu-perfil.activo {
@@ -1328,5 +1329,113 @@ body.pagina-miembro {
 	.mensajes-panel {
 		height: auto;
 		min-height: 0;
+	}
+}
+
+/* ===== FORMULARIOS DE SOLICITUD ===== */
+.solicitud-seccion {
+	width: 100%;
+}
+
+.solicitud-contenedor {
+	max-width: 980px;
+	width: 100%;
+	margin: 0 auto;
+}
+
+.solicitud-panel {
+	width: 100%;
+	padding: 24px;
+	gap: 16px;
+}
+
+.solicitud-formulario {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 16px;
+	align-items: start;
+}
+
+.solicitud-columna-doble {
+	grid-column: span 1;
+}
+
+.solicitud-columna-completa {
+	grid-column: 1 / -1;
+}
+
+.solicitud-alerta {
+	margin-bottom: 8px;
+	text-align: left;
+	border: 1px solid var(--borde);
+	background: #ffffff;
+}
+
+.solicitud-alerta p {
+	margin: 0;
+	font-size: 14px;
+}
+
+.solicitud-alerta-ok {
+	border-color: #1aa068;
+	background: #ecfbf4;
+	color: #136b4a;
+}
+
+.solicitud-alerta-error {
+	border-color: #ef4444;
+	background: #fff2f2;
+	color: #b42323;
+}
+
+.solicitud-check-label {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	font-size: 14px;
+	color: var(--texto);
+	line-height: 1.4;
+}
+
+.solicitud-check-label input[type="checkbox"] {
+	margin-top: 2px;
+	width: 16px;
+	height: 16px;
+}
+
+.solicitud-error {
+	min-height: 16px;
+	font-size: 12px;
+	font-weight: 600;
+	color: #c62828;
+}
+
+.solicitud-ayuda {
+	display: block;
+	font-size: 12px;
+	color: var(--texto-suave);
+	margin-top: -6px;
+}
+
+.solicitud-campo-error {
+	border-color: #e53935 !important;
+	box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.12) !important;
+}
+
+.solicitud-boton {
+	grid-column: 1 / -1;
+	margin-top: 6px;
+	max-width: 320px;
+}
+
+@media (max-width: 820px) {
+	.solicitud-formulario {
+		grid-template-columns: 1fr;
+	}
+
+	.solicitud-columna-doble,
+	.solicitud-columna-completa,
+	.solicitud-boton {
+		grid-column: 1 / -1;
 	}
 }

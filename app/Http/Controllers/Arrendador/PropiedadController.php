@@ -58,7 +58,6 @@ class PropiedadController extends Controller
             'id_arrendador_fk' => $arrendadorId,
             'id_gestor_fk' => $arrendadorId,
             'titulo_propiedad' => $datos['titulo_propiedad'],
-            'direccion_propiedad' => $datos['direccion_propiedad'],
             'ciudad_propiedad' => $datos['ciudad_propiedad'],
             'codigo_postal_propiedad' => $datos['codigo_postal_propiedad'],
             'latitud_propiedad' => $datos['latitud_propiedad'] ?? null,
@@ -68,6 +67,11 @@ class PropiedadController extends Controller
             'estado_propiedad' => $datos['estado_propiedad'],
             'actualizado_propiedad' => Carbon::now(),
         ];
+
+        $datosPropiedad = array_merge(
+            $datosPropiedad,
+            $this->mapearDireccionParaGuardar($datos['direccion_propiedad'])
+        );
 
         if ($propiedadId > 0) {
             $existe = DB::table('tbl_propiedad')
@@ -166,7 +170,12 @@ class PropiedadController extends Controller
             ->join('tbl_usuario as arrendador', 'arrendador.id_usuario', '=', 'p.id_arrendador_fk')
             ->where('p.id_propiedad', $id)
             ->where('p.id_arrendador_fk', $arrendadorId)
-            ->select('p.*', 'arrendador.nombre_usuario as nombre_arrendador', 'arrendador.email_usuario as email_arrendador')
+            ->select(
+                'p.*',
+                DB::raw($this->obtenerSelectDireccionPropiedad('p')),
+                'arrendador.nombre_usuario as nombre_arrendador',
+                'arrendador.email_usuario as email_arrendador'
+            )
             ->first();
 
         if (!$propiedad) {
@@ -194,7 +203,7 @@ class PropiedadController extends Controller
             ->select(
                 'p.id_propiedad',
                 'p.titulo_propiedad',
-                'p.direccion_propiedad',
+                DB::raw($this->obtenerSelectDireccionPropiedad('p')),
                 'p.ciudad_propiedad',
                 'p.codigo_postal_propiedad',
                 'p.estado_propiedad',
@@ -213,7 +222,7 @@ class PropiedadController extends Controller
             ->select(
                 'id_propiedad',
                 'titulo_propiedad',
-                'direccion_propiedad',
+                DB::raw($this->obtenerSelectDireccionPropiedad('tbl_propiedad')),
                 'ciudad_propiedad',
                 'codigo_postal_propiedad',
                 'latitud_propiedad',
@@ -286,6 +295,75 @@ class PropiedadController extends Controller
         }
 
         return 'precio_propiedad';
+    }
+
+    private function normalizarGastos(?string $gastos): ?string
+    {
+        if ($gastos === null || trim($gastos) === '') {
+            return null;
+        }
+
+        $decodificado = json_decode($gastos, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return json_encode($decodificado);
+        }
+
+        return $gastos;
+    }
+
+    private function obtenerSelectDireccionPropiedad(string $aliasTabla = 'p'): string
+    {
+        if (Schema::hasColumn('tbl_propiedad', 'direccion_propiedad')) {
+            return "{$aliasTabla}.direccion_propiedad as direccion_propiedad";
+        }
+
+        $partes = [];
+        foreach (['calle_propiedad', 'numero_propiedad', 'piso_propiedad', 'puerta_propiedad'] as $columna) {
+            if (Schema::hasColumn('tbl_propiedad', $columna)) {
+                $partes[] = "NULLIF(TRIM({$aliasTabla}.{$columna}), '')";
+            }
+        }
+
+        if (empty($partes)) {
+            return "'' as direccion_propiedad";
+        }
+
+        return 'TRIM(CONCAT_WS(\' \' , ' . implode(', ', $partes) . ')) as direccion_propiedad';
+    }
+
+    private function mapearDireccionParaGuardar(string $direccion): array
+    {
+        $direccionLimpia = trim($direccion);
+
+        if (Schema::hasColumn('tbl_propiedad', 'direccion_propiedad')) {
+            return ['direccion_propiedad' => $direccionLimpia];
+        }
+
+        $partes = preg_split('/\s+/', $direccionLimpia);
+        $numero = '';
+
+        if (!empty($partes)) {
+            $ultimo = end($partes);
+            if (preg_match('/\d/', (string) $ultimo)) {
+                $numero = (string) $ultimo;
+                array_pop($partes);
+            }
+        }
+
+        $calle = trim(implode(' ', $partes));
+        if ($calle === '') {
+            $calle = $direccionLimpia;
+        }
+
+        $datos = [];
+        if (Schema::hasColumn('tbl_propiedad', 'calle_propiedad')) {
+            $datos['calle_propiedad'] = $calle;
+        }
+        if (Schema::hasColumn('tbl_propiedad', 'numero_propiedad')) {
+            $datos['numero_propiedad'] = $numero !== '' ? $numero : null;
+        }
+
+        return $datos;
     }
 
     private function obtenerInicialAvatar(?string $nombre): string

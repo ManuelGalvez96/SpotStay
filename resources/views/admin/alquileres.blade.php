@@ -115,16 +115,14 @@
 <div class="card-admin">
 
     <div class="tabla-header">
-        <span id="contadorAlquileres">{{ $alquileres->total() }} alquileres encontrados</span>
-        <div class="paginacion">
-            <button id="btnAnteriorAlq" class="btn-pag">← Anterior</button>
-            <span id="paginasAlq">
+        <span id="contadorAlquileres" class="info-paginacion">{{ $alquileres->total() }} alquileres encontrados</span>
+        <nav aria-label="Paginación de alquileres">
+            <ul class="pagination pagination-sm mb-0" id="paginasAlq">
                 @for($i = 1; $i <= min($alquileres->lastPage(), 3); $i++)
-                    <span class="pag-numero {{ $i === 1 ? 'activo' : '' }}" data-pagina="{{ $i }}">{{ $i }}</span>
+                    <li class="page-item {{ $i === 1 ? 'active' : '' }}"><button type="button" class="page-link" data-pagina="{{ $i }}">{{ $i }}</button></li>
                 @endfor
-            </span>
-            <button id="btnSiguienteAlq" class="btn-pag">Siguiente →</button>
-        </div>
+            </ul>
+        </nav>
     </div>
 
     <table class="tabla-admin" id="tablaAlquileres">

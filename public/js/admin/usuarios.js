@@ -113,44 +113,29 @@ var crearOsoValidacion = function() {
 
 /* Alert de éxito con oso */
 var mostrarAlertaExito = function(titulo, mensaje) {
-    Swal.fire({
-        title: titulo,
-        html: mensaje,
-        iconHtml: crearOsoExito(),
-        customClass: {
-            icon: 'oso-icon'
-        },
-        confirmButtonText: 'Ok',
-        confirmButtonColor: '#035498'
-    });
+    if (window.mostrarAlertaAdminExito) {
+        window.mostrarAlertaAdminExito(titulo, mensaje);
+        return;
+    }
+    window.alert(mensaje);
 };
 
 /* Alert de error con oso */
 var mostrarAlertaError = function(titulo, mensaje) {
-    Swal.fire({
-        title: titulo,
-        html: mensaje,
-        iconHtml: crearOsoError(),
-        customClass: {
-            icon: 'oso-icon'
-        },
-        confirmButtonText: 'Ok',
-        confirmButtonColor: '#d9534f'
-    });
+    if (window.mostrarAlertaAdminError) {
+        window.mostrarAlertaAdminError(titulo, mensaje);
+        return;
+    }
+    window.alert(mensaje);
 };
 
 /* Alert de validación fallida */
 var mostrarAlertaValidacion = function(mensaje) {
-    Swal.fire({
-        title: 'Validación',
-        html: mensaje,
-        iconHtml: crearOsoValidacion(),
-        customClass: {
-            icon: 'oso-icon'
-        },
-        confirmButtonText: 'Ok',
-        confirmButtonColor: '#f0ad4e'
-    });
+    if (window.mostrarAlertaAdminValidacion) {
+        window.mostrarAlertaAdminValidacion(mensaje);
+        return;
+    }
+    window.alert(mensaje);
 };
 
 
@@ -462,7 +447,7 @@ var abrirModal = function(id) {
     .catch(function(error) {
         console.error('Error en fetch abrirModal:', error);
         console.error('Error message:', error.message);
-        alert('Error al cargar datos del usuario: ' + error.message);
+        mostrarAlertaError('Error', 'Error al cargar datos del usuario: ' + error.message);
     });
 };
 
@@ -525,12 +510,12 @@ var toggleEstado = function(id) {
                 tr.classList.toggle('fila-inactiva');
             }
         } else {
-            mostrarAlertaError('Error', data.message || 'No se pudo cambiar el estado del usuario');
+            mostrarAlertaError('Error', data.message || 'No se pudo cambiar el estado del usuario ya que tiene contratos y/o propiedades asociadas');
         }
     })
     .catch(function(error) {
         console.error('Error en fetch toggle-estado:', error);
-        mostrarAlertaError('Error', 'No se pudo cambiar el estado del usuario');
+        mostrarAlertaError('Error', 'No se pudo cambiar el estado del usuario ya que tiene contratos y/o propiedades asociadas');
     });
 };
 
@@ -613,35 +598,16 @@ var editarUsuario = function(id) {
    Asigna eventos a los botones de paginación
    ================================================ */
 function asignarEventosPaginacion() {
-    var btnAnterior = document.getElementById('btnAnterior');
-    var btnSiguiente = document.getElementById('btnSiguiente');
-    var botonesNumero = document.querySelectorAll('.pag-numero');
-    
-    // Botón anterior
-    if (btnAnterior) {
-        btnAnterior.onclick = function(event) {
-            event.preventDefault();
-            if (paginaActual > 1) {
-                cambiarPagina(paginaActual - 1);
-            }
-        };
-    }
-    
-    // Botón siguiente
-    if (btnSiguiente) {
-        btnSiguiente.onclick = function(event) {
-            event.preventDefault();
-            cambiarPagina(paginaActual + 1);
-        };
-    }
-    
-    // Botones número de página
+    var botonesNumero = document.querySelectorAll('#paginas .page-link[data-pagina]');
+
     for (var i = 0; i < botonesNumero.length; i++) {
         var btnNum = botonesNumero[i];
         btnNum.onclick = function(event) {
             event.preventDefault();
             var pagina = parseInt(this.getAttribute('data-pagina'));
-            cambiarPagina(pagina);
+            if (!isNaN(pagina)) {
+                cambiarPagina(pagina);
+            }
         };
     }
 }
@@ -709,17 +675,30 @@ var actualizarPaginacion = function(paginaActual, totalPaginas) {
         return;
     }
     
-    // Limpiar botones anteriores
     paginasSpan.innerHTML = '';
     
-    // Crear botones de página
+    var crearItem = function(pagina, contenido, deshabilitado, activo) {
+        var li = document.createElement('li');
+        li.className = 'page-item' + (deshabilitado ? ' disabled' : '') + (activo ? ' active' : '');
+
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'page-link';
+        if (pagina !== null && pagina !== undefined) {
+            button.setAttribute('data-pagina', pagina);
+        }
+        button.innerHTML = contenido;
+        li.appendChild(button);
+        return li;
+    };
+
+    paginasSpan.appendChild(crearItem(paginaActual - 1, '<i class="bi bi-chevron-left"></i>', paginaActual <= 1, false));
+
     for (var i = 1; i <= totalPaginas; i++) {
-        var btn = document.createElement('button');
-        btn.className = 'pag-numero' + (i === paginaActual ? ' activo' : '');
-        btn.textContent = i;
-        btn.setAttribute('data-pagina', i);
-        paginasSpan.appendChild(btn);
+        paginasSpan.appendChild(crearItem(i, String(i), false, i === paginaActual));
     }
+
+    paginasSpan.appendChild(crearItem(paginaActual + 1, '<i class="bi bi-chevron-right"></i>', paginaActual >= totalPaginas, false));
 };
 
 /* ================================================

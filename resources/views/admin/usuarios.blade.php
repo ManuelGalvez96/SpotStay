@@ -95,22 +95,31 @@
 
 <!-- TABLA DE USUARIOS -->
 <div class="card-admin">
-    <div class="tabla-header">
-        <span id="contadorResultados">{{ number_format($totalUsuarios) }} usuarios encontrados</span>
-        <div class="paginacion">
-            <button id="btnAnterior" class="btn-pag">← Anterior</button>
-            <span id="paginas">
-                {{-- Generar botones de página dinámicamente --}}
-                @php
-                    $totalPages = $usuarios->lastPage() ?? 1;
-                    $paginaActual = $usuarios->currentPage() ?? 1;
-                @endphp
+    <div class="tabla-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <span id="contadorResultados" class="info-paginacion">{{ number_format($totalUsuarios) }} usuarios encontrados</span>
+    </div>
+
+    @php
+        $totalPages = $usuarios->lastPage() ?? 1;
+        $paginaActual = $usuarios->currentPage() ?? 1;
+    @endphp
+
+    <div class="tabla-paginacion-inicial d-flex justify-content-end mb-3">
+        <nav aria-label="Paginación de usuarios">
+            <ul class="pagination pagination-sm mb-0" id="paginas">
+                <li class="page-item {{ $paginaActual <= 1 ? 'disabled' : '' }}">
+                    <button type="button" class="page-link" data-pagina="{{ max(1, $paginaActual - 1) }}">←</button>
+                </li>
                 @for($i = 1; $i <= $totalPages; $i++)
-                    <button class="pag-numero {{ $paginaActual === $i ? 'activo' : '' }}" data-pagina="{{ $i }}">{{ $i }}</button>
+                    <li class="page-item {{ $paginaActual === $i ? 'active' : '' }}">
+                        <button type="button" class="page-link" data-pagina="{{ $i }}">{{ $i }}</button>
+                    </li>
                 @endfor
-            </span>
-            <button id="btnSiguiente" class="btn-pag">Siguiente →</button>
-        </div>
+                <li class="page-item {{ $paginaActual >= $totalPages ? 'disabled' : '' }}">
+                    <button type="button" class="page-link" data-pagina="{{ min($totalPages, $paginaActual + 1) }}">→</button>
+                </li>
+            </ul>
+        </nav>
     </div>
     
     <table class="tabla-admin" id="tablaUsuarios">
@@ -181,9 +190,6 @@
         </tbody>
     </table>
     
-    <div class="tabla-footer" id="tablaFooter">
-        <span>Mostrando {{ $usuarios->firstItem() ?? 0 }}-{{ $usuarios->lastItem() ?? 0 }} de {{ $totalUsuarios }} usuarios</span>
-    </div>
 </div>
 
 <!-- MODAL PERFIL DE USUARIO (Bootstrap 5) -->

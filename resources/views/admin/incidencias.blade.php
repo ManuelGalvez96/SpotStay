@@ -268,14 +268,12 @@
 
 <!-- Vista de Lista -->
 <div class="card-admin" id="vistaLista" style="display: none;">
-    <div class="tabla-header">
-        <span id="contadorResultados">0 incidencias encontradas</span>
-        <div class="paginacion">
-            <button id="btnAnteriorInc" class="btn-pag">← Anterior</button>
-            <span id="paginasInc">
-            </span>
-            <button id="btnSiguienteInc" class="btn-pag">Siguiente →</button>
-        </div>
+    <div class="tabla-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <span id="contadorResultados" class="info-paginacion">0 incidencias encontradas</span>
+        <nav aria-label="Paginación de incidencias">
+            <ul class="pagination pagination-sm mb-0" id="paginasInc">
+            </ul>
+        </nav>
     </div>
     <table class="tabla-admin" id="tablaIncidencias">
         <thead>
@@ -386,7 +384,6 @@
     </div>
 </div>
 
-<div class="modal-overlay-nueva" id="modalOverlayNueva"></div>
 <!-- MODAL NUEVA INCIDENCIA (Bootstrap 5) -->
 <div class="modal fade" id="modalNuevaIncidencia" tabindex="-1">
     <div class="modal-dialog modal-lg">

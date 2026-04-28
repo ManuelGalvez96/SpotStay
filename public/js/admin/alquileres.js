@@ -314,7 +314,9 @@ var asignarEventosModal = function() {
 
 var abrirModal = function(id) {
     if (!id) {
-        if (typeof Swal !== 'undefined') {
+        if (window.mostrarAlertaAdminError) {
+            window.mostrarAlertaAdminError('Error', 'Identificador de alquiler no válido.');
+        } else if (typeof Swal !== 'undefined') {
             Swal.fire({
                 icon: 'error',
                 title: 'No se pudo abrir el detalle',
@@ -364,7 +366,9 @@ var abrirModal = function(id) {
         }
     }).catch(function(error) {
         console.error('Error obteniendo alquiler:', error);
-        if (typeof Swal !== 'undefined') {
+        if (window.mostrarAlertaAdminError) {
+            window.mostrarAlertaAdminError('Error', error.message || 'Error al cargar el alquiler.');
+        } else if (typeof Swal !== 'undefined') {
             Swal.fire({
                 icon: 'error',
                 title: 'No se pudo abrir el detalle',
@@ -574,49 +578,75 @@ var cerrarModal = function() {
 };
 
 var aprobarAlquiler = function(id) {
-    if (!confirm('¿Aprobar este alquiler?')) return;
+    if (window.confirmarAdmin) {
+        window.confirmarAdmin('Aprobar alquiler', '¿Aprobar este alquiler?').then(function(confirmado) {
+            if (!confirmado) return;
 
-    var formData = new FormData();
-    formData.append('_token', csrfToken);
+            var formData = new FormData();
+            formData.append('_token', csrfToken);
 
-    fetch('/admin/alquiler/' + id + '/aprobar', {
-        method: 'POST',
-        body: formData
-    }).then(function(response) {
-        return response.json();
-    }).then(function(data) {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Error al aprobar: ' + (data.error || 'Unknown'));
-        }
-    }).catch(function(error) {
-        console.error('Error:', error);
-        alert('Error al aprobar el alquiler');
-    });
+            fetch('/admin/alquiler/' + id + '/aprobar', {
+                method: 'POST',
+                body: formData
+            }).then(function(response) {
+                return response.json();
+            }).then(function(data) {
+                if (data.success) {
+                    location.reload();
+                } else if (window.mostrarAlertaAdminError) {
+                    window.mostrarAlertaAdminError('Error', 'Error al aprobar: ' + (data.error || 'Unknown'));
+                } else {
+                    alert('Error al aprobar: ' + (data.error || 'Unknown'));
+                }
+            }).catch(function(error) {
+                console.error('Error:', error);
+                if (window.mostrarAlertaAdminError) {
+                    window.mostrarAlertaAdminError('Error', 'Error al aprobar el alquiler');
+                } else {
+                    alert('Error al aprobar el alquiler');
+                }
+            });
+        });
+    } else {
+        if (!confirm('¿Aprobar este alquiler?')) return;
+        aprobarAlquiler(id);
+    }
 };
 
 var rechazarAlquiler = function(id) {
-    if (!confirm('¿Rechazar este alquiler? Esta acción no se puede deshacer.')) return;
+    if (window.confirmarAdmin) {
+        window.confirmarAdmin('Rechazar alquiler', '¿Rechazar este alquiler? Esta acción no se puede deshacer.').then(function(confirmado) {
+            if (!confirmado) return;
 
-    var formData = new FormData();
-    formData.append('_token', csrfToken);
+            var formData = new FormData();
+            formData.append('_token', csrfToken);
 
-    fetch('/admin/alquiler/' + id + '/rechazar', {
-        method: 'POST',
-        body: formData
-    }).then(function(response) {
-        return response.json();
-    }).then(function(data) {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Error al rechazar: ' + (data.error || 'Unknown'));
-        }
-    }).catch(function(error) {
-        console.error('Error:', error);
-        alert('Error al rechazar el alquiler');
-    });
+            fetch('/admin/alquiler/' + id + '/rechazar', {
+                method: 'POST',
+                body: formData
+            }).then(function(response) {
+                return response.json();
+            }).then(function(data) {
+                if (data.success) {
+                    location.reload();
+                } else if (window.mostrarAlertaAdminError) {
+                    window.mostrarAlertaAdminError('Error', 'Error al rechazar: ' + (data.error || 'Unknown'));
+                } else {
+                    alert('Error al rechazar: ' + (data.error || 'Unknown'));
+                }
+            }).catch(function(error) {
+                console.error('Error:', error);
+                if (window.mostrarAlertaAdminError) {
+                    window.mostrarAlertaAdminError('Error', 'Error al rechazar el alquiler');
+                } else {
+                    alert('Error al rechazar el alquiler');
+                }
+            });
+        });
+    } else {
+        if (!confirm('¿Rechazar este alquiler? Esta acción no se puede deshacer.')) return;
+        rechazarAlquiler(id);
+    }
 };
 
 var eliminarAlquiler = function(id) {
@@ -632,6 +662,8 @@ var eliminarAlquiler = function(id) {
         }).then(function(data) {
             if (data.success) {
                 location.reload();
+            } else if (window.mostrarAlertaAdminError) {
+                window.mostrarAlertaAdminError('No se pudo eliminar', data.error || 'Error desconocido.');
             } else if (typeof Swal !== 'undefined') {
                 Swal.fire({
                     icon: 'error',
@@ -641,7 +673,9 @@ var eliminarAlquiler = function(id) {
             }
         }).catch(function(error) {
             console.error('Error:', error);
-            if (typeof Swal !== 'undefined') {
+            if (window.mostrarAlertaAdminError) {
+                window.mostrarAlertaAdminError('No se pudo eliminar', 'Error al eliminar el alquiler.');
+            } else if (typeof Swal !== 'undefined') {
                 Swal.fire({
                     icon: 'error',
                     title: 'No se pudo eliminar',
@@ -651,19 +685,9 @@ var eliminarAlquiler = function(id) {
         });
     };
 
-    if (typeof Swal !== 'undefined') {
-        Swal.fire({
-            title: '¿Eliminar alquiler?',
-            text: 'Esta acción no se puede deshacer.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#dc2626'
-        }).then(function(resultado) {
-            if (resultado.isConfirmed) {
-                ejecutarEliminacion();
-            }
+    if (window.confirmarAdmin) {
+        window.confirmarAdmin('Eliminar alquiler', '¿Eliminar alquiler? Esta acción no se puede deshacer.').then(function(confirmado) {
+            if (confirmado) ejecutarEliminacion();
         });
         return;
     }
@@ -1008,23 +1032,19 @@ var actualizarPaginacion = function(pagina, paginas) {
 
     var contenedor = document.getElementById('paginasAlq');
     if (!contenedor) return;
-
     var html = '';
+    html += '<li class="page-item' + (pagina <= 1 ? ' disabled' : '') + '"><button type="button" class="page-link" data-pagina="' + Math.max(1, pagina - 1) + '"><i class="bi bi-chevron-left"></i></button></li>';
     for (var i = 1; i <= paginas; i++) {
-        var clase = 'pag-numero' + (i === pagina ? ' activo' : '');
-        html += '<span class="' + clase + '" data-pagina="' + i + '">' + i + '</span>';
+        var activo = i === pagina ? ' active' : '';
+        html += '<li class="page-item' + activo + '"><button type="button" class="page-link" data-pagina="' + i + '">' + i + '</button></li>';
     }
+    html += '<li class="page-item' + (pagina >= paginas ? ' disabled' : '') + '"><button type="button" class="page-link" data-pagina="' + Math.min(paginas, pagina + 1) + '"><i class="bi bi-chevron-right"></i></button></li>';
     contenedor.innerHTML = html;
 
-    var btnsPaginas = contenedor.querySelectorAll('[data-pagina]');
-    btnsPaginas.forEach(function(btn) {
+    var botones = contenedor.querySelectorAll('.page-link[data-pagina]');
+    botones.forEach(function(btn) {
         btn.onclick = function() {
             cambiarPagina(parseInt(this.getAttribute('data-pagina')));
         };
     });
-
-    var btnAnterior = document.getElementById('btnAnteriorAlq');
-    var btnSiguiente = document.getElementById('btnSiguienteAlq');
-    if (btnAnterior) btnAnterior.disabled = pagina <= 1;
-    if (btnSiguiente) btnSiguiente.disabled = pagina >= paginas;
 };

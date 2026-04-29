@@ -3,36 +3,97 @@
 namespace App\Http\Controllers\Miembro;
 
 use App\Http\Controllers\Controller;
-use App\Models\Solicitud;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class SolicitudAlquilerController extends Controller
 {
     public function store(Request $request, $id)
     {
-        $request->validate([
-            'fecha_entrada' => ['required', 'date', 'after_or_equal:today'],
-            'mensaje' => ['nullable', 'string', 'max:1000'],
-        ]);
-
-        $propiedadExiste = DB::table('tbl_propiedad')
+        $propiedad = DB::table('tbl_propiedad')
             ->where('id_propiedad', $id)
-            ->exists();
+            ->first();
 
-        if (!$propiedadExiste) {
+        if (!$propiedad) {
             return redirect()->back()->with('error', 'La propiedad no existe.');
         }
 
-        Solicitud::create([
-            'propiedad_id' => $id,
-            'usuario_id' => Auth::id(),
-            'mensaje' => $request->input('mensaje'),
-            'fecha_entrada' => $request->input('fecha_entrada'),
-            'estado' => 'pendiente',
-        ]);
+        $usuario = Auth::user();
 
-        return redirect()->back()->with('success', 'Tu solicitud de alquiler se envió correctamente.');
+        if (!$usuario) {
+            return redirect('/login');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $idRolInquilino = DB::table('tbl_rol')
+                ->where('slug_rol', 'inquilino')
+                ->value('id_rol');
+
+            $debeCerrarSesion = false;
+
+            if ($idRolInquilino) {
+                $tieneRol = DB::table('tbl_rol_usuario')
+                    ->where('id_usuario_fk', $usuario->id_usuario)
+                    ->where('id_rol_fk', $idRolInquilino)
+                    ->exists();
+
+                if (!$tieneRol) {
+                    DB::table('tbl_rol_usuario')->insert([
+                        'id_usuario_fk' => $usuario->id_usuario,
+                        'id_rol_fk' => $idRolInquilino,
+                        'asignado_rol_usuario' => Carbon::now(),
+                    ]);
+
+                    $debeCerrarSesion = true;
+                }
+            }
+
+            $existeAlquilerActivo = DB::table('tbl_alquiler')
+                ->where('id_propiedad_fk', $id)
+                ->whereIn('estado_alquiler', ['pendiente', 'activo'])
+                ->exists();
+
+            if ($existeAlquilerActivo) {
+                DB::rollBack();
+                return redirect()->back()->with('error', 'Esta propiedad ya tiene un alquiler activo o pendiente.');
+            }
+
+            DB::table('tbl_alquiler')->insert([
+                'id_propiedad_fk' => $id,
+                'id_inquilino_fk' => $usuario->id_usuario,
+                'fecha_inicio_alquiler' => Carbon::today()->toDateString(),
+                'fecha_fin_alquiler' => null,
+                'precio_alquiler' => $propiedad->precio_propiedad,
+                'estado_alquiler' => 'activo',
+                'aprobado_alquiler' => Carbon::now(),
+                'creado_alquiler' => Carbon::now(),
+                'actualizado_alquiler' => Carbon::now(),
+            ]);
+
+            DB::table('tbl_propiedad')
+                ->where('id_propiedad', $id)
+                ->update([
+                    'estado_propiedad' => 'alquilada',
+                ]);
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'No se pudo completar el alquiler.');
+        }
+
+        if ($debeCerrarSesion) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect('/login');
+        }
+
+        return redirect('/inquilino/gestionar-propiedades');
     }
 }

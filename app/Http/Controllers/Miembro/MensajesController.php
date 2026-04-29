@@ -10,19 +10,19 @@ use App\Models\Propiedad;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class MensajesController extends Controller
 {
     public function index()
     {
         $usuarioId = Auth::id();
-
         $conversaciones = $this->obtenerConversacionesUsuario($usuarioId);
 
         return view('miembro.mensajes', [
             'conversaciones' => $conversaciones,
             'conversacionActiva' => null,
-            'mensajes' => collect(),
+            'mensajes' => collect()
         ]);
     }
 
@@ -48,7 +48,7 @@ class MensajesController extends Controller
         return view('miembro.mensajes', [
             'conversaciones' => $conversaciones,
             'conversacionActiva' => $conversacionActiva,
-            'mensajes' => $conversacionActiva->mensajes,
+            'mensajes' => $conversacionActiva->mensajes
         ]);
     }
 

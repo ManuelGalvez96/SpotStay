@@ -4,15 +4,25 @@ namespace App\Http\Controllers\Miembro;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
     public function index(Request $request)
     {
-        $usuario = auth()->user();
+        // El usuario se obtiene del Auth global si es necesario para lógica interna
+        $usuario = Auth::user();
 
-        // Busca propiedades publicadas y aplica filtros del panel
+        // Obtener ciudades para el filtro
+        $ciudades = DB::table('tbl_propiedad')
+            ->where('estado_propiedad', 'publicada')
+            ->whereNotNull('ciudad_propiedad')
+            ->distinct()
+            ->orderBy('ciudad_propiedad')
+            ->pluck('ciudad_propiedad');
+
+        // Consulta base para propiedades
         $query = DB::table('tbl_propiedad')
             ->select(
                 'id_propiedad',
@@ -24,13 +34,9 @@ class HomeController extends Controller
             )
             ->where('estado_propiedad', 'publicada');
 
-        if ($request->filled('buscador')) {
-            $texto = trim((string) $request->buscador);
-            $query->where(function ($subQuery) use ($texto) {
-                $subQuery->where('ciudad_propiedad', 'like', '%' . $texto . '%')
-                    ->orWhere('titulo_propiedad', 'like', '%' . $texto . '%')
-                    ->orWhereRaw("CONCAT_WS(' ', calle_propiedad, numero_propiedad, piso_propiedad, puerta_propiedad) like ?", ['%' . $texto . '%']);
-            });
+        // Filtros dinámicos
+        if ($request->filled('ciudad')) {
+            $query->where('ciudad_propiedad', $request->ciudad);
         }
 
         if ($request->filled('precio_minimo')) {
@@ -46,14 +52,60 @@ class HomeController extends Controller
         }
 
         if ($request->filled('habitaciones')) {
-            $query->where('habitaciones_propiedad', trim((string) $request->habitaciones));
+            if ($request->habitaciones === '4+') {
+                $query->where('habitaciones_propiedad', '>=', 4);
+            } else {
+                $query->where('habitaciones_propiedad', (int) $request->habitaciones);
+            }
+        }
+
+        if ($request->filled('banos')) {
+            if ($request->banos === '4+') {
+                $query->where('banos_propiedad', '>=', 4);
+            } else {
+                $query->where('banos_propiedad', (int) $request->banos);
+            }
+        }
+
+        if ($request->filled('metros_minimo')) {
+            $query->where('metros_cuadrados_propiedad', '>=', (int) $request->metros_minimo);
+        }
+
+        if ($request->filled('metros_maximo')) {
+            $query->where('metros_cuadrados_propiedad', '<=', (int) $request->metros_maximo);
+        }
+
+        // Filtros booleanos (servicios)
+        $servicios = [
+            'amueblado', 'terraza', 'piscina', 'garaje', 
+            'ascensor', 'aire_acondicionado', 'calefaccion', 'trastero'
+        ];
+
+        foreach ($servicios as $servicio) {
+            if ($request->filled($servicio)) {
+                $query->where($servicio . '_propiedad', (int) $request->$servicio);
+            }
         }
 
         $propiedades = $query->orderByDesc('id_propiedad')->get();
 
+        // Respuesta para AJAX
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Listado cargado correctamente.',
+                'data' => [
+                    'propiedades' => $propiedades,
+                    'total' => count($propiedades)
+                ]
+            ], 200);
+        }
+
+        // Carga de la vista normal (Ya no pasamos variables de usuario, vienen del ViewComposer)
         return view('miembro.inicio', [
             'propiedades' => $propiedades,
             'totalPropiedades' => count($propiedades),
+            'ciudades' => $ciudades
         ]);
     }
 }

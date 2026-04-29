@@ -7,6 +7,7 @@ use App\Models\SolicitudArrendador;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SolicitudArrendadorController extends Controller
 {
@@ -41,6 +42,13 @@ class SolicitudArrendadorController extends Controller
             ->exists();
 
         if ($tienePendiente) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ya tienes una solicitud pendiente de revisión.'
+                ], 409);
+            }
+
             return redirect()
                 ->back()
                 ->withInput()
@@ -70,6 +78,13 @@ class SolicitudArrendadorController extends Controller
             'creado_solicitud_arrendador' => $ahora,
             'actualizado_solicitud_arrendador' => $ahora,
         ]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitud enviada correctamente. Un administrador la revisará pronto.'
+            ]);
+        }
 
         return redirect()
             ->route('miembro.arrendador.formulario')

@@ -221,55 +221,54 @@ function cerrarIncidencia(idIncidencia) {
     });
 }
 
-// Inicialización general al cargar la ventana
-window.onload = () => {
-    inicializarPagosInquilino();
-    
-    // Si existen temporizadores en la página
-    if (typeof iniciarTemporizadorAlquileres === 'function') {
-        iniciarTemporizadorAlquileres();
-        setInterval(iniciarTemporizadorAlquileres, 60000);
-    }
+// Inicialización directa (los scripts se cargan al final del body en el layout)
+inicializarPagosInquilino();
 
-    // Si existe el formulario de reporte
-    const formularioReportar = document.getElementById('form-reportar-incidencia');
-    if (formularioReportar) {
-        formularioReportar.onsubmit = (evento) => {
-            evento.preventDefault();
-            const botonEnviar = document.getElementById('boton-enviar');
-            const textoOriginal = botonEnviar.innerText;
-            botonEnviar.disabled = true;
-            botonEnviar.innerText = 'Enviando...';
+// Si existen temporizadores en la página
+if (typeof iniciarTemporizadorAlquileres === 'function') {
+    iniciarTemporizadorAlquileres();
+    setInterval(iniciarTemporizadorAlquileres, 60000);
+}
 
-            fetch(formularioReportar.getAttribute('action'), {
-                method: 'POST',
-                body: new FormData(formularioReportar),
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(r => r.json())
-            .then(datos => {
-                if (datos.success) {
-                    formularioReportar.reset();
-                    bootstrap.Modal.getInstance(document.getElementById('modalReportar'))?.hide();
-                    Swal.fire({ title: '¡Reportada!', text: 'Se ha registrado correctamente.', iconHtml: crearOsoExito(), customClass: { icon: 'oso-icon' }, confirmButtonColor: '#035498' });
-                    if (typeof cargarIncidenciasFiltradasFetch === 'function') cargarIncidenciasFiltradasFetch();
-                }
-            })
-            .finally(() => {
-                botonEnviar.disabled = false;
-                botonEnviar.innerText = textoOriginal;
-            });
-        };
-    }
-    // Si existen filtros de incidencias
-    const filtroAutor = document.getElementById('filtro-autor');
-    const filtroEstado = document.getElementById('filtro-estado');
-    if (filtroAutor) filtroAutor.onchange = cargarIncidencias;
-    if (filtroEstado) filtroEstado.onchange = cargarIncidencias;
+// Si existe el formulario de reporte
+const formularioReportar = document.getElementById('form-reportar-incidencia');
+if (formularioReportar) {
+    formularioReportar.onsubmit = (evento) => {
+        evento.preventDefault();
+        const botonEnviar = document.getElementById('boton-enviar');
+        const textoOriginal = botonEnviar.innerText;
+        botonEnviar.disabled = true;
+        botonEnviar.innerText = 'Enviando...';
 
-    // Carga inicial de incidencias
-    cargarIncidencias();
-};
+        fetch(formularioReportar.getAttribute('action'), {
+            method: 'POST',
+            body: new FormData(formularioReportar),
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(datos => {
+            if (datos.success) {
+                formularioReportar.reset();
+                bootstrap.Modal.getInstance(document.getElementById('modalReportar'))?.hide();
+                Swal.fire({ title: '¡Reportada!', text: 'Se ha registrado correctamente.', iconHtml: crearOsoExito(), customClass: { icon: 'oso-icon' }, confirmButtonColor: '#035498' });
+                if (typeof cargarIncidenciasFiltradasFetch === 'function') cargarIncidenciasFiltradasFetch();
+            }
+        })
+        .finally(() => {
+            botonEnviar.disabled = false;
+            botonEnviar.innerText = textoOriginal;
+        });
+    };
+}
+// Si existen filtros de incidencias
+const filtroAutor = document.getElementById('filtro-autor');
+const filtroEstado = document.getElementById('filtro-estado');
+if (filtroAutor) filtroAutor.onchange = cargarIncidencias;
+if (filtroEstado) filtroEstado.onchange = cargarIncidencias;
+
+// Carga inicial de incidencias
+cargarIncidencias();
+
 
 /**
  * Carga la lista de incidencias filtrada desde el servidor

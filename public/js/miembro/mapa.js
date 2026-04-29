@@ -2,13 +2,19 @@ var mapa;
 var capaMarcadores;
 var capaPoligonos;
 var rutaApiPropiedades = "/miembro/mapa/propiedades";
+// Si hay otro window.onload, lo ejecuta antes de este.
+var anteriorOnload = window.onload;
 
 window.onload = function () {
+	if (typeof anteriorOnload === 'function') {
+		anteriorOnload();
+	}
+
 	iniciarMapa();
-	configurarFiltros();
 };
 
 function iniciarMapa() {
+	// Configura Leaflet y deja el mapa listo para pintar marcadores.
 	var centroInicial = [41.38684, 2.16959];
 	mapa = L.map("mapa", {
 		zoomControl: false,
@@ -24,70 +30,115 @@ function iniciarMapa() {
 	capaMarcadores = L.layerGroup().addTo(mapa);
 	capaPoligonos = L.layerGroup().addTo(mapa);
 
-	cargarPropiedades();
+	var ids = [
+		'ciudad-propiedad',
+		'precio-minimo',
+		'precio-maximo',
+		'tipo-inmueble',
+		'numero-habitaciones',
+		'banos-propiedad',
+		'metros-minimo',
+		'metros-maximo',
+		'amueblado-propiedad',
+		'terraza-propiedad',
+		'piscina-propiedad',
+		'garaje-propiedad',
+		'ascensor-propiedad',
+		'aire-acondicionado-propiedad',
+		'calefaccion-propiedad',
+		'trastero-propiedad'
+	];
 
-	mapa.on("moveend", function () {
-		cargarPropiedades();
-	});
-}
+	var ejecutarBusqueda = function () {
+		// Construye la query con filtros + limites del mapa.
+		var parametros = new URLSearchParams();
+		var i;
 
-function configurarFiltros() {
-	if (!window.FiltrosMiembro || typeof window.FiltrosMiembro.registrarBotonAplicar !== "function") {
-		return;
-	}
+		// Recorre cada filtro y lo anade si tiene valor.
+		for (i = 0; i < ids.length; i++) {
+			var campo = document.getElementById(ids[i]);
+			if (campo && campo.value !== '') {
+				parametros.append(campo.name || ids[i], campo.value);
+			}
+		}
 
-	window.FiltrosMiembro.registrarBotonAplicar("boton-aplicar-filtros", cargarPropiedades);
-}
+		// Limites visibles del mapa para acotar resultados.
+		var limites = mapa.getBounds();
+		// Latitud y longitud min/max en la vista actual.
+		parametros.append('lat_min', limites.getSouthWest().lat);
+		parametros.append('lat_max', limites.getNorthEast().lat);
+		parametros.append('lng_min', limites.getSouthWest().lng);
+		parametros.append('lng_max', limites.getNorthEast().lng);
 
-function obtenerFiltros() {
-	if (!window.FiltrosMiembro || typeof window.FiltrosMiembro.obtenerFiltrosMapa !== "function") {
-		return {};
-	}
+		// Convierte los parametros a query string.
+		var query = parametros.toString();
+		var url = rutaApiPropiedades + (query !== '' ? '?' + query : '');
 
-	return window.FiltrosMiembro.obtenerFiltrosMapa();
-}
+		// Pide propiedades filtradas en formato JSON.
+		fetch(url, {
+			headers: {
+				Accept: 'application/json'
+			}
+		})
+			.then(function (respuesta) {
+				if (!respuesta.ok) {
+					throw new Error('No se pudo cargar el mapa');
+				}
 
-function cargarPropiedades() {
-	if (!mapa) {
-		return;
-	}
-
-	var filtros = obtenerFiltros();
-	var limites = mapa.getBounds();
-
-	var parametros = {
-		lat_min: limites.getSouthWest().lat,
-		lat_max: limites.getNorthEast().lat,
-		lng_min: limites.getSouthWest().lng,
-		lng_max: limites.getNorthEast().lng,
-		precio_minimo: filtros.precio_minimo || "",
-		precio_maximo: filtros.precio_maximo || "",
-		tipo_inmueble: filtros.tipo_inmueble || "",
-		habitaciones: filtros.habitaciones || "",
-		metros_minimo: filtros.metros_minimo || "",
-		metros_maximo: filtros.metros_maximo || "",
+				return respuesta.json();
+			})
+			.then(function (datos) {
+				var propiedades = datos.data ? datos.data : datos;
+				renderizarMarcadores(propiedades || []);
+			})
+			.catch(function () {
+				renderizarMarcadores([]);
+			});
 	};
 
-	var url = rutaApiPropiedades + "?" + new URLSearchParams(parametros).toString();
+	var formulario = document.getElementById('form-filtros-mapa');
+	var boton = document.getElementById('boton-aplicar-filtros');
+	var botonBorrar = document.getElementById('boton-borrar-filtros');
 
-	fetch(url, {
-		headers: {
-			Accept: "application/json",
-		},
-	})
-		.then(function (respuesta) {
-			if (!respuesta.ok) {
-				throw new Error("Respuesta invalida del servidor");
+	if (formulario) {
+		// Evita recargar pagina y aplica filtros con fetch.
+		formulario.onsubmit = function (evento) {
+			evento.preventDefault();
+			ejecutarBusqueda();
+		};
+	}
+
+	if (boton) {
+		// Aplica filtros con un click del usuario.
+		boton.onclick = function (evento) {
+			if (evento) {
+				evento.preventDefault();
 			}
-			return respuesta.json();
-		})
-		.then(function (datos) {
-			var propiedades = datos.data ? datos.data : datos;
-			renderizarMarcadores(propiedades || []);
-		})
-		.catch(function () {
-			renderizarMarcadores([]);
-		});
+			ejecutarBusqueda();
+		};
+	}
+
+	if (botonBorrar) {
+		// Limpia los campos y vuelve a cargar el mapa.
+		botonBorrar.onclick = function (evento) {
+			var i;
+
+			if (evento) {
+				evento.preventDefault();
+			}
+
+			for (i = 0; i < ids.length; i++) {
+				var campo = document.getElementById(ids[i]);
+				if (campo) {
+					campo.value = '';
+				}
+			}
+
+			ejecutarBusqueda();
+		};
+	}
+
+	ejecutarBusqueda();
 }
 
 function renderizarMarcadores(propiedades) {

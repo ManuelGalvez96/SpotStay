@@ -130,37 +130,53 @@ class AlquilerSeeder extends Seeder
             }
         }
 
-        // Asegurar que el usuario snebot@spotstay.com tenga al menos un alquiler activo
+        // Asegurar que Sergi Nebot comparta la misma propiedad con otro inquilino aleatorio
         $usuarioSnebot = Usuario::where('email_usuario', 'snebot@spotstay.com')->first();
-        if ($usuarioSnebot) {
-            $propiedadParaSnebot = Propiedad::where('id_arrendador_fk', '<>', $usuarioSnebot->id_usuario)
-                ->inRandomOrder()
-                ->first() ?? Propiedad::first();
 
-            if ($propiedadParaSnebot) {
-                $fechaInicio = now()->subMonth()->day(27);
+        if ($usuarioSnebot) {
+            // Buscamos otro inquilino aleatorio que no sea Sergi
+            $companeroAleatorio = Usuario::whereHas('roles', function ($q) {
+                $q->where('slug_rol', 'inquilino');
+            })->where('id_usuario', '<>', $usuarioSnebot->id_usuario)
+              ->inRandomOrder()
+              ->first();
+
+            // Elegimos una propiedad que no sea de Sergi
+            $propiedadCompartida = Propiedad::where('id_arrendador_fk', '<>', $usuarioSnebot->id_usuario)
+                ->inRandomOrder()
+                ->first();
+
+            if ($propiedadCompartida) {
+                $fechaInicio = now()->subMonth()->day(1);
                 $fechaFin = $fechaInicio->copy()->addYear();
                 $admin = $admins->isEmpty() ? null : $admins->random();
 
-                $alquiler = Alquiler::updateOrCreate(
-                    [
-                        'id_propiedad_fk' => $propiedadParaSnebot->id_propiedad,
-                        'id_inquilino_fk' => $usuarioSnebot->id_usuario,
-                    ],
-                    [
-                        'fecha_inicio_alquiler' => $fechaInicio->format('Y-m-d'),
-                        'fecha_fin_alquiler' => $fechaFin->format('Y-m-d'),
-                        'estado_alquiler' => 'activo',
-                        'id_admin_aprueba_fk' => $admin?->id_usuario,
-                        'aprobado_alquiler' => $fechaInicio->copy()->subDays(5),
-                        'creado_alquiler' => $fechaInicio->copy()->subDays(10),
-                        'actualizado_alquiler' => now(),
-                    ]
-                );
+                $inquilinosCompartidos = [$usuarioSnebot, $companeroAleatorio];
 
-                if ($alquiler) {
-                    $this->generarCuotas($alquiler);
+                foreach ($inquilinosCompartidos as $inquilino) {
+                    $alquiler = Alquiler::updateOrCreate(
+                        [
+                            'id_propiedad_fk' => $propiedadCompartida->id_propiedad,
+                            'id_inquilino_fk' => $inquilino->id_usuario,
+                        ],
+                        [
+                            'fecha_inicio_alquiler' => $fechaInicio->format('Y-m-d'),
+                            'fecha_fin_alquiler' => $fechaFin->format('Y-m-d'),
+                            'estado_alquiler' => 'activo',
+                            'id_admin_aprueba_fk' => $admin?->id_usuario,
+                            'aprobado_alquiler' => $fechaInicio->copy()->subDays(5),
+                            'creado_alquiler' => $fechaInicio->copy()->subDays(10),
+                            'actualizado_alquiler' => now(),
+                        ]
+                    );
+
+                    if ($alquiler) {
+                        $this->generarCuotas($alquiler);
+                    }
                 }
+                
+                // Marcar la propiedad como alquilada
+                $propiedadCompartida->update(['estado_propiedad' => 'alquilada']);
             }
         }
     }

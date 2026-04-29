@@ -60,17 +60,25 @@ const crearOsoPregunta = () => `
  * Función global para asignar eventos de pago a los formularios.
  */
 function inicializarPagosInquilino() {
-    const formularios = document.querySelectorAll('.form-pago-cuota, .form-pago-grid');
+    const botonesPagar = document.querySelectorAll('.btn-pago');
     
-    formularios.forEach(formulario => {
-        formulario.onsubmit = (evento) => {
-            evento.preventDefault();
+    botonesPagar.forEach(botonPagar => {
+        botonPagar.onclick = () => {
+            const formulario = botonPagar.closest('form');
+            if (!formulario) return;
 
-            const importe = formulario.getAttribute('data-monto') || 'la cuota';
+            const montoTotal = formulario.getAttribute('data-monto') || 'la cuota';
+            const conceptos = formulario.getAttribute('data-concepto');
+            
+            let mensajeAlerta = `Vas a proceder al pago de un total de ${montoTotal}.`;
+            if (conceptos && conceptos.trim() !== "") {
+                mensajeAlerta += `<br><small>Correspondiente a: <b>${conceptos}</b></small>`;
+            }
+            mensajeAlerta += `<br><br>¿Deseas continuar?`;
             
             Swal.fire({
-                title: '¿Realizar pago?',
-                text: `Vas a proceder al pago de ${importe} correspondiente al alquiler.`,
+                title: '¿Confirmas el pago?',
+                html: mensajeAlerta,
                 iconHtml: crearOsoPregunta(),
                 customClass: { icon: 'oso-icon' },
                 showCancelButton: true,
@@ -80,15 +88,14 @@ function inicializarPagosInquilino() {
                 cancelButtonColor: '#6B7280'
             }).then((resultado) => {
                 if (resultado.isConfirmed) {
-                    const boton = formulario.querySelector('button');
-                    const textoOriginal = boton.innerText;
-                    boton.disabled = true;
-                    boton.innerText = 'Procesando...';
+                    const textoOriginal = botonPagar.innerText;
+                    botonPagar.disabled = true;
+                    botonPagar.innerText = 'Procesando...';
 
-                    const ruta = formulario.getAttribute('action');
-                    const fichaToken = formulario.querySelector('input[name="_token"]').value;
+                    const rutaEnvio = formulario.getAttribute('action');
+                    const fichaToken = document.querySelector('input[name="_token"]')?.value;
 
-                    fetch(ruta, {
+                    fetch(rutaEnvio, {
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': fichaToken,
@@ -101,7 +108,7 @@ function inicializarPagosInquilino() {
                         if (datos.success) {
                             Swal.fire({
                                 title: '¡Pago realizado!',
-                                text: 'Tu cuota ha sido abonada correctamente. ¡Gracias!',
+                                text: 'Tu cuota ha sido abonada correctamente. ¡Muchas gracias!',
                                 iconHtml: crearOsoExito(),
                                 customClass: { icon: 'oso-icon' },
                                 confirmButtonColor: '#035498'
@@ -111,26 +118,26 @@ function inicializarPagosInquilino() {
                         } else {
                             Swal.fire({
                                 title: 'Error en el pago',
-                                text: datos.message || 'No se pudo procesar el pago.',
+                                text: datos.message || 'No se pudo procesar el pago en este momento.',
                                 iconHtml: crearOsoError(),
                                 customClass: { icon: 'oso-icon' },
                                 confirmButtonColor: '#d9534f'
                             });
-                            boton.disabled = false;
-                            boton.innerText = textoOriginal;
+                            botonPagar.disabled = false;
+                            botonPagar.innerText = textoOriginal;
                         }
                     })
                     .catch(error => {
-                        console.error('Error:', error);
+                        console.error('Error en la petición de pago:', error);
                         Swal.fire({
                             title: 'Error de conexión',
-                            text: 'No se pudo conectar con el servidor de pagos.',
+                            text: 'No se pudo conectar con el servidor para procesar el pago.',
                             iconHtml: crearOsoError(),
                             customClass: { icon: 'oso-icon' },
                             confirmButtonColor: '#d9534f'
                         });
-                        boton.disabled = false;
-                        boton.innerText = textoOriginal;
+                        botonPagar.disabled = false;
+                        botonPagar.innerText = textoOriginal;
                     });
                 }
             });
@@ -138,73 +145,115 @@ function inicializarPagosInquilino() {
     });
 }
 
-// Exponemos la función a window
-window.inicializarPagosInquilino = inicializarPagosInquilino;
+/**
+ * Cargar detalle de una incidencia vía fetch y actualizar modal
+ */
+function cargarDetalleIncidencia(idIncidencia) {
+    const modalDetalle = document.getElementById('modal-detalle-incidencia');
+    if (!modalDetalle) return;
 
-window.onload = () => {
-    iniciarTemporizadorAlquileres();
-    cargarIncidencias();
-    inicializarPagosInquilino();
+    const cuerpoModal = modalDetalle.querySelector('.modal-body');
+    cuerpoModal.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Cargando...</p></div>';
 
-    setInterval(iniciarTemporizadorAlquileres, 60000);
-    setInterval(cargarIncidencias, 30000);
+    fetch(`../incidencia/${idIncidencia}/detalle`)
+        .then(respuesta => respuesta.json())
+        .then(datos => {
+            cuerpoModal.innerHTML = `
+                <div class="mb-3"><strong>Título:</strong> ${datos.titulo || '-'}</div>
+                <div class="mb-3"><strong>Descripción:</strong> <p>${datos.descripcion || '-'}</p></div>
+                <div class="row mb-3">
+                    <div class="col-md-6"><strong>Categoría:</strong> ${datos.categoria || '-'}</div>
+                    <div class="col-md-6"><strong>Prioridad:</strong> ${datos.prioridad || '-'}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6"><strong>Fecha:</strong> ${datos.fecha || '-'}</div>
+                    <div class="col-md-6"><strong>Estado:</strong> ${datos.estado || '-'}</div>
+                </div>`;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            cuerpoModal.innerHTML = '<div class="alert alert-danger">Error al cargar los detalles.</div>';
+        });
+}
 
-    const formularioReportar = document.getElementById('form-reportar-incidencia');
-    if (formularioReportar) {
-        formularioReportar.onsubmit = (evento) => {
-            evento.preventDefault();
-            const botonEnviar = formularioReportar.querySelector('#boton-enviar');
-            const textoOriginal = botonEnviar.innerText;
-
-            botonEnviar.disabled = true;
-            botonEnviar.innerText = 'Enviando...';
-
-            const datosFormulario = new FormData(formularioReportar);
-            const ruta = formularioReportar.getAttribute('action');
-
-            fetch(ruta, {
+/**
+ * Función para marcar una incidencia como resuelta
+ */
+function cerrarIncidencia(idIncidencia) {
+    Swal.fire({
+        title: '¿Confirmas la solución?',
+        text: '¿Seguro que quieres marcar esta incidencia como resuelta?',
+        iconHtml: crearOsoPregunta(),
+        customClass: { icon: 'oso-icon' },
+        showCancelButton: true,
+        confirmButtonText: 'Sí, resuelta',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#1AA068',
+        cancelButtonColor: '#6B7280'
+    }).then((resultado) => {
+        if (resultado.isConfirmed) {
+            const token = document.querySelector('input[name="_token"]')?.value;
+            fetch(`../incidencia/${idIncidencia}/cerrar`, {
                 method: 'POST',
-                body: datosFormulario,
                 headers: {
+                    'X-CSRF-TOKEN': token,
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .then(respuesta => respuesta.json())
-            .then(datos => {
-                if (datos.success) {
-                    formularioReportar.reset();
-                    const elementoModal = document.getElementById('modalReportar');
-                    const objetoModal = bootstrap.Modal.getInstance(elementoModal);
-                    if (objetoModal) objetoModal.hide();
-
+            .then(respuesta => {
+                if (respuesta.ok) {
                     Swal.fire({
-                        title: '¡Reportada!',
-                        text: 'La incidencia se ha registrado correctamente.',
+                        title: '¡Genial!',
+                        text: 'La incidencia se ha cerrado con éxito.',
                         iconHtml: crearOsoExito(),
                         customClass: { icon: 'oso-icon' },
                         confirmButtonColor: '#035498'
                     });
-
-                    cargarIncidencias();
-                } else {
-                    Swal.fire({
-                        title: 'Error',
-                        text: 'Error: ' + datos.message,
-                        iconHtml: crearOsoError(),
-                        customClass: { icon: 'oso-icon' },
-                        confirmButtonColor: '#d9534f'
-                    });
+                    if (typeof cargarIncidenciasFiltradasFetch === 'function') {
+                        cargarIncidenciasFiltradasFetch();
+                    } else if (typeof cargarIncidencias === 'function') {
+                        cargarIncidencias();
+                    }
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    title: 'Error',
-                    text: 'Ocurrió un error al enviar el reporte.',
-                    iconHtml: crearOsoError(),
-                    customClass: { icon: 'oso-icon' },
-                    confirmButtonColor: '#d9534f'
-                });
+            .catch(error => console.error('Error:', error));
+        }
+    });
+}
+
+// Inicialización general al cargar la ventana
+window.onload = () => {
+    inicializarPagosInquilino();
+    
+    // Si existen temporizadores en la página
+    if (typeof iniciarTemporizadorAlquileres === 'function') {
+        iniciarTemporizadorAlquileres();
+        setInterval(iniciarTemporizadorAlquileres, 60000);
+    }
+
+    // Si existe el formulario de reporte
+    const formularioReportar = document.getElementById('form-reportar-incidencia');
+    if (formularioReportar) {
+        formularioReportar.onsubmit = (evento) => {
+            evento.preventDefault();
+            const botonEnviar = document.getElementById('boton-enviar');
+            const textoOriginal = botonEnviar.innerText;
+            botonEnviar.disabled = true;
+            botonEnviar.innerText = 'Enviando...';
+
+            fetch(formularioReportar.getAttribute('action'), {
+                method: 'POST',
+                body: new FormData(formularioReportar),
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(datos => {
+                if (datos.success) {
+                    formularioReportar.reset();
+                    bootstrap.Modal.getInstance(document.getElementById('modalReportar'))?.hide();
+                    Swal.fire({ title: '¡Reportada!', text: 'Se ha registrado correctamente.', iconHtml: crearOsoExito(), customClass: { icon: 'oso-icon' }, confirmButtonColor: '#035498' });
+                    if (typeof cargarIncidenciasFiltradasFetch === 'function') cargarIncidenciasFiltradasFetch();
+                }
             })
             .finally(() => {
                 botonEnviar.disabled = false;
@@ -212,52 +261,63 @@ window.onload = () => {
             });
         };
     }
-
-    const modalDetalle = document.getElementById('modalDetalleIncidencia');
-    if (modalDetalle) {
-        // Usamos la propiedad directa para eventos de Bootstrap si es posible, 
-        // o lo manejamos mediante una función asignada que Bootstrap reconozca.
-        // En Bootstrap 5, los eventos se disparan sobre el elemento, usaremos un truco de compatibilidad:
-        modalDetalle.addEventListener('show.bs.modal', function (evento) {
-            const disparador = evento.relatedTarget;
-            const idIncidencia = disparador.getAttribute('data-id');
-
-            const capaCarga = modalDetalle.querySelector('#loading-detalle');
-            const contenedorContenido = modalDetalle.querySelector('#contenido-detalle');
-
-            if (capaCarga) capaCarga.style.display = 'block';
-            if (contenedorContenido) contenedorContenido.style.display = 'none';
-
-            fetch(`../incidencia/${idIncidencia}`)
-                .then(respuesta => respuesta.json())
-                .then(datos => {
-                    if (datos.error) {
-                        alert(datos.error);
-                        return;
-                    }
-
-                    modalDetalle.querySelector('#detalle-titulo').textContent = datos.titulo;
-                    modalDetalle.querySelector('#detalle-descripcion').textContent = datos.descripcion;
-                    modalDetalle.querySelector('#detalle-categoria').textContent = datos.categoria;
-                    modalDetalle.querySelector('#detalle-prioridad').textContent = datos.prioridad;
-                    modalDetalle.querySelector('#detalle-fecha').textContent = datos.fecha;
-
-                    if (capaCarga) capaCarga.style.display = 'none';
-                    if (contenedorContenido) contenedorContenido.style.display = 'block';
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al cargar los detalles de la incidencia.');
-                });
-        });
-    }
-
+    // Si existen filtros de incidencias
     const filtroAutor = document.getElementById('filtro-autor');
     const filtroEstado = document.getElementById('filtro-estado');
     if (filtroAutor) filtroAutor.onchange = cargarIncidencias;
     if (filtroEstado) filtroEstado.onchange = cargarIncidencias;
+
+    // Carga inicial de incidencias
+    cargarIncidencias();
 };
 
+/**
+ * Carga la lista de incidencias filtrada desde el servidor
+ */
+function cargarIncidencias() {
+    const contenedor = document.getElementById('contenedor-lista-incidencias');
+    if (!contenedor) return;
+
+    const idPropiedad = contenedor.getAttribute('data-propiedad-id');
+    const autor = document.getElementById('filtro-autor')?.value || 'todas';
+    const estado = document.getElementById('filtro-estado')?.value || 'todas';
+
+    contenedor.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Filtrando incidencias...</p></div>';
+
+    fetch(`../propiedad/${idPropiedad}/incidencias?autor=${encodeURIComponent(autor)}&estado=${encodeURIComponent(estado)}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(incidencias => {
+        if (incidencias.length === 0) {
+            contenedor.innerHTML = '<div class="p-4 text-center text-muted">No se encontraron incidencias.</div>';
+            return;
+        }
+
+        contenedor.innerHTML = incidencias.map(inc => `
+            <div class="item-incidencia">
+                <div class="incidencia-info">
+                    <span class="titulo" style="cursor:pointer" data-bs-toggle="modal" data-bs-target="#modal-detalle-incidencia" onclick="cargarDetalleIncidencia(${inc.id})">
+                        ${inc.titulo}
+                    </span>
+                    <span class="fecha">${inc.fecha}</span>
+                </div>
+                <div class="incidencia-acciones">
+                    <span class="estado-tag ${inc.estado}">${inc.estado_texto}</span>
+                    ${(inc.id_reporta == inc.auth_id && inc.estado != 'resuelta') ? 
+                        `<button type="button" class="btn-resolver" onclick="cerrarIncidencia(${inc.id})"><i class="bi bi-check-circle"></i></button>` : ''}
+                </div>
+            </div>`).join('');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        contenedor.innerHTML = '<div class="alert alert-danger">Error al cargar el listado.</div>';
+    });
+}
+
+/**
+ * Gestiona los temporizadores de fin de contrato en las tarjetas
+ */
 function iniciarTemporizadorAlquileres() {
     const nodosTemporizador = document.querySelectorAll('.js-tiempo-restante');
 
@@ -315,98 +375,6 @@ function iniciarTemporizadorAlquileres() {
             let horas = Math.floor(minutosTotales / 60);
             let minutos = minutosTotales % 60;
             nodo.innerText = `${horas}h ${minutos}m`;
-        }
-    });
-}
-
-function cargarIncidencias() {
-    const contenedor = document.getElementById('contenedor-lista-incidencias');
-    if (!contenedor) return;
-
-    const idPropiedad = contenedor.getAttribute('data-propiedad-id');
-    const autorSeleccionado = document.getElementById('filtro-autor')?.value || 'todas';
-    const estadoSeleccionado = document.getElementById('filtro-estado')?.value || 'todas';
-
-    contenedor.classList.add('lista-cargando');
-
-    fetch(`../propiedad/${idPropiedad}/incidencias?autor=${autorSeleccionado}&estado=${estadoSeleccionado}`)
-    .then(respuesta => respuesta.json())
-    .then(incidencias => {
-        setTimeout(() => {
-            contenedor.classList.remove('lista-cargando');
-            if (incidencias.length === 0) {
-                contenedor.innerHTML = '<div class="aviso-vacio"><p>No se encontraron incidencias con los filtros aplicados.</p></div>';
-                return;
-            }
-
-            let html = '';
-            incidencias.forEach(inc => {
-                const botonResolver = (inc.id_reporta == inc.auth_id && inc.estado != 'resuelta')
-                    ? `<button type="button" class="btn-resolver" title="Marcar como resuelta" onclick="cerrarIncidencia(${inc.id})"><i class="bi bi-check-circle"></i></button>`
-                    : '';
-
-                html += `
-                    <div class="item-incidencia">
-                        <div class="incidencia-info">
-                            <span class="titulo btn-detalle-incidencia" data-bs-toggle="modal" data-bs-target="#modalDetalleIncidencia" data-id="${inc.id}">${inc.titulo}</span>
-                            <span class="fecha">${inc.fecha}</span>
-                        </div>
-                        <div class="incidencia-acciones">
-                            <span class="estado-tag ${inc.estado}">${inc.estado_texto}</span>
-                            ${botonResolver}
-                        </div>
-                    </div>`;
-            });
-            contenedor.innerHTML = html;
-        }, 600);
-    })
-    .catch(error => {
-        contenedor.classList.remove('lista-cargando');
-        console.error('Error al cargar incidencias:', error);
-    });
-}
-
-function cerrarIncidencia(idIncidencia) {
-    Swal.fire({
-        title: '¿Confirmas la solución?',
-        text: '¿Seguro que quieres marcar esta incidencia como resuelta?',
-        iconHtml: crearOsoPregunta(),
-        customClass: { icon: 'oso-icon' },
-        showCancelButton: true,
-        confirmButtonText: 'Sí, resuelta',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#1AA068',
-        cancelButtonColor: '#6B7280'
-    }).then((resultado) => {
-        if (resultado.isConfirmed) {
-            fetch(`../incidencia/${idIncidencia}/cerrar`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(respuesta => {
-                if (respuesta.ok) {
-                    Swal.fire({
-                        title: '¡Genial!',
-                        text: 'La incidencia se ha cerrado con éxito.',
-                        iconHtml: crearOsoExito(),
-                        customClass: { icon: 'oso-icon' },
-                        confirmButtonColor: '#035498'
-                    });
-                    cargarIncidencias();
-                } else {
-                    Swal.fire({
-                        title: 'Error',
-                        text: 'No se pudo cerrar la incidencia.',
-                        iconHtml: crearOsoError(),
-                        customClass: { icon: 'oso-icon' },
-                        confirmButtonColor: '#d9534f'
-                    });
-                }
-            })
-            .catch(error => console.error('Error:', error));
         }
     });
 }

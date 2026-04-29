@@ -1,32 +1,32 @@
-document.addEventListener("DOMContentLoaded", function () {
+window.onload = () => {
     iniciarValidacionCrearUsuario();
-});
+};
 
 function iniciarValidacionCrearUsuario() {
     // --- REFERENCIAS DOM ---
-    const container = document.getElementById("mainContainer");
-    const face = document.getElementById("face-group");
+    const contenedor = document.getElementById("mainContainer");
+    const cara = document.getElementById("face-group");
 
     // Mensajes de error/estado
-    const eNombre = document.getElementById("error-nombre");
-    const eEmail = document.getElementById("error-email");
-    const eTelefono = document.getElementById("error-telefono");
-    const ePassword = document.getElementById("error-password");
-    const ePasswordConfirmation = document.getElementById("error-password-confirmation");
-    const sEmail = document.getElementById("disponibilidad-email");
-    const sTelefono = document.getElementById("disponibilidad-telefono");
+    const errorNombre = document.getElementById("error-nombre");
+    const errorEmail = document.getElementById("error-email");
+    const errorTelefono = document.getElementById("error-telefono");
+    const errorPassword = document.getElementById("error-password");
+    const errorPasswordConfirmacion = document.getElementById("error-password-confirmation");
+    const disponibilidadEmail = document.getElementById("disponibilidad-email");
+    const disponibilidadTelefono = document.getElementById("disponibilidad-telefono");
 
     // Inputs
-    const nombreInput = document.getElementById("nombre-usuario");
-    const emailInput = document.getElementById("email-usuario");
-    const telefonoInput = document.getElementById("telefono-usuario");
-    const passwordInput = document.getElementById("password-usuario");
-    const passwordConfirmationInput = document.getElementById("password-confirmation-usuario");
+    const entradaNombre = document.getElementById("nombre-usuario");
+    const entradaEmail = document.getElementById("email-usuario");
+    const entradaTelefono = document.getElementById("telefono-usuario");
+    const entradaPassword = document.getElementById("password-usuario");
+    const entradaPasswordConfirmacion = document.getElementById("password-confirmation-usuario");
     const botonEnviar = document.getElementById("boton-enviar");
 
     // Botones de visibilidad (Iconos de Ojo)
     const verPassword = document.getElementById("ver-password");
-    const verPasswordConfirmation = document.getElementById("ver-password-confirmacion");
+    const verPasswordConfirmacion = document.getElementById("ver-password-confirmacion");
 
     // SVG Icons
     const svgOjoAbierto = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
@@ -41,51 +41,49 @@ function iniciarValidacionCrearUsuario() {
 
     // --- VARIABLES DE ESTADO ---
     let emailDisponible = false;
-    let telefonoDisponible = false; // Ahora es obligatorio, empieza en false
-    let timeoutEmail = null;
-    let timeoutTelefono = null;
+    let telefonoDisponible = false;
+    let temporizadorEmail = null;
+    let temporizadorTelefono = null;
 
-    if (!nombreInput || !face) return;
+    if (!entradaNombre || !cara) return;
 
-    // --- FUNCIONES DEL YETI ---
+    // --- FUNCIONES DE LA MASCOTA (YETI) ---
 
-    const handleMove = (val) => {
-        const move = Math.min(Math.max((val.length - 12) * 0.6, -8), 8);
-        face.style.transform = `translateX(${move}px)`;
+    const gestionarMovimiento = (valor) => {
+        const movimiento = Math.min(Math.max((valor.length - 12) * 0.6, -8), 8);
+        cara.style.transform = `translateX(${movimiento}px)`;
     };
 
-    const resetFace = () => {
-        face.style.transform = `translateX(0px)`;
+    const reiniciarCara = () => {
+        cara.style.transform = `translateX(0px)`;
     };
 
-    const checkState = (input) => {
+    const comprobarEstadoVista = (input) => {
         if (input.type === "text") {
-            container.classList.remove("peek-active");
+            contenedor.classList.remove("peek-active");
         } else {
-            container.classList.add("peek-active");
+            contenedor.classList.add("peek-active");
         }
     };
 
     // --- FUNCIONES DE VALIDACIÓN ---
 
     function comprobarBoton() {
-        const nombre = nombreInput.value.trim();
-        const email = emailInput.value.trim();
-        const telefono = telefonoInput ? telefonoInput.value.trim() : "";
-        const password = passwordInput.value.trim();
-        const passwordConfirmation = passwordConfirmationInput.value.trim();
+        const nombre = entradaNombre.value.trim();
+        const email = entradaEmail.value.trim();
+        const telefono = entradaTelefono ? entradaTelefono.value.trim() : "";
+        const password = entradaPassword.value.trim();
+        const passwordConfirmacion = entradaPasswordConfirmacion.value.trim();
         const emailFormato = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const regexTel = /^\+\d{1,4} \d{6,11}$/;
 
         let nombreValido = nombre !== "" && nombre.length >= 3;
         let emailValido = email !== "" && emailFormato.test(email) && emailDisponible;
         let passwordValido = password !== "" && password.length >= 6;
-        let passwordConfirmationValido = passwordConfirmation !== "" && password === passwordConfirmation;
-
-        // Teléfono OBLIGATORIO: debe cumplir el formato Y estar disponible
+        let passwordConfirmacionValido = passwordConfirmacion !== "" && password === passwordConfirmacion;
         let telefonoValido = telefono !== "" && regexTel.test(telefono) && telefonoDisponible;
 
-        if (nombreValido && emailValido && passwordValido && passwordConfirmationValido && telefonoValido) {
+        if (nombreValido && emailValido && passwordValido && passwordConfirmacionValido && telefonoValido) {
             botonEnviar.disabled = false;
             botonEnviar.classList.remove("btn-login-desabilitado");
         } else {
@@ -95,50 +93,50 @@ function iniciarValidacionCrearUsuario() {
     }
 
     function comprobarNombre() {
-        const valor = nombreInput.value.trim();
+        const valor = entradaNombre.value.trim();
         if (valor === "") {
-            eNombre.innerText = "El nombre no puede estar vacío.";
+            errorNombre.innerText = "El nombre no puede estar vacío.";
         } else if (valor.length < 3) {
-            eNombre.innerText = "El nombre tiene que tener minimo 3 caracteres.";
+            errorNombre.innerText = "El nombre tiene que tener minimo 3 caracteres.";
         } else {
-            eNombre.innerText = "";
+            errorNombre.innerText = "";
         }
         comprobarBoton();
     }
 
     function comprobarEmail() {
-        const valor = emailInput.value.trim();
+        const valor = entradaEmail.value.trim();
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         if (valor === "") {
-            eEmail.innerText = "El correo electrónico es obligatorio.";
-            sEmail.innerText = "";
+            errorEmail.innerText = "El correo electrónico es obligatorio.";
+            disponibilidadEmail.innerText = "";
             emailDisponible = false;
             comprobarBoton();
             return;
         }
 
         if (!regex.test(valor)) {
-            eEmail.innerText = "Introduce un correo válido.";
-            sEmail.innerText = "";
+            errorEmail.innerText = "Introduce un correo válido.";
+            disponibilidadEmail.innerText = "";
             emailDisponible = false;
             comprobarBoton();
             return;
         }
 
-        eEmail.innerText = "";
-        clearTimeout(timeoutEmail);
-        timeoutEmail = setTimeout(() => {
+        errorEmail.innerText = "";
+        clearTimeout(temporizadorEmail);
+        temporizadorEmail = setTimeout(() => {
             fetch(`/admin/usuarios/check-email?email=${encodeURIComponent(valor)}`)
                 .then(r => r.json())
                 .then(data => {
                     if (data.disponible) {
-                        eEmail.innerText = "";
-                        sEmail.innerText = "Disponible.";
+                        errorEmail.innerText = "";
+                        disponibilidadEmail.innerText = "Disponible.";
                         emailDisponible = true;
                     } else {
-                        sEmail.innerText = "";
-                        eEmail.innerText = "Ya está en uso.";
+                        disponibilidadEmail.innerText = "";
+                        errorEmail.innerText = "Ya está en uso.";
                         emailDisponible = false;
                     }
                     comprobarBoton();
@@ -148,39 +146,39 @@ function iniciarValidacionCrearUsuario() {
     }
 
     function comprobarTelefono() {
-        if (!telefonoInput || !eTelefono || !sTelefono) return;
-        const valor = telefonoInput.value.trim();
+        if (!entradaTelefono || !errorTelefono || !disponibilidadTelefono) return;
+        const valor = entradaTelefono.value.trim();
         const regexTel = /^\+\d{1,4} \d{6,11}$/;
 
         if (valor === "") {
-            eTelefono.innerText = "El teléfono es obligatorio.";
-            sTelefono.innerText = "";
+            errorTelefono.innerText = "El teléfono es obligatorio.";
+            disponibilidadTelefono.innerText = "";
             telefonoDisponible = false;
             comprobarBoton();
             return;
         }
 
         if (!regexTel.test(valor)) {
-            eTelefono.innerText = "Formato: +34 600123456 (Prefijo + Espacio + 6 a 11 dígitos)";
-            sTelefono.innerText = "";
+            errorTelefono.innerText = "Formato: +34 600123456 (Prefijo + Espacio + 6 a 11 dígitos)";
+            disponibilidadTelefono.innerText = "";
             telefonoDisponible = false;
             comprobarBoton();
             return;
         }
 
-        eTelefono.innerText = "";
-        clearTimeout(timeoutTelefono);
-        timeoutTelefono = setTimeout(() => {
+        errorTelefono.innerText = "";
+        clearTimeout(temporizadorTelefono);
+        temporizadorTelefono = setTimeout(() => {
             fetch(`/admin/usuarios/check-telefono?telefono=${encodeURIComponent(valor)}`)
                 .then(r => r.json())
                 .then(data => {
                     if (data.disponible) {
-                        eTelefono.innerText = "";
-                        sTelefono.innerText = "Disponible.";
+                        errorTelefono.innerText = "";
+                        disponibilidadTelefono.innerText = "Disponible.";
                         telefonoDisponible = true;
                     } else {
-                        sTelefono.innerText = "";
-                        eTelefono.innerText = "Ya está en uso.";
+                        disponibilidadTelefono.innerText = "";
+                        errorTelefono.innerText = "Ya está en uso.";
                         telefonoDisponible = false;
                     }
                     comprobarBoton();
@@ -190,105 +188,99 @@ function iniciarValidacionCrearUsuario() {
     }
 
     function comprobarPassword() {
-        const valor = passwordInput.value.trim();
+        const valor = entradaPassword.value.trim();
         if (valor === "") {
-            ePassword.innerText = "La contraseña es obligatoria.";
+            errorPassword.innerText = "La contraseña es obligatoria.";
         } else if (valor.length < 6) {
-            ePassword.innerText = "Mínimo 6 caracteres.";
+            errorPassword.innerText = "Mínimo 6 caracteres.";
         } else {
-            ePassword.innerText = "";
+            errorPassword.innerText = "";
         }
-        if (passwordConfirmationInput.value.trim() !== "") comprobarPasswordConfirmation();
+        if (entradaPasswordConfirmacion.value.trim() !== "") comprobarPasswordConfirmacion();
         comprobarBoton();
     }
 
-    function comprobarPasswordConfirmation() {
-        const p1 = passwordInput.value.trim();
-        const p2 = passwordConfirmationInput.value.trim();
+    function comprobarPasswordConfirmacion() {
+        const p1 = entradaPassword.value.trim();
+        const p2 = entradaPasswordConfirmacion.value.trim();
         if (p2 === "") {
-            ePasswordConfirmation.innerText = "Debes confirmar la contraseña.";
+            errorPasswordConfirmacion.innerText = "Debes confirmar la contraseña.";
         } else if (p1 !== p2) {
-            ePasswordConfirmation.innerText = "Las contraseñas no coinciden.";
+            errorPasswordConfirmacion.innerText = "Las contraseñas no coinciden.";
         } else {
-            ePasswordConfirmation.innerText = "";
+            errorPasswordConfirmacion.innerText = "";
         }
         comprobarBoton();
     }
 
-    // --- ASIGNACIÓN DE LISTENERS (UNIFICADO) ---
+    // --- ASIGNACIÓN DE EVENTOS ---
 
-    // Nombre
-    nombreInput.oninput = (e) => {
-        handleMove(e.target.value);
+    entradaNombre.oninput = (e) => {
+        gestionarMovimiento(e.target.value);
         comprobarNombre();
     };
-    nombreInput.onblur = resetFace;
+    entradaNombre.onblur = reiniciarCara;
 
-    // Email
-    emailInput.oninput = (e) => {
-        handleMove(e.target.value);
+    entradaEmail.oninput = (e) => {
+        gestionarMovimiento(e.target.value);
         comprobarEmail();
     };
-    emailInput.onblur = resetFace;
+    entradaEmail.onblur = reiniciarCara;
 
-    // Teléfono
-    if (telefonoInput) {
-        telefonoInput.oninput = (e) => {
-            handleMove(e.target.value);
+    if (entradaTelefono) {
+        entradaTelefono.oninput = (e) => {
+            gestionarMovimiento(e.target.value);
             comprobarTelefono();
         };
-        telefonoInput.onblur = resetFace;
+        entradaTelefono.onblur = reiniciarCara;
     }
 
-    // Password
-    passwordInput.onfocus = () => {
-        checkState(passwordInput);
-        container.classList.add("hiding-pass");
+    entradaPassword.onfocus = () => {
+        comprobarEstadoVista(entradaPassword);
+        contenedor.classList.add("hiding-pass");
     };
-    passwordInput.onblur = () => {
-        container.classList.remove("hiding-pass");
+    entradaPassword.onblur = () => {
+        contenedor.classList.remove("hiding-pass");
     };
-    passwordInput.oninput = comprobarPassword;
+    entradaPassword.oninput = comprobarPassword;
 
-    // Password Confirmation
-    passwordConfirmationInput.onfocus = () => {
-        checkState(passwordConfirmationInput);
-        container.classList.add("hiding-pass");
+    entradaPasswordConfirmacion.onfocus = () => {
+        comprobarEstadoVista(entradaPasswordConfirmacion);
+        contenedor.classList.add("hiding-pass");
     };
-    passwordConfirmationInput.onblur = () => {
-        container.classList.remove("hiding-pass");
+    entradaPasswordConfirmacion.onblur = () => {
+        contenedor.classList.remove("hiding-pass");
     };
-    passwordConfirmationInput.oninput = comprobarPasswordConfirmation;
+    entradaPasswordConfirmacion.oninput = comprobarPasswordConfirmacion;
 
-    // Toggles de Visibilidad
     if (verPassword) {
         verPassword.onmousedown = (e) => {
             e.preventDefault();
-            const esPassword = passwordInput.type === "password";
-            passwordInput.type = esPassword ? "text" : "password";
+            const esPassword = entradaPassword.type === "password";
+            entradaPassword.type = esPassword ? "text" : "password";
             verPassword.innerHTML = esPassword ? svgOjoCerrado : svgOjoAbierto;
             verPassword.style.color = esPassword ? "#2d79f3" : "inherit";
-            checkState(passwordInput);
-            passwordInput.focus();
+            comprobarEstadoVista(entradaPassword);
+            entradaPassword.focus();
         };
     }
 
-    if (verPasswordConfirmation) {
-        verPasswordConfirmation.onmousedown = (e) => {
+    if (verPasswordConfirmacion) {
+        verPasswordConfirmacion.onmousedown = (e) => {
             e.preventDefault();
-            const esPassword = passwordConfirmationInput.type === "password";
-            passwordConfirmationInput.type = esPassword ? "text" : "password";
-            verPasswordConfirmation.innerHTML = esPassword ? svgOjoCerrado : svgOjoAbierto;
-            verPasswordConfirmation.style.color = esPassword ? "#2d79f3" : "inherit";
-            checkState(passwordConfirmationInput);
-            passwordConfirmationInput.focus();
+            const esPassword = entradaPasswordConfirmacion.type === "password";
+            entradaPasswordConfirmacion.type = esPassword ? "text" : "password";
+            verPasswordConfirmacion.innerHTML = esPassword ? svgOjoCerrado : svgOjoAbierto;
+            verPasswordConfirmacion.style.color = esPassword ? "#2d79f3" : "inherit";
+            comprobarEstadoVista(entradaPasswordConfirmacion);
+            entradaPasswordConfirmacion.focus();
         };
     }
 
     // Inicialización al cargar
-    if (nombreInput.value !== "") comprobarNombre();
-    if (emailInput.value !== "") comprobarEmail();
-    if (telefonoInput && telefonoInput.value !== "") comprobarTelefono();
-    if (passwordInput.value !== "") comprobarPassword();
+    if (entradaNombre.value !== "") comprobarNombre();
+    if (entradaEmail.value !== "") comprobarEmail();
+    if (entradaTelefono && entradaTelefono.value !== "") comprobarTelefono();
+    if (entradaPassword.value !== "") comprobarPassword();
     comprobarBoton();
 }

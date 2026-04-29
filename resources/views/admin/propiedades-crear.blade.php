@@ -1,5 +1,9 @@
 @extends('layouts.admin')
-@section('titulo', 'Nueva propiedad — SpotStay')
+@php
+    $modoEdicion = isset($propiedadEditando) && $propiedadEditando;
+@endphp
+
+@section('titulo', $modoEdicion ? 'Editar propiedad — SpotStay' : 'Nueva propiedad — SpotStay')
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/admin/propiedades.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/propiedades-crear.css') }}">
@@ -8,8 +12,8 @@
 @section('content')
 <div class="hero-admin">
     <div class="hero-content">
-        <h1>Nueva propiedad</h1>
-        <p>Da de alta una propiedad desde administración</p>
+        <h1>{{ $modoEdicion ? 'Editar propiedad' : 'Nueva propiedad' }}</h1>
+        <p>{{ $modoEdicion ? 'Actualiza los datos de una propiedad existente' : 'Da de alta una propiedad desde administración' }}</p>
     </div>
     <div class="hero-deco hero-deco-1"></div>
     <div class="hero-deco hero-deco-2"></div>
@@ -20,8 +24,8 @@
     <div class="toolbar-admin crear-toolbar">
         <div class="toolbar-izquierda">
             <div class="crear-hint">
-                <strong>Alta manual de propiedad</strong>
-                <span>Introduce los datos y asígnala a un arrendador existente.</span>
+                <strong>{{ $modoEdicion ? 'Edición de propiedad' : 'Alta manual de propiedad' }}</strong>
+                <span>{{ $modoEdicion ? 'Modifica los datos y guarda los cambios.' : 'Introduce los datos y asígnala a un arrendador existente.' }}</span>
             </div>
         </div>
         <div class="toolbar-derecha">
@@ -63,78 +67,78 @@
         <div class="card-header-admin card-header-crear">
             <div class="card-header-title-crear">
                 <i class="bi bi-house-add"></i>
-                <h2>Formulario de propiedad</h2>
+                <h2>{{ $modoEdicion ? 'Formulario de edición' : 'Formulario de propiedad' }}</h2>
             </div>
-            <span class="card-header-sub-crear">Alta manual</span>
+            <span class="card-header-sub-crear">{{ $modoEdicion ? 'Edición' : 'Alta manual' }}</span>
         </div>
-        <form action="/admin/propiedades/crear" method="POST" class="form-grid">
+        <form action="{{ $modoEdicion ? '/admin/propiedades/' . $propiedadEditando->id_propiedad . '/editar' : '/admin/propiedades/crear' }}" method="POST" class="form-grid">
             @csrf
 
             <div class="campo-full">
                 <label for="titulo">Título</label>
-                <input id="titulo" name="titulo" type="text" value="{{ old('titulo') }}" required>
+                <input id="titulo" name="titulo" type="text" value="{{ old('titulo', $modoEdicion ? $propiedadEditando->titulo_propiedad : '') }}" required>
             </div>
 
             <div>
                 <label for="calle">Calle</label>
-                <input id="calle" name="calle" type="text" value="{{ old('calle') }}" required>
+                <input id="calle" name="calle" type="text" value="{{ old('calle', $modoEdicion ? $propiedadEditando->calle_propiedad : '') }}" required>
             </div>
 
             <div>
                 <label for="numero">Número</label>
-                <input id="numero" name="numero" type="text" value="{{ old('numero') }}" required>
+                <input id="numero" name="numero" type="text" value="{{ old('numero', $modoEdicion ? $propiedadEditando->numero_propiedad : '') }}" required>
             </div>
 
             <div>
                 <label for="piso">Piso</label>
-                <input id="piso" name="piso" type="text" value="{{ old('piso') }}">
+                <input id="piso" name="piso" type="text" value="{{ old('piso', $modoEdicion ? $propiedadEditando->piso_propiedad : '') }}">
             </div>
 
             <div>
                 <label for="puerta">Puerta</label>
-                <input id="puerta" name="puerta" type="text" value="{{ old('puerta') }}">
+                <input id="puerta" name="puerta" type="text" value="{{ old('puerta', $modoEdicion ? $propiedadEditando->puerta_propiedad : '') }}">
             </div>
 
             <div>
                 <label for="ciudad">Ciudad</label>
-                <input id="ciudad" name="ciudad" type="text" value="{{ old('ciudad') }}" required>
+                <input id="ciudad" name="ciudad" type="text" value="{{ old('ciudad', $modoEdicion ? $propiedadEditando->ciudad_propiedad : '') }}" required>
             </div>
 
             <div>
                 <label for="codigo_postal">Código postal</label>
-                <input id="codigo_postal" name="codigo_postal" type="text" value="{{ old('codigo_postal') }}" required>
+                <input id="codigo_postal" name="codigo_postal" type="text" value="{{ old('codigo_postal', $modoEdicion ? $propiedadEditando->codigo_postal_propiedad : '') }}" required>
             </div>
 
             <div>
                 <label for="precio">Precio mensual</label>
-                <input id="precio" name="precio" type="number" min="0" step="0.01" value="{{ old('precio') }}" required>
+                <input id="precio" name="precio" type="number" min="0" step="0.01" value="{{ old('precio', $modoEdicion ? $propiedadEditando->precio_propiedad : '') }}" required>
             </div>
 
             <div>
                 <label for="estado">Estado</label>
                 <select id="estado" name="estado" required>
-                    <option value="publicada" {{ old('estado') === 'publicada' ? 'selected' : '' }}>Publicada</option>
-                    <option value="alquilada" {{ old('estado') === 'alquilada' ? 'selected' : '' }}>Alquilada</option>
-                    <option value="borrador" {{ old('estado') === 'borrador' ? 'selected' : '' }}>Borrador</option>
-                    <option value="inactiva" {{ old('estado') === 'inactiva' ? 'selected' : '' }}>Inactiva</option>
+                    <option value="publicada" {{ old('estado', $modoEdicion ? $propiedadEditando->estado_propiedad : 'publicada') === 'publicada' ? 'selected' : '' }}>Publicada</option>
+                    <option value="alquilada" {{ old('estado', $modoEdicion ? $propiedadEditando->estado_propiedad : 'publicada') === 'alquilada' ? 'selected' : '' }}>Alquilada</option>
+                    <option value="borrador" {{ old('estado', $modoEdicion ? $propiedadEditando->estado_propiedad : 'publicada') === 'borrador' ? 'selected' : '' }}>Borrador</option>
+                    <option value="inactiva" {{ old('estado', $modoEdicion ? $propiedadEditando->estado_propiedad : 'publicada') === 'inactiva' ? 'selected' : '' }}>Inactiva</option>
                 </select>
             </div>
 
             <div class="campo-full">
                 <label for="arrendador_email">Email del arrendador</label>
-                <input id="arrendador_email" name="arrendador_email" type="email" value="{{ old('arrendador_email') }}" required>
+                <input id="arrendador_email" name="arrendador_email" type="email" value="{{ old('arrendador_email', $modoEdicion ? $propiedadEditando->email_arrendador : '') }}" required>
             </div>
 
             <div class="campo-full">
                 <label for="descripcion">Descripción</label>
-                <textarea id="descripcion" name="descripcion" rows="4">{{ old('descripcion') }}</textarea>
+                <textarea id="descripcion" name="descripcion" rows="4">{{ old('descripcion', $modoEdicion ? $propiedadEditando->descripcion_propiedad : '') }}</textarea>
             </div>
 
             <div class="acciones-form campo-full">
                 <a href="/admin/propiedades" class="btn-exportar">Cancelar</a>
                 <button type="submit" class="btn-primario">
                     <i class="bi bi-check-lg"></i>
-                    <span>Guardar propiedad</span>
+                    <span>{{ $modoEdicion ? 'Guardar cambios' : 'Guardar propiedad' }}</span>
                 </button>
             </div>
         </form>

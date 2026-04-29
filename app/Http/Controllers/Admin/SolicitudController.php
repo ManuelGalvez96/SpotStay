@@ -170,7 +170,17 @@ class SolicitudController extends Controller
         return response()->json([
             'id_solicitud_arrendador' => $solicitud->id_solicitud_arrendador,
             'id_usuario_fk' => $solicitud->id_usuario_fk,
-            'datos_solicitud_arrendador' => $solicitud->datos_solicitud_arrendador,
+            'telefono_solicitud' => $solicitud->telefono_solicitud,
+            'fecha_nacimiento_solicitud' => $solicitud->fecha_nacimiento_solicitud,
+            'tipo_documento_solicitud' => $solicitud->tipo_documento_solicitud,
+            'numero_documento_solicitud' => $solicitud->numero_documento_solicitud,
+            'iban_solicitud' => $solicitud->iban_solicitud,
+            'nif_solicitud' => $solicitud->nif_solicitud,
+            'direccion_fiscal_solicitud' => $solicitud->direccion_fiscal_solicitud,
+            'tipo_arrendador_solicitud' => $solicitud->tipo_arrendador_solicitud,
+            'descripcion_solicitud' => $solicitud->descripcion_solicitud,
+            'num_propiedades_previstas_solicitud' => $solicitud->num_propiedades_previstas_solicitud,
+            'es_propietario_solicitud' => $solicitud->es_propietario_solicitud,
             'estado_solicitud_arrendador' => $solicitud->estado_solicitud_arrendador,
             'notas_solicitud_arrendador' => $solicitud->notas_solicitud_arrendador,
             'creado_solicitud_arrendador' => $solicitud->creado_solicitud_arrendador,
@@ -191,7 +201,7 @@ class SolicitudController extends Controller
         }
 
         if ($request->ciudad) {
-            $query->whereJsonContains('datos_solicitud_arrendador->ciudad', $request->ciudad);
+            $query->where('direccion_fiscal_solicitud', 'like', '%' . $request->ciudad . '%');
         }
 
         if ($request->q) {
@@ -224,19 +234,16 @@ class SolicitudController extends Controller
             ->orderBy('creado_solicitud_arrendador', 'desc')
             ->paginate(6);
 
-        /* Transformar datos para incluir nombre_usuario y email_usuario */
+        /* Transformar datos para incluir campos individuales normalizados */
         $items = $solicitudesPaginadas->items();
         $data = array_map(function($solicitud) {
-            /* Asegurar que datos_solicitud_arrendador es un array, no una cadena JSON */
-            $datos = $solicitud->datos_solicitud_arrendador;
-            if (is_string($datos)) {
-                $datos = json_decode($datos, true) ?? [];
-            }
-            
             return [
                 'id_solicitud_arrendador' => $solicitud->id_solicitud_arrendador,
                 'id_usuario_fk' => $solicitud->id_usuario_fk,
-                'datos_solicitud_arrendador' => $datos,
+                'telefono_solicitud' => $solicitud->telefono_solicitud,
+                'direccion_fiscal_solicitud' => $solicitud->direccion_fiscal_solicitud,
+                'tipo_arrendador_solicitud' => $solicitud->tipo_arrendador_solicitud,
+                'descripcion_solicitud' => $solicitud->descripcion_solicitud,
                 'estado_solicitud_arrendador' => $solicitud->estado_solicitud_arrendador,
                 'creado_solicitud_arrendador' => $solicitud->creado_solicitud_arrendador,
                 'actualizado_solicitud_arrendador' => $solicitud->actualizado_solicitud_arrendador,

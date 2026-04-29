@@ -260,7 +260,7 @@
                 <div class="section-header">
                     <h2 class="section-title">Propiedades Activas</h2>
                     <div class="section-actions">
-                        <button class="btn btn-primary btn-sm">+ Nueva Propiedad</button>
+                        <a href="{{ route('arrendador.propiedades') }}" class="btn btn-primary btn-sm">+ Nueva Propiedad</a>
                     </div>
                 </div>
                 

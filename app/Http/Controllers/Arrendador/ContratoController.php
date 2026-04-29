@@ -31,7 +31,7 @@ class ContratoController extends Controller
                 'c.id_contrato',
                 'a.id_alquiler',
                 'p.titulo_propiedad',
-                'p.direccion_propiedad',
+                DB::raw($this->obtenerSelectDireccionPropiedad('p')),
                 'inquilino.nombre_usuario as nombre_inquilino',
                 DB::raw($this->seleccionarColumnaContrato($columnas['url_pdf'], 'url_pdf_contrato', "''")),
                 DB::raw($this->seleccionarColumnaContrato($columnas['firmado_arrendador'], 'firmado_arrendador', '0')),
@@ -190,6 +190,26 @@ class ContratoController extends Controller
         }
 
         return null;
+    }
+
+    private function obtenerSelectDireccionPropiedad(string $aliasTabla = 'p'): string
+    {
+        if (Schema::hasColumn('tbl_propiedad', 'direccion_propiedad')) {
+            return "{$aliasTabla}.direccion_propiedad as direccion_propiedad";
+        }
+
+        $partes = [];
+        foreach (['calle_propiedad', 'numero_propiedad', 'piso_propiedad', 'puerta_propiedad'] as $columna) {
+            if (Schema::hasColumn('tbl_propiedad', $columna)) {
+                $partes[] = "NULLIF(TRIM({$aliasTabla}.{$columna}), '')";
+            }
+        }
+
+        if (empty($partes)) {
+            return "'' as direccion_propiedad";
+        }
+
+        return 'TRIM(CONCAT_WS(\' \' , ' . implode(', ', $partes) . ')) as direccion_propiedad';
     }
 
     private function obtenerIdArrendador(Request $request): int

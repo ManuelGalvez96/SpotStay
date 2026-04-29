@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class SolicitudController extends Controller
 {
@@ -25,7 +26,7 @@ class SolicitudController extends Controller
             ->select(
                 'a.id_alquiler',
                 'p.titulo_propiedad',
-                'p.direccion_propiedad',
+                DB::raw($this->obtenerSelectDireccionPropiedad('p')),
                 'inquilino.nombre_usuario as nombre_inquilino',
                 'inquilino.email_usuario as email_inquilino',
                 'a.estado_alquiler',
@@ -136,5 +137,25 @@ class SolicitudController extends Controller
             ->orderByDesc('total_propiedades')
             ->orderBy('u.id_usuario')
             ->value('u.id_usuario');
+    }
+
+    private function obtenerSelectDireccionPropiedad(string $aliasTabla = 'p'): string
+    {
+        if (Schema::hasColumn('tbl_propiedad', 'direccion_propiedad')) {
+            return "{$aliasTabla}.direccion_propiedad as direccion_propiedad";
+        }
+
+        $partes = [];
+        foreach (['calle_propiedad', 'numero_propiedad', 'piso_propiedad', 'puerta_propiedad'] as $columna) {
+            if (Schema::hasColumn('tbl_propiedad', $columna)) {
+                $partes[] = "NULLIF(TRIM({$aliasTabla}.{$columna}), '')";
+            }
+        }
+
+        if (empty($partes)) {
+            return "'' as direccion_propiedad";
+        }
+
+        return 'TRIM(CONCAT_WS(\' \' , ' . implode(', ', $partes) . ')) as direccion_propiedad';
     }
 }

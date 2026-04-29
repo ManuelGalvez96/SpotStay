@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class GestorController extends Controller
@@ -27,7 +28,7 @@ class GestorController extends Controller
             ->select(
                 'p.id_propiedad',
                 'p.titulo_propiedad',
-                'p.direccion_propiedad',
+                DB::raw($this->obtenerSelectDireccionPropiedad('p')),
                 'p.ciudad_propiedad',
                 'p.estado_propiedad',
                 'p.id_gestor_fk',
@@ -166,5 +167,25 @@ class GestorController extends Controller
         }
 
         return mb_strtoupper(mb_substr(trim($nombre), 0, 1));
+    }
+
+    private function obtenerSelectDireccionPropiedad(string $aliasTabla = 'p'): string
+    {
+        if (Schema::hasColumn('tbl_propiedad', 'direccion_propiedad')) {
+            return "{$aliasTabla}.direccion_propiedad as direccion_propiedad";
+        }
+
+        $partes = [];
+        foreach (['calle_propiedad', 'numero_propiedad', 'piso_propiedad', 'puerta_propiedad'] as $columna) {
+            if (Schema::hasColumn('tbl_propiedad', $columna)) {
+                $partes[] = "NULLIF(TRIM({$aliasTabla}.{$columna}), '')";
+            }
+        }
+
+        if (empty($partes)) {
+            return "'' as direccion_propiedad";
+        }
+
+        return 'TRIM(CONCAT_WS(\' \' , ' . implode(', ', $partes) . ')) as direccion_propiedad';
     }
 }

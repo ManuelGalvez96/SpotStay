@@ -77,12 +77,24 @@ class UsuarioSeeder extends Seeder
         ];
 
         foreach ($usuarios as $data) {
+            // Generar datos ficticios para nuevos campos
+            $dni = str_pad(rand(10000000, 99999999), 8, '0', STR_PAD_LEFT) . strtoupper(chr(rand(65, 90)));
+            $fechaNacimiento = \Carbon\Carbon::now()->subYears(rand(25, 65))->format('Y-m-d');
+            $iban = 'ES' . str_pad(rand(0, 9999999999999999), 16, '0', STR_PAD_LEFT);
+            $es_admin = in_array($data['email'], ['agarcia@spotstay.com', 'alopez@spotstay.com', 'amartinez@spotstay.com']);
+            
             $usuario = Usuario::firstOrCreate(
                 ['email_usuario' => $data['email']],
                 [
                     'nombre_usuario' => $data['nombre'] . ' ' . $data['apellido'],
                     'contrasena_usuario' => Hash::make('password123'),
                     'telefono_usuario' => $data['tel'],
+                    'dni_usuario' => $dni,
+                    'fecha_nacimiento_usuario' => $fechaNacimiento,
+                    'iban_usuario' => $iban,
+                    'direccion_fiscal_usuario' => 'Calle Test ' . rand(1, 999) . ', ' . rand(28001, 28099),
+                    'tipo_arrendador_usuario' => $data['rol'] === 'arrendador' ? 'individual' : null,
+                    'verificado_identidad_usuario' => $es_admin ? true : false,
                     'activo_usuario' => true,
                     'creado_usuario' => now(),
                     'actualizado_usuario' => now(),

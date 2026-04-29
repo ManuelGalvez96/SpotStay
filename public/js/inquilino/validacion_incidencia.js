@@ -3,48 +3,48 @@
  * Sigue la plantilla estándar del proyecto SpotStay.
  */
 
-document.addEventListener("DOMContentLoaded", () => {
+window.onload = () => {
     iniciarValidacionIncidencia();
-});
+};
 
 function iniciarValidacionIncidencia() {
     // Referencias a mensajes de error
-    const eTitulo = document.getElementById("error-titulo");
-    const eCategoria = document.getElementById("error-categoria");
-    const ePrioridad = document.getElementById("error-prioridad");
-    const eDescripcion = document.getElementById("error-descripcion");
+    const errorTitulo = document.getElementById("error-titulo");
+    const errorCategoria = document.getElementById("error-categoria");
+    const errorPrioridad = document.getElementById("error-prioridad");
+    const errorDescripcion = document.getElementById("error-descripcion");
 
     // Referencias a inputs
-    const tituloInput = document.getElementById("titulo-incidencia");
-    const categoriaInput = document.getElementById("categoria-incidencia");
-    const prioridadInput = document.getElementById("prioridad-incidencia");
-    const descripcionInput = document.getElementById("descripcion-incidencia");
+    const entradaTitulo = document.getElementById("titulo-incidencia");
+    const entradaCategoria = document.getElementById("categoria-incidencia");
+    const entradaPrioridad = document.getElementById("prioridad-incidencia");
+    const entradaDescripcion = document.getElementById("descripcion-incidencia");
     const botonEnviar = document.getElementById("boton-enviar");
 
     // Si no estamos en la página correcta, salimos
-    if (!tituloInput || !botonEnviar) return;
+    if (!entradaTitulo || !botonEnviar) return;
 
-    // Listeners para validación en tiempo real (oninput) y al perder el foco (onblur)
-    tituloInput.oninput = comprobarTitulo;
-    tituloInput.onblur = comprobarTitulo;
+    // Asignación directa de eventos (oninput, onchange, onblur)
+    entradaTitulo.oninput = comprobarTitulo;
+    entradaTitulo.onblur = comprobarTitulo;
 
-    categoriaInput.onchange = comprobarCategoria;
-    categoriaInput.onblur = comprobarCategoria;
+    entradaCategoria.onchange = comprobarCategoria;
+    entradaCategoria.onblur = comprobarCategoria;
 
-    prioridadInput.onchange = comprobarPrioridad;
-    prioridadInput.onblur = comprobarPrioridad;
+    entradaPrioridad.onchange = comprobarPrioridad;
+    entradaPrioridad.onblur = comprobarPrioridad;
 
-    descripcionInput.oninput = comprobarDescripcion;
-    descripcionInput.onblur = comprobarDescripcion;
+    entradaDescripcion.oninput = comprobarDescripcion;
+    entradaDescripcion.onblur = comprobarDescripcion;
 
     /**
      * Comprueba el estado general del formulario para habilitar o deshabilitar el botón de envío.
      */
     function comprobarBoton() {
-        const titulo = tituloInput.value.trim();
-        const categoria = categoriaInput.value;
-        const prioridad = prioridadInput.value;
-        const descripcion = descripcionInput.value.trim();
+        const titulo = entradaTitulo.value.trim();
+        const categoria = entradaCategoria.value;
+        const prioridad = entradaPrioridad.value;
+        const descripcion = entradaDescripcion.value.trim();
 
         let tituloValido = titulo !== "" && titulo.length >= 5;
         let categoriaValida = categoria !== "";
@@ -64,18 +64,18 @@ function iniciarValidacionIncidencia() {
      * Valida el campo Título
      */
     function comprobarTitulo() {
-        const valor = tituloInput.value.trim();
+        const valor = entradaTitulo.value.trim();
         if (valor === "") {
-            eTitulo.innerText = "El título es obligatorio.";
+            errorTitulo.innerText = "El título es obligatorio.";
             comprobarBoton();
             return;
         }
         if (valor.length < 5) {
-            eTitulo.innerText = "Mínimo 5 caracteres.";
+            errorTitulo.innerText = "Mínimo 5 caracteres.";
             comprobarBoton();
             return;
         }
-        eTitulo.innerText = "";
+        errorTitulo.innerText = "";
         comprobarBoton();
     }
 
@@ -83,12 +83,12 @@ function iniciarValidacionIncidencia() {
      * Valida el campo Categoría
      */
     function comprobarCategoria() {
-        if (categoriaInput.value === "") {
-            eCategoria.innerText = "Selecciona una categoría.";
+        if (entradaCategoria.value === "") {
+            errorCategoria.innerText = "Selecciona una categoría.";
             comprobarBoton();
             return;
         }
-        eCategoria.innerText = "";
+        errorCategoria.innerText = "";
         comprobarBoton();
     }
 
@@ -96,12 +96,12 @@ function iniciarValidacionIncidencia() {
      * Valida el campo Prioridad
      */
     function comprobarPrioridad() {
-        if (prioridadInput.value === "") {
-            ePrioridad.innerText = "Selecciona la prioridad.";
+        if (entradaPrioridad.value === "") {
+            errorPrioridad.innerText = "Selecciona la prioridad.";
             comprobarBoton();
             return;
         }
-        ePrioridad.innerText = "";
+        errorPrioridad.innerText = "";
         comprobarBoton();
     }
 
@@ -109,41 +109,41 @@ function iniciarValidacionIncidencia() {
      * Valida el campo Descripción
      */
     function comprobarDescripcion() {
-        const valor = descripcionInput.value.trim();
+        const valor = entradaDescripcion.value.trim();
         if (valor === "") {
-            eDescripcion.innerText = "La descripción es obligatoria.";
+            errorDescripcion.innerText = "La descripción es obligatoria.";
             comprobarBoton();
             return;
         }
         if (valor.length < 15) {
-            eDescripcion.innerText = "Danos más detalles (mínimo 15 carac.).";
+            errorDescripcion.innerText = "Danos más detalles (mínimo 15 carac.).";
             comprobarBoton();
             return;
         }
-        eDescripcion.innerText = "";
+        errorDescripcion.innerText = "";
         comprobarBoton();
     }
 
     // Ejecutar comprobación inicial
     comprobarBoton();
 
-    // Limpieza al cerrar el modal (Bootstrap event)
-    const modalElement = document.getElementById('modalReportar');
-    if (modalElement) {
-        modalElement.addEventListener('hidden.bs.modal', () => {
-            // Vaciamos los valores de los inputs
-            tituloInput.value = "";
-            categoriaInput.value = "";
-            prioridadInput.value = "";
-            descripcionInput.value = "";
+    // Limpieza al cerrar el modal
+    const elementoModal = document.getElementById('modalReportar');
+    if (elementoModal) {
+        // En Bootstrap 5, 'hidden.bs.modal' es un evento personalizado.
+        // Lo asignamos mediante addEventListener solo porque Bootstrap lo requiere para sus eventos internos,
+        // pero procuramos usar lógica limpia.
+        elementoModal.addEventListener('hidden.bs.modal', () => {
+            entradaTitulo.value = "";
+            entradaCategoria.value = "";
+            entradaPrioridad.value = "";
+            entradaDescripcion.value = "";
 
-            // Limpiamos los textos de error
-            eTitulo.innerText = "";
-            eCategoria.innerText = "";
-            ePrioridad.innerText = "";
-            eDescripcion.innerText = "";
+            errorTitulo.innerText = "";
+            errorCategoria.innerText = "";
+            errorPrioridad.innerText = "";
+            errorDescripcion.innerText = "";
 
-            // Reseteamos el estado del botón (vuelve a estar deshabilitado)
             comprobarBoton();
         });
     }

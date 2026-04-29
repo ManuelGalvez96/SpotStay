@@ -44,15 +44,31 @@ class SolicitudArrendadorSeeder extends Seeder
                     $adminIndex++;
                 }
 
+                // Generar datos ficticios normalizados
+                $dni = str_pad(rand(10000000, 99999999), 8, '0', STR_PAD_LEFT) . strtoupper(chr(rand(65, 90)));
+                $nif = str_pad(rand(10000000, 99999999), 8, '0', STR_PAD_LEFT) . strtoupper(chr(rand(65, 90)));
+                $iban = 'ES' . str_pad(rand(0, 9999999999999999), 16, '0', STR_PAD_LEFT);
+                $fechaNacimiento = \Carbon\Carbon::now()->subYears(rand(30, 70))->format('Y-m-d');
+                $fechaSolicitud = now()->subDays(5)->toDateString();
+
                 SolicitudArrendador::firstOrCreate(
                     ['id_usuario_fk' => $usuario->id_usuario, 'estado_solicitud_arrendador' => $data['estado']],
                     [
-                        'datos_solicitud_arrendador' => json_encode([
-                            'nombre_empresa' => $data['nombre_empresa'],
-                            'ciudad' => $data['ciudad'],
-                            'direccion' => $data['direccion'],
-                            'fecha_solicitud' => now()->subDays(5)->toDateString(),
-                        ]),
+                        'telefono_solicitud' => '+34 ' . rand(600, 699) . ' ' . str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT),
+                        'fecha_nacimiento_solicitud' => $fechaNacimiento,
+                        'tipo_documento_solicitud' => 'DNI',
+                        'numero_documento_solicitud' => $dni,
+                        'iban_solicitud' => $iban,
+                        'titular_cuenta_solicitud' => $usuario->nombre_usuario,
+                        'nif_solicitud' => $nif,
+                        'direccion_fiscal_solicitud' => $data['direccion'] . ', ' . $data['ciudad'],
+                        'tipo_arrendador_solicitud' => 'empresa',
+                        'descripcion_solicitud' => 'Empresa dedicada a la gestión inmobiliaria: ' . $data['nombre_empresa'],
+                        'num_propiedades_previstas_solicitud' => rand(1, 15),
+                        'es_propietario_solicitud' => (bool) rand(0, 1),
+                        'acepta_terminos_solicitud' => true,
+                        'acepta_veracidad_solicitud' => true,
+                        'fecha_aceptacion_solicitud' => $data['estado'] !== 'pendiente' ? $fechaSolicitud : null,
                         'id_admin_revisa_fk' => $admin?->id_usuario,
                         'notas_solicitud_arrendador' => $data['estado'] === 'rechazada' ? 'Documentación incompleta' : null,
                         'creado_solicitud_arrendador' => now()->subDays(5),

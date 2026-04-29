@@ -40,14 +40,15 @@ class AlquilerSeeder extends Seeder
 
                 // Generar fechas coherentes
                 $estado = $estados[$alquilerCounter % count($estados)];
-                $fechaInicio = now()->subMonths(rand(1, 12))->startOfMonth();
+                $fechaInicio = now()->subMonths(rand(1, 12))->subDays(rand(0, 27));
                 
                 if ($estado === 'finalizado') {
                     $fechaFin = $fechaInicio->copy()->addMonths(rand(3, 6));
                 } elseif ($estado === 'cancelado') {
                     $fechaFin = $fechaInicio->copy()->addMonths(rand(1, 3));
                 } else {
-                    $fechaFin = now()->addMonths(rand(2, 12));
+                    // Contratos activos: duran entre 6 y 18 meses desde el inicio
+                    $fechaFin = $fechaInicio->copy()->addMonths(rand(6, 18));
                 }
 
                 $aprobado = $estado !== 'cancelado' ? $fechaInicio->copy()->subDays(rand(5, 15)) : null;
@@ -93,12 +94,12 @@ class AlquilerSeeder extends Seeder
                 $admin = $admins->isEmpty() ? null : $admins->random();
 
                 $estado = $estados[rand(0, count($estados) - 1)];
-                $fechaInicio = now()->subMonths(rand(1, 12))->startOfMonth();
+                $fechaInicio = now()->subMonths(rand(1, 12))->subDays(rand(0, 27));
                 
                 if ($estado === 'finalizado') {
                     $fechaFin = $fechaInicio->copy()->addMonths(rand(3, 6));
                 } else {
-                    $fechaFin = now()->addMonths(rand(2, 12));
+                    $fechaFin = $fechaInicio->copy()->addMonths(rand(6, 18));
                 }
 
                 $aprobado = $estado !== 'cancelado' ? $fechaInicio->copy()->subDays(rand(5, 15)) : null;
@@ -122,6 +123,40 @@ class AlquilerSeeder extends Seeder
                 $alquiler = Alquiler::where('id_propiedad_fk', $propiedad->id_propiedad)
                     ->where('id_inquilino_fk', $arrendador->id_usuario)
                     ->first();
+
+                if ($alquiler) {
+                    $this->generarCuotas($alquiler);
+                }
+            }
+        }
+
+        // Asegurar que el usuario snebot@spotstay.com tenga al menos un alquiler activo
+        $usuarioSnebot = Usuario::where('email_usuario', 'snebot@spotstay.com')->first();
+        if ($usuarioSnebot) {
+            $propiedadParaSnebot = Propiedad::where('id_arrendador_fk', '<>', $usuarioSnebot->id_usuario)
+                ->inRandomOrder()
+                ->first() ?? Propiedad::first();
+
+            if ($propiedadParaSnebot) {
+                $fechaInicio = now()->subMonth()->day(27);
+                $fechaFin = $fechaInicio->copy()->addYear();
+                $admin = $admins->isEmpty() ? null : $admins->random();
+
+                $alquiler = Alquiler::updateOrCreate(
+                    [
+                        'id_propiedad_fk' => $propiedadParaSnebot->id_propiedad,
+                        'id_inquilino_fk' => $usuarioSnebot->id_usuario,
+                    ],
+                    [
+                        'fecha_inicio_alquiler' => $fechaInicio->format('Y-m-d'),
+                        'fecha_fin_alquiler' => $fechaFin->format('Y-m-d'),
+                        'estado_alquiler' => 'activo',
+                        'id_admin_aprueba_fk' => $admin?->id_usuario,
+                        'aprobado_alquiler' => $fechaInicio->copy()->subDays(5),
+                        'creado_alquiler' => $fechaInicio->copy()->subDays(10),
+                        'actualizado_alquiler' => now(),
+                    ]
+                );
 
                 if ($alquiler) {
                     $this->generarCuotas($alquiler);

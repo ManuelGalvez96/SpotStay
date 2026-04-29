@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_conversacion')->autoIncrement()->primary();
             $table->unsignedBigInteger('id_propiedad_fk')->nullable();
             $table->string('tipo_conversacion', 30)->default('directa');
+            $table->string('titulo_conversacion', 150)->nullable();
             $table->timestamp('creado_conversacion')->nullable();
             $table->timestamp('actualizado_conversacion')->nullable();
 

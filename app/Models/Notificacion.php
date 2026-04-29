@@ -22,7 +22,13 @@ class Notificacion extends Model
     protected $fillable = [
         'id_usuario_fk',
         'tipo_notificacion',
-        'datos_notificacion',
+        'titulo_notificacion',
+        'mensaje_notificacion',
+        'url_notificacion',
+        'icono_notificacion',
+        'color_notificacion',
+        'tipo_entidad_notificacion',
+        'id_entidad_notificacion',
         'leida_notificacion',
         'leida_en_notificacion',
         'creado_notificacion',
@@ -30,8 +36,8 @@ class Notificacion extends Model
     ];
 
     protected $casts = [
-        'datos_notificacion' => 'array',
         'leida_notificacion' => 'boolean',
+        'id_entidad_notificacion' => 'integer',
         'leida_en_notificacion' => 'datetime',
         'creado_notificacion' => 'datetime',
         'actualizado_notificacion' => 'datetime',

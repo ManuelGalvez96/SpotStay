@@ -1,42 +1,10 @@
 /**
  * Scripts para el panel de Miembro de SpotStay
  */
-window.FiltrosMiembro = {
-    obtenerValor: function (idCampo) {
-        var campo = document.getElementById(idCampo);
-        if (!campo || campo.value === "") {
-            return "";
-        }
-
-        return campo.value;
-    },
-
-    obtenerFiltrosMapa: function () {
-        return {
-            precio_minimo: this.obtenerValor("precio-minimo"),
-            precio_maximo: this.obtenerValor("precio-maximo"),
-            tipo_inmueble: this.obtenerValor("tipo-inmueble"),
-            habitaciones: this.obtenerValor("numero-habitaciones"),
-            metros_minimo: this.obtenerValor("metros-minimo"),
-            metros_maximo: this.obtenerValor("metros-maximo"),
-        };
-    },
-
-    registrarBotonAplicar: function (idBoton, callback) {
-        var boton = document.getElementById(idBoton);
-        if (!boton || typeof callback !== "function") {
-            return;
-        }
-
-        boton.onclick = function () {
-            callback();
-        };
-    },
-};
-
-document.addEventListener('DOMContentLoaded', function () {
-    const botonPerfil = document.getElementById('boton-perfil');
-    const submenu = document.getElementById('submenu-perfil');
+window.onload = function () {
+    // Arranca el panel una vez el DOM ya esta cargado.
+    var botonPerfil = document.getElementById('boton-perfil');
+    var submenu = document.getElementById('submenu-perfil');
 
     // Toggle del submenú de perfil al hacer clic en el nombre/foto
     if (botonPerfil && submenu) {
@@ -56,9 +24,198 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     }
 
-    inicializarFiltrosInicio();
     inicializarMapaDetalle();
-});
+
+    cargarFiltrosInicio();
+};
+
+function cargarFiltrosInicio() {
+    var formulario = document.getElementById('form-filtros-inicio');
+    var boton = document.getElementById('boton-aplicar-filtros');
+    var botonBorrar = document.getElementById('boton-borrar-filtros');
+
+    if (!formulario) {
+        return;
+    }
+
+    var ids = [
+        'ciudad-propiedad',
+        'precio-minimo',
+        'precio-maximo',
+        'tipo-inmueble',
+        'numero-habitaciones',
+        'banos-propiedad',
+        'metros-minimo',
+        'metros-maximo',
+        'amueblado-propiedad',
+        'terraza-propiedad',
+        'piscina-propiedad',
+        'garaje-propiedad',
+        'ascensor-propiedad',
+        'aire-acondicionado-propiedad',
+        'calefaccion-propiedad',
+        'trastero-propiedad'
+    ];
+
+    function ejecutarBusqueda() {
+        // Construye la query con los filtros activos.
+        var parametros = new URLSearchParams();
+        var i;
+
+        // Recorre cada filtro y lo anade si tiene valor.
+        for (i = 0; i < ids.length; i++) {
+            var campo = document.getElementById(ids[i]);
+            if (campo && campo.value !== '') {
+                parametros.append(campo.name || ids[i], campo.value);
+            }
+        }
+
+        // Genera la URL final con los parametros activos.
+        var url = formulario.getAttribute('action') || window.location.pathname;
+        // Convierte los parametros a query string.
+        var query = parametros.toString();
+        if (query !== '') {
+            url += '?' + query;
+        }
+
+        // Pide el listado filtrado en JSON.
+        fetch(url, {
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(function (respuesta) {
+                if (!respuesta.ok) {
+                    throw new Error('No se pudo cargar el listado');
+                }
+
+                return respuesta.json();
+            })
+            .then(function (datos) {
+                var data = datos && datos.data ? datos.data : {};
+                var propiedades = data.propiedades ? data.propiedades : [];
+                var total = data.total ? data.total : 0;
+                var gridActual = document.getElementById('grid-propiedades');
+                var contadorActual = document.getElementById('contador-propiedades');
+                var html = '';
+                var i;
+
+                // Construye el HTML del listado con los datos recibidos.
+                if (gridActual) {
+                    for (i = 0; i < propiedades.length; i++) {
+                        var propiedad = propiedades[i] || {};
+                        var id = propiedad.id_propiedad ? propiedad.id_propiedad : '';
+                        var titulo = escaparHtml(propiedad.titulo_propiedad ? propiedad.titulo_propiedad : 'Propiedad');
+                        var ciudad = escaparHtml(propiedad.ciudad_propiedad ? propiedad.ciudad_propiedad : '');
+                        var direccion = escaparHtml(propiedad.direccion_propiedad ? propiedad.direccion_propiedad : '');
+                        var precio = formatearPrecio(propiedad.precio_propiedad);
+                        var ubicacion = '';
+
+                        if (ciudad !== '' && direccion !== '') {
+                            ubicacion = ciudad + ' · ' + direccion;
+                        } else if (ciudad !== '') {
+                            ubicacion = ciudad;
+                        } else {
+                            ubicacion = direccion;
+                        }
+
+                        html +=
+                            "<a class='link-propiedad' href='/miembro/propiedad/" + id + "'>" +
+                            "<article class='tarjeta-propiedad'>" +
+                            "<div class='imagen-propiedad'>" +
+                            "<span class='etiqueta-precio-tarjeta'>" + precio + "</span>" +
+                            "</div>" +
+                            "<div class='contenido-propiedad'>" +
+                            "<h3 class='titulo-propiedad'>" + titulo + "</h3>" +
+                            "<p class='ubicacion-propiedad'>" + ubicacion + "</p>" +
+                            "<p class='precio-propiedad'>" + precio + " / mes</p>" +
+                            "</div>" +
+                            "</article>" +
+                            "</a>";
+                    }
+
+                    // Si no hay resultados, muestra el mensaje vacio.
+                    if (html === '') {
+                        html = "<div class='estado-vacio'><p>No hay propiedades disponibles en este momento.</p></div>";
+                    }
+
+                    gridActual.innerHTML = html;
+                }
+
+                if (contadorActual) {
+                    contadorActual.innerHTML = total + ' resultados';
+                }
+            })
+            .catch(function () {
+                window.location.href = url;
+            });
+    }
+
+    formulario.onsubmit = function (evento) {
+        // Evita recargar pagina y usa fetch.
+        evento.preventDefault();
+        ejecutarBusqueda();
+    };
+
+    if (boton) {
+        boton.onclick = function (evento) {
+            // Aplica filtros con un click del usuario.
+            if (evento) {
+                evento.preventDefault();
+            }
+            ejecutarBusqueda();
+        };
+    }
+
+    if (botonBorrar) {
+        botonBorrar.onclick = function (evento) {
+            var i;
+
+            if (evento) {
+                evento.preventDefault();
+            }
+
+            for (i = 0; i < ids.length; i++) {
+                var campo = document.getElementById(ids[i]);
+                if (campo) {
+                    campo.value = '';
+                }
+            }
+
+            ejecutarBusqueda();
+        };
+    }
+}
+
+function formatearPrecio(valor) {
+    if (valor === null || valor === undefined || valor === '') {
+        return 'Sin precio';
+    }
+
+    var numero = Number(valor);
+    if (isNaN(numero)) {
+        return 'Sin precio';
+    }
+
+    return numero.toLocaleString('es-ES', {
+        maximumFractionDigits: 0
+    }) + ' €';
+}
+
+function escaparHtml(texto) {
+    var mapaCaracteres = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+
+    return String(texto).replace(/[&<>"']/g, function (caracter) {
+        return mapaCaracteres[caracter];
+    });
+}
 
 function inicializarMapaDetalle() {
     var mapaDetalle = document.getElementById('mapa-detalle');
@@ -95,64 +252,3 @@ function inicializarMapaDetalle() {
 }
 
 
-function inicializarFiltrosInicio() {
-    var formFiltros = document.querySelector('#panel-filtros-miembro form');
-    if (!formFiltros) {
-        return;
-    }
-
-    formFiltros.addEventListener('submit', function (evento) {
-        evento.preventDefault();
-        aplicarFiltrosInicio(formFiltros);
-    });
-}
-
-function aplicarFiltrosInicio(formFiltros) {
-    var params = new URLSearchParams();
-    var formData = new FormData(formFiltros);
-
-    formData.forEach(function (valor, clave) {
-        var texto = String(valor).trim();
-        if (texto !== '') {
-            params.append(clave, texto);
-        }
-    });
-
-    var action = formFiltros.getAttribute('action') || window.location.pathname;
-    var url = params.toString() === '' ? action : action + '?' + params.toString();
-
-    fetch(url, {
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-        },
-    })
-        .then(function (respuesta) {
-            if (!respuesta.ok) {
-                throw new Error('No se pudo cargar el listado filtrado');
-            }
-
-            return respuesta.text();
-        })
-        .then(function (html) {
-            var parser = new DOMParser();
-            var documento = parser.parseFromString(html, 'text/html');
-            var nuevaGrid = documento.querySelector('.grid-propiedades');
-            var nuevoContador = documento.querySelector('.contador-propiedades');
-            var gridActual = document.querySelector('.grid-propiedades');
-            var contadorActual = document.querySelector('.contador-propiedades');
-
-            if (nuevaGrid && gridActual) {
-                gridActual.innerHTML = nuevaGrid.innerHTML;
-            }
-
-            if (nuevoContador && contadorActual) {
-                contadorActual.innerHTML = nuevoContador.innerHTML;
-            }
-
-            window.history.replaceState({}, '', url);
-        })
-        .catch(function () {
-            // Si falla el fetch, se usa fallback por navegación normal
-            window.location.href = url;
-        });
-}

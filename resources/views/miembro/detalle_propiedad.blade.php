@@ -122,37 +122,12 @@
 
                     <form action="{{ route('miembro.mensajes.iniciar', ['id' => $id]) }}" method="POST">
                         @csrf
-                        <button class="boton-contacto" type="submit">Contactar por chat <i class="bi bi-mensajes-left-text"></i></button>
+                        <button class="boton-contacto" type="submit">Contactar por chat <i class="bi bi-chat-dots"></i></button>
                     </form>
 
-                    <h2>Solicitar alquiler</h2>
-
-                    @if (session('success'))
-                        <p class="contacto-info">{{ session('success') }}</p>
-                    @endif
-
-                    @if (session('error'))
-                        <p class="contacto-info">{{ session('error') }}</p>
-                    @endif
-
-                    @if ($errors->any())
-                        <p class="contacto-info">{{ $errors->first() }}</p>
-                    @endif
-
-                    <form action="{{ route('miembro.solicitud_alquiler.store', ['id' => $id]) }}" method="POST" class="filtros-miembro">
+                    <form action="{{ route('miembro.solicitud_alquiler.store', ['id' => $id]) }}" method="POST">
                         @csrf
-
-                        <div class="grupo-filtro">
-                            <label class="etiqueta-filtro" for="fecha_entrada">Fecha deseada</label>
-                            <input type="date" id="fecha_entrada" name="fecha_entrada" class="campo-filtro" value="{{ old('fecha_entrada') }}" min="{{ date('Y-m-d') }}" required>
-                        </div>
-
-                        <div class="grupo-filtro">
-                            <label class="etiqueta-filtro" for="mensaje">Mensaje</label>
-                            <textarea id="mensaje" name="mensaje" class="campo-filtro" rows="4">{{ old('mensaje') }}</textarea>
-                        </div>
-
-                        <button class="boton-aplicar" type="submit">Solicitar Alquiler</button>
+                        <button class="boton-aplicar boton-contacto" type="submit">Alquilar <i class="bi bi-house"></i></button>
                     </form>
                 </div>
             </section>

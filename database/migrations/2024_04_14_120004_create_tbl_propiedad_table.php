@@ -27,7 +27,6 @@ return new class extends Migration {
             $table->decimal('precio_propiedad', 8, 2);
             $table->string('tipo_propiedad', 30)->nullable();
             $table->string('habitaciones_propiedad', 20)->nullable();
-            $table->string('servicios_propiedad', 20)->nullable();
             $table->unsignedSmallInteger('metros_cuadrados_propiedad')->nullable();
             $table->boolean('amueblado_propiedad')->default(false);
             $table->boolean('piscina_propiedad')->default(false);

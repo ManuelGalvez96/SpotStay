@@ -127,6 +127,10 @@ class SolicitudController extends Controller
                 ]);
             }
 
+            DB::table('sessions')
+                ->where('user_id', $solicitud->id_usuario_fk)
+                ->delete();
+
             DB::commit();
             return response()->json(['success' => true]);
 

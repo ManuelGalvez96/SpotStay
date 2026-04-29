@@ -3,7 +3,7 @@
  * Maneja cambios en los select de filtro y actualiza la lista vía fetch
  */
 
-document.addEventListener('DOMContentLoaded', function () {
+window.onload = () => {
     // Referencias a elementos del DOM
     const filtroAutor = document.getElementById('filtro-autor');
     const filtroEstado = document.getElementById('filtro-estado');
@@ -15,23 +15,23 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Obtener ID de propiedad desde el contenedor de datos
-    const propiedadId = contenedorListaIncidencias.getAttribute('data-propiedad-id');
+    const idPropiedad = contenedorListaIncidencias.getAttribute('data-propiedad-id');
 
-    if (!propiedadId) {
+    if (!idPropiedad) {
         console.warn('ID de propiedad no encontrado');
         return;
     }
 
     /**
-     * Mostrar overlay de carga
+     * Mostrar capa de carga
      */
-    function mostrarOverlayCarga() {
-        let overlay = document.getElementById('overlay-carga-incidencias');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.id = 'overlay-carga-incidencias';
-            overlay.className = 'overlay-carga-incidencias';
-            overlay.innerHTML = `
+    function mostrarCapaCarga() {
+        let capaCarga = document.getElementById('overlay-carga-incidencias');
+        if (!capaCarga) {
+            capaCarga = document.createElement('div');
+            capaCarga.id = 'overlay-carga-incidencias';
+            capaCarga.className = 'overlay-carga-incidencias';
+            capaCarga.innerHTML = `
                 <div class="spinner-carga">
                     <div class="spinner-border" role="status">
                         <span class="visually-hidden">Cargando...</span>
@@ -40,18 +40,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
             `;
             contenedorListaIncidencias.parentElement.style.position = 'relative';
-            contenedorListaIncidencias.parentElement.appendChild(overlay);
+            contenedorListaIncidencias.parentElement.appendChild(capaCarga);
         }
-        overlay.style.display = 'flex';
+        capaCarga.style.display = 'flex';
     }
 
     /**
-     * Ocultar overlay de carga
+     * Ocultar capa de carga
      */
-    function ocultarOverlayCarga() {
-        const overlay = document.getElementById('overlay-carga-incidencias');
-        if (overlay) {
-            overlay.style.display = 'none';
+    function ocultarCapaCarga() {
+        const capaCarga = document.getElementById('overlay-carga-incidencias');
+        if (capaCarga) {
+            capaCarga.style.display = 'none';
         }
     }
 
@@ -62,13 +62,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const autor = filtroAutor.value;
         const estado = filtroEstado.value;
 
-        mostrarOverlayCarga();
+        mostrarCapaCarga();
 
-        // URL base de la ruta (reemplazar con la ruta correcta según tu configuración)
-        const url = `/inquilino/propiedad/${propiedadId}/incidencias?autor=${encodeURIComponent(autor)}&estado=${encodeURIComponent(estado)}`;
+        const ruta = `/inquilino/propiedad/${idPropiedad}/incidencias?autor=${encodeURIComponent(autor)}&estado=${encodeURIComponent(estado)}`;
 
         try {
-            const response = await fetch(url, {
+            const respuesta = await fetch(ruta, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
@@ -76,20 +75,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
             });
 
-            if (!response.ok) {
-                throw new Error(`Error al cargar incidencias: ${response.status}`);
+            if (!respuesta.ok) {
+                throw new Error(`Error al cargar incidencias: ${respuesta.status}`);
             }
 
-            const incidencias = await response.json();
+            const incidencias = await respuesta.json();
 
-            // Esperar al menos 1 segundo antes de mostrar resultados
+            // Pequeño retardo para suavizar la transición visual
             setTimeout(() => {
                 actualizarListaIncidencias(incidencias);
-                ocultarOverlayCarga();
-            }, 1000);
+                ocultarCapaCarga();
+            }, 800);
         } catch (error) {
             console.error('Error al cargar incidencias:', error);
-            // Mostrar error amigable en la UI si lo deseas
             setTimeout(() => {
                 if (contenedorListaIncidencias) {
                     contenedorListaIncidencias.innerHTML = `
@@ -98,8 +96,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                     `;
                 }
-                ocultarOverlayCarga();
-            }, 1000);
+                ocultarCapaCarga();
+            }, 800);
         }
     }
 
@@ -116,7 +114,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Generar HTML de cada incidencia
         const htmlIncidencias = incidencias.map((inc) => `
             <div class="item-incidencia">
                 <div class="incidencia-info">
@@ -141,32 +138,32 @@ document.addEventListener('DOMContentLoaded', function () {
         `).join('');
 
         contenedorListaIncidencias.innerHTML = htmlIncidencias;
-
-        // Re-adjuntar event listeners a los botones de detalle (modal)
-        adjuntarEventListenersDetalleIncidencia();
+        
+        // Re-asignamos los eventos a los nuevos elementos insertados
+        adjuntarEventosDetalle();
     }
 
     /**
-     * Adjuntar event listeners a los botones de detalle de incidencias
+     * Adjuntar eventos a los botones de detalle (reemplazando addEventListener)
      */
-    function adjuntarEventListenersDetalleIncidencia() {
-        const botonesDetalle = document.querySelectorAll('.btn-detalle-incidencia');
-        botonesDetalle.forEach((btn) => {
-            btn.addEventListener('click', function () {
-                const incidenciaId = this.getAttribute('data-id');
-                cargarDetalleIncidencia(incidenciaId);
-            });
+    function adjuntarEventosDetalle() {
+        const botonesVerDetalle = document.querySelectorAll('.btn-detalle-incidencia');
+        botonesVerDetalle.forEach((boton) => {
+            boton.onclick = function () {
+                const idIncidencia = this.getAttribute('data-id');
+                cargarDetalleIncidencia(idIncidencia);
+            };
         });
     }
 
     /**
      * Cargar detalle de una incidencia vía fetch
      */
-    async function cargarDetalleIncidencia(incidenciaId) {
-        const url = `/inquilino/incidencia/${incidenciaId}/detalle`;
+    async function cargarDetalleIncidencia(idIncidencia) {
+        const ruta = `/inquilino/incidencia/${idIncidencia}/detalle`;
 
         try {
-            const response = await fetch(url, {
+            const respuesta = await fetch(ruta, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
@@ -174,14 +171,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
             });
 
-            if (!response.ok) {
-                throw new Error(`Error al cargar detalle: ${response.status}`);
+            if (!respuesta.ok) {
+                throw new Error(`Error al cargar detalle: ${respuesta.status}`);
             }
 
-            const data = await response.json();
-
-            // Actualizar modal con los datos
-            actualizarModalDetalleIncidencia(data);
+            const datos = await respuesta.json();
+            actualizarModalDetalle(datos);
         } catch (error) {
             console.error('Error al cargar detalle de incidencia:', error);
         }
@@ -190,11 +185,10 @@ document.addEventListener('DOMContentLoaded', function () {
     /**
      * Actualizar el contenido del modal de detalle
      */
-    function actualizarModalDetalleIncidencia(data) {
-        // Buscar el modal y actualizar su contenido
-        const modalDetalleBody = document.querySelector('#modal-detalle-incidencia .modal-body');
+    function actualizarModalDetalle(datos) {
+        const cuerpoModalDetalle = document.querySelector('#modal-detalle-incidencia .modal-body');
         
-        if (!modalDetalleBody) {
+        if (!cuerpoModalDetalle) {
             console.warn('Modal de detalle no encontrado');
             return;
         }
@@ -202,32 +196,32 @@ document.addEventListener('DOMContentLoaded', function () {
         const html = `
             <div class="mb-3">
                 <strong>Título:</strong>
-                ${data.titulo || '-'}
+                ${datos.titulo || '-'}
             </div>
 
             <div class="mb-3">
                 <strong>Descripción:</strong>
-                <p>${data.descripcion || '-'}</p>
+                <p>${datos.descripcion || '-'}</p>
             </div>
 
             <div class="row mb-3">
-                <div class="col-md-6"><strong>Categoría:</strong> ${data.categoria || '-'}</div>
-                <div class="col-md-6"><strong>Prioridad:</strong> ${data.prioridad || '-'}</div>
+                <div class="col-md-6"><strong>Categoría:</strong> ${datos.categoria || '-'}</div>
+                <div class="col-md-6"><strong>Prioridad:</strong> ${datos.prioridad || '-'}</div>
             </div>
 
             <div class="row mb-3">
-                <div class="col-md-6"><strong>Fecha:</strong> ${data.fecha || '-'}</div>
-                <div class="col-md-6"><strong>Estado:</strong> ${data.estado || '-'}</div>
+                <div class="col-md-6"><strong>Fecha:</strong> ${datos.fecha || '-'}</div>
+                <div class="col-md-6"><strong>Estado:</strong> ${datos.estado || '-'}</div>
             </div>
         `;
 
-        modalDetalleBody.innerHTML = html;
+        cuerpoModalDetalle.innerHTML = html;
     }
 
-    // Event listeners para los select de filtro
-    filtroAutor.addEventListener('change', cargarIncidenciasFiltradasFetch);
-    filtroEstado.addEventListener('change', cargarIncidenciasFiltradasFetch);
+    // Eventos de cambio para los select
+    filtroAutor.onchange = cargarIncidenciasFiltradasFetch;
+    filtroEstado.onchange = cargarIncidenciasFiltradasFetch;
 
-    // Cargar incidencias al iniciar
+    // Carga inicial
     cargarIncidenciasFiltradasFetch();
-});
+};

@@ -208,12 +208,41 @@ class ContratoController extends Controller
     private function esUrlPdfLocalExistente(string $urlPdf): bool
     {
         if (preg_match('#^https?://#i', $urlPdf)) {
-            return true;
+            return $this->esUrlRemotaVigente($urlPdf);
         }
 
         $rutaRelativa = ltrim($urlPdf, '/\\');
 
         return File::exists(public_path($rutaRelativa));
+    }
+
+    private function esUrlRemotaVigente(string $urlPdf): bool
+    {
+        $componentes = parse_url($urlPdf);
+        if (!$componentes || empty($componentes['query'])) {
+            return true;
+        }
+
+        parse_str($componentes['query'], $parametros);
+        $ahora = Carbon::now('UTC')->timestamp;
+        $margenSeguridad = 30;
+
+        if (isset($parametros['Expires']) && is_numeric($parametros['Expires'])) {
+            return $ahora < (((int) $parametros['Expires']) - $margenSeguridad);
+        }
+
+        $xAmzDate = $parametros['X-Amz-Date'] ?? null;
+        $xAmzExpires = $parametros['X-Amz-Expires'] ?? null;
+        if ($xAmzDate && $xAmzExpires && is_numeric($xAmzExpires)) {
+            $fechaFirma = Carbon::createFromFormat('Ymd\\THis\\Z', $xAmzDate, 'UTC');
+            if ($fechaFirma !== false) {
+                $expiraEn = $fechaFirma->copy()->addSeconds((int) $xAmzExpires)->timestamp;
+
+                return $ahora < ($expiraEn - $margenSeguridad);
+            }
+        }
+
+        return true;
     }
 
     private function normalizarUrlPdf(string $urlPdf): string
@@ -291,7 +320,7 @@ class ContratoController extends Controller
             $respuesta = $pdfMonkey->crearDocumentoSincronizado(
                 $datosContrato,
                 $pdfMonkey->construirMeta([], 'contrato_' . $idAlquiler . '.pdf')
-            );
+            ); 
 
             Log::info("Respuesta de PdfMonkey recibida", ['respuesta' => $respuesta]);
 
@@ -420,7 +449,7 @@ class ContratoController extends Controller
             ->value('u.id_usuario');
     }
 
-    private function obtenerInicialAvatar(?string $nombre): string
+    private function obtenerInicialAvatar(?string $nombre): string 
     {
         if (empty($nombre)) {
             return 'A';

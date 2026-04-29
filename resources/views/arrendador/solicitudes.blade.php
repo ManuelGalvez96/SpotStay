@@ -66,14 +66,16 @@
                         </td>
                         <td>{{ $solicitud->creado_alquiler ? \Carbon\Carbon::parse($solicitud->creado_alquiler)->format('d/m/Y') : '-' }}</td>
                         <td>
-                            @if ($estado === 'pendiente')
-                                <div class="acciones" data-acciones="{{ $solicitud->id_alquiler }}">
-                                    <button class="btn-ok" data-aprobar="{{ $solicitud->id_alquiler }}" data-arrendador="{{ $arrendadorId }}">Aprobar</button>
-                                    <button class="btn-no" data-rechazar="{{ $solicitud->id_alquiler }}" data-arrendador="{{ $arrendadorId }}">Rechazar</button>
-                                </div>
-                            @else
-                                <span class="muted">Sin acciones</span>
-                            @endif
+                            <div class="acciones" data-acciones="{{ $solicitud->id_alquiler }}" data-estado="{{ $estado }}" data-arrendador="{{ $arrendadorId }}">
+                                @if ($estado === 'activo')
+                                    <button class="btn-ver" data-ver="{{ $solicitud->id_alquiler }}">Ver</button>
+                                    <button class="btn-eliminar" data-eliminar="{{ $solicitud->id_alquiler }}">Eliminar</button>
+                                @else
+                                    <button class="btn-ver" data-ver="{{ $solicitud->id_alquiler }}">Ver</button>
+                                    <button class="btn-editar" data-editar="{{ $solicitud->id_alquiler }}">Editar</button>
+                                    <button class="btn-eliminar" data-eliminar="{{ $solicitud->id_alquiler }}">Eliminar</button>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @empty

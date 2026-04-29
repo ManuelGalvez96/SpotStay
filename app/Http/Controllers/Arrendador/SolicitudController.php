@@ -83,6 +83,136 @@ class SolicitudController extends Controller
         return $this->cambiarEstado($request, $id, 'rechazado');
     }
 
+    public function ver(Request $request, int $id)
+    {
+        $arrendadorId = $this->obtenerIdArrendador($request);
+
+        $solicitud = DB::table('tbl_alquiler as a')
+            ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'a.id_propiedad_fk')
+            ->join('tbl_usuario as inquilino', 'inquilino.id_usuario', '=', 'a.id_inquilino_fk')
+            ->where('a.id_alquiler', $id)
+            ->where('p.id_arrendador_fk', $arrendadorId)
+            ->select(
+                'a.id_alquiler',
+                'p.titulo_propiedad',
+                DB::raw($this->obtenerSelectDireccionPropiedad('p')),
+                'inquilino.nombre_usuario as nombre_inquilino',
+                'inquilino.email_usuario as email_inquilino',
+                'inquilino.telefono_usuario as telefono_inquilino',
+                'a.estado_alquiler',
+                'a.fecha_inicio_alquiler',
+                'a.fecha_fin_alquiler',
+                'p.precio_propiedad as precio_alquiler',
+                'a.creado_alquiler'
+            )
+            ->first();
+
+        if (!$solicitud) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró la solicitud.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $solicitud,
+        ]);
+    }
+
+    public function actualizar(Request $request, int $id)
+    {
+        $arrendadorId = $this->obtenerIdArrendador($request);
+
+        $alquiler = DB::table('tbl_alquiler as a')
+            ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'a.id_propiedad_fk')
+            ->where('a.id_alquiler', $id)
+            ->where('p.id_arrendador_fk', $arrendadorId)
+            ->select('a.id_alquiler', 'a.estado_alquiler')
+            ->first();
+
+        if (!$alquiler) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró la solicitud.',
+            ], 404);
+        }
+
+        if ($alquiler->estado_alquiler === 'activo') {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede editar una solicitud con estado activo.',
+            ], 403);
+        }
+
+        $datosActualizar = [];
+
+        if ($request->has('fecha_inicio_alquiler')) {
+            $datosActualizar['fecha_inicio_alquiler'] = $request->input('fecha_inicio_alquiler');
+        }
+
+        if ($request->has('fecha_fin_alquiler')) {
+            $datosActualizar['fecha_fin_alquiler'] = $request->input('fecha_fin_alquiler');
+        }
+
+        if (empty($datosActualizar)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No hay datos para actualizar.',
+            ], 400);
+        }
+
+        $datosActualizar['actualizado_alquiler'] = Carbon::now();
+
+        DB::table('tbl_alquiler')
+            ->where('id_alquiler', $id)
+            ->update($datosActualizar);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Solicitud actualizada correctamente.',
+        ]);
+    }
+
+    public function eliminar(Request $request, int $id)
+    {
+        $arrendadorId = $this->obtenerIdArrendador($request);
+
+        $alquiler = DB::table('tbl_alquiler as a')
+            ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'a.id_propiedad_fk')
+            ->where('a.id_alquiler', $id)
+            ->where('p.id_arrendador_fk', $arrendadorId)
+            ->select('a.id_alquiler')
+            ->first();
+
+        if (!$alquiler) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró la solicitud.',
+            ], 404);
+        }
+
+        DB::beginTransaction();
+        try {
+            DB::table('tbl_alquiler')
+                ->where('id_alquiler', $id)
+                ->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitud eliminada correctamente.',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la solicitud.',
+            ], 500);
+        }
+    }
+
     private function cambiarEstado(Request $request, int $id, string $estado)
     {
         $arrendadorId = $this->obtenerIdArrendador($request);

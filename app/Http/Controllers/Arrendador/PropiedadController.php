@@ -40,7 +40,9 @@ class PropiedadController extends Controller
     {
         $arrendadorId = $this->obtenerIdArrendador($request);
         $propiedadId = (int) $request->input('id_propiedad', 0);
+        $esEdicion = $propiedadId > 0;
         $columnaPrecio = $this->obtenerColumnaPrecioPropiedad();
+        $imagenPrincipalIndice = (int) $request->input('imagen-principal-indice', -1);
 
         $datos = $request->validate([
             'titulo_propiedad' => ['required', 'string', 'max:150'],
@@ -52,6 +54,8 @@ class PropiedadController extends Controller
             'descripcion_propiedad' => ['nullable', 'string'],
             'precio_propiedad' => ['required', 'numeric', 'min:0'],
             'estado_propiedad' => ['required', 'in:borrador,publicada,inactiva,alquilada'],
+            'imagenes_propiedad' => ['nullable', 'array', 'max:10'],
+            'imagenes_propiedad.*' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         $datosPropiedad = [
@@ -73,35 +77,91 @@ class PropiedadController extends Controller
             $this->mapearDireccionParaGuardar($datos['direccion_propiedad'])
         );
 
-        if ($propiedadId > 0) {
-            $existe = DB::table('tbl_propiedad')
-                ->where('id_propiedad', $propiedadId)
-                ->where('id_arrendador_fk', $arrendadorId)
-                ->exists();
+        DB::beginTransaction();
 
-            if (!$existe) {
-                if ($request->expectsJson() || $request->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'No se encontró la propiedad para editar.',
-                    ], 404);
+        try {
+            if ($propiedadId > 0) {
+                $existe = DB::table('tbl_propiedad')
+                    ->where('id_propiedad', $propiedadId)
+                    ->where('id_arrendador_fk', $arrendadorId)
+                    ->exists();
+
+                if (!$existe) {
+                    DB::rollBack();
+
+                    if ($request->expectsJson() || $request->ajax()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'No se encontró la propiedad para editar.',
+                        ], 404);
+                    }
+
+                    return redirect()
+                        ->route('arrendador.propiedades', ['arrendador_id' => $arrendadorId])
+                        ->with('error', 'No se encontró la propiedad para editar.');
                 }
 
-                return redirect()
-                    ->route('arrendador.propiedades', ['arrendador_id' => $arrendadorId])
-                    ->with('error', 'No se encontró la propiedad para editar.');
+                DB::table('tbl_propiedad')
+                    ->where('id_propiedad', $propiedadId)
+                    ->where('id_arrendador_fk', $arrendadorId)
+                    ->update($datosPropiedad);
+            } else {
+                $datosPropiedad['creado_propiedad'] = Carbon::now();
+                $propiedadId = (int) DB::table('tbl_propiedad')->insertGetId($datosPropiedad);
             }
 
-            DB::table('tbl_propiedad')
-                ->where('id_propiedad', $propiedadId)
-                ->where('id_arrendador_fk', $arrendadorId)
-                ->update($datosPropiedad);
-        } else {
-            $datosPropiedad['creado_propiedad'] = Carbon::now();
-            DB::table('tbl_propiedad')->insert($datosPropiedad);
+            $imagenesSubidas = $request->file('imagenes_propiedad', []);
+            if (!empty($imagenesSubidas)) {
+                $totalActual = (int) DB::table('tbl_fotos')
+                    ->where('id_propiedad_fk', $propiedadId)
+                    ->count();
+
+                if (($totalActual + count($imagenesSubidas)) > 10) {
+                    DB::rollBack();
+
+                    if ($request->expectsJson() || $request->ajax()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'No puedes superar 10 imágenes por propiedad.',
+                        ], 422);
+                    }
+
+                    return redirect()
+                        ->route('arrendador.propiedades', ['arrendador_id' => $arrendadorId])
+                        ->with('error', 'No puedes superar 10 imágenes por propiedad.');
+                }
+
+                foreach ($imagenesSubidas as $indice => $imagenSubida) {
+                    $nombreArchivo = now()->format('YmdHis') . '_' . $propiedadId . '_' . $indice . '_' . uniqid() . '.' . $imagenSubida->getClientOriginalExtension();
+                    $rutaGuardada = $imagenSubida->storeAs('propiedades', $nombreArchivo, 'public');
+
+                    $esPrincipal = ($indice === $imagenPrincipalIndice);
+
+                    DB::table('tbl_fotos')->insert([
+                        'id_propiedad_fk' => $propiedadId,
+                        'ruta_foto' => $rutaGuardada,
+                        'es_principal_foto' => $esPrincipal,
+                    ]);
+                }
+            }
+
+            DB::commit();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se pudo guardar la propiedad en este momento.',
+                ], 500);
+            }
+
+            return redirect()
+                ->route('arrendador.propiedades', ['arrendador_id' => $arrendadorId])
+                ->with('error', 'No se pudo guardar la propiedad en este momento.');
         }
 
-        $mensaje = $propiedadId > 0 ? 'Propiedad actualizada correctamente.' : 'Propiedad creada correctamente.';
+        $mensaje = $esEdicion ? 'Propiedad actualizada correctamente.' : 'Propiedad creada correctamente.';
 
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([

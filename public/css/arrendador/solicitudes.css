@@ -29,11 +29,179 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
 .estado-activo { background: #e7f8f1; color: #05603a; }
 .estado-rechazado { background: #fff1f0; color: #912018; }
 .acciones { display: flex; gap: 8px; }
-.btn-ok, .btn-no { border: none; border-radius: 10px; padding: 7px 10px; color: #fff; cursor: pointer; font-weight: 600; }
-.btn-ok { background: var(--exito); }
-.btn-no { background: var(--error); }
+.btn-ver, .btn-editar, .btn-eliminar { border: none; border-radius: 10px; padding: 7px 12px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s ease; }
+.btn-ver { background: #eef3fb; color: var(--primario); }
+.btn-ver:hover { background: var(--primario); color: #fff; }
+.btn-editar { background: #fef3cd; color: #854d0e; }
+.btn-editar:hover { background: #f59e0b; color: #fff; }
+.btn-eliminar { background: #fee2e2; color: var(--error); }
+.btn-eliminar:hover { background: var(--error); color: #fff; }
 .paginacion { margin-top: 12px; }
 .paginacion nav { display: flex; justify-content: center; }
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 27, 45, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-contenedor {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 24px 48px -16px rgba(15, 27, 45, 0.4);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.modal-encabezado h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.modal-cerrar {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.modal-cerrar:hover {
+  background: var(--fondo);
+  color: var(--texto);
+}
+
+.modal-cuerpo {
+  padding: 20px;
+}
+
+.modal-pie {
+  display: flex;
+  gap: 10px;
+  padding: 20px;
+  border-top: 1px solid var(--borde);
+  justify-content: flex-end;
+}
+
+.detalles-solicitud {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detalles-solicitud p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.detalles-solicitud strong {
+  color: var(--primario);
+}
+
+.formulario-editar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.campo-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo-formulario label {
+  font-weight: 600;
+  color: var(--texto);
+  font-size: 14px;
+}
+
+.campo-formulario input {
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  color: var(--texto);
+  transition: all 0.2s ease;
+}
+
+.campo-formulario input:focus {
+  outline: none;
+  border-color: var(--primario);
+  box-shadow: 0 0 0 3px rgba(18, 59, 122, 0.1);
+}
+
+.campo-formulario input:disabled {
+  background: var(--fondo);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.btn-guardar, .btn-cancelar {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-guardar {
+  background: var(--exito);
+  color: #fff;
+}
+
+.btn-guardar:hover {
+  background: #0d8561;
+}
+
+.btn-cancelar {
+  background: var(--borde);
+  color: var(--texto);
+}
+
+.btn-cancelar:hover {
+  background: #c4cdd6;
+}
 
 .toast {
   position: fixed;
@@ -58,4 +226,5 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
   .pagina { padding: 14px; }
   .kpis { grid-template-columns: 1fr; }
   .acciones { flex-direction: column; }
+  .modal-contenedor { width: 95%; }
 }

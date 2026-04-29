@@ -127,7 +127,7 @@
                     </div>
                 </div>
 
-                <!-- Card: Chat con Inquilinos -->
+                {{-- <!-- Card: Chat con Inquilinos -->
                 <div class="card">
                     <div class="card-header">
                         <div class="card-icon">💬</div>
@@ -141,7 +141,7 @@
                     <div class="card-footer">
                         <a class="btn btn-outline btn-sm" href="{{ route('arrendador.mensajes', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Abrir Mensajes</a>
                     </div>
-                </div>
+                </div> --}}
 
                 <!-- Card: Descargar Contratos -->
                 <div class="card">

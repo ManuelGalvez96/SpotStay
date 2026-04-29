@@ -25,6 +25,40 @@ function mostrarToast(texto) {
   }, 1800);
 }
 
+function crearModal(titulo, contenido) {
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  
+  var contenedor = document.createElement('div');
+  contenedor.className = 'modal-contenedor';
+  
+  var encabezado = document.createElement('div');
+  encabezado.className = 'modal-encabezado';
+  
+  var h2 = document.createElement('h2');
+  h2.textContent = titulo;
+  encabezado.appendChild(h2);
+  
+  var botonCerrar = document.createElement('button');
+  botonCerrar.className = 'modal-cerrar';
+  botonCerrar.textContent = '✕';
+  botonCerrar.onclick = function () { modal.remove(); };
+  encabezado.appendChild(botonCerrar);
+  
+  var cuerpo = document.createElement('div');
+  cuerpo.className = 'modal-cuerpo';
+  cuerpo.innerHTML = contenido;
+  
+  contenedor.appendChild(encabezado);
+  contenedor.appendChild(cuerpo);
+  modal.appendChild(contenedor);
+  modal.onclick = function (e) {
+    if (e.target === modal) modal.remove();
+  };
+  
+  return { modal: modal, cuerpo: cuerpo, contenedor: contenedor };
+}
+
 function actualizarFila(id, estado) {
   var estadoNodo = document.getElementById('estado-' + id);
   var accionesNodo = document.querySelector('[data-acciones="' + id + '"]');
@@ -35,21 +69,28 @@ function actualizarFila(id, estado) {
   }
 
   if (accionesNodo) {
-    accionesNodo.innerHTML = '<span class="muted">Sin acciones</span>';
+    if (estado === 'activo') {
+      accionesNodo.innerHTML = 
+        '<button class="btn-ver" data-ver="' + id + '">Ver</button>' +
+        '<button class="btn-eliminar" data-eliminar="' + id + '">Eliminar</button>';
+    } else {
+      accionesNodo.innerHTML = 
+        '<button class="btn-ver" data-ver="' + id + '">Ver</button>' +
+        '<button class="btn-editar" data-editar="' + id + '">Editar</button>' +
+        '<button class="btn-eliminar" data-eliminar="' + id + '">Eliminar</button>';
+    }
+    accionesNodo.setAttribute('data-estado', estado);
+    agregarEventosAcciones();
   }
 }
 
-function enviarCambio(id, arrendadorId, accion) {
-  var ruta = '/arrendador/solicitudes/' + id + '/' + accion;
-
-  fetch(ruta, {
-    method: 'POST',
+function verSolicitud(id, arrendadorId) {
+  fetch('/arrendador/solicitudes/' + id + '/ver?arrendador_id=' + encodeURIComponent(arrendadorId || ''), {
+    method: 'GET',
     headers: {
-      'X-CSRF-TOKEN': obtenerTokenCsrf(),
       'X-Requested-With': 'XMLHttpRequest',
       'Accept': 'application/json'
     },
-    body: new URLSearchParams({ arrendador_id: arrendadorId }),
     credentials: 'same-origin'
   })
     .then(function (respuesta) {
@@ -59,25 +100,206 @@ function enviarCambio(id, arrendadorId, accion) {
     })
     .then(function (resultado) {
       if (!resultado.ok || !resultado.datosRespuesta.success) {
-        throw new Error(resultado.datosRespuesta.message || 'No se pudo cambiar el estado.');
+        throw new Error(resultado.datosRespuesta.message || 'No se pudo obtener los datos.');
       }
 
-      actualizarFila(id, resultado.datosRespuesta.estado);
-      mostrarToast(resultado.datosRespuesta.message || 'Cambio aplicado.');
+      var datos = resultado.datosRespuesta.data;
+      var contenido = 
+        '<div class="detalles-solicitud">' +
+        '  <p><strong>Propiedad:</strong> ' + datos.titulo_propiedad + '</p>' +
+        '  <p><strong>Dirección:</strong> ' + datos.direccion_propiedad + '</p>' +
+        '  <p><strong>Inquilino:</strong> ' + datos.nombre_inquilino + '</p>' +
+        '  <p><strong>Email:</strong> ' + datos.email_inquilino + '</p>' +
+        '  <p><strong>Teléfono:</strong> ' + (datos.telefono_inquilino || 'No disponible') + '</p>' +
+        '  <p><strong>Estado:</strong> ' + datos.estado_alquiler + '</p>' +
+        '  <p><strong>Fecha Inicio:</strong> ' + datos.fecha_inicio_alquiler + '</p>' +
+        '  <p><strong>Fecha Fin:</strong> ' + (datos.fecha_fin_alquiler || 'Sin fin definido') + '</p>' +
+        '  <p><strong>Monto Mensual:</strong> €' + (parseFloat(datos.precio_alquiler) || 0).toFixed(2) + '</p>' +
+        '</div>';
+
+      var miModal = crearModal('Detalles de la Solicitud', contenido);
+      document.body.appendChild(miModal.modal);
     })
     .catch(function (error) {
-      mostrarToast(error.message || 'Error al procesar la solicitud.');
+      mostrarToast(error.message || 'Error al obtener los datos.');
     });
 }
 
-document.querySelectorAll('[data-aprobar]').forEach(function (boton) {
-  boton.addEventListener('click', function () {
-    enviarCambio(boton.getAttribute('data-aprobar'), boton.getAttribute('data-arrendador'), 'aprobar');
-  });
-});
+function editarSolicitud(id, arrendadorId) {
+  fetch('/arrendador/solicitudes/' + id + '/ver?arrendador_id=' + encodeURIComponent(arrendadorId || ''), {
+    method: 'GET',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'Accept': 'application/json'
+    },
+    credentials: 'same-origin'
+  })
+    .then(function (respuesta) {
+      return respuesta.json().then(function (datosRespuesta) {
+        return { ok: respuesta.ok, datosRespuesta: datosRespuesta };
+      });
+    })
+    .then(function (resultado) {
+      if (!resultado.ok || !resultado.datosRespuesta.success) {
+        throw new Error(resultado.datosRespuesta.message || 'No se pudo obtener los datos.');
+      }
 
-document.querySelectorAll('[data-rechazar]').forEach(function (boton) {
-  boton.addEventListener('click', function () {
-    enviarCambio(boton.getAttribute('data-rechazar'), boton.getAttribute('data-arrendador'), 'rechazar');
+      var datos = resultado.datosRespuesta.data;
+      var contenido = 
+        '<form id="formulario-editar-' + id + '" class="formulario-editar">' +
+        '  <div class="campo-formulario">' +
+        '    <label>Propiedad:</label>' +
+        '    <input type="text" value="' + datos.titulo_propiedad + '" disabled>' +
+        '  </div>' +
+        '  <div class="campo-formulario">' +
+        '    <label>Inquilino:</label>' +
+        '    <input type="text" value="' + datos.nombre_inquilino + '" disabled>' +
+        '  </div>' +
+        '  <div class="campo-formulario">' +
+        '    <label for="fecha-inicio-' + id + '">Fecha Inicio:</label>' +
+        '    <input type="date" id="fecha-inicio-' + id + '" name="fecha_inicio_alquiler" value="' + datos.fecha_inicio_alquiler + '" required>' +
+        '  </div>' +
+        '  <div class="campo-formulario">' +
+        '    <label for="fecha-fin-' + id + '">Fecha Fin:</label>' +
+        '    <input type="date" id="fecha-fin-' + id + '" name="fecha_fin_alquiler" value="' + (datos.fecha_fin_alquiler || '') + '">' +
+        '  </div>' +
+        '</form>';
+
+      var miModal = crearModal('Editar Solicitud', contenido);
+      
+      var pieModal = document.createElement('div');
+      pieModal.className = 'modal-pie';
+      
+      var botonGuardar = document.createElement('button');
+      botonGuardar.className = 'btn-guardar';
+      botonGuardar.textContent = 'Guardar Cambios';
+      botonGuardar.onclick = function () {
+        guardarEdicion(id, arrendadorId, miModal.modal);
+      };
+      
+      var botonCancelar = document.createElement('button');
+      botonCancelar.className = 'btn-cancelar';
+      botonCancelar.textContent = 'Cancelar';
+      botonCancelar.onclick = function () {
+        miModal.modal.remove();
+      };
+      
+      pieModal.appendChild(botonGuardar);
+      pieModal.appendChild(botonCancelar);
+      miModal.contenedor.appendChild(pieModal);
+      
+      document.body.appendChild(miModal.modal);
+    })
+    .catch(function (error) {
+      mostrarToast(error.message || 'Error al obtener los datos.');
+    });
+}
+
+function guardarEdicion(id, arrendadorId, modal) {
+  var formulario = document.getElementById('formulario-editar-' + id);
+  if (!formulario) return;
+
+  var datosFormulario = new FormData(formulario);
+  datosFormulario.append('arrendador_id', arrendadorId || '');
+
+  fetch('/arrendador/solicitudes/' + id + '/actualizar', {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': obtenerTokenCsrf(),
+      'X-Requested-With': 'XMLHttpRequest',
+      'Accept': 'application/json'
+    },
+    body: datosFormulario,
+    credentials: 'same-origin'
+  })
+    .then(function (respuesta) {
+      return respuesta.json().then(function (datosRespuesta) {
+        return { ok: respuesta.ok, datosRespuesta: datosRespuesta };
+      });
+    })
+    .then(function (resultado) {
+      if (!resultado.ok || !resultado.datosRespuesta.success) {
+        throw new Error(resultado.datosRespuesta.message || 'No se pudo guardar los cambios.');
+      }
+
+      modal.remove();
+      mostrarToast('Solicitud actualizada correctamente.');
+    })
+    .catch(function (error) {
+      mostrarToast(error.message || 'Error al guardar los cambios.');
+    });
+}
+
+function eliminarSolicitud(id, arrendadorId) {
+  if (!confirm('¿Estás seguro de que deseas eliminar esta solicitud? Esta acción no se puede deshacer.')) {
+    return;
+  }
+
+  fetch('/arrendador/solicitudes/' + id + '/eliminar', {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': obtenerTokenCsrf(),
+      'X-Requested-With': 'XMLHttpRequest',
+      'Accept': 'application/json'
+    },
+    body: new URLSearchParams({ arrendador_id: arrendadorId || '' }),
+    credentials: 'same-origin'
+  })
+    .then(function (respuesta) {
+      return respuesta.json().then(function (datosRespuesta) {
+        return { ok: respuesta.ok, datosRespuesta: datosRespuesta };
+      });
+    })
+    .then(function (resultado) {
+      if (!resultado.ok || !resultado.datosRespuesta.success) {
+        throw new Error(resultado.datosRespuesta.message || 'No se pudo eliminar la solicitud.');
+      }
+
+      var fila = document.getElementById('fila-' + id);
+      if (fila) {
+        fila.style.opacity = '0';
+        setTimeout(function () {
+          if (fila.parentNode) {
+            fila.parentNode.removeChild(fila);
+          }
+        }, 200);
+      }
+
+      mostrarToast('Solicitud eliminada correctamente.');
+    })
+    .catch(function (error) {
+      mostrarToast(error.message || 'Error al eliminar la solicitud.');
+    });
+}
+
+function agregarEventosAcciones() {
+  document.querySelectorAll('[data-ver]').forEach(function (boton) {
+    boton.onclick = function (e) {
+      e.preventDefault();
+      var accionesDiv = boton.closest('[data-acciones]');
+      var arrendadorId = accionesDiv ? accionesDiv.getAttribute('data-arrendador') : '';
+      verSolicitud(boton.getAttribute('data-ver'), arrendadorId);
+    };
   });
-});
+
+  document.querySelectorAll('[data-editar]').forEach(function (boton) {
+    boton.onclick = function (e) {
+      e.preventDefault();
+      var accionesDiv = boton.closest('[data-acciones]');
+      var arrendadorId = accionesDiv ? accionesDiv.getAttribute('data-arrendador') : '';
+      editarSolicitud(boton.getAttribute('data-editar'), arrendadorId);
+    };
+  });
+
+  document.querySelectorAll('[data-eliminar]').forEach(function (boton) {
+    boton.onclick = function (e) {
+      e.preventDefault();
+      var accionesDiv = boton.closest('[data-acciones]');
+      var arrendadorId = accionesDiv ? accionesDiv.getAttribute('data-arrendador') : '';
+      eliminarSolicitud(boton.getAttribute('data-eliminar'), arrendadorId);
+    };
+  });
+}
+
+agregarEventosAcciones();
+

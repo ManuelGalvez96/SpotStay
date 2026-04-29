@@ -58,8 +58,9 @@
     </div>
 </div>
 
-<div class="card-admin filtros-card-gestor">
-    <div class="card-header-admin">
+<div class="card-admin filtros-card-gestor card-con-franja">
+    <div class="card-franja"></div>
+    <div class="card-header-admin card-header-gradient">
         <span>Filtros de propiedades</span>
     </div>
 
@@ -85,8 +86,9 @@
     </form>
 </div>
 
-<div class="card-admin tabla-propiedades-card" id="propiedadesTablaCard">
-    <div class="card-header-admin">
+<div class="card-admin tabla-propiedades-card card-con-franja" id="propiedadesTablaCard">
+    <div class="card-franja"></div>
+    <div class="card-header-admin card-header-gradient">
         <span>{{ $propiedades->total() }} propiedades encontradas</span>
     </div>
 

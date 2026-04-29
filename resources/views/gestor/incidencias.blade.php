@@ -18,8 +18,9 @@
 </div>
 
 <div class="central-grid incidencias-filtros-wrap" id="incidenciasFiltrosWrap">
-    <div class="card-admin">
-        <div class="card-header-admin">
+    <div class="card-admin card-con-franja">
+        <div class="card-franja"></div>
+        <div class="card-header-admin card-header-gradient">
             <span>Filtros</span>
         </div>
 
@@ -55,7 +56,7 @@
 
     <div class="card-admin card-con-franja">
         <div class="card-franja"></div>
-        <div class="card-header-admin">
+        <div class="card-header-admin card-header-gradient">
             <span>Resumen de resultados</span>
         </div>
         <div class="resumen-filtros">
@@ -68,8 +69,9 @@
 </div>
 
 <div class="incidencias-tabla-wrap" id="incidenciasTablaWrap">
-    <div class="card-admin">
-        <div class="card-header-admin">
+    <div class="card-admin card-con-franja">
+        <div class="card-franja"></div>
+        <div class="card-header-admin card-header-gradient">
             <span>Listado de incidencias</span>
             <a href="{{ url('/gestor/dashboard') }}" class="link-ver-todos">Volver al dashboard →</a>
         </div>

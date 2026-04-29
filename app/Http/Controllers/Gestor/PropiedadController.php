@@ -132,6 +132,8 @@ class PropiedadController extends Controller
         $sortColumn = $allowedSorts[$sort] ?? $allowedSorts['creado_propiedad'];
         $sortDir = in_array($dir, ['asc', 'desc'], true) ? $dir : 'desc';
 
+        // (removed temporary debug instrumentation)
+
         $propiedades = $query
             ->select(
                 'tbl_propiedad.id_propiedad',
@@ -154,6 +156,8 @@ class PropiedadController extends Controller
             ->orderBy('tbl_propiedad.id_propiedad', 'desc')
             ->paginate(10)
             ->withQueryString();
+
+        // (removed temporary debug instrumentation)
 
         $totalAsignadas = (clone $baseQuery)->count();
         $totalPublicadas = (clone $baseQuery)->where('tbl_propiedad.estado_propiedad', 'publicada')->count();

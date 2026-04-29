@@ -25,7 +25,7 @@
                 <div class="kpi-icon kpi-icon-red"><i class="bi bi-exclamation-triangle"></i></div>
             </div>
             <div class="kpi-numero kpi-numero-red">{{ $incidenciasNuevas }}</div>
-            <div class="kpi-sub">pendientes de iniciar</div>
+            <div class="kpi-sub">Pendientes de iniciar</div>
         </div>
     </a>
 
@@ -36,7 +36,7 @@
                 <div class="kpi-icon kpi-icon-orange"><i class="bi bi-hourglass-split"></i></div>
             </div>
             <div class="kpi-numero kpi-numero-orange">{{ $incidenciasEnProceso }}</div>
-            <div class="kpi-sub">actualmente en gestión</div>
+            <div class="kpi-sub">En gestión</div>
         </div>
     </a>
 
@@ -47,7 +47,7 @@
                 <div class="kpi-icon kpi-icon-blue"><i class="bi bi-pause-circle"></i></div>
             </div>
             <div class="kpi-numero">{{ $incidenciasEsperandoAccion }}</div>
-            <div class="kpi-sub">bloqueadas por terceros</div>
+            <div class="kpi-sub">Esperando decisión del arrendador</div>
         </div>
     </a>
 
@@ -58,14 +58,15 @@
                 <div class="kpi-icon kpi-icon-green"><i class="bi bi-lightning-charge"></i></div>
             </div>
             <div class="kpi-numero">{{ $incidenciasUrgentes->count() }}</div>
-            <div class="kpi-sub">requieren prioridad alta</div>
+            <div class="kpi-sub">Requieren prioridad alta</div>
         </div>
     </a>
 </div>
 
 <div class="central-grid">
-    <div class="card-admin">
-        <div class="card-header-admin">
+    <div class="card-admin card-con-franja">
+        <div class="card-franja"></div>
+        <div class="card-header-admin card-header-gradient">
             <span>Incidencias recientes</span>
             <a href="{{ url('/gestor/incidencias') }}" class="link-ver-todos">Ver todas →</a>
         </div>
@@ -112,7 +113,7 @@
 
     <div class="card-admin card-con-franja">
         <div class="card-franja"></div>
-        <div class="card-header-admin">
+        <div class="card-header-admin card-header-gradient">
             <span>Incidencias urgentes</span>
             <span class="badge-contador">{{ $incidenciasUrgentes->count() }}</span>
         </div>
@@ -143,7 +144,7 @@
 <div class="inferior-grid">
     <div class="card-admin card-con-franja" id="propiedades-asignadas">
         <div class="card-franja"></div>
-        <div class="card-header-admin">
+        <div class="card-header-admin card-header-gradient">
             <span>Propiedades asignadas</span>
         </div>
 
@@ -167,7 +168,7 @@
 
     <div class="card-admin card-con-franja">
         <div class="card-franja"></div>
-        <div class="card-header-admin">
+        <div class="card-header-admin card-header-gradient">
             <span>Actividad reciente</span>
         </div>
 

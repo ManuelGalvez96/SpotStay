@@ -31,6 +31,26 @@
         </div>
         @endif
 
+        @if($alquiler->estado_pago_actual === 'pendiente')
+        <div class="alerta-pago-pendiente">
+            <i class="bi bi-calendar-event"></i>
+            <span>
+                @if($alquiler->dias_para_pago === 0)
+                ¡El pago vence <strong>hoy</strong>!
+                @else
+                Quedan <strong>{{ $alquiler->dias_para_pago }} días</strong> para el pago.
+                @endif
+            </span>
+        </div>
+        @elseif($alquiler->estado_pago_actual === 'pagado' && $alquiler->fecha_proximo_pago)
+        <div class="alerta-pago-al-dia">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>
+                Al día. Próximo pago: <strong>{{ \Carbon\Carbon::parse($alquiler->fecha_proximo_pago)->format('d/m/Y') }}</strong>
+            </span>
+        </div>
+        @endif
+
         @if ($alquiler->mostrarAlertaFin)
         <div class="alerta-fin-contrato {{ $alquiler->haExpirado ? 'estado-expirado' : '' }}">
             <i class="bi bi-clock-history"></i>
@@ -50,7 +70,7 @@
 
         <div class="acciones-gestion" style="display: flex; gap: 10px; margin-top: 15px;">
             <a href="{{ route('inquilino.ver_propiedad', $alquiler->id_propiedad) }}" class="btn-inquilino btn-secundario" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; text-decoration: none;">Ver Detalles</a>
-            <form method="POST" action="{{ route('miembro.chat.iniciar', $alquiler->id_propiedad) }}" class="m-0" style="display: contents;">
+            <form method="POST" action="{{ route('miembro.mensajes.iniciar', $alquiler->id_propiedad) }}" class="m-0" style="display: contents;">
                 @csrf
                 <button type="submit" class="btn-inquilino btn-primario" style="flex: 1; background-color: var(--primario); color: white; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; border-radius: var(--radio); height: 44px; font-weight: 600;">
                     <i class="bi bi-chat-dots"></i> Contactar

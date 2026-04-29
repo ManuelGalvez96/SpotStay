@@ -23,6 +23,7 @@ class Propiedad extends Model
     protected $fillable = [
         'id_arrendador_fk',
         'id_gestor_fk',
+        'id_admin_aprueba_fk',
         'titulo_propiedad',
         'calle_propiedad',
         'numero_propiedad',
@@ -34,17 +35,24 @@ class Propiedad extends Model
         'longitud_propiedad',
         'descripcion_propiedad',
         'precio_propiedad',
-        'gastos_propiedad',
+        'banos_propiedad',
+        'notas_admin_propiedad',
+        'aprobada_propiedad',
+        'tipo_propiedad',
+        'habitaciones_propiedad',
+        'metros_cuadrados_propiedad',
         'estado_propiedad',
         'creado_propiedad',
         'actualizado_propiedad',
     ];
 
     protected $casts = [
-        'gastos_propiedad' => 'array',
         'latitud_propiedad' => 'decimal:7',
         'longitud_propiedad' => 'decimal:7',
         'precio_propiedad' => 'decimal:2',
+        'banos_propiedad' => 'integer',
+        'aprobada_propiedad' => 'boolean',
+        'metros_cuadrados_propiedad' => 'integer',
         'creado_propiedad' => 'datetime',
         'actualizado_propiedad' => 'datetime',
     ];
@@ -67,6 +75,12 @@ class Propiedad extends Model
         return $this->hasMany(Alquiler::class, 'id_propiedad_fk', 'id_propiedad');
     }
 
+    // Fotos asociadas a la propiedad
+    public function fotos(): HasMany
+    {
+        return $this->hasMany(Foto::class, 'id_propiedad_fk', 'id_propiedad');
+    }
+
     // Incidencias reportadas en esta propiedad
     public function incidencias(): HasMany
     {
@@ -77,5 +91,17 @@ class Propiedad extends Model
     public function conversaciones(): HasMany
     {
         return $this->hasMany(Conversacion::class, 'id_propiedad_fk', 'id_propiedad');
+    }
+
+    /**
+     * Reconstruye la dirección completa combinando calle, número, piso y puerta.
+     */
+    public function getDireccionCompletaAttribute(): string
+    {
+        $partes = [$this->calle_propiedad, $this->numero_propiedad];
+        if ($this->piso_propiedad) $partes[] = "Piso " . $this->piso_propiedad;
+        if ($this->puerta_propiedad) $partes[] = "Pta " . $this->puerta_propiedad;
+        
+        return implode(', ', array_filter($partes));
     }
 }

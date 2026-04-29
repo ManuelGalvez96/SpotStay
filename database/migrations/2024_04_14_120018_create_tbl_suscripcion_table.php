@@ -14,6 +14,8 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_suscripcion')->autoIncrement()->primary();
             $table->unsignedBigInteger('id_usuario_fk');
             $table->string('plan_suscripcion', 30);
+            $table->decimal('precio_pagado_suscripcion', 8, 2)->default(0.00);
+            $table->unsignedBigInteger('id_plan_fk')->nullable();
             $table->unsignedTinyInteger('max_propiedades_suscripcion')->default(1);
             $table->date('inicio_suscripcion');
             $table->date('fin_suscripcion')->nullable();
@@ -21,10 +23,16 @@ return new class extends Migration {
             $table->timestamp('creado_suscripcion')->nullable();
             $table->timestamp('actualizado_suscripcion')->nullable();
 
+            // Índices
+            $table->index('estado_suscripcion');
+            $table->index('plan_suscripcion');
+            $table->index('id_usuario_fk');
+
             // Foreign keys
             $table->foreign('id_usuario_fk')
                 ->references('id_usuario')->on('tbl_usuario')
                 ->onDelete('cascade');
+            // La FK id_plan_fk se crea cuando exista tbl_plan.
         });
     }
 

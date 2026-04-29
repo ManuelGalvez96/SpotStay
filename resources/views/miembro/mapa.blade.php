@@ -7,6 +7,7 @@
 		<title>SpotStay | Mapa</title>
 		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 		<link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}" />
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 	</head>
 	<body class="pagina-mapa">
 		<header class="encabezado-mapa" id="encabezado-mapa">
@@ -21,6 +22,9 @@
 		<main class="contenido-mapa">
 			<aside class="panel-filtros" id="panel-filtros">
 				<div class="panel-filtros-encabezado">
+					<a class="detalle-volver" href="/miembro/inicio" aria-label="Volver">
+						<i class="bi bi-arrow-left" aria-hidden="true"></i>
+					</a>
 					<h2 class="titulo-filtros">Filtros de busqueda</h2>
 					<p class="descripcion-filtros">Ajusta los filtros y mueve el mapa para ver mas resultados.</p>
 				</div>

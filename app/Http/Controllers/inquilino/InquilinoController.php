@@ -47,11 +47,7 @@ class InquilinoController extends Controller
             return redirect($urlRedirect)->with('error', 'Acceso restringido: <br>Solo inquilinos o propietarios con alquileres activos pueden acceder a esta sección.');
         }
 
-        // Lógica de usuario consistente con Miembro
-        $nombreUsuario = $usuario->name ?? $usuario->nombre_usuario ?? $usuario->email ?? '';
-        $tieneFoto = !empty($usuario->foto_usuario);
-        $fotoUsuario = $tieneFoto ? asset('storage/' . $usuario->foto_usuario) : '';
-        $inicialUsuario = $nombreUsuario !== '' ? strtoupper(substr($nombreUsuario, 0, 1)) : '';
+
 
         // 1. Contratos Activos (Total general para KPIs, no se filtra)
         $totalContratos = DB::table('tbl_alquiler')
@@ -150,7 +146,7 @@ class InquilinoController extends Controller
             $alquiler->esMismoDia = false;
             $alquiler->tiempoRestanteHoy = null;
             $alquiler->banner_foto_url = $alquiler->ruta_foto
-                ? asset('public/img/' . $alquiler->ruta_foto)
+                ? asset('storage/' . $alquiler->ruta_foto)
                 : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
             $alquiler->estado_pago_actual = 'pagado';
             $alquiler->dias_para_pago = 0;
@@ -206,11 +202,6 @@ class InquilinoController extends Controller
         }
 
         return view('inquilino.gestionar_propiedades', [
-            'nombreUsuario' => $nombreUsuario,
-            'tieneFoto' => $tieneFoto,
-            'fotoUsuario' => $fotoUsuario,
-            'inicialUsuario' => $inicialUsuario,
-            'esInquilino' => true,
             'totalContratos' => $totalContratos,
             'diasParaPago' => $diasParaPago,
             'totalIncidencias' => $totalIncidencias,
@@ -257,11 +248,7 @@ class InquilinoController extends Controller
             return redirect()->route('gestionar_propiedades')->with('error', 'No tienes un alquiler activo para esta propiedad.');
         }
 
-        // Lógica de usuario consistente con Miembro
-        $nombreUsuario = $usuario->name ?? $usuario->nombre_usuario ?? $usuario->email ?? '';
-        $tieneFoto = !empty($usuario->foto_usuario);
-        $fotoUsuario = $tieneFoto ? asset('storage/' . $usuario->foto_usuario) : '';
-        $inicialUsuario = $nombreUsuario !== '' ? strtoupper(substr($nombreUsuario, 0, 1)) : '';
+
 
         // 2. Fotos de la propiedad
         $fotos = DB::table('tbl_fotos')
@@ -334,10 +321,6 @@ class InquilinoController extends Controller
             ->get();
 
         return view('inquilino.ver_propiedad', [
-            'nombreUsuario'       => $nombreUsuario,
-            'tieneFoto'           => $tieneFoto,
-            'fotoUsuario'         => $fotoUsuario,
-            'inicialUsuario'      => $inicialUsuario,
             'alquiler'            => $alquiler,
             'fotos'               => $fotos,
             'fotoPrincipal'       => $fotoPrincipal,
@@ -710,19 +693,35 @@ class InquilinoController extends Controller
         $cuotaReferencia = $cuotaVigente;
         $estadoPagoActual = $cuotaVigente && in_array($cuotaVigente->estado, ['pendiente', 'atrasado']) ? 'pendiente' : 'pagado';
 
+        // Si la cuota vigente ya está pagada, buscamos la siguiente cuota pendiente para el aviso de "Próximo pago"
+        if ($estadoPagoActual === 'pagado') {
+            $proximaPendiente = $cuotasAlquiler->first(function (AlquilerCuota $cuota) use ($mesVigente) {
+                return in_array($cuota->estado, ['pendiente', 'atrasado']) && 
+                       Carbon::parse((string) $cuota->mes_cuota)->format('Y-m') > $mesVigente->format('Y-m');
+            });
+            if ($proximaPendiente) {
+                $cuotaReferencia = $proximaPendiente;
+            }
+        }
+
         $diasParaPago = 0;
-        $fechaProximoPago = $hoy->copy()->addMonth()->day($diaInicio)->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
+        $fechaProximoPago = $hoy->copy()->addMonth()->day($diaInicio)->toDateString();
 
         if ($cuotaReferencia) {
             // El pago vence al final del día de vencimiento (23:59:59).
-            $fechaVencimiento = Carbon::parse((string) $cuotaReferencia->mes_cuota)
-                ->addMonth()
-                ->day($diaInicio)
-                ->endOfDay();
+            $mesReferencia = Carbon::parse((string) $cuotaReferencia->mes_cuota);
+            
+            // Calculamos el vencimiento: mes de la cuota + 1 mes, mismo día de inicio.
+            // Usamos setDay para evitar desbordamientos en meses cortos (ej: 31 de enero -> 28 de febrero)
+            $fechaVencimiento = $mesReferencia->copy()->addMonth();
+            $ultimoDiaMesDestino = (int) $fechaVencimiento->daysInMonth;
+            $diaVencimientoEfectivo = min($diaInicio, $ultimoDiaMesDestino);
+            
+            $fechaVencimiento = $fechaVencimiento->day($diaVencimientoEfectivo)->endOfDay();
 
             $diasParaPago = Carbon::now()->diffInDays($fechaVencimiento, false);
             $diasParaPago = $diasParaPago < 0 ? 0 : (int) round($diasParaPago);
-            $fechaProximoPago = $fechaVencimiento->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
+            $fechaProximoPago = $fechaVencimiento->toDateString();
         }
 
         // Contar pagos atrasados

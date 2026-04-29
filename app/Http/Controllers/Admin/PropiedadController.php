@@ -15,6 +15,26 @@ class PropiedadController extends Controller
         return view('admin.propiedades-crear');
     }
 
+    public function editar($id)
+    {
+        $propiedad = DB::table('tbl_propiedad')
+            ->join('tbl_usuario as arrendador', 'arrendador.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
+            ->select(
+                'tbl_propiedad.*',
+                'arrendador.email_usuario as email_arrendador'
+            )
+            ->where('tbl_propiedad.id_propiedad', $id)
+            ->first();
+
+        if (!$propiedad) {
+            abort(404);
+        }
+
+        return view('admin.propiedades-crear', [
+            'propiedadEditando' => $propiedad,
+        ]);
+    }
+
     public function crear(Request $request)
     {
         $datos = $request->validate([
@@ -90,6 +110,80 @@ class PropiedadController extends Controller
         }
 
         return redirect('/admin/propiedades')->with('success', 'Propiedad creada correctamente.');
+    }
+
+    public function actualizar(Request $request, $id)
+    {
+        $propiedadExistente = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->first();
+
+        if (!$propiedadExistente) {
+            abort(404);
+        }
+
+        $datos = $request->validate([
+            'titulo' => 'required|string|max:150',
+            'calle' => 'required|string|max:150',
+            'numero' => 'required|string|max:20',
+            'piso' => 'nullable|string|max:20',
+            'puerta' => 'nullable|string|max:20',
+            'ciudad' => 'required|string|max:100',
+            'codigo_postal' => 'required|string|max:10',
+            'precio' => 'required|numeric|min:0',
+            'estado' => 'required|in:publicada,alquilada,borrador,inactiva',
+            'descripcion' => 'nullable|string',
+            'arrendador_email' => 'required|email',
+        ]);
+
+        $arrendador = DB::table('tbl_usuario as u')
+            ->join('tbl_rol_usuario as ru', 'ru.id_usuario_fk', '=', 'u.id_usuario')
+            ->join('tbl_rol as r', 'r.id_rol', '=', 'ru.id_rol_fk')
+            ->where('u.email_usuario', $datos['arrendador_email'])
+            ->where('r.slug_rol', 'arrendador')
+            ->select('u.id_usuario')
+            ->first();
+
+        if (!$arrendador) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No existe un arrendador con ese email.',
+                ], 422);
+            }
+
+            return back()
+                ->withErrors(['arrendador_email' => 'No existe un arrendador con ese email.'])
+                ->withInput();
+        }
+
+        $precioColumna = $this->obtenerColumnaPrecio();
+
+        DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->update([
+                'id_arrendador_fk' => $arrendador->id_usuario,
+                'titulo_propiedad' => $datos['titulo'],
+                'calle_propiedad' => $datos['calle'],
+                'numero_propiedad' => $datos['numero'],
+                'piso_propiedad' => $datos['piso'] ?: null,
+                'puerta_propiedad' => $datos['puerta'] ?: null,
+                'ciudad_propiedad' => $datos['ciudad'],
+                'codigo_postal_propiedad' => $datos['codigo_postal'],
+                'descripcion_propiedad' => $datos['descripcion'] ?: null,
+                $precioColumna => $datos['precio'],
+                'estado_propiedad' => $datos['estado'],
+                'actualizado_propiedad' => Carbon::now(),
+            ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Propiedad actualizada correctamente.',
+            ]);
+        }
+
+        return redirect('/admin/propiedades')->with('success', 'Propiedad actualizada correctamente.');
     }
 
     public function index()

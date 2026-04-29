@@ -6,10 +6,30 @@
 	--success: #18a672;
 }
 
+/* Ajuste para navbar fijo */
+.contenido-miembro {
+	padding-top: 20px !important;
+}
+
 .contenedor-ver-propiedad {
 	max-width: 1200px;
 	margin: 0 auto;
 	padding: 20px;
+}
+
+/* Asegurar que los modales Bootstrap funcionen correctamente */
+.modal {
+	z-index: 1050 !important;
+	pointer-events: auto !important;
+}
+
+.modal-backdrop {
+	z-index: 1040 !important;
+	pointer-events: auto !important;
+}
+
+.modal-dialog {
+	pointer-events: auto !important;
 }
 
 /* Navegación y Cabecera */
@@ -85,15 +105,15 @@
 	height: 400px;
 	background-size: cover;
 	background-position: center;
- overflow: hidden;
- border-radius: 0;
+	overflow: hidden;
+	border-radius: 0;
 }
 
 .foto-principal-imagen {
- width: 100%;
- height: 100%;
- object-fit: cover;
- display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
 }
 
 .foto-principal.placeholder {
@@ -121,14 +141,14 @@
 	flex-shrink: 0;
 	opacity: 0.7;
 	transition: opacity 0.3s;
- overflow: hidden;
+	overflow: hidden;
 }
 
 .miniatura-imagen {
- width: 100%;
- height: 100%;
- object-fit: cover;
- display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
 }
 
 .miniatura:hover {
@@ -217,8 +237,15 @@
 	flex-shrink: 0;
 }
 
-.pago .card-icon { background: rgba(241, 196, 15, 0.1); color: var(--warning); }
-.contrato .card-icon { background: rgba(15, 76, 129, 0.1); color: var(--primario); }
+.pago .card-icon {
+	background: rgba(241, 196, 15, 0.1);
+	color: var(--warning);
+}
+
+.contrato .card-icon {
+	background: rgba(15, 76, 129, 0.1);
+	color: var(--primario);
+}
 
 .card-body {
 	flex: 1;
@@ -300,7 +327,8 @@
 	display: flex;
 	gap: 12px;
 	align-items: center;
-	justify-content: center; /* centrar los selects horizontalmente */
+	justify-content: center;
+	/* centrar los selects horizontalmente */
 	padding: 12px 20px;
 	background: #fff;
 	border-bottom: 1px solid var(--borde);
@@ -384,6 +412,29 @@
 	color: var(--texto);
 }
 
+/* Feedback visual para el activador del modal */
+.btn-detalle-incidencia {
+	cursor: pointer;
+	transition: all 0.3s ease;
+	border-radius: 4px;
+	padding: 2px 5px;
+	margin: -2px -5px;
+}
+
+.btn-detalle-incidencia:hover {
+	color: var(--primario) !important;
+	background-color: rgba(15, 76, 129, 0.05);
+	text-decoration: none;
+}
+
+/* Estabilización del cuerpo del modal dinámico */
+#cuerpo-modal-detalle {
+	min-height: 250px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
 .item-incidencia .fecha {
 	font-size: 0.8rem;
 	color: var(--texto-suave);
@@ -396,12 +447,35 @@
 	font-weight: 600;
 }
 
-.estado-tag.abierta { background: #fee2e2; color: #dc2626; }
-.estado-tag.en_proceso { background: #fef3c7; color: #d97706; }
-.estado-tag.esperando_decision { background: #e0f2fe; color: #0369a1; }
-.estado-tag.esperando_pago { background: #ede9fe; color: #6d28d9; }
-.estado-tag.resuelta { background: #d1fae5; color: #059669; }
-.estado-tag.cerrada { background: #e5e7eb; color: #374151; }
+.estado-tag.abierta {
+	background: #fee2e2;
+	color: #dc2626;
+}
+
+.estado-tag.en_proceso {
+	background: #fef3c7;
+	color: #d97706;
+}
+
+.estado-tag.esperando_decision {
+	background: #e0f2fe;
+	color: #0369a1;
+}
+
+.estado-tag.esperando_pago {
+	background: #ede9fe;
+	color: #6d28d9;
+}
+
+.estado-tag.resuelta {
+	background: #d1fae5;
+	color: #059669;
+}
+
+.estado-tag.cerrada {
+	background: #e5e7eb;
+	color: #374151;
+}
 
 .aviso-vacio {
 	padding: 40px;
@@ -430,6 +504,40 @@
 .btn-resolver:hover {
 	transform: scale(1.2);
 	color: #047857;
+}
+
+/* ===== MODAL BOOTSTRAP - Asegurar interactividad ===== */
+.modal {
+	z-index: 1050 !important;
+	pointer-events: auto !important;
+}
+
+.modal-backdrop {
+	z-index: 1040 !important;
+	pointer-events: auto !important;
+}
+
+/* .modal.show {
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+} */
+
+.modal-dialog {
+	pointer-events: auto !important;
+}
+
+.modal-content {
+	pointer-events: auto !important;
+}
+
+.btn-close {
+	pointer-events: auto !important;
+}
+
+.form-control,
+.form-select {
+	pointer-events: auto !important;
 }
 
 /* Responsive */
@@ -496,42 +604,42 @@
 }
 
 .nota-fin-contrato {
- margin-top: 4px;
+	margin-top: 4px;
 }
 
 .header-feedback-msg {
- position: absolute;
- left: 50%;
- transform: translateX(-50%);
- z-index: 100;
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 100;
 }
 
 .alert-success-feedback {
- background-color: rgba(24, 166, 114, 0.1);
- border: 1px solid rgba(24, 166, 114, 0.2);
- color: #18a672;
- padding: 8px 16px;
- border-radius: 8px;
- font-size: 0.85rem;
- margin: 0;
+	background-color: rgba(24, 166, 114, 0.1);
+	border: 1px solid rgba(24, 166, 114, 0.2);
+	color: #18a672;
+	padding: 8px 16px;
+	border-radius: 8px;
+	font-size: 0.85rem;
+	margin: 0;
 }
 
 .form-pago-detalle {
- margin: 0;
+	margin: 0;
 }
 
 .item-submenu-danger,
 .item-submenu-danger .icon-danger {
- color: red !important;
+	color: red !important;
 }
 
 .form-inline-incidencia {
- display: inline;
+	display: inline;
 }
 
 .btn-enviar-reporte {
- background-color: var(--primario);
- border-color: var(--primario);
+	background-color: var(--primario);
+	border-color: var(--primario);
 }
 
 /* ===== OVERLAY DE CARGA PARA FILTROS ===== */
@@ -569,4 +677,3 @@
 	font-weight: 500;
 	font-size: 0.95rem;
 }
-

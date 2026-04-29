@@ -249,14 +249,26 @@ body.pagina-miembro {
 	border: none;
 }
 
+.etiqueta-precio-icono {
+	background: transparent;
+	border: none;
+}
+
 .etiqueta-precio {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 52px;
+	height: 30px;
 	position: relative;
-	padding: 8px 14px;
+	padding: 0 12px;
 	background: var(--primario);
 	color: #ffffff;
 	border-radius: 16px;
 	font-weight: 600;
 	font-size: 13px;
+	line-height: 1;
+	white-space: nowrap;
 	box-shadow: 0 12px 22px -12px rgba(0, 0, 0, 0.35);
 	border: 2px solid #ffffff;
 }
@@ -473,6 +485,25 @@ body.pagina-miembro {
 	height: 100%;
 	object-fit: cover;
 	display: block;
+}
+
+.registro-propiedad-panel {
+	padding: 24px;
+}
+
+.form-registro-propiedad {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.mapa-registro-propiedad {
+	width: 100%;
+	height: 320px;
+	border-radius: var(--radio);
+	border: 1px solid var(--borde);
+	overflow: hidden;
+	background: #e6edf5;
 }
 
 .mapa-previsualizacion-overlay {
@@ -1109,7 +1140,8 @@ body.pagina-miembro {
 	display: none;
 	/* Oculto por defecto */
 	flex-direction: column;
-	z-index: 100;
+	z-index: 999;
+	pointer-events: auto;
 }
 
 .submenu-perfil.activo {
@@ -1171,4 +1203,239 @@ body.pagina-miembro {
     cursor: not-allowed !important;
     pointer-events: none !important;
     filter: grayscale(0.5);
+}
+
+/* ===== PAGINA CHAT ===== */
+.mensajes-layout {
+	display: grid;
+	grid-template-columns: 320px 1fr;
+	gap: 16px;
+}
+
+.mensajes-lista {
+	height: calc(100vh - 180px);
+	overflow: auto;
+}
+
+.mensajes-item {
+	display: block;
+	text-decoration: none;
+	padding: 12px;
+	border: 1px solid var(--borde);
+	border-radius: var(--radio);
+	background: #ffffff;
+	margin-bottom: 10px;
+	color: var(--texto);
+}
+
+.mensajes-item.activo {
+	border-color: var(--primario);
+	box-shadow: 0 0 0 2px rgba(15, 76, 129, 0.12);
+}
+
+.mensajes-item-titulo,
+.mensajes-item-sub,
+.mensajes-item-preview {
+	margin: 0;
+}
+
+.mensajes-item-titulo {
+	font-weight: 700;
+	font-size: 14px;
+}
+
+.mensajes-item-sub {
+	margin-top: 4px;
+	font-size: 12px;
+	color: var(--texto-suave);
+}
+
+.mensajes-item-preview {
+	margin-top: 6px;
+	font-size: 13px;
+	color: var(--texto);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.mensajes-panel {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	min-height: calc(100vh - 180px);
+}
+
+.mensajes-cabecera {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.mensajes-mensajes {
+	flex: 1;
+	overflow: auto;
+	padding: 8px;
+	background: var(--fondo-suave);
+	border-radius: var(--radio);
+	border: 1px solid var(--borde);
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.mensajes-burbuja {
+	max-width: 76%;
+	padding: 10px 12px;
+	border-radius: var(--radio);
+	border: 1px solid var(--borde);
+	background: #ffffff;
+}
+
+.mensajes-burbuja.mio {
+	align-self: flex-end;
+	background: #eaf4ff;
+	border-color: #c8def5;
+}
+
+.mensajes-burbuja.otro {
+	align-self: flex-start;
+}
+
+.mensajes-burbuja-texto {
+	margin: 0;
+	font-size: 14px;
+	color: var(--texto);
+}
+
+.mensajes-burbuja-fecha {
+	margin-top: 4px;
+	display: inline-block;
+	font-size: 11px;
+	color: var(--texto-suave);
+}
+
+.mensajes-formulario {
+	margin-top: auto;
+}
+
+@media (max-width: 980px) {
+	.mensajes-layout {
+		grid-template-columns: 1fr;
+	}
+
+	.mensajes-lista,
+	.mensajes-panel {
+		height: auto;
+		min-height: 0;
+	}
+}
+
+/* ===== FORMULARIOS DE SOLICITUD ===== */
+.solicitud-seccion {
+	width: 100%;
+}
+
+.solicitud-contenedor {
+	max-width: 980px;
+	width: 100%;
+	margin: 0 auto;
+}
+
+.solicitud-panel {
+	width: 100%;
+	padding: 24px;
+	gap: 16px;
+}
+
+.solicitud-formulario {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 16px;
+	align-items: start;
+}
+
+.solicitud-columna-doble {
+	grid-column: span 1;
+}
+
+.solicitud-columna-completa {
+	grid-column: 1 / -1;
+}
+
+.solicitud-alerta {
+	margin-bottom: 8px;
+	text-align: left;
+	border: 1px solid var(--borde);
+	background: #ffffff;
+}
+
+.solicitud-alerta p {
+	margin: 0;
+	font-size: 14px;
+}
+
+.solicitud-alerta-ok {
+	border-color: #1aa068;
+	background: #ecfbf4;
+	color: #136b4a;
+}
+
+.solicitud-alerta-error {
+	border-color: #ef4444;
+	background: #fff2f2;
+	color: #b42323;
+}
+
+.solicitud-check-label {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	font-size: 14px;
+	color: var(--texto);
+	line-height: 1.4;
+}
+
+.solicitud-check-label input[type="checkbox"] {
+	margin-top: 2px;
+	width: 16px;
+	height: 16px;
+}
+
+.solicitud-error {
+	min-height: 16px;
+	font-size: 12px;
+	font-weight: 600;
+	color: #c62828;
+}
+
+.solicitud-ayuda {
+	display: block;
+	font-size: 12px;
+	color: var(--texto-suave);
+	margin-top: -6px;
+}
+
+.solicitud-campo-error {
+	border-color: #e53935 !important;
+	box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.12) !important;
+}
+
+.solicitud-boton {
+	grid-column: 1 / -1;
+	margin-top: 6px;
+	max-width: 320px;
+}
+
+@media (max-width: 820px) {
+	.solicitud-formulario {
+		grid-template-columns: 1fr;
+	}
+
+	.solicitud-columna-doble,
+	.solicitud-columna-completa,
+	.solicitud-boton {
+		grid-column: 1 / -1;
+	}
 }

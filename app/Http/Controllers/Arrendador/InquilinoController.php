@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Arrendador;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class InquilinoController extends Controller
 {
@@ -81,7 +82,12 @@ class InquilinoController extends Controller
             ->where('a.id_inquilino_fk', $id)
             ->where('p.id_arrendador_fk', $arrendadorId)
             ->where('a.estado_alquiler', 'activo')
-            ->select('p.titulo_propiedad', 'p.direccion_propiedad', 'a.fecha_inicio_alquiler', 'a.fecha_fin_alquiler')
+            ->select(
+                'p.titulo_propiedad',
+                DB::raw($this->obtenerSelectDireccionPropiedad('p')),
+                'a.fecha_inicio_alquiler',
+                'a.fecha_fin_alquiler'
+            )
             ->orderByDesc('a.fecha_inicio_alquiler')
             ->get();
 
@@ -117,5 +123,25 @@ class InquilinoController extends Controller
         }
 
         return mb_strtoupper(mb_substr(trim($nombre), 0, 1));
+    }
+
+    private function obtenerSelectDireccionPropiedad(string $aliasTabla = 'p'): string
+    {
+        if (Schema::hasColumn('tbl_propiedad', 'direccion_propiedad')) {
+            return "{$aliasTabla}.direccion_propiedad as direccion_propiedad";
+        }
+
+        $partes = [];
+        foreach (['calle_propiedad', 'numero_propiedad', 'piso_propiedad', 'puerta_propiedad'] as $columna) {
+            if (Schema::hasColumn('tbl_propiedad', $columna)) {
+                $partes[] = "NULLIF(TRIM({$aliasTabla}.{$columna}), '')";
+            }
+        }
+
+        if (empty($partes)) {
+            return "'' as direccion_propiedad";
+        }
+
+        return 'TRIM(CONCAT_WS(\' \' , ' . implode(', ', $partes) . ')) as direccion_propiedad';
     }
 }

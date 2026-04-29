@@ -120,8 +120,8 @@ var actualizarTablaAlquileres = function(alquileres) {
         var accionesPendiente = '';
 
         if (a.estado_alquiler === 'pendiente') {
-            accionesPendiente = '<button class="btn-aprobar-alq" data-id="' + a.id + '">✓ Aprobar</button>' +
-                               '<button class="btn-rechazar-alq" data-id="' + a.id + '">✕ Rechazar</button>';
+            accionesPendiente = '<button class="btn-accion btn-editar btn-aprobar-alq" data-id="' + a.id + '" title="Aprobar"><i class="bi bi-pencil"></i></button>' +
+                               '<div class="toggle-switch activo btn-rechazar-alq" data-id="' + a.id + '" title="Rechazar"><div class="toggle-circulo"></div></div>';
         }
 
         filas += '<tr data-id="' + a.id + '" class="' + filaInactiva + '">' +
@@ -131,7 +131,7 @@ var actualizarTablaAlquileres = function(alquileres) {
             '<td><span class="texto-fecha">' + formatearFecha(a.fecha_inicio_alquiler) + '</span></td>' +
             '<td><span class="texto-fecha">' + fin + '</span></td>' +
             '<td><span class="badge-estado badge-estado-' + a.estado_alquiler + '">' + capitalizar(a.estado_alquiler) + '</span></td>' +
-            '<td><div class="acciones-tabla"><button class="btn-accion btn-ver-alq" data-id="' + a.id + '"><i class="bi bi-eye"></i></button>' + accionesPendiente + '</div></td>' +
+            '<td><div class="acciones-tabla"><button class="btn-accion btn-ver-alq" data-id="' + a.id + '" title="Ver detalle"><i class="bi bi-eye"></i></button>' + accionesPendiente + '</div></td>' +
             '</tr>';
     }
 
@@ -558,6 +558,14 @@ var asignarEventosModalNuevo = function() {
 
             if (precioSugerido) {
                 datosNuevoAlquiler.precioSugerido = precioSugerido;
+                var precioInput = document.getElementById('nuevoPrecio');
+                if (precioInput && !precioInput.value) {
+                    precioInput.value = parseFloat(precioSugerido).toFixed(2);
+                }
+                var sugerido = document.getElementById('precioSugerido');
+                if (sugerido) {
+                    sugerido.textContent = 'Precio sugerido segun la propiedad: € ' + parseFloat(precioSugerido).toFixed(2);
+                }
             }
         };
     }
@@ -626,47 +634,19 @@ var irAPaso = function(paso) {
     pasoItems.forEach(function(item, index) {
         var numPaso = index + 1;
         item.classList.remove('paso-activo', 'paso-completado');
-        
+
         if (numPaso < paso) {
-        var overlay = document.getElementById('modalOverlayNuevo');
-        var modal = document.getElementById('modalNuevoAlquiler');
-        if (overlay) {
-            overlay.classList.add('visible');
-        }
-        if (modal) {
-            modal.classList.add('visible');
+            item.classList.add('paso-completado');
+        } else if (numPaso === paso) {
+            item.classList.add('paso-activo');
         }
     });
 
     /* Actualizar label paso */
-        var overlay = document.getElementById('modalOverlayNuevo');
-        var modal = document.getElementById('modalNuevoAlquiler');
-        if (overlay) {
-            overlay.classList.remove('visible');
-        }
-        if (modal) {
-            modal.classList.remove('visible');
+    var labelPaso = document.getElementById('labelPasoActual');
+    if (labelPaso) {
+        labelPaso.textContent = 'Paso ' + paso + ' de ' + totalPasos;
     }
-
-        var selectProp = document.getElementById('nuevoPropiedadId');
-        var selectInq = document.getElementById('nuevoInquilinoId');
-        var fechaInicio = document.getElementById('nuevoFechaInicio');
-        var fechaFin = document.getElementById('nuevoFechaFin');
-        var precio = document.getElementById('nuevoPrecio');
-        if (selectProp) selectProp.value = '';
-        if (selectInq) selectInq.value = '';
-        if (fechaInicio) fechaInicio.value = '';
-        if (fechaFin) fechaFin.value = '';
-        if (precio) precio.value = '';
-
-        var previewProp = document.getElementById('propiedadSeleccionada');
-        var previewInq = document.getElementById('inquilinoSeleccionado');
-        if (previewProp) previewProp.style.display = 'none';
-        if (previewInq) previewInq.style.display = 'none';
-
-        var precioSugerido = document.getElementById('precioSugerido');
-        if (precioSugerido) precioSugerido.textContent = 'Precio sugerido segun la propiedad: —';
-
 
     /* Mostrar/ocultar botones */
     var btnAnterior = document.getElementById('btnPasoAnterior');
@@ -743,14 +723,6 @@ var rellenarResumen = function() {
     var precio = document.getElementById('nuevoPrecio');
 
     var propText = selectProp ? selectProp.options[selectProp.selectedIndex].text : '—';
-                    var precioInput = document.getElementById('nuevoPrecio');
-                    if (precioInput && !precioInput.value) {
-                        precioInput.value = parseFloat(precioSugerido).toFixed(2);
-                    }
-                    var sugerido = document.getElementById('precioSugerido');
-                    if (sugerido) {
-                        sugerido.textContent = 'Precio sugerido segun la propiedad: € ' + parseFloat(precioSugerido).toFixed(2);
-                    }
     var inqText = selectInq ? selectInq.options[selectInq.selectedIndex].text : '—';
 
     if (document.getElementById('resumenPropiedad')) {
@@ -841,8 +813,6 @@ var cambiarPagina = function(numPagina) {
     if (numPagina < 1 || numPagina > totalPaginas) {
         return;
     }
-
-                alert('Error al crear: ' + (data.error || 'Error desconocido'));
     filtrarAlquileres(numPagina);
 };
 

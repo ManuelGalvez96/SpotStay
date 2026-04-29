@@ -3,59 +3,69 @@
  */
 const crearOsoExito = () => `
     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 120px; height: 120px;">
-        <circle class="yeti-part" cx="62" cy="52" r="14" fill="#4B5563" />
-        <circle class="yeti-part" cx="138" cy="52" r="14" fill="#4B5563" />
-        <path class="yeti-part" d="M40,200 Q40,55 100,55 Q160,55 160,200 Z" fill="#6B7280" />
-        <path class="suit-jacket" d="M30,200 L170,200 L160,152 Q100,132 40,152 Z" fill="#2C3E50" />
-        <path class="suit-shirt" d="M100,140 L120,168 L100,200 L80,168 Z" fill="#34495E" />
-        <path class="suit-tie" d="M100,150 L110,168 L100,192 L90,168 Z" fill="#E74C3C" />
+        <!-- Orejas Blancas -->
+        <circle cx="62" cy="52" r="14" fill="#FFFFFF" stroke="#000" stroke-width="2" />
+        <circle cx="138" cy="52" r="14" fill="#FFFFFF" stroke="#000" stroke-width="2" />
+        <!-- Cuerpo Blanco -->
+        <path d="M40,200 Q40,55 100,55 Q160,55 160,200 Z" fill="#FFFFFF" stroke="#000" stroke-width="2" />
+        <!-- Traje Azul Eléctrico -->
+        <path class="suit-jacket" d="M30,200 L170,200 L160,152 Q100,132 40,152 Z" fill="#004A99" />
+        <path class="suit-shirt" d="M100,140 L120,168 L100,200 L80,168 Z" fill="#FFFFFF" />
         <g id="face-group">
             <circle cx="82" cy="105" r="5" fill="#000" />
             <circle cx="118" cy="105" r="5" fill="#000" />
             <path d="M92 128 Q100 133 108 128" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round" />
         </g>
-        <circle class="hand hand-l" cx="48" cy="180" r="19" fill="#5D6D7B" />
-        <circle class="hand hand-r" cx="152" cy="180" r="19" fill="#5D6D7B" />
-        <rect x="55" y="130" width="90" height="45" rx="5" fill="#90EE90" stroke="#228B22" stroke-width="2.5"/>
-        <text x="100" y="160" font-size="32" font-weight="bold" text-anchor="middle" fill="#228B22">✓</text>
+        <!-- Manos Blancas -->
+        <circle cx="48" cy="180" r="19" fill="#FFFFFF" stroke="#000" stroke-width="2" />
+        <circle cx="152" cy="180" r="19" fill="#FFFFFF" stroke="#000" stroke-width="2" />
+        <!-- Cartel Verde (Imagen 2) -->
+        <rect x="55" y="130" width="90" height="45" rx="5" fill="#90EE90" stroke="#006400" stroke-width="2.5"/>
+        <text x="100" y="165" font-size="32" font-weight="bold" text-anchor="middle" fill="#006400">✓</text>
     </svg>`;
 
 const crearOsoError = () => `
     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 120px; height: 120px;">
-        <circle class="yeti-part" cx="62" cy="52" r="14" fill="#4B5563" />
-        <circle class="yeti-part" cx="138" cy="52" r="14" fill="#4B5563" />
-        <path class="yeti-part" d="M40,200 Q40,55 100,55 Q160,55 160,200 Z" fill="#6B7280" />
-        <path class="suit-jacket" d="M30,200 L170,200 L160,152 Q100,132 40,152 Z" fill="#2C3E50" />
-        <path class="suit-shirt" d="M100,140 L120,168 L100,200 L80,168 Z" fill="#34495E" />
-        <path class="suit-tie" d="M100,150 L110,168 L100,192 L90,168 Z" fill="#E74C3C" />
+        <!-- Cuerpo Blanco -->
+        <circle cx="62" cy="52" r="14" fill="#FFFFFF" stroke="#000" stroke-width="2" />
+        <circle cx="138" cy="52" r="14" fill="#FFFFFF" stroke="#000" stroke-width="2" />
+        <path d="M40,200 Q40,55 100,55 Q160,55 160,200 Z" fill="#FFFFFF" stroke="#000" stroke-width="2" />
+        <!-- Traje Azul Eléctrico -->
+        <path class="suit-jacket" d="M30,200 L170,200 L160,152 Q100,132 40,152 Z" fill="#004A99" />
+        <path class="suit-shirt" d="M100,140 L120,168 L100,200 L80,168 Z" fill="#FFFFFF" />
         <g id="face-group">
             <circle cx="82" cy="105" r="5" fill="#000" />
             <circle cx="118" cy="105" r="5" fill="#000" />
             <path d="M92 135 Q100 128 108 135" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round" />
         </g>
-        <circle class="hand hand-l" cx="48" cy="180" r="19" fill="#5D6D7B" />
-        <circle class="hand hand-r" cx="152" cy="180" r="19" fill="#5D6D7B" />
+        <!-- Manos Blancas -->
+        <circle cx="48" cy="180" r="19" fill="#FFFFFF" stroke="#000" stroke-width="2" />
+        <circle cx="152" cy="180" r="19" fill="#FFFFFF" stroke="#000" stroke-width="2" />
+        <!-- Cartel Rojo -->
         <rect x="55" y="130" width="90" height="45" rx="5" fill="#FFB6C1" stroke="#DC143C" stroke-width="2.5"/>
-        <text x="100" y="160" font-size="32" font-weight="bold" text-anchor="middle" fill="#DC143C">✗</text>
+        <text x="100" y="165" font-size="32" font-weight="bold" text-anchor="middle" fill="#DC143C">✗</text>
     </svg>`;
 
 const crearOsoPregunta = () => `
     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 120px; height: 120px;">
-        <circle class="yeti-part" cx="62" cy="52" r="14" fill="#4B5563" />
-        <circle class="yeti-part" cx="138" cy="52" r="14" fill="#4B5563" />
-        <path class="yeti-part" d="M40,200 Q40,55 100,55 Q160,55 160,200 Z" fill="#6B7280" />
-        <path class="suit-jacket" d="M30,200 L170,200 L160,152 Q100,132 40,152 Z" fill="#2C3E50" />
-        <path class="suit-shirt" d="M100,140 L120,168 L100,200 L80,168 Z" fill="#34495E" />
-        <path class="suit-tie" d="M100,150 L110,168 L100,192 L90,168 Z" fill="#E74C3C" />
+        <!-- Cuerpo Blanco -->
+        <circle cx="62" cy="52" r="14" fill="#FFFFFF" stroke="#000" stroke-width="2" />
+        <circle cx="138" cy="52" r="14" fill="#FFFFFF" stroke="#000" stroke-width="2" />
+        <path d="M40,200 Q40,55 100,55 Q160,55 160,200 Z" fill="#FFFFFF" stroke="#000" stroke-width="2" />
+        <!-- Traje Azul Eléctrico -->
+        <path class="suit-jacket" d="M30,200 L170,200 L160,152 Q100,132 40,152 Z" fill="#004A99" />
+        <path class="suit-shirt" d="M100,140 L120,168 L100,200 L80,168 Z" fill="#FFFFFF" />
         <g id="face-group">
             <circle cx="82" cy="105" r="5" fill="#000" />
             <circle cx="118" cy="105" r="5" fill="#000" />
             <path d="M85 105 L115 105" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round" />
         </g>
-        <circle class="hand hand-l" cx="48" cy="180" r="19" fill="#5D6D7B" />
-        <circle class="hand hand-r" cx="152" cy="180" r="19" fill="#5D6D7B" />
-        <rect x="55" y="130" width="90" height="45" rx="5" fill="#FFE4B5" stroke="#FF8C00" stroke-width="2.5"/>
-        <text x="100" y="160" font-size="32" font-weight="bold" text-anchor="middle" fill="#FF8C00">?</text>
+        <!-- Manos Blancas -->
+        <circle cx="48" cy="180" r="19" fill="#FFFFFF" stroke="#000" stroke-width="2" />
+        <circle cx="152" cy="180" r="19" fill="#FFFFFF" stroke="#000" stroke-width="2" />
+        <!-- Cartel Amarillo -->
+        <rect x="55" y="130" width="90" height="45" rx="5" fill="#FFD700" stroke="#B8860B" stroke-width="2.5"/>
+        <text x="100" y="165" font-size="32" font-weight="bold" text-anchor="middle" fill="#B8860B">?</text>
     </svg>`;
 
 

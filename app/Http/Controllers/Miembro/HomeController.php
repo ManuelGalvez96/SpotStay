@@ -12,17 +12,6 @@ class HomeController extends Controller
     {
         $usuario = auth()->user();
 
-        // Lógica de usuario
-        $nombreUsuario = $usuario 
-            ? ($usuario->name ?? $usuario->nombre_usuario ?? $usuario->email ?? '') 
-            : '';
-        $tieneFoto = $usuario && !empty($usuario->foto_usuario);
-        $fotoUsuario = $tieneFoto ? asset('storage/' . $usuario->foto_usuario) : '';
-        $inicialUsuario = $nombreUsuario !== '' ? strtoupper(substr($nombreUsuario, 0, 1)) : '';
-        
-        // Lógica de inquilino (botón Gestionar)
-        $esInquilino = $usuario && $usuario->alquileres()->where('estado_alquiler', 'activo')->exists();
-
         // Busca propiedades publicadas y aplica filtros del panel
         $query = DB::table('tbl_propiedad')
             ->select(
@@ -39,8 +28,8 @@ class HomeController extends Controller
             $texto = trim((string) $request->buscador);
             $query->where(function ($subQuery) use ($texto) {
                 $subQuery->where('ciudad_propiedad', 'like', '%' . $texto . '%')
-                    ->orWhere('calle_propiedad', 'like', '%' . $texto . '%')
-                    ->orWhere('titulo_propiedad', 'like', '%' . $texto . '%');
+                    ->orWhere('titulo_propiedad', 'like', '%' . $texto . '%')
+                    ->orWhereRaw("CONCAT_WS(' ', calle_propiedad, numero_propiedad, piso_propiedad, puerta_propiedad) like ?", ['%' . $texto . '%']);
             });
         }
 
@@ -65,11 +54,6 @@ class HomeController extends Controller
         return view('miembro.inicio', [
             'propiedades' => $propiedades,
             'totalPropiedades' => count($propiedades),
-            'nombreUsuario' => $nombreUsuario,
-            'tieneFoto' => $tieneFoto,
-            'fotoUsuario' => $fotoUsuario,
-            'inicialUsuario' => $inicialUsuario,
-            'esInquilino' => $esInquilino
         ]);
     }
 }

@@ -30,6 +30,7 @@ class DashboardController extends Controller
                 ->first();
 
             $columnaPrecio = $this->obtenerColumnaPrecioPropiedad();
+            $selectDireccionPropiedad = $this->obtenerSelectDireccionPropiedad('p');
             [$mensajeRemitenteColumna, $mensajeCuerpoColumna] = $this->obtenerColumnasMensaje();
 
             $propiedadesActivas = DB::table('tbl_propiedad')
@@ -95,7 +96,7 @@ class DashboardController extends Controller
                 ->select(
                     'p.id_propiedad',
                     'p.titulo_propiedad',
-                    'p.direccion_propiedad',
+                    DB::raw($selectDireccionPropiedad),
                     'p.ciudad_propiedad',
                     DB::raw("p.{$columnaPrecio} as precio_propiedad"),
                     'p.estado_propiedad',
@@ -187,6 +188,26 @@ class DashboardController extends Controller
         }
 
         return 'precio_propiedad';
+    }
+
+    private function obtenerSelectDireccionPropiedad(string $aliasTabla = 'p'): string
+    {
+        if (Schema::hasColumn('tbl_propiedad', 'direccion_propiedad')) {
+            return "{$aliasTabla}.direccion_propiedad as direccion_propiedad";
+        }
+
+        $partesDireccion = [];
+        foreach (['calle_propiedad', 'numero_propiedad', 'piso_propiedad', 'puerta_propiedad'] as $columna) {
+            if (Schema::hasColumn('tbl_propiedad', $columna)) {
+                $partesDireccion[] = "NULLIF(TRIM({$aliasTabla}.{$columna}), '')";
+            }
+        }
+
+        if (empty($partesDireccion)) {
+            return "'' as direccion_propiedad";
+        }
+
+        return 'TRIM(CONCAT_WS(\' \' , ' . implode(', ', $partesDireccion) . ')) as direccion_propiedad';
     }
 
     private function obtenerColumnasMensaje(): array

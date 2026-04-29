@@ -40,14 +40,15 @@ class AlquilerSeeder extends Seeder
 
                 // Generar fechas coherentes
                 $estado = $estados[$alquilerCounter % count($estados)];
-                $fechaInicio = now()->subMonths(rand(1, 12))->startOfMonth();
+                $fechaInicio = now()->subMonths(rand(1, 12))->subDays(rand(0, 27));
                 
                 if ($estado === 'finalizado') {
                     $fechaFin = $fechaInicio->copy()->addMonths(rand(3, 6));
                 } elseif ($estado === 'cancelado') {
                     $fechaFin = $fechaInicio->copy()->addMonths(rand(1, 3));
                 } else {
-                    $fechaFin = now()->addMonths(rand(2, 12));
+                    // Contratos activos: duran entre 6 y 18 meses desde el inicio
+                    $fechaFin = $fechaInicio->copy()->addMonths(rand(6, 18));
                 }
 
                 $aprobado = $estado !== 'cancelado' ? $fechaInicio->copy()->subDays(rand(5, 15)) : null;
@@ -93,12 +94,12 @@ class AlquilerSeeder extends Seeder
                 $admin = $admins->isEmpty() ? null : $admins->random();
 
                 $estado = $estados[rand(0, count($estados) - 1)];
-                $fechaInicio = now()->subMonths(rand(1, 12))->startOfMonth();
+                $fechaInicio = now()->subMonths(rand(1, 12))->subDays(rand(0, 27));
                 
                 if ($estado === 'finalizado') {
                     $fechaFin = $fechaInicio->copy()->addMonths(rand(3, 6));
                 } else {
-                    $fechaFin = now()->addMonths(rand(2, 12));
+                    $fechaFin = $fechaInicio->copy()->addMonths(rand(6, 18));
                 }
 
                 $aprobado = $estado !== 'cancelado' ? $fechaInicio->copy()->subDays(rand(5, 15)) : null;
@@ -137,8 +138,8 @@ class AlquilerSeeder extends Seeder
                 ->first() ?? Propiedad::first();
 
             if ($propiedadParaSnebot) {
-                $fechaInicio = now()->subMonth()->startOfMonth();
-                $fechaFin = now()->addMonths(11)->endOfMonth();
+                $fechaInicio = now()->subMonth()->day(27);
+                $fechaFin = $fechaInicio->copy()->addYear();
                 $admin = $admins->isEmpty() ? null : $admins->random();
 
                 $alquiler = Alquiler::updateOrCreate(

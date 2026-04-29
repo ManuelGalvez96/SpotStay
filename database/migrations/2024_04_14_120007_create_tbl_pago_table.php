@@ -42,6 +42,8 @@ return new class extends Migration {
             $table->foreign('id_pagador_fk')
                 ->references('id_usuario')->on('tbl_usuario')
                 ->onDelete('restrict');
+            // Estas FKs se agregan en una migración posterior
+            // cuando tbl_gasto_cuota y tbl_gasto_cuota_detalle ya existen.
         });
     }
 

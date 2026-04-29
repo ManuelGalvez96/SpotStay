@@ -114,7 +114,6 @@
                     <tbody id="tablaSolicitudes">
                         @forelse($solicitudesPendientes as $solicitud)
                             @php
-                                $datos = json_decode($solicitud->datos_solicitud_arrendador);
                                 $partes = explode(' ', $solicitud->nombre_usuario);
                                 $iniciales = strtoupper(substr($partes[0],0,1)) . strtoupper(substr($partes[1]??'',0,1));
                                 $colores = ['#B8CCE4','#A8D5BF','#F9E4A0','#FFD5CC','#D7EAF9','#EDE7F6','#D5F5E3','#FAD7D7'];
@@ -131,8 +130,8 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>{{ $datos->ciudad ?? '—' }}</td>
-                                <td>{{ $datos->direccion ?? '—' }}</td>
+                                <td>{{ $solicitud->direccion_fiscal_solicitud ?? '—' }}</td>
+                                <td>{{ $solicitud->tipo_arrendador_solicitud ?? '—' }}</td>
                                 <td>{{ $fecha }}</td>
                                 <td>
                                     <span class="badge-estado badge-pendiente">Pendiente</span>
@@ -182,13 +181,12 @@
                         $partesA = explode(' ', $aprobada->nombre_usuario);
                         $inicialesA = strtoupper(substr($partesA[0],0,1)) . strtoupper(substr($partesA[1]??'',0,1));
                         $colorA = $colores[$aprobada->id_solicitud_arrendador % 8];
-                        $datosA = json_decode($aprobada->datos_solicitud_arrendador);
                     @endphp
                     <div class="historial-item">
                         <div class="solicitud-avatar-mini" style="background:{{ $colorA }}">{{ $inicialesA }}</div>
                         <div class="historial-info">
                             <span class="historial-nombre">{{ $aprobada->nombre_usuario }}</span>
-                            <span class="historial-ciudad">{{ $datosA->ciudad ?? '' }}</span>
+                            <span class="historial-ciudad">{{ $aprobada->direccion_fiscal_solicitud ?? '' }}</span>
                         </div>
                         <span class="badge-estado badge-activo">Aprobada</span>
                     </div>

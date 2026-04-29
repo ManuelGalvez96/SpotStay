@@ -293,13 +293,10 @@ var actualizarTabla = function(datos) {
         for (i = 0; i < datos.data.length; i++) {
             var solicitud = datos.data[i];
             console.log('Datos solicitud:', solicitud);
-            console.log('JSON datos_solicitud_arrendador:', solicitud.datos_solicitud_arrendador);
             var partes = solicitud.nombre_usuario.split(' ');
             var iniciales = (partes[0] ? partes[0].charAt(0) : '') + (partes[1] ? partes[1].charAt(0) : '');
             var colores = ['#B8CCE4', '#A8D5BF', '#F9E4A0', '#FFD5CC', '#D7EAF9', '#EDE7F6', '#D5F5E3', '#FAD7D7'];
             var color = colores[solicitud.id_solicitud_arrendador % 8];
-            /* datos_solicitud_arrendador ya es un objeto (no necesita JSON.parse) */
-            var datos_prop = solicitud.datos_solicitud_arrendador || {};
             var fecha = new Date(solicitud.creado_solicitud_arrendador).toLocaleDateString('es-ES');
             
             /* Determinar badge de estado */
@@ -328,8 +325,8 @@ var actualizarTabla = function(datos) {
                 '<span class="usuario-nombre-tabla">' + solicitud.nombre_usuario + '</span>' +
                 '<span class="usuario-email-tabla">' + solicitud.email_usuario + '</span>' +
                 '</div></div></td>' +
-                '<td>' + (datos_prop.ciudad || '—') + '</td>' +
-                '<td>' + (datos_prop.direccion || '—') + '</td>' +
+                '<td>' + (solicitud.direccion_fiscal_solicitud || '—') + '</td>' +
+                '<td>' + (solicitud.tipo_arrendador_solicitud || '—') + '</td>' +
                 '<td>' + fecha + '</td>' +
                 '<td><span class="badge ' + badgeCss + '">' + estadoLabel + '</span></td>' +
                 '<td><div class="acciones-tabla">' +
@@ -473,7 +470,7 @@ var rellenarModal = function(datos) {
     document.getElementById('modalAvatar').textContent = iniciales.toUpperCase();
     document.getElementById('modalNombre').textContent = datos.nombre_usuario;
     document.getElementById('modalEmail').textContent = datos.email_usuario;
-    document.getElementById('modalCiudad').innerHTML = '<i class="bi bi-geo-alt"></i> ' + (JSON.parse(datos.datos_solicitud_arrendador || '{}').ciudad || 'No disponible');
+    document.getElementById('modalCiudad').innerHTML = '<i class="bi bi-geo-alt"></i> ' + (datos.direccion_fiscal_solicitud || 'No disponible');
     
     /* Actualizar badge de estado */
     var estado = datos.estado_solicitud_arrendador || 'pendiente';
@@ -491,7 +488,14 @@ var rellenarModal = function(datos) {
         }
     }
 
-    var datosPropiedad = datos.datos_solicitud_arrendador || {};
+    var datosPropiedad = {
+        direccion: datos.direccion_fiscal_solicitud || '—',
+        tipo: datos.tipo_arrendador_solicitud || '—',
+        precio_estimado: 'No disponible',
+        habitaciones: 'No disponible',
+        banos: 'No disponible',
+        tamano: 'No disponible'
+    };
     var gridElement = document.getElementById('modalDatosPropiedad');
     if (gridElement) {
         gridElement.innerHTML = '';

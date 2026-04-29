@@ -23,10 +23,10 @@
     <div class="card-header-admin"><span>Gestión completa de gastos</span></div>
 
     @if(session('success'))
-        <div class="mensaje-estado mensaje-ok">{{ session('success') }}</div>
+        <div class="mensaje-estado mensaje-ok" data-flash-success="{{ session('success') }}">{{ session('success') }}</div>
     @endif
     @if(session('error'))
-        <div class="mensaje-estado mensaje-error">{{ session('error') }}</div>
+        <div class="mensaje-estado mensaje-error" data-flash-error="{{ session('error') }}">{{ session('error') }}</div>
     @endif
 
     @if(!$gastosHabilitados)
@@ -65,31 +65,7 @@
             <div class="resumen-pill">Pagados este mes: <strong>{{ $resumenGastos['pagados_mes'] }}</strong></div>
         </div>
 
-        <div class="card-admin" style="margin: 18px 0;">
-            <div class="card-header-admin"><span>Resumen visual mensual (emitidos vs pagados)</span></div>
-            @if($resumenMensualGastos->isEmpty())
-                <div class="tabla-vacia" style="padding: 12px;">Sin datos mensuales para mostrar.</div>
-            @else
-                <div style="display:grid; gap:10px; padding: 12px;">
-                    @foreach($resumenMensualGastos as $mesResumen)
-                        <div>
-                            <div style="display:flex; justify-content:space-between; font-size: 12px; margin-bottom:4px;">
-                                <strong>{{ $mesResumen['label'] }}</strong>
-                                <span>Emitidos {{ number_format((float) $mesResumen['emitidos'], 2, ',', '.') }} EUR · Pagados {{ number_format((float) $mesResumen['pagados'], 2, ',', '.') }} EUR</span>
-                            </div>
-                            <div style="display:grid; gap:4px;">
-                                <div style="height:10px; background:#eef2f7; border-radius:999px; overflow:hidden;">
-                                    <div style="height:100%; width:{{ $mesResumen['emitidos_pct'] }}%; background:#f59e0b;"></div>
-                                </div>
-                                <div style="height:10px; background:#eef2f7; border-radius:999px; overflow:hidden;">
-                                    <div style="height:100%; width:{{ $mesResumen['pagados_pct'] }}%; background:#10b981;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
-        </div>
+        <!-- Resumen visual mensual eliminado por petición del usuario -->
 
         <form method="POST" action="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad . '/gastos') }}" class="form-gasto">
             @csrf
@@ -134,60 +110,11 @@
             @endif
 
             <div class="acciones-form-gasto">
-                <button type="submit" class="btn-principal-admin">Añadir recibo</button>
+                        <button type="submit" class="btn-principal">Añadir recibo</button>
             </div>
         </form>
 
-        <div class="card-admin" style="margin-bottom: 18px;">
-            <div class="card-header-admin"><span>Recibos creados (editar/eliminar)</span></div>
-            <table class="tabla-admin tabla-gastos">
-                <thead>
-                    <tr>
-                        <th>CATEGORÍA</th>
-                        <th>CONCEPTO</th>
-                        <th>IMPORTE</th>
-                        <th>FECHA INICIO</th>
-                        <th>ACCIONES</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($gastosGestionables as $gastoItem)
-                        <tr>
-                            <td>
-                                <form method="POST" action="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad . '/gastos/' . $gastoItem->id_gasto . '/editar') }}" style="display:grid; grid-template-columns:1fr; gap:8px;">
-                                    @csrf
-                                    <select name="categoria_gasto" required>
-                                        @foreach(['luz' => 'Luz', 'agua' => 'Agua', 'gas' => 'Gas', 'internet' => 'Internet', 'comunidad' => 'Comunidad', 'otros' => 'Otros'] as $key => $label)
-                                            <option value="{{ $key }}" {{ $gastoItem->categoria_gasto === $key ? 'selected' : '' }}>{{ $label }}</option>
-                                        @endforeach
-                                    </select>
-                            </td>
-                            <td>
-                                    <input type="text" name="concepto_gasto" value="{{ $gastoItem->concepto_gasto }}" maxlength="200" placeholder="Sin concepto" />
-                            </td>
-                            <td>
-                                    <input type="number" step="0.01" min="0.01" name="importe_estimado" value="{{ number_format((float) $gastoItem->importe_estimado, 2, '.', '') }}" required />
-                            </td>
-                            <td>
-                                    <input type="date" name="fecha_inicio_gasto" value="{{ \Carbon\Carbon::parse($gastoItem->fecha_inicio_gasto)->toDateString() }}" required />
-                            </td>
-                            <td>
-                                    <button type="submit" class="link-ver-todos">Guardar</button>
-                                </form>
-                                <form method="POST" action="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad . '/gastos/' . $gastoItem->id_gasto . '/eliminar') }}" onsubmit="return confirm('¿Seguro que quieres eliminar este recibo?');" style="margin-top:8px;">
-                                    @csrf
-                                    <button type="submit" class="link-ver-todos" style="color:#b91c1c;">Eliminar</button>
-                                </form>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="tabla-vacia">No hay recibos para editar o eliminar.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+        <!-- Se elimina la sección "Recibos creados" — los gastos se editan inline en la tabla de abajo -->
 
         <table class="tabla-admin tabla-gastos">
             <thead>
@@ -219,25 +146,31 @@
                             default => $cuota->categoria_gasto ?: 'Sin categoría',
                         };
                     @endphp
-                    <tr>
-                        <td>{{ \Carbon\Carbon::parse($cuota->mes_cuota)->translatedFormat('m/Y') }}</td>
-                        <td>{{ $cuota->concepto_gasto ?: 'Sin concepto' }}</td>
-                        <td>{{ $categoriaLabel }}</td>
-                        <td>
+                    <tr class="cuota-row" data-gasto-id="{{ $cuota->id_gasto_fk }}" data-propiedad-id="{{ $propiedad->id_propiedad }}" data-importe="{{ $cuota->importe_total_cuota }}" data-mes="{{ $cuota->mes_cuota }}">
+                        <td class="display-mes">{{ \Carbon\Carbon::parse($cuota->mes_cuota)->translatedFormat('m/Y') }}</td>
+                        <td class="display-concepto">{{ $cuota->concepto_gasto ?: 'Sin concepto' }}</td>
+                        <td class="display-categoria">{{ $categoriaLabel }}</td>
+                        <td class="display-ambito">
                             @if(($cuota->ambito_gasto ?? 'propiedad') === 'contrato')
                                 Contrato #{{ $cuota->id_alquiler_fk }}
                             @else
                                 Propiedad
                             @endif
                         </td>
-                        <td>{{ \Carbon\Carbon::parse($cuota->vencimiento_cuota)->format('d/m/Y') }}</td>
+                        <td class="display-fecha">{{ \Carbon\Carbon::parse($cuota->vencimiento_cuota)->format('d/m/Y') }}</td>
                         <td>
                             <span class="badge-estado badge-gasto-{{ $estadoVisual }}">
                                 {{ ucfirst(str_replace('_', ' ', $estadoVisual)) }}
                             </span>
                         </td>
                         <td>
-                            <div class="detalle-pagos-lista">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+                                <div class="detalle-acciones" style="min-width:160px;">
+                                    <button type="button" class="btn-cuota-edit link-ver-todos">Editar</button>
+                                    <button type="button" class="btn-cuota-save link-ver-todos" style="display:none;">Guardar</button>
+                                    <button type="button" class="btn-cuota-cancel link-ver-todos" style="display:none;">Cancelar</button>
+                                </div>
+                                <div class="detalle-pagos-lista">
                                 @foreach($detallesCuota as $detalle)
                                     <div class="detalle-pago-item">
                                         <span>
@@ -252,6 +185,7 @@
                                         @endif
                                     </div>
                                 @endforeach
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -265,3 +199,20 @@
     @endif
 </div>
 @endsection
+
+    @section('scripts')
+    <script src="{{ asset('js/gestor/gastos-validate.js') }}"></script>
+    <script src="{{ asset('js/gestor/recibos-inline.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const flashSuccess = document.querySelector('[data-flash-success]');
+            const flashError = document.querySelector('[data-flash-error]');
+            if (flashSuccess && flashSuccess.dataset.flashSuccess) {
+                if (window.swalSuccess) swalSuccess('Éxito', flashSuccess.dataset.flashSuccess);
+            }
+            if (flashError && flashError.dataset.flashError) {
+                if (window.swalError) swalError('Error', flashError.dataset.flashError);
+            }
+        });
+    </script>
+    @endsection

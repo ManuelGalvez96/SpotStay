@@ -6,13 +6,21 @@
 }
 
 .btn-volver-propiedades {
-    color: #035498;
-    background: #ffffff;
+    color: #ffffff;
+    background: #035498;
     text-decoration: none;
     border-radius: 8px;
     padding: 8px 12px;
     font-size: 13px;
     font-weight: 600;
+    border: 1px solid #035498;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-volver-propiedades:hover {
+    background: #024178;
+    border-color: #024178;
+    color: #ffffff;
 }
 
 .detalle-grid {

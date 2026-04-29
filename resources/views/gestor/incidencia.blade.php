@@ -10,11 +10,11 @@
     <a href="{{ url('/gestor/dashboard') }}" class="volver-link">← Volver al dashboard</a>
 
     @if(session('ok'))
-        <div class="alerta ok">{{ session('ok') }}</div>
+        <div class="alerta ok" id="flash-ok" data-msg="{{ session('ok') }}"></div>
     @endif
 
     @if(session('error'))
-        <div class="alerta error">{{ session('error') }}</div>
+        <div class="alerta error" id="flash-error" data-msg="{{ session('error') }}"></div>
     @endif
 
     @if($errors->any())
@@ -23,6 +23,7 @@
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
+
             </ul>
         </div>
     @endif

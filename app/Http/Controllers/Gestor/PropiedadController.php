@@ -118,8 +118,6 @@ class PropiedadController extends Controller
                 ->whereRaw('COALESCE(alq_activos.total_alquileres_activos, 0) > 0');
         }
 
-        $query->where('tbl_propiedad.estado_propiedad', '!=', 'borrador');
-
         $allowedSorts = [
             'titulo_propiedad' => 'tbl_propiedad.titulo_propiedad',
             'precio_propiedad' => 'tbl_propiedad.precio_propiedad',
@@ -157,16 +155,38 @@ class PropiedadController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        // (removed temporary debug instrumentation)
-
-        $totalAsignadas = (clone $baseQuery)->count();
-        $totalPublicadas = (clone $baseQuery)->where('tbl_propiedad.estado_propiedad', 'publicada')->count();
-        $totalAlquiladas = (clone $baseQuery)->where('tbl_propiedad.estado_propiedad', 'alquilada')->count();
-        $totalConCriticas = (clone $baseQuery)
-            ->whereRaw('COALESCE(inc_criticas.total_incidencias_criticas, 0) > 0')
+        // KPIs con consultas directas y simples
+        $totalAsignadas = DB::table('tbl_propiedad')
+            ->where('id_gestor_fk', $gestorId)
             ->count();
-        $totalSinAlquiler = (clone $baseQuery)
-            ->whereRaw('COALESCE(alq_activos.total_alquileres_activos, 0) = 0')
+
+        $totalPublicadas = DB::table('tbl_propiedad')
+            ->where('id_gestor_fk', $gestorId)
+            ->where('estado_propiedad', 'publicada')
+            ->count();
+
+        $totalAlquiladas = DB::table('tbl_propiedad')
+            ->where('id_gestor_fk', $gestorId)
+            ->where('estado_propiedad', 'alquilada')
+            ->count();
+
+        $totalConCriticas = DB::table('tbl_propiedad')
+            ->where('id_gestor_fk', $gestorId)
+            ->whereIn('id_propiedad', function ($query) {
+                $query->select('id_propiedad_fk')
+                    ->from('tbl_incidencia')
+                    ->whereIn('estado_incidencia', ['abierta', 'en_proceso', 'esperando'])
+                    ->where('prioridad_incidencia', 'urgente');
+            })
+            ->count();
+
+        $totalSinAlquiler = DB::table('tbl_propiedad')
+            ->where('id_gestor_fk', $gestorId)
+            ->whereNotIn('id_propiedad', function ($query) {
+                $query->select('id_propiedad_fk')
+                    ->from('tbl_alquiler')
+                    ->where('estado_alquiler', 'activo');
+            })
             ->count();
 
         return view('gestor.propiedades', compact(
@@ -827,12 +847,12 @@ class PropiedadController extends Controller
                     ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
                     ->where('tbl_gasto.id_propiedad_fk', $propiedadId)
                     ->sum('tbl_gasto_cuota.importe_total_cuota') + (float) $propiedad->precio_propiedad,
-                'total_pendiente_importe' => (float) DB::table('tbl_gasto_cuota_detalle')
+                'total_pendiente_importe' => ((float) DB::table('tbl_gasto_cuota_detalle')
                     ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
                     ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
                     ->where('tbl_gasto.id_propiedad_fk', $propiedadId)
                     ->where('tbl_gasto_cuota_detalle.estado_detalle', '!=', 'pagado')
-                    ->sum('tbl_gasto_cuota_detalle.importe_detalle'),
+                    ->sum('tbl_gasto_cuota_detalle.importe_detalle')) + (float) $propiedad->precio_propiedad,
                 'atrasados' => DB::table('tbl_gasto_cuota')
                     ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
                     ->where('tbl_gasto.id_propiedad_fk', $propiedadId)

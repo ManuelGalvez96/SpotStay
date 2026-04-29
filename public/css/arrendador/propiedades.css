@@ -131,15 +131,38 @@ body {
 
 @media (max-width: 1024px) {
   .content-grid { grid-template-columns: 1fr; }
+  .page-hero h1 { font-size: 28px; }
 }
 
 @media (max-width: 768px) {
-  .page-shell { padding: 18px; }
-  .page-hero { flex-direction: column; align-items: flex-start; }
-  .hero-lateral { align-items: flex-start; }
-  .stats-grid, .form-grid { grid-template-columns: 1fr; }
-  .property-card { flex-direction: column; }
+  .page-shell { padding: 16px; }
+  .page-hero { flex-direction: column; align-items: flex-start; padding: 20px; border-radius: 16px; }
+  .hero-lateral { align-items: flex-start; flex-direction: row; }
+  .hero-avatar { width: 44px; height: 44px; font-size: 16px; }
+  .page-hero h1 { font-size: 24px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .stat-card { padding: 14px; }
+  .stat-card span { font-size: 22px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .property-card { flex-direction: column; padding: 14px; }
   .property-actions { justify-content: flex-start; }
+  .panel { padding: 16px; border-radius: 14px; }
+  .panel-header h2 { font-size: 18px; }
+}
+
+@media (max-width: 480px) {
+  .page-shell { padding: 12px; }
+  .page-hero { padding: 16px; }
+  .page-hero h1 { font-size: 20px; }
+  .hero-copy { font-size: 13px; }
+  .btn-volver { padding: 7px 12px; font-size: 13px; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .stat-card span { font-size: 20px; }
+  .property-card { padding: 12px; }
+  .property-title { font-size: 14px; }
+  .property-meta { font-size: 12px; }
+  .mini-link, .mini-button { padding: 6px 10px; font-size: 12px; }
+  .btn-primary { padding: 10px 14px; font-size: 14px; }
 }
 /* Homologacion visual con Inquilino */
 body {

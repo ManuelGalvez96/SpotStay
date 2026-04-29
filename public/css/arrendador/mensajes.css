@@ -49,6 +49,23 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
 }
 @media (max-width: 680px) {
   .pagina { padding: 14px; }
-  .cabecera { flex-direction: column; align-items: flex-start; }
+  .cabecera { flex-direction: column; align-items: flex-start; padding: 16px; }
   .acciones-cabecera { align-items: flex-start; }
+}
+@media (max-width: 480px) {
+  .pagina { padding: 10px; }
+  .cabecera { padding: 14px; }
+  .cabecera h1 { font-size: 20px; }
+  .contenedor-chat { gap: 10px; }
+  .panel-conversaciones { padding: 12px; border-radius: 14px; }
+  .panel-mensajes { border-radius: 14px; }
+  .cabecera-hilo { padding: 12px; }
+  .cabecera-hilo h2 { font-size: 16px; }
+  .lista-mensajes { padding: 12px; }
+  .burbuja { max-width: 90%; padding: 8px 10px; }
+  .formulario-mensaje { padding: 10px; }
+  .formulario-mensaje textarea { padding: 8px; }
+  .btn-enviar { padding: 8px 14px; font-size: 13px; }
+  .item-conversacion { padding: 10px; }
+  .avatar { width: 40px; height: 40px; font-size: 14px; }
 }

@@ -20,7 +20,7 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
 .kpi { background: #fff; border: 1px solid var(--borde); border-radius: 14px; padding: 14px; box-shadow: var(--sombra); }
 .kpi span { display: block; font-size: 24px; font-weight: 700; }
 .kpi small { color: var(--muted); }
-.panel { background: #fff; border: 1px solid var(--borde); border-radius: 18px; padding: 16px; box-shadow: var(--sombra); }
+.panel { background: #fff; border: 1px solid var(--borde); border-radius: 18px; padding: 16px; box-shadow: var(--sombra); overflow-x: auto; }
 .tabla { width: 100%; border-collapse: collapse; }
 .tabla th, .tabla td { border-bottom: 1px solid var(--borde); text-align: left; padding: 12px 10px; font-size: 14px; vertical-align: top; }
 .muted { color: var(--muted); font-size: 12px; }
@@ -227,4 +227,15 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
   .kpis { grid-template-columns: 1fr; }
   .acciones { flex-direction: column; }
   .modal-contenedor { width: 95%; }
+}
+@media (max-width: 480px) {
+  .pagina { padding: 10px; }
+  .cabecera { padding: 16px; border-radius: 14px; }
+  .cabecera h1 { font-size: 20px; }
+  .panel { padding: 12px; border-radius: 14px; }
+  .tabla th, .tabla td { padding: 10px 8px; font-size: 13px; }
+  .btn-ver, .btn-editar, .btn-eliminar { padding: 6px 10px; font-size: 12px; }
+  .kpi { padding: 12px; border-radius: 12px; }
+  .kpi span { font-size: 20px; }
+  .btn-volver { padding: 7px 12px; font-size: 13px; }
 }

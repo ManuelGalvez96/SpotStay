@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_propiedad_fk');
             $table->unsignedBigInteger('id_alquiler_fk')->nullable();
             $table->unsignedBigInteger('id_gestor_fk');
-            $table->string('concepto_gasto', 200);
+            $table->string('concepto_gasto', 200)->nullable();
             $table->string('categoria_gasto', 50)->nullable();
             $table->decimal('importe_estimado', 10, 2)->nullable();
             $table->enum('ambito_gasto', ['propiedad', 'contrato']);

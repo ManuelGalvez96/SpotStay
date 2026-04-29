@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -13,6 +14,8 @@ class IncidenciaController extends Controller
 {
     public function index(Request $request)
     {
+        $gestorId = $this->obtenerIdGestor();
+
         $query = DB::table('tbl_incidencia')
             ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_incidencia.id_propiedad_fk')
             ->join('tbl_usuario as arrendador', 'arrendador.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
@@ -26,7 +29,14 @@ class IncidenciaController extends Controller
                 DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
                 'tbl_propiedad.ciudad_propiedad',
                 'arrendador.nombre_usuario as nombre_arrendador'
-            );
+            )
+            ->where(function ($scope) use ($gestorId) {
+                $scope->where('tbl_incidencia.id_asignado_fk', $gestorId)
+                    ->orWhere(function ($legacy) use ($gestorId) {
+                        $legacy->whereNull('tbl_incidencia.id_asignado_fk')
+                            ->where('tbl_propiedad.id_gestor_fk', $gestorId);
+                    });
+            });
 
         $titulo = trim((string) $request->query('titulo', ''));
         $propiedad = trim((string) $request->query('propiedad', ''));
@@ -51,7 +61,7 @@ class IncidenciaController extends Controller
             });
         }
 
-        if (in_array($estado, ['abierta', 'en_proceso', 'esperando', 'resuelta'], true)) {
+        if (in_array($estado, ['abierta', 'en_proceso', 'esperando_decision', 'esperando_pago', 'resuelta', 'cerrada'], true)) {
             $query->where('tbl_incidencia.estado_incidencia', $estado);
         }
 
@@ -77,6 +87,8 @@ class IncidenciaController extends Controller
 
     public function show(int $id)
     {
+        $gestorId = $this->obtenerIdGestor();
+
         $incidencia = DB::table('tbl_incidencia')
             ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_incidencia.id_propiedad_fk')
             ->join('tbl_usuario as reporta', 'reporta.id_usuario', '=', 'tbl_incidencia.id_reporta_fk')
@@ -86,6 +98,8 @@ class IncidenciaController extends Controller
             ->select(
                 'tbl_incidencia.*',
                 'tbl_propiedad.id_propiedad',
+                'tbl_propiedad.id_gestor_fk as id_gestor_propiedad',
+                'tbl_propiedad.id_arrendador_fk as id_arrendador_propiedad',
                 'tbl_propiedad.titulo_propiedad',
                 DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
                 'tbl_propiedad.ciudad_propiedad',
@@ -99,6 +113,16 @@ class IncidenciaController extends Controller
 
         if (!$incidencia) {
             abort(404);
+        }
+
+        $puedeVer = (int) ($incidencia->id_asignado_fk ?? 0) === $gestorId
+            || (
+                is_null($incidencia->id_asignado_fk)
+                && (int) ($incidencia->id_gestor_propiedad ?? 0) === $gestorId
+            );
+
+        if (!$puedeVer) {
+            abort(403);
         }
 
         $historial = DB::table('tbl_historial_incidencia')
@@ -117,80 +141,27 @@ class IncidenciaController extends Controller
             ->orderBy('creado_documento', 'desc')
             ->get();
 
-        $tieneComunicacion = DB::table('tbl_historial_incidencia')
-            ->where('id_incidencia_fk', $id)
-            ->where('comentario_historial', 'like', 'Comunicación a %')
-            ->exists();
+        $esGestorAsignado = (int) ($incidencia->id_asignado_fk ?? 0) === $this->obtenerIdGestor();
 
-        $tienePresupuesto = $documentos->contains(function ($doc) {
-            return $doc->tipo_documento === 'presupuesto_incidencia';
-        });
-
-        $tieneAdjunto = $documentos->contains(function ($doc) {
-            return $doc->tipo_documento === 'incidencia_adjunto';
-        });
-
-        $tieneIntervencion = DB::table('tbl_historial_incidencia')
-            ->where('id_incidencia_fk', $id)
-            ->whereNull('cambio_estado_historial')
-            ->where('comentario_historial', 'not like', 'Comunicación a %')
-            ->where('comentario_historial', 'not like', 'Documento adjunto subido:%')
-            ->exists();
-
-        $tiposEspera = [
-            'arrendador' => 'Esperando arrendador',
-            'empresa' => 'Esperando empresa',
-            'inquilino' => 'Esperando inquilino',
-        ];
-
-        $transiciones = [
-            'abierta' => ['en_proceso'],
-            'en_proceso' => ['esperando', 'resuelta'],
-            'esperando' => ['en_proceso'],
-            'resuelta' => ['en_proceso'],
-        ];
-
-        $siguientesEstados = $transiciones[$incidencia->estado_incidencia] ?? [];
-
-        $pasosFlujo = [
-            ['clave' => 'iniciar', 'titulo' => 'Iniciar gestión', 'completado' => $incidencia->estado_incidencia !== 'abierta'],
-            ['clave' => 'comunicacion', 'titulo' => 'Registrar comunicación', 'completado' => $tieneComunicacion],
-            ['clave' => 'presupuesto', 'titulo' => 'Generar presupuesto', 'completado' => $tienePresupuesto],
-            ['clave' => 'documento', 'titulo' => 'Subir documentación', 'completado' => $tieneAdjunto],
-            ['clave' => 'intervencion', 'titulo' => 'Registrar intervención', 'completado' => $tieneIntervencion],
-            ['clave' => 'cierre', 'titulo' => 'Cerrar o dejar en espera', 'completado' => in_array($incidencia->estado_incidencia, ['esperando', 'resuelta'], true)],
-        ];
-
-        $accionActual = 'iniciar';
-
-        if ($incidencia->estado_incidencia === 'esperando') {
-            $accionActual = $incidencia->esperando_de_incidencia === 'arrendador'
-                ? 'esperando_arrendador'
-                : 'reanudar';
+        $accionActual = 'sin_accion';
+        if (in_array($incidencia->estado_incidencia, ['abierta', 'en_proceso'], true)) {
+            $accionActual = $esGestorAsignado ? 'presupuesto' : 'sin_permiso_asignado';
+        } elseif ($incidencia->estado_incidencia === 'esperando_decision') {
+            $accionActual = 'esperando_decision';
+        } elseif ($incidencia->estado_incidencia === 'esperando_pago') {
+            $accionActual = 'esperando_pago';
         } elseif ($incidencia->estado_incidencia === 'resuelta') {
-            $accionActual = 'reabrir';
-        } elseif ($incidencia->estado_incidencia !== 'abierta') {
-            if (!$tieneComunicacion) {
-                $accionActual = 'comunicacion';
-            } elseif (!$tienePresupuesto) {
-                $accionActual = 'presupuesto';
-            } elseif (!$tieneAdjunto) {
-                $accionActual = 'documento';
-            } elseif (!$tieneIntervencion) {
-                $accionActual = 'intervencion';
-            } else {
-                $accionActual = 'cierre';
-            }
+            $accionActual = 'resuelta';
+        } elseif ($incidencia->estado_incidencia === 'cerrada') {
+            $accionActual = 'cerrada';
         }
 
         return view('gestor.incidencia', compact(
             'incidencia',
             'historial',
             'documentos',
-            'tiposEspera',
-            'siguientesEstados',
-            'pasosFlujo',
-            'accionActual'
+            'accionActual',
+            'esGestorAsignado'
         ));
     }
 
@@ -224,7 +195,7 @@ class IncidenciaController extends Controller
             'abierta' => ['en_proceso'],
             'en_proceso' => ['esperando', 'resuelta'],
             'esperando' => ['en_proceso'],
-            'resuelta' => ['en_proceso'],
+            'resuelta' => [],
         ];
 
         $estadoNuevo = $request->estado;
@@ -355,6 +326,22 @@ class IncidenciaController extends Controller
             'pdf_presupuesto' => 'nullable|file|mimes:pdf|max:10240',
         ]);
 
+        $incidencia = DB::table('tbl_incidencia')
+            ->where('id_incidencia', $id)
+            ->first();
+
+        if (!$incidencia) {
+            return redirect()->back()->with('error', 'Incidencia no encontrada.');
+        }
+
+        if (!in_array($incidencia->estado_incidencia, ['abierta', 'en_proceso'], true)) {
+            return redirect()->back()->with('error', 'Solo se puede generar presupuesto para incidencias abiertas o en proceso.');
+        }
+
+        if ((int) ($incidencia->id_asignado_fk ?? 0) !== $this->obtenerIdGestor()) {
+            return redirect()->back()->with('error', 'Solo el gestor asignado puede crear el presupuesto de esta incidencia.');
+        }
+
         $nombrePresupuesto = 'Presupuesto incidencia #' . $id . ' - ' . number_format((float) $request->importe, 2, ',', '.') . ' EUR';
         $urlDocumento = null;
         $hashDocumento = hash('sha256', $nombrePresupuesto . '|' . $request->detalle_presupuesto . '|' . Carbon::now()->timestamp);
@@ -379,9 +366,29 @@ class IncidenciaController extends Controller
             'actualizado_documento' => Carbon::now(),
         ]);
 
-        $comentario = 'Presupuesto generado (' . number_format((float) $request->importe, 2, ',', '.') . ' EUR): ' . $request->detalle_presupuesto;
+        DB::table('tbl_incidencia')
+            ->where('id_incidencia', $id)
+            ->update([
+                'presupuesto_importe_incidencia' => $request->importe,
+                'detalle_presupuesto_incidencia' => $request->detalle_presupuesto,
+                'responsable_pago_incidencia' => null,
+                'pagado_presupuesto_incidencia' => false,
+                'pagado_incidencia' => null,
+                'estado_incidencia' => 'esperando_decision',
+                'esperando_de_incidencia' => 'arrendador',
+                'actualizado_incidencia' => now(),
+            ]);
 
-        return $this->actualizarEstado($id, 'esperando', $comentario, 'arrendador', false);
+        DB::table('tbl_historial_incidencia')->insert([
+            'id_incidencia_fk' => $id,
+            'id_usuario_fk' => $this->obtenerIdGestor(),
+            'comentario_historial' => 'Presupuesto generado (' . number_format((float) $request->importe, 2, ',', '.') . ' EUR): ' . $request->detalle_presupuesto,
+            'cambio_estado_historial' => 'esperando_decision',
+            'creado_historial' => now(),
+            'actualizado_historial' => now(),
+        ]);
+
+        return redirect()->back()->with('ok', 'Presupuesto enviado. La incidencia queda pendiente de decisión del arrendador.');
     }
 
     private function actualizarEstado(
@@ -397,6 +404,10 @@ class IncidenciaController extends Controller
 
         if (!$incidencia) {
             return redirect()->back()->with('error', 'Incidencia no encontrada.');
+        }
+
+        if ($incidencia->estado_incidencia === 'resuelta' && $estado === 'en_proceso') {
+            return redirect()->back()->with('error', 'La reapertura de incidencias resueltas solo puede hacerla el inquilino.');
         }
 
         $idGestor = $this->obtenerIdGestor();
@@ -430,13 +441,7 @@ class IncidenciaController extends Controller
 
     private function obtenerIdGestor(): int
     {
-        $gestorId = DB::table('tbl_usuario')
-            ->join('tbl_rol_usuario', 'tbl_rol_usuario.id_usuario_fk', '=', 'tbl_usuario.id_usuario')
-            ->join('tbl_rol', 'tbl_rol.id_rol', '=', 'tbl_rol_usuario.id_rol_fk')
-            ->where('tbl_rol.slug_rol', 'gestor')
-            ->orderBy('tbl_usuario.id_usuario')
-            ->value('tbl_usuario.id_usuario');
-
-        return (int) ($gestorId ?: 1);
+        $usuario = Auth::user();
+        return (int) ($usuario->id_usuario ?? 0);
     }
 }

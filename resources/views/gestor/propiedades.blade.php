@@ -58,8 +58,9 @@
     </div>
 </div>
 
-<div class="card-admin filtros-card-gestor">
-    <div class="card-header-admin">
+<div class="card-admin filtros-card-gestor card-con-franja">
+    <div class="card-franja"></div>
+    <div class="card-header-admin card-header-gradient">
         <span>Filtros de propiedades</span>
     </div>
 
@@ -85,8 +86,9 @@
     </form>
 </div>
 
-<div class="card-admin tabla-propiedades-card" id="propiedadesTablaCard">
-    <div class="card-header-admin">
+<div class="card-admin tabla-propiedades-card card-con-franja" id="propiedadesTablaCard">
+    <div class="card-franja"></div>
+    <div class="card-header-admin card-header-gradient">
         <span>{{ $propiedades->total() }} propiedades encontradas</span>
     </div>
 
@@ -103,19 +105,17 @@
                     </a>
                 </th>
                 <th>ARRENDADOR</th>
-                <th class="th-salud">
-                    <a class="th-sort {{ $sort === 'incidencias_criticas' ? 'activo' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'incidencias_criticas', 'dir' => $sort === 'incidencias_criticas' ? $nextDir : 'desc']) }}">
-                        SALUD
-                    </a>
-                    <span class="salud-help-wrap">
-                        <button type="button" class="salud-help-square" aria-label="Mostrar leyenda del indicador de salud">
+                <th class="th-pagos">
+                    <span class="th-sort activo">PAGOS</span>
+                    <span class="pagos-help-wrap">
+                        <button type="button" class="pagos-help-square" aria-label="Mostrar leyenda del indicador de pagos">
                             i
                         </button>
-                        <span class="salud-legend-box" role="tooltip">
-                            <strong>Leyenda de salud</strong>
-                            <span class="salud-legend-row"><b class="salud-legend-tag salud-legend-verde">Verde:</b> sin incidencias activas</span>
-                            <span class="salud-legend-row"><b class="salud-legend-tag salud-legend-amarillo">Amarillo:</b> con incidencias activas</span>
-                            <span class="salud-legend-row"><b class="salud-legend-tag salud-legend-rojo">Rojo:</b> con incidencias urgentes</span>
+                        <span class="pagos-legend-box" role="tooltip">
+                            <strong>Leyenda de pagos</strong>
+                            <span class="pagos-legend-row"><b class="pagos-legend-tag pagos-legend-verde">Verde:</b> todo pagado</span>
+                            <span class="pagos-legend-row"><b class="pagos-legend-tag pagos-legend-amarillo">Amarillo:</b> hay algún pago pendiente</span>
+                            <span class="pagos-legend-row"><b class="pagos-legend-tag pagos-legend-rojo">Rojo:</b> hay algún pago atrasado</span>
                         </span>
                     </span>
                 </th>
@@ -148,11 +148,15 @@
                         default => 'pendiente'
                     };
 
-                    $salud = 'verde';
-                    if ((int) $propiedad->total_incidencias_criticas > 0) {
-                        $salud = 'rojo';
-                    } elseif ((int) $propiedad->total_incidencias_activas > 0) {
-                        $salud = 'amarillo';
+                    $estadoPagos = 'verde';
+                    $textoPagos = 'Al día';
+
+                    if ((int) $propiedad->total_pagos_atrasados > 0) {
+                        $estadoPagos = 'rojo';
+                        $textoPagos = 'Atrasado';
+                    } elseif ((int) $propiedad->total_pagos_pendientes > 0) {
+                        $estadoPagos = 'amarillo';
+                        $textoPagos = 'Pendiente';
                     }
                 @endphp
                 <tr>
@@ -164,9 +168,9 @@
                     </td>
                     <td>{{ $propiedad->nombre_arrendador }}</td>
                     <td>
-                        <span class="salud-chip salud-{{ $salud }}">
-                            <span class="salud-punto"></span>
-                            {{ ucfirst($salud) }}
+                        <span class="pagos-chip pagos-{{ $estadoPagos }}">
+                            <span class="pagos-punto"></span>
+                            {{ $textoPagos }}
                         </span>
                     </td>
                     <td><span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst($propiedad->estado_propiedad) }}</span></td>

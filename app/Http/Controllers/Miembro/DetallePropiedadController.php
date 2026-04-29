@@ -14,38 +14,17 @@ class DetallePropiedadController extends Controller
 
     public function index($id)
     {
-        // Busca la propiedad por su ID
-        $propiedad = DB::table('tbl_propiedad')
-            ->select(
-                'id_propiedad',
-                'titulo_propiedad',
-                'direccion_propiedad',
-                'ciudad_propiedad',
-                'latitud_propiedad',
-                'longitud_propiedad',
-                'descripcion_propiedad',
-                'precio_propiedad',
-                'tipo_propiedad',
-                'habitaciones_propiedad',
-                'metros_cuadrados_propiedad',
-                'estado_propiedad',
-                'id_arrendador_fk'
-            )
-            ->where('id_propiedad', $id)
-            ->first();
+        // Busca la propiedad utilizando el modelo Eloquent para habilitar accessors y relaciones
+        $propiedad = \App\Models\Propiedad::with(['arrendador', 'fotos' => function($q) {
+            $q->limit(5);
+        }])->find($id);
 
-        // Carga hasta 5 fotos de la propiedad para el collage del detalle.
-        $fotosPropiedad = DB::table('tbl_fotos')
-            ->select('ruta_foto')
-            ->where('id_propiedad_fk', $id)
-            ->limit(5)
-            ->get();
+        if (!$propiedad) {
+            return abort(404, 'Propiedad no encontrada');
+        }
 
-        // Busca el arrendador de la propiedad
-        $arrendador = DB::table('tbl_usuario')
-            ->select('nombre_usuario', 'email_usuario', 'telefono_usuario')
-            ->where('id_usuario', $propiedad->id_arrendador_fk)
-            ->first();
+        $fotosPropiedad = $propiedad->fotos;
+        $arrendador = $propiedad->arrendador;
 
         return view('miembro.detalle_propiedad', compact('id', 'propiedad', 'fotosPropiedad', 'arrendador'));
     }

@@ -230,6 +230,17 @@
     padding: 15px;
     display: flex;
     align-items: flex-start;
+    position: relative;
+    overflow: hidden;
+}
+
+.banner-propiedad-imagen {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
 }
 
 .badge-estado-inquilino {
@@ -241,6 +252,8 @@
     font-size: 0.75rem;
     font-weight: 600;
     border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    z-index: 1;
 }
 
 .info-propiedad-gestion {
@@ -344,9 +357,56 @@
     color: #ef4444 !important;
 }
 
+/* ALERTA PAGO PENDIENTE (NARANJA - Imagen 1) */
+.alerta-pago-pendiente {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    color: #d97706;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.alerta-pago-pendiente i {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    color: #f59e0b;
+}
+
+/* ALERTA PAGO AL DIA (VERDE - Imagen 2) */
+.alerta-pago-al-dia {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    color: #15803d;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.alerta-pago-al-dia i {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    color: #22c55e;
+}
+
 .acciones-gestion {
     display: flex;
     gap: 12px;
+}
+
+.form-pago-grid {
+    flex: 1;
+    margin: 0;
 }
 
 .btn-inquilino {
@@ -402,5 +462,21 @@
     .meta-gestion {
         grid-template-columns: 1fr;
     }
+}
+
+/* FIX PARA ICONOS DE OSO EN SWEETALERT */
+.oso-icon {
+    border: none !important;
+    background: transparent !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    overflow: visible !important;
+}
+
+.oso-icon svg {
+    display: block;
+    margin: 0 auto;
 }
 

@@ -73,6 +73,7 @@ class UsuarioSeeder extends Seeder
             ['nombre' => 'Andrés', 'apellido' => 'Molina', 'email' => 'amolina@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 013'],
             ['nombre' => 'Rocío', 'apellido' => 'Vega', 'email' => 'rvega@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 014'],
             ['nombre' => 'Roberto', 'apellido' => 'Mora', 'email' => 'rmora@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 015'],
+            ['nombre' => 'Sergi', 'apellido' => 'Nebot', 'email' => 'snebot@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 016'],
         ];
 
         foreach ($usuarios as $data) {
@@ -107,4 +108,3 @@ class UsuarioSeeder extends Seeder
         }
     }
 }
-

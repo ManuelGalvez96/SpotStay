@@ -1,15 +1,12 @@
 @forelse ($alquileres as $alquiler)
 <article class="tarjeta-propiedad-gestion">
-    @php
-        $bannerFoto = $alquiler->ruta_foto ? asset('public/img/' . $alquiler->ruta_foto) : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
-    @endphp
-    <div class="banner-propiedad" style="<?php echo 'background-image: url(\'' . e($bannerFoto) . '\'); background-size: cover; background-position: center;'; ?>">
+    <div class="banner-propiedad">
+        <img src="{{ data_get($alquiler, 'banner_foto_url', 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80') }}" alt="Imagen de {{ $alquiler->titulo_propiedad }}" class="banner-propiedad-imagen">
         <span class="badge-estado-inquilino">{{ ucfirst(str_replace('_', ' ', $alquiler->estado_alquiler)) }}</span>
     </div>
     <div class="info-propiedad-gestion">
         <h3>{{ $alquiler->titulo_propiedad }}</h3>
-        <p class="ubicacion-gestion"><i class="bi bi-geo-alt"></i> {{ $alquiler->ciudad_propiedad }}, {{ $alquiler->calle_propiedad }} {{ $alquiler->numero_propiedad }}</p>
-
+        <p class="propiedad-direccion"><i class="bi bi-geo-alt"></i> {{ $alquiler->direccion_propiedad }}</p>
         <div class="meta-gestion">
             <div class="item-meta">
                 <span class="label-meta">RENTA MENSUAL</span>
@@ -34,18 +31,34 @@
         </div>
         @endif
 
+        @if($alquiler->estado_pago_actual === 'pendiente')
+        <div class="alerta-pago-pendiente">
+            <i class="bi bi-calendar-event"></i>
+            <span>
+                @if($alquiler->dias_para_pago === 0)
+                ¡El pago vence <strong>hoy</strong>!
+                @else
+                Quedan <strong>{{ $alquiler->dias_para_pago }} días</strong> para el pago.
+                @endif
+            </span>
+        </div>
+        @elseif($alquiler->estado_pago_actual === 'pagado' && $alquiler->fecha_proximo_pago)
+        <div class="alerta-pago-al-dia">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>
+                Al día. Próximo pago: <strong>{{ \Carbon\Carbon::parse($alquiler->fecha_proximo_pago)->format('d/m/Y') }}</strong>
+            </span>
+        </div>
+        @endif
+
         @if ($alquiler->mostrarAlertaFin)
         <div class="alerta-fin-contrato {{ $alquiler->haExpirado ? 'estado-expirado' : '' }}">
             <i class="bi bi-clock-history"></i>
             @if ($alquiler->haExpirado)
-            <span>El contrato ha expirado (hace <strong>{{ $alquiler->diasExpirado }} días</strong>). Tienes una semana para contactar al propietario y solucionar el inconveniente en el caso que quieras renovar el contrato.</span>
-            @elseif ($alquiler->diasFinContrato === 0)
+            <span>El contrato ha expirado (hace <strong>{{ $alquiler->diasExpirado }} días</strong>).</span>
+            @elseif (($alquiler->diasFinContrato ?? -1) === 0)
             <span class="contenedor-alerta-js">
                 El contrato finaliza <strong>hoy</strong> (quedan <strong class="js-tiempo-restante" data-fecha-fin="{{ $alquiler->fecha_fin_alquiler }}">calculando...</strong>)
-            </span>
-            @elseif ($alquiler->diasFinContrato > 0)
-            <span class="contenedor-alerta-js">
-                El contrato finaliza en <strong>{{ $alquiler->diasFinContrato }} días</strong>
             </span>
             @else
             <span class="contenedor-alerta-js">
@@ -55,18 +68,14 @@
         </div>
         @endif
 
-        <div class="acciones-gestion">
-            <a href="{{ route('inquilino.ver_propiedad', $alquiler->id_propiedad) }}" class="btn-inquilino btn-secundario">Ver Detalles</a>
-            @if ($alquiler->mostrarAlertaFin || $alquiler->estado_alquiler != 'activo')
-            <a href="mailto:" class="btn-inquilino btn-secundario" style="color: var(--primario); border-color: var(--borde);"><i class="bi bi-envelope" style="margin-right: 5px;"></i> Contactar</a>
-            @elseif(!empty($alquiler->cuota_pendiente_id))
-            <form method="POST" action="{{ route('inquilino.pagar_cuota', $alquiler->cuota_pendiente_id) }}" style="display:inline; margin:0;">
+        <div class="acciones-gestion" style="display: flex; gap: 10px; margin-top: 15px;">
+            <a href="{{ route('inquilino.ver_propiedad', $alquiler->id_propiedad) }}" class="btn-inquilino btn-secundario" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; text-decoration: none;">Ver Detalles</a>
+            <form method="POST" action="{{ route('miembro.mensajes.iniciar', $alquiler->id_propiedad) }}" class="m-0" style="display: contents;">
                 @csrf
-                <button type="submit" class="btn-inquilino btn-primario">Pagar Recibo</button>
+                <button type="submit" class="btn-inquilino btn-primario" style="flex: 1; background-color: var(--primario); color: white; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; border-radius: var(--radio); height: 44px; font-weight: 600;">
+                    <i class="bi bi-chat-dots"></i> Contactar
+                </button>
             </form>
-            @else
-            <button class="btn-inquilino btn-secundario" type="button" disabled>Sin recibos pendientes</button>
-            @endif
         </div>
     </div>
 </article>

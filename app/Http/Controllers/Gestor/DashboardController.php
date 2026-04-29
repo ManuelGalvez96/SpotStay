@@ -4,33 +4,41 @@ namespace App\Http\Controllers\Gestor;
 
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $gestorId = DB::table('tbl_usuario')
-            ->join('tbl_rol_usuario', 'tbl_rol_usuario.id_usuario_fk', '=', 'tbl_usuario.id_usuario')
-            ->join('tbl_rol', 'tbl_rol.id_rol', '=', 'tbl_rol_usuario.id_rol_fk')
-            ->where('tbl_rol.slug_rol', 'gestor')
-            ->orderBy('tbl_usuario.id_usuario')
-            ->value('tbl_usuario.id_usuario');
+        $gestor = Auth::user();
+        $gestorId = (int) ($gestor?->id_usuario ?? 0);
 
-        $incidenciasNuevas = DB::table('tbl_incidencia')
-            ->where('estado_incidencia', 'abierta')
-            ->count();
-
-        $incidenciasEnProceso = DB::table('tbl_incidencia')
-            ->where('estado_incidencia', 'en_proceso')
-            ->count();
-
-        $incidenciasEsperandoAccion = DB::table('tbl_incidencia')
-            ->where('estado_incidencia', 'esperando')
-            ->count();
-
-        $incidenciasRecientes = DB::table('tbl_incidencia')
+        $baseIncidencias = DB::table('tbl_incidencia')
             ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_incidencia.id_propiedad_fk')
+            ->when($gestorId > 0, function ($query) use ($gestorId) {
+                $query->where(function ($scope) use ($gestorId) {
+                    $scope->where('tbl_incidencia.id_asignado_fk', $gestorId)
+                        ->orWhere(function ($legacy) use ($gestorId) {
+                            $legacy->whereNull('tbl_incidencia.id_asignado_fk')
+                                ->where('tbl_propiedad.id_gestor_fk', $gestorId);
+                        });
+                });
+            });
+
+        $incidenciasNuevas = (clone $baseIncidencias)
+            ->where('tbl_incidencia.estado_incidencia', 'abierta')
+            ->count();
+
+        $incidenciasEnProceso = (clone $baseIncidencias)
+            ->where('tbl_incidencia.estado_incidencia', 'en_proceso')
+            ->count();
+
+        $incidenciasEsperandoAccion = (clone $baseIncidencias)
+            ->where('tbl_incidencia.estado_incidencia', 'esperando')
+            ->count();
+
+        $incidenciasRecientes = (clone $baseIncidencias)
             ->select(
                 'tbl_incidencia.id_incidencia',
                 'tbl_incidencia.titulo_incidencia',
@@ -45,8 +53,7 @@ class DashboardController extends Controller
             ->limit(8)
             ->get();
 
-        $incidenciasUrgentes = DB::table('tbl_incidencia')
-            ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_incidencia.id_propiedad_fk')
+        $incidenciasUrgentes = (clone $baseIncidencias)
             ->select(
                 'tbl_incidencia.id_incidencia',
                 'tbl_incidencia.titulo_incidencia',
@@ -66,8 +73,12 @@ class DashboardController extends Controller
             ->get();
 
         $subQueryIncidenciasActivas = DB::table('tbl_incidencia')
+            ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_incidencia.id_propiedad_fk')
             ->select('id_propiedad_fk', DB::raw('COUNT(*) as incidencias_activas'))
             ->whereIn('estado_incidencia', ['abierta', 'en_proceso'])
+            ->when($gestorId > 0, function ($query) use ($gestorId) {
+                $query->where('tbl_propiedad.id_gestor_fk', $gestorId);
+            })
             ->groupBy('id_propiedad_fk');
 
         $propiedadesAsignadas = DB::table('tbl_propiedad')
@@ -90,10 +101,14 @@ class DashboardController extends Controller
             ->get();
 
         $esperasDetalle = DB::table('tbl_incidencia')
+            ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_incidencia.id_propiedad_fk')
             ->selectRaw("SUM(CASE WHEN esperando_de_incidencia = 'arrendador' THEN 1 ELSE 0 END) as esperando_arrendador")
             ->selectRaw("SUM(CASE WHEN esperando_de_incidencia = 'empresa' THEN 1 ELSE 0 END) as esperando_empresa")
             ->selectRaw("SUM(CASE WHEN esperando_de_incidencia = 'inquilino' THEN 1 ELSE 0 END) as esperando_inquilino")
             ->where('estado_incidencia', 'esperando')
+            ->when($gestorId > 0, function ($query) use ($gestorId) {
+                $query->where('tbl_propiedad.id_gestor_fk', $gestorId);
+            })
             ->first();
 
         $esperandoArrendador = (int) ($esperasDetalle->esperando_arrendador ?? 0);
@@ -112,9 +127,9 @@ class DashboardController extends Controller
             ->get();
 
         $resumenEstados = [
-            'abierta' => DB::table('tbl_incidencia')->where('estado_incidencia', 'abierta')->count(),
-            'en_proceso' => DB::table('tbl_incidencia')->where('estado_incidencia', 'en_proceso')->count(),
-            'esperando' => DB::table('tbl_incidencia')->where('estado_incidencia', 'esperando')->count(),
+            'abierta' => (clone $baseIncidencias)->where('tbl_incidencia.estado_incidencia', 'abierta')->count(),
+            'en_proceso' => (clone $baseIncidencias)->where('tbl_incidencia.estado_incidencia', 'en_proceso')->count(),
+            'esperando' => (clone $baseIncidencias)->where('tbl_incidencia.estado_incidencia', 'esperando')->count(),
         ];
 
         return view('gestor.dashboard', compact(

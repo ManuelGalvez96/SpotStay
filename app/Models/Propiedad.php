@@ -38,6 +38,9 @@ class Propiedad extends Model
         'banos_propiedad',
         'notas_admin_propiedad',
         'aprobada_propiedad',
+        'tipo_propiedad',
+        'habitaciones_propiedad',
+        'metros_cuadrados_propiedad',
         'estado_propiedad',
         'creado_propiedad',
         'actualizado_propiedad',
@@ -49,6 +52,7 @@ class Propiedad extends Model
         'precio_propiedad' => 'decimal:2',
         'banos_propiedad' => 'integer',
         'aprobada_propiedad' => 'boolean',
+        'metros_cuadrados_propiedad' => 'integer',
         'creado_propiedad' => 'datetime',
         'actualizado_propiedad' => 'datetime',
     ];
@@ -71,6 +75,12 @@ class Propiedad extends Model
         return $this->hasMany(Alquiler::class, 'id_propiedad_fk', 'id_propiedad');
     }
 
+    // Fotos asociadas a la propiedad
+    public function fotos(): HasMany
+    {
+        return $this->hasMany(Foto::class, 'id_propiedad_fk', 'id_propiedad');
+    }
+
     // Incidencias reportadas en esta propiedad
     public function incidencias(): HasMany
     {
@@ -81,5 +91,17 @@ class Propiedad extends Model
     public function conversaciones(): HasMany
     {
         return $this->hasMany(Conversacion::class, 'id_propiedad_fk', 'id_propiedad');
+    }
+
+    /**
+     * Reconstruye la dirección completa combinando calle, número, piso y puerta.
+     */
+    public function getDireccionCompletaAttribute(): string
+    {
+        $partes = [$this->calle_propiedad, $this->numero_propiedad];
+        if ($this->piso_propiedad) $partes[] = "Piso " . $this->piso_propiedad;
+        if ($this->puerta_propiedad) $partes[] = "Pta " . $this->puerta_propiedad;
+        
+        return implode(', ', array_filter($partes));
     }
 }

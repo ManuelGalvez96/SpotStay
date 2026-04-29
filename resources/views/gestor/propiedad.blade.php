@@ -20,7 +20,8 @@
 </div>
 
 <div class="card-admin card-gastos" id="gastos-propiedad">
-    <div class="card-header-admin card-header-acciones">
+    <div class="card-franja"></div>
+    <div class="card-header-admin card-header-gradient card-header-acciones">
         <span>Pagos principales del mes</span>
         <a href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad . '/gastos') }}" class="link-ver-todos">Gestionar gastos</a>
     </div>
@@ -51,8 +52,9 @@
 </div>
 
 <div class="central-grid detalle-grid">
-    <div class="card-admin">
-        <div class="card-header-admin"><span>Información de la propiedad</span></div>
+    <div class="card-admin card-con-franja">
+        <div class="card-franja"></div>
+        <div class="card-header-admin card-header-gradient"><span>Información de la propiedad</span></div>
         <div class="detalle-cuerpo">
             <div class="detalle-dato"><span class="label">Estado</span><span>{{ ucfirst($propiedad->estado_propiedad) }}</span></div>
             <div class="detalle-dato"><span class="label">Precio</span><span>{{ number_format((float) $propiedad->precio_propiedad, 2, ',', '.') }} EUR/mes</span></div>
@@ -63,7 +65,7 @@
 
     <div class="card-admin card-con-franja">
         <div class="card-franja"></div>
-        <div class="card-header-admin"><span>Arrendador</span></div>
+        <div class="card-header-admin card-header-gradient"><span>Arrendador</span></div>
         <div class="detalle-cuerpo">
             <div class="detalle-dato"><span class="label">Nombre</span><span>{{ $propiedad->nombre_arrendador }}</span></div>
             <div class="detalle-dato"><span class="label">Email</span><span>{{ $propiedad->email_arrendador }}</span></div>
@@ -73,8 +75,9 @@
 </div>
 
 <div class="inferior-grid detalle-grid-inferior">
-    <div class="card-admin" id="alquileres-activos">
-        <div class="card-header-admin"><span>Alquileres activos</span></div>
+    <div class="card-admin card-con-franja" id="alquileres-activos">
+        <div class="card-franja"></div>
+        <div class="card-header-admin card-header-gradient"><span>Alquileres activos</span></div>
         <table class="tabla-admin">
             <thead>
                 <tr>
@@ -103,7 +106,7 @@
 
     <div class="card-admin card-con-franja">
         <div class="card-franja"></div>
-        <div class="card-header-admin"><span>Incidencias recientes</span></div>
+        <div class="card-header-admin card-header-gradient"><span>Incidencias recientes</span></div>
         <div class="resumen-incidencias">
             <div class="resumen-pill">Abiertas: <strong>{{ $totalesIncidencia['abiertas'] }}</strong></div>
             <div class="resumen-pill">En proceso: <strong>{{ $totalesIncidencia['en_proceso'] }}</strong></div>

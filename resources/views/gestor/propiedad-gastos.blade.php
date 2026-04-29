@@ -23,10 +23,10 @@
     <div class="card-header-admin"><span>Gestión completa de gastos</span></div>
 
     @if(session('success'))
-        <div class="mensaje-estado mensaje-ok">{{ session('success') }}</div>
+        <div class="mensaje-estado mensaje-ok" data-flash-success="{{ session('success') }}">{{ session('success') }}</div>
     @endif
     @if(session('error'))
-        <div class="mensaje-estado mensaje-error">{{ session('error') }}</div>
+        <div class="mensaje-estado mensaje-error" data-flash-error="{{ session('error') }}">{{ session('error') }}</div>
     @endif
 
     @if(!$gastosHabilitados)
@@ -38,13 +38,21 @@
                     $estadoPagoCard = in_array($pagoPrincipal['estado'], ['pagado', 'pendiente', 'parcial', 'atrasado'], true)
                         ? $pagoPrincipal['estado']
                         : 'sin_dato';
+                    $detallePago = $pagoPrincipal['detalle'] ?? null;
                 @endphp
                 <div class="pago-principal-card pago-principal-{{ $estadoPagoCard }}">
                     <span class="pago-principal-titulo">{{ $pagoPrincipal['label'] }}</span>
                     <strong class="pago-principal-importe">{{ number_format((float) $pagoPrincipal['importe'], 2, ',', '.') }} EUR</strong>
                     <span class="pago-principal-estado estado-{{ $estadoPagoCard }}">
-                        {{ $estadoPagoCard === 'sin_dato' ? 'Sin dato este mes' : ucfirst($estadoPagoCard) }}
+                        {{ ucfirst($estadoPagoCard) }}
                     </span>
+                    @if($detallePago)
+                        <span class="pago-principal-fecha">
+                            {{ $detallePago['texto'] }}@if(!empty($detallePago['fecha'])) · {{ $detallePago['fecha'] }}@endif
+                        </span>
+                    @elseif($estadoPagoCard === 'atrasado' && !empty($pagoPrincipal['atrasados']))
+                        <span class="pago-principal-fecha">{{ $pagoPrincipal['atrasados'] }} recibos atrasados</span>
+                    @endif
                 </div>
             @endforeach
         </div>
@@ -57,35 +65,41 @@
             <div class="resumen-pill">Pagados este mes: <strong>{{ $resumenGastos['pagados_mes'] }}</strong></div>
         </div>
 
+        <!-- Resumen visual mensual eliminado por petición del usuario -->
+
         <form method="POST" action="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad . '/gastos') }}" class="form-gasto">
             @csrf
             <div class="fila-form-gasto">
                 <label>
-                    Concepto
-                    <input type="text" name="concepto_gasto" value="{{ old('concepto_gasto') }}" required maxlength="200" placeholder="Ej: Comunidad, Internet, Seguro" />
-                </label>
-                <label>
                     Categoría
-                    <input type="text" name="categoria_gasto" value="{{ old('categoria_gasto') }}" maxlength="50" placeholder="Ej: suministros" />
+                    <select name="categoria_gasto" required>
+                        <option value="" disabled {{ old('categoria_gasto') ? '' : 'selected' }}>Selecciona una categoría</option>
+                        <option value="luz" {{ old('categoria_gasto') === 'luz' ? 'selected' : '' }}>Luz</option>
+                        <option value="agua" {{ old('categoria_gasto') === 'agua' ? 'selected' : '' }}>Agua</option>
+                        <option value="gas" {{ old('categoria_gasto') === 'gas' ? 'selected' : '' }}>Gas</option>
+                        <option value="internet" {{ old('categoria_gasto') === 'internet' ? 'selected' : '' }}>Internet</option>
+                        <option value="comunidad" {{ old('categoria_gasto') === 'comunidad' ? 'selected' : '' }}>Comunidad</option>
+                        <option value="otros" {{ old('categoria_gasto') === 'otros' ? 'selected' : '' }}>Otros</option>
+                    </select>
                 </label>
                 <label>
-                    Importe estimado mensual (EUR)
-                    <input type="number" step="0.01" min="0" name="importe_estimado" value="{{ old('importe_estimado') }}" placeholder="Opcional" />
+                    Concepto (opcional)
+                    <input type="text" name="concepto_gasto" value="{{ old('concepto_gasto') }}" maxlength="200" placeholder="Ej: recibo de electricidad" />
+                </label>
+                <label>
+                    Importe
+                    <input type="number" step="0.01" min="0.01" name="importe_estimado" value="{{ old('importe_estimado') }}" required placeholder="Importe del recibo" />
                 </label>
             </div>
 
             <div class="fila-form-gasto">
                 <label>
-                    Quién paga
-                    <input type="text" value="Inquilinos (reparto automático)" readonly />
-                </label>
-                <label>
-                    Día de vencimiento
-                    <input type="number" name="dia_vencimiento" min="1" max="28" value="{{ old('dia_vencimiento', 5) }}" required />
-                </label>
-                <label>
-                    Mes de inicio
+                    Fecha inicio
                     <input type="date" name="fecha_inicio_gasto" value="{{ old('fecha_inicio_gasto', now()->startOfMonth()->toDateString()) }}" required />
+                </label>
+                <label>
+                    Fecha fin
+                    <input type="date" name="fecha_fin_gasto" value="{{ old('fecha_fin_gasto', now()->endOfMonth()->toDateString()) }}" required />
                 </label>
             </div>
 
@@ -96,9 +110,11 @@
             @endif
 
             <div class="acciones-form-gasto">
-                <button type="submit" class="btn-principal-admin">Añadir gasto mensual</button>
+                        <button type="submit" class="btn-principal">Añadir recibo</button>
             </div>
         </form>
+
+        <!-- Se elimina la sección "Recibos creados" — los gastos se editan inline en la tabla de abajo -->
 
         <table class="tabla-admin tabla-gastos">
             <thead>
@@ -119,26 +135,42 @@
                             && \Carbon\Carbon::parse($cuota->vencimiento_cuota)->lt(\Carbon\Carbon::today());
                         $estadoVisual = $esAtrasado ? 'atrasado' : $cuota->estado_cuota;
                         $detallesCuota = $cuotasDetallePorId->get($cuota->id_gasto_cuota, collect());
+                        $categoriaLabel = match ($cuota->categoria_gasto) {
+                            'luz' => 'Luz',
+                            'agua' => 'Agua',
+                            'gas' => 'Gas',
+                            'internet' => 'Internet',
+                            'comunidad' => 'Comunidad',
+                            'otros' => 'Otros',
+                            'base_propiedad' => 'Base propiedad',
+                            default => $cuota->categoria_gasto ?: 'Sin categoría',
+                        };
                     @endphp
-                    <tr>
-                        <td>{{ \Carbon\Carbon::parse($cuota->mes_cuota)->translatedFormat('m/Y') }}</td>
-                        <td>{{ $cuota->concepto_gasto }}</td>
-                        <td>{{ $cuota->categoria_gasto === 'base_propiedad' ? 'Base propiedad' : ($cuota->categoria_gasto ?: 'Sin categoría') }}</td>
-                        <td>
+                    <tr class="cuota-row" data-gasto-id="{{ $cuota->id_gasto_fk }}" data-propiedad-id="{{ $propiedad->id_propiedad }}" data-importe="{{ $cuota->importe_total_cuota }}" data-mes="{{ $cuota->mes_cuota }}">
+                        <td class="display-mes">{{ \Carbon\Carbon::parse($cuota->mes_cuota)->translatedFormat('m/Y') }}</td>
+                        <td class="display-concepto">{{ $cuota->concepto_gasto ?: 'Sin concepto' }}</td>
+                        <td class="display-categoria">{{ $categoriaLabel }}</td>
+                        <td class="display-ambito">
                             @if(($cuota->ambito_gasto ?? 'propiedad') === 'contrato')
                                 Contrato #{{ $cuota->id_alquiler_fk }}
                             @else
                                 Propiedad
                             @endif
                         </td>
-                        <td>{{ \Carbon\Carbon::parse($cuota->vencimiento_cuota)->format('d/m/Y') }}</td>
+                        <td class="display-fecha">{{ \Carbon\Carbon::parse($cuota->vencimiento_cuota)->format('d/m/Y') }}</td>
                         <td>
                             <span class="badge-estado badge-gasto-{{ $estadoVisual }}">
                                 {{ ucfirst(str_replace('_', ' ', $estadoVisual)) }}
                             </span>
                         </td>
                         <td>
-                            <div class="detalle-pagos-lista">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+                                <div class="detalle-acciones" style="min-width:160px;">
+                                    <button type="button" class="btn-cuota-edit link-ver-todos">Editar</button>
+                                    <button type="button" class="btn-cuota-save link-ver-todos" style="display:none;">Guardar</button>
+                                    <button type="button" class="btn-cuota-cancel link-ver-todos" style="display:none;">Cancelar</button>
+                                </div>
+                                <div class="detalle-pagos-lista">
                                 @foreach($detallesCuota as $detalle)
                                     <div class="detalle-pago-item">
                                         <span>
@@ -153,6 +185,7 @@
                                         @endif
                                     </div>
                                 @endforeach
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -166,3 +199,20 @@
     @endif
 </div>
 @endsection
+
+    @section('scripts')
+    <script src="{{ asset('js/gestor/gastos-validate.js') }}"></script>
+    <script src="{{ asset('js/gestor/recibos-inline.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const flashSuccess = document.querySelector('[data-flash-success]');
+            const flashError = document.querySelector('[data-flash-error]');
+            if (flashSuccess && flashSuccess.dataset.flashSuccess) {
+                if (window.swalSuccess) swalSuccess('Éxito', flashSuccess.dataset.flashSuccess);
+            }
+            if (flashError && flashError.dataset.flashError) {
+                if (window.swalError) swalError('Error', flashError.dataset.flashError);
+            }
+        });
+    </script>
+    @endsection

@@ -62,7 +62,7 @@
                 </div>
                 <div class="detalle-resumen-item">
                     <span class="detalle-resumen-etiqueta">Direccion</span>
-                    <span class="detalle-resumen-valor">{{ $propiedad->direccion_propiedad ?? 'N/D' }}</span>
+                    <span class="detalle-resumen-valor">{{ $propiedad->direccion_completa ?? 'N/D' }}</span>
                 </div>
                 <div class="detalle-resumen-item">
                     <span class="detalle-resumen-etiqueta">Precio</span>
@@ -120,9 +120,40 @@
                         </div>
                     </div>
 
-                    <button class="boton-contacto" type="button">
-                        Contactar por chat <i class="bi bi-chat-left-text"></i>
-                    </button>
+                    <form action="{{ route('miembro.mensajes.iniciar', ['id' => $id]) }}" method="POST">
+                        @csrf
+                        <button class="boton-contacto" type="submit">Contactar por chat <i class="bi bi-mensajes-left-text"></i></button>
+                    </form>
+
+                    <h2>Solicitar alquiler</h2>
+
+                    @if (session('success'))
+                        <p class="contacto-info">{{ session('success') }}</p>
+                    @endif
+
+                    @if (session('error'))
+                        <p class="contacto-info">{{ session('error') }}</p>
+                    @endif
+
+                    @if ($errors->any())
+                        <p class="contacto-info">{{ $errors->first() }}</p>
+                    @endif
+
+                    <form action="{{ route('miembro.solicitud_alquiler.store', ['id' => $id]) }}" method="POST" class="filtros-miembro">
+                        @csrf
+
+                        <div class="grupo-filtro">
+                            <label class="etiqueta-filtro" for="fecha_entrada">Fecha deseada</label>
+                            <input type="date" id="fecha_entrada" name="fecha_entrada" class="campo-filtro" value="{{ old('fecha_entrada') }}" min="{{ date('Y-m-d') }}" required>
+                        </div>
+
+                        <div class="grupo-filtro">
+                            <label class="etiqueta-filtro" for="mensaje">Mensaje</label>
+                            <textarea id="mensaje" name="mensaje" class="campo-filtro" rows="4">{{ old('mensaje') }}</textarea>
+                        </div>
+
+                        <button class="boton-aplicar" type="submit">Solicitar Alquiler</button>
+                    </form>
                 </div>
             </section>
 

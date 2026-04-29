@@ -14,7 +14,10 @@ class MapaController extends Controller
             ->select(
                 'id_propiedad',
                 'titulo_propiedad',
-                'direccion_propiedad',
+                'calle_propiedad',
+                'numero_propiedad',
+                'piso_propiedad',
+                'puerta_propiedad',
                 'ciudad_propiedad',
                 'latitud_propiedad',
                 'longitud_propiedad',
@@ -24,6 +27,7 @@ class MapaController extends Controller
                 'metros_cuadrados_propiedad',
                 'estado_propiedad'
             )
+            ->selectRaw("TRIM(CONCAT_WS(', ', CONCAT_WS(' ', calle_propiedad, numero_propiedad), NULLIF(CONCAT('Piso ', piso_propiedad), 'Piso '), NULLIF(CONCAT('Puerta ', puerta_propiedad), 'Puerta '))) as direccion_propiedad")
             ->where('estado_propiedad', 'publicada')
             ->whereNotNull('latitud_propiedad')
             ->whereNotNull('longitud_propiedad');

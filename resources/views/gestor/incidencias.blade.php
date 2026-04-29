@@ -18,8 +18,9 @@
 </div>
 
 <div class="central-grid incidencias-filtros-wrap" id="incidenciasFiltrosWrap">
-    <div class="card-admin">
-        <div class="card-header-admin">
+    <div class="card-admin card-con-franja">
+        <div class="card-franja"></div>
+        <div class="card-header-admin card-header-gradient">
             <span>Filtros</span>
         </div>
 
@@ -34,8 +35,10 @@
                 <option value="">Todos los estados</option>
                 <option value="abierta" {{ $estado === 'abierta' ? 'selected' : '' }}>Nuevas</option>
                 <option value="en_proceso" {{ $estado === 'en_proceso' ? 'selected' : '' }}>En proceso</option>
-                <option value="esperando" {{ $estado === 'esperando' ? 'selected' : '' }}>Esperando</option>
+                <option value="esperando_decision" {{ $estado === 'esperando_decision' ? 'selected' : '' }}>Esperando decisión</option>
+                <option value="esperando_pago" {{ $estado === 'esperando_pago' ? 'selected' : '' }}>Esperando pago</option>
                 <option value="resuelta" {{ $estado === 'resuelta' ? 'selected' : '' }}>Resueltas</option>
+                <option value="cerrada" {{ $estado === 'cerrada' ? 'selected' : '' }}>Cerradas</option>
             </select>
 
             <select name="prioridad">
@@ -53,7 +56,7 @@
 
     <div class="card-admin card-con-franja">
         <div class="card-franja"></div>
-        <div class="card-header-admin">
+        <div class="card-header-admin card-header-gradient">
             <span>Resumen de resultados</span>
         </div>
         <div class="resumen-filtros">
@@ -66,8 +69,9 @@
 </div>
 
 <div class="incidencias-tabla-wrap" id="incidenciasTablaWrap">
-    <div class="card-admin">
-        <div class="card-header-admin">
+    <div class="card-admin card-con-franja">
+        <div class="card-franja"></div>
+        <div class="card-header-admin card-header-gradient">
             <span>Listado de incidencias</span>
             <a href="{{ url('/gestor/dashboard') }}" class="link-ver-todos">Volver al dashboard →</a>
         </div>
@@ -92,7 +96,10 @@
                         $badgeEstado = match($incidencia->estado_incidencia) {
                             'abierta' => 'pendiente',
                             'en_proceso' => 'activo',
+                            'esperando_decision' => 'pendiente',
+                            'esperando_pago' => 'pendiente',
                             'resuelta' => 'activo',
+                            'cerrada' => 'activo',
                             default => 'rechazado'
                         };
                     @endphp

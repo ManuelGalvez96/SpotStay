@@ -104,7 +104,9 @@
     color: var(--inc-yellow);
 }
 
-.badge.estado.esperando {
+.badge.estado.esperando,
+.badge.estado.esperando-decision,
+.badge.estado.esperando-pago {
     background: #ffe8e8;
     color: var(--inc-red);
 }
@@ -112,6 +114,11 @@
 .badge.estado.resuelta {
     background: #e8f6ec;
     color: #228857;
+}
+
+.badge.estado.cerrada {
+    background: #eceff4;
+    color: #4b5563;
 }
 
 .badge.prioridad {

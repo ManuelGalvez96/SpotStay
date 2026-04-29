@@ -10,11 +10,11 @@
     <a href="{{ url('/gestor/dashboard') }}" class="volver-link">← Volver al dashboard</a>
 
     @if(session('ok'))
-        <div class="alerta ok">{{ session('ok') }}</div>
+        <div class="alerta ok" id="flash-ok" data-msg="{{ session('ok') }}"></div>
     @endif
 
     @if(session('error'))
-        <div class="alerta error">{{ session('error') }}</div>
+        <div class="alerta error" id="flash-error" data-msg="{{ session('error') }}"></div>
     @endif
 
     @if($errors->any())
@@ -23,6 +23,7 @@
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
+
             </ul>
         </div>
     @endif
@@ -70,91 +71,49 @@
             <article class="card-gestor">
                 <h2>Acciones del gestor</h2>
 
-                @if($accionActual === 'iniciar')
-                    <form method="POST" action="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia . '/iniciar') }}" class="bloque-accion bloque-unico">
-                        @csrf
-                        <h3>1. Aceptar / iniciar gestión</h3>
-                        <p>Primera acción obligatoria para mover la incidencia a en proceso.</p>
-                        <button type="submit" class="btn-principal">Iniciar gestión</button>
-                    </form>
-                @elseif($accionActual === 'comunicacion')
-                    <form method="POST" action="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia . '/comunicacion') }}" class="bloque-accion bloque-unico">
-                        @csrf
-                        <h3>2. Registrar comunicación</h3>
-                        <p>Registra el primer contacto operativo para dejar trazabilidad.</p>
-                        <select name="destinatario" required>
-                            <option value="">Destinatario</option>
-                            <option value="arrendador">Arrendador</option>
-                            <option value="empresa">Empresa</option>
-                            <option value="inquilino">Inquilino</option>
-                        </select>
-                        <textarea name="mensaje" required placeholder="Escribe el mensaje"></textarea>
-                        <button type="submit" class="btn-principal">Guardar y continuar</button>
-                    </form>
-                @elseif($accionActual === 'presupuesto')
+                @if($accionActual === 'presupuesto')
                     <form method="POST" action="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia . '/presupuesto') }}" enctype="multipart/form-data" class="bloque-accion bloque-unico">
                         @csrf
-                        <h3>3. Generar presupuesto</h3>
-                        <p>Calcula el coste de intervención y envíalo para validación.</p>
+                        <h3>Generar presupuesto de reparación</h3>
+                        <p>Introduce el coste para enviarlo al arrendador. La incidencia pasará a esperando decisión.</p>
                         <input type="number" step="0.01" min="0" name="importe" placeholder="Importe (EUR)" required>
                         <textarea name="detalle_presupuesto" required placeholder="Detalle del presupuesto"></textarea>
                         <input type="file" name="pdf_presupuesto" accept="application/pdf">
-                        <button type="submit" class="btn-principal">Guardar y continuar</button>
+                        <button type="submit" class="btn-principal">Confirmar presupuesto</button>
                     </form>
-                @elseif($accionActual === 'documento')
-                    <form method="POST" action="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia . '/documento') }}" enctype="multipart/form-data" class="bloque-accion bloque-unico">
-                        @csrf
-                        <h3>4. Subir documentación</h3>
-                        <p>Adjunta pruebas del presupuesto o intervención planificada.</p>
-                        <input type="text" name="descripcion" maxlength="150" placeholder="Nombre o descripción del archivo">
-                        <input type="file" name="archivo" accept=".jpg,.jpeg,.png,.pdf" required>
-                        <button type="submit" class="btn-principal">Guardar y continuar</button>
-                    </form>
-                @elseif($accionActual === 'intervencion')
-                    <form method="POST" action="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia . '/intervencion') }}" class="bloque-accion bloque-unico">
-                        @csrf
-                        <h3>5. Registrar intervención</h3>
-                        <p>Documenta la actuación realizada antes del cierre.</p>
-                        <textarea name="comentario_intervencion" required placeholder="Comentario de intervención"></textarea>
-                        <button type="submit" class="btn-principal">Guardar y continuar</button>
-                    </form>
-                @elseif($accionActual === 'cierre')
-                    <form method="POST" action="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia . '/estado') }}" class="bloque-accion bloque-unico">
-                        @csrf
-                        <h3>6. Cerrar o dejar en espera</h3>
-                        <p>Último paso: marca la incidencia como resuelta o en espera.</p>
-                        <select name="estado" required>
-                            <option value="">Selecciona estado</option>
-                            @foreach($siguientesEstados as $estado)
-                                <option value="{{ $estado }}">{{ ucfirst(str_replace('_', ' ', $estado)) }}</option>
-                            @endforeach
-                        </select>
-                        <textarea name="comentario" placeholder="Comentario del cambio (opcional)"></textarea>
-                        <button type="submit" class="btn-principal">Actualizar estado</button>
-                    </form>
-                @elseif($accionActual === 'esperando_arrendador')
+                @elseif($accionActual === 'sin_permiso_asignado')
                     <div class="bloque-accion bloque-unico">
-                        <h3>Incidencia en espera del arrendador</h3>
-                        <p>El presupuesto está pendiente de revisión por parte del arrendador. No hay acciones disponibles hasta su respuesta.</p>
+                        <h3>Sin acciones disponibles</h3>
+                        <p>Esta incidencia está asignada a otra persona. Solo el usuario asignado puede proponer el presupuesto.</p>
                     </div>
-                @elseif($accionActual === 'reanudar')
-                    <form method="POST" action="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia . '/estado') }}" class="bloque-accion bloque-unico">
-                        @csrf
-                        <h3>Incidencia en espera</h3>
-                        <p>Actualmente está en espera de {{ $incidencia->esperando_de_incidencia ?: 'respuesta externa' }}.</p>
-                        <input type="hidden" name="estado" value="en_proceso">
-                        <textarea name="comentario" placeholder="Indica por qué se reanuda la gestión"></textarea>
-                        <button type="submit" class="btn-principal">Reanudar gestión</button>
-                    </form>
-                @elseif($accionActual === 'reabrir')
-                    <form method="POST" action="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia . '/estado') }}" class="bloque-accion bloque-unico">
-                        @csrf
+                @elseif($accionActual === 'esperando_decision')
+                    <div class="bloque-accion bloque-unico">
+                        <h3>Pendiente del arrendador</h3>
+                        <p>Presupuesto enviado. El arrendador debe decidir si paga él o el inquilino.</p>
+                        @if(!is_null($incidencia->presupuesto_importe_incidencia))
+                            <p><strong>Importe propuesto:</strong> {{ number_format((float) $incidencia->presupuesto_importe_incidencia, 2, ',', '.') }} EUR</p>
+                        @endif
+                    </div>
+                @elseif($accionActual === 'esperando_pago')
+                    <div class="bloque-accion bloque-unico">
+                        <h3>Pendiente de pago</h3>
+                        <p>Se está esperando el pago del presupuesto por parte de: {{ $incidencia->responsable_pago_incidencia ?: 'sin definir' }}.</p>
+                    </div>
+                @elseif($accionActual === 'resuelta')
+                    <div class="bloque-accion bloque-unico">
                         <h3>Incidencia resuelta</h3>
-                        <p>Si vuelve a abrirse el caso, puedes reactivar el flujo.</p>
-                        <input type="hidden" name="estado" value="en_proceso">
-                        <textarea name="comentario" placeholder="Motivo de reapertura"></textarea>
-                        <button type="submit" class="btn-principal">Reabrir incidencia</button>
-                    </form>
+                        <p>El presupuesto ya se ha pagado. Falta que el inquilino confirme la resolución para cerrarla.</p>
+                    </div>
+                @elseif($accionActual === 'cerrada')
+                    <div class="bloque-accion bloque-unico">
+                        <h3>Incidencia cerrada</h3>
+                        <p>El inquilino ha confirmado la resolución y la incidencia está cerrada definitivamente.</p>
+                    </div>
+                @else
+                    <div class="bloque-accion bloque-unico">
+                        <h3>Sin acciones disponibles</h3>
+                        <p>No hay acciones pendientes para el gestor en este estado.</p>
+                    </div>
                 @endif
             </article>
         </div>

@@ -31,6 +31,15 @@
         </div>
         @endif
 
+        @if(($alquiler->num_gastos_pendientes ?? 0) > 0)
+        <div class="alerta-suministros-pendiente">
+            <i class="bi bi-receipt"></i>
+            <span>
+                Tienes <strong>{{ $alquiler->num_gastos_pendientes }} suministros</strong> pendientes.
+            </span>
+        </div>
+        @endif
+
         @if($alquiler->estado_pago_actual === 'pendiente')
         <div class="alerta-pago-pendiente">
             <i class="bi bi-calendar-event"></i>
@@ -65,6 +74,12 @@
                 El contrato finaliza en <strong>{{ $alquiler->diasFinContrato }} días</strong>
             </span>
             @endif
+        </div>
+        @endif
+
+        @if(count($alquiler->nombres_companeros ?? []) > 0)
+        <div class="compartido-info" style="margin-top: 10px; font-size: 0.85rem; color: var(--primario); background: rgba(0, 196, 204, 0.05); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(0, 196, 204, 0.1);">
+            <i class="bi bi-people-fill"></i> Compartido con: <strong>{{ implode(', ', $alquiler->nombres_companeros) }}</strong>
         </div>
         @endif
 

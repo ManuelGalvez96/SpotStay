@@ -71,6 +71,20 @@
 	margin: 5px 0 0 0;
 }
 
+.companeros-piso {
+	margin: 8px 0 0 0;
+	font-size: 0.95rem;
+	color: var(--primario);
+	background: rgba(0, 196, 204, 0.08);
+	display: inline-block;
+	padding: 4px 12px;
+	border-radius: 8px;
+}
+
+.companeros-piso i {
+	margin-right: 5px;
+}
+
 .badge-activo {
 	background-color: rgba(24, 166, 114, 0.1);
 	color: var(--success);
@@ -180,6 +194,11 @@
 .detalle-item {
 	display: flex;
 	flex-direction: column;
+	gap: 5px;
+}
+
+.detalle-item.full-width {
+	grid-column: span 2;
 }
 
 .detalle-item .label {
@@ -240,6 +259,23 @@
 .pago .card-icon {
 	background: rgba(241, 196, 15, 0.1);
 	color: var(--warning);
+}
+
+.suministros.pago .card-icon {
+	background: rgba(0, 196, 204, 0.1);
+	color: #00c4cc;
+}
+
+.suministros .label {
+	color: #00c4cc !important;
+}
+
+.suministros .valor-kpi {
+	color: #00c4cc !important;
+}
+
+.suministros .btn-pago {
+	background-color: #00c4cc !important;
 }
 
 .contrato .card-icon {

@@ -70,7 +70,9 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/propiedades/{id}/editar', [PropiedadController::class, 'editar']);
     Route::post('/admin/propiedades/{id}/editar', [PropiedadController::class, 'actualizar']);
     Route::get('/admin/propiedades/{id}', [PropiedadController::class, 'show']);
+    Route::delete('/admin/propiedades/{id}', [PropiedadController::class, 'eliminar']);
     Route::post('/admin/propiedades/{id}/desactivar', [PropiedadController::class, 'desactivar']);
+    Route::get('/admin/propiedades/{id}/descargar-pdf', [PropiedadController::class, 'descargarPdf']);
     Route::get('/admin/propiedades/exportar', [PropiedadController::class, 'exportar']);
 
     // Solicitudes

@@ -47,6 +47,9 @@ Route::middleware(['role:admin'])->group(function () {
 
     // Dashboard
     Route::get('/admin/dashboard', [DashboardController::class, 'index']);
+    Route::get('/admin/configuracion', function () {
+        return view('admin.configuracion');
+    });
     Route::post('/admin/alquiler/{id}/aprobar', [DashboardController::class, 'aprobarAlquiler']);
     Route::post('/admin/alquiler/{id}/rechazar', [DashboardController::class, 'rechazarAlquiler']);
 

@@ -11,7 +11,7 @@
 }
 
 body {
-    background: #F0F4F8;
+    background: linear-gradient(135deg, #E3F2FD 0%, #E8F5E9 100%);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
@@ -48,7 +48,7 @@ body {
 .hero-deco {
     position: absolute;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.12);
     pointer-events: none;
 }
 
@@ -94,6 +94,73 @@ body {
 
 .kpi-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ── KPI Card Gradient (Usuarios Registrados) ── */
+.kpi-grid > .kpi-card:first-child {
+    background: linear-gradient(135deg, #035498, #1AA068);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.kpi-grid > .kpi-card:first-child .kpi-label {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.kpi-grid > .kpi-card:first-child .kpi-numero {
+    color: #ffffff;
+}
+
+.kpi-grid > .kpi-card:first-child .kpi-sub {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.kpi-grid > .kpi-card:first-child .kpi-icon {
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+/* ── KPI Cards 2-4 Gradient ── */
+.kpi-grid > .kpi-card:nth-child(2),
+.kpi-grid > .kpi-card:nth-child(3),
+.kpi-grid > .kpi-card:nth-child(4) {
+    background: linear-gradient(135deg, #035498, #1AA068);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.kpi-grid > .kpi-card:nth-child(2) .kpi-label,
+.kpi-grid > .kpi-card:nth-child(3) .kpi-label,
+.kpi-grid > .kpi-card:nth-child(4) .kpi-label {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.kpi-grid > .kpi-card:nth-child(2) .kpi-numero,
+.kpi-grid > .kpi-card:nth-child(3) .kpi-numero,
+.kpi-grid > .kpi-card:nth-child(4) .kpi-numero {
+    color: #ffffff;
+}
+
+.kpi-grid > .kpi-card:nth-child(2) .kpi-sub,
+.kpi-grid > .kpi-card:nth-child(3) .kpi-sub,
+.kpi-grid > .kpi-card:nth-child(4) .kpi-sub {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.kpi-grid > .kpi-card:nth-child(2) .kpi-icon,
+.kpi-grid > .kpi-card:nth-child(3) .kpi-icon,
+.kpi-grid > .kpi-card:nth-child(4) .kpi-icon {
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+.kpi-grid > .kpi-card:nth-child(2) .kpi-numero-orange,
+.kpi-grid > .kpi-card:nth-child(3) .kpi-numero-orange,
+.kpi-grid > .kpi-card:nth-child(4) .kpi-numero-orange,
+.kpi-grid > .kpi-card:nth-child(2) .kpi-numero-red,
+.kpi-grid > .kpi-card:nth-child(3) .kpi-numero-red,
+.kpi-grid > .kpi-card:nth-child(4) .kpi-numero-red {
+    color: #ffffff;
 }
 
 /* ── KPI Header ── */
@@ -207,6 +274,37 @@ body {
     color: #111827;
 }
 
+.card-header-gradient {
+    background: linear-gradient(90deg, #035498, #1AA068);
+    color: #ffffff;
+    border-bottom: 0;
+}
+
+.card-header-gradient .card-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-header-gradient .buscador-input {
+    background: rgba(255, 255, 255, 0.92);
+    border-color: rgba(255, 255, 255, 0.55);
+}
+
+.card-header-gradient .buscador-input:focus {
+    border-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+}
+
+.card-header-gradient .link-ver-todos {
+    color: #ffffff;
+}
+
+.card-header-gradient .link-ver-todos:hover {
+    color: #ffffff;
+    opacity: 0.92;
+}
+
 /* ── Buscador ── */
 .buscador-input {
     border: 1px solid #E5E7EB;
@@ -243,6 +341,10 @@ body {
 .tabla-admin {
     width: 100%;
     border-collapse: collapse;
+}
+
+#tablaAlquileres {
+    border: none;
 }
 
 .tabla-admin thead th {

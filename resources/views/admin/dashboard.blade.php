@@ -69,7 +69,7 @@
     <!-- TARJETA TABLA ALQUILERES -->
     <div class="card-admin card-con-franja">
         <div class="card-franja"></div>
-        <div class="card-header-admin">
+        <div class="card-header-admin card-header-gradient">
             <span>Alquileres pendientes</span>
             <div class="card-header-actions">
                 <input type="text" id="buscadorAlquileres" placeholder="Buscar..." class="buscador-input">
@@ -117,7 +117,7 @@
     <!-- TARJETA SOLICITUDES NUEVAS -->
     <div class="card-admin card-con-franja">
         <div class="card-franja"></div>
-        <div class="card-header-admin">
+        <div class="card-header-admin card-header-gradient">
             <span>Solicitudes nuevas</span>
             <div class="card-header-acciones">
                 <input type="text" id="buscadorSolicitudes" placeholder="Buscar por nombre..." class="buscador-input">
@@ -166,7 +166,7 @@
     <!-- TARJETA DONUT -->
     <div class="card-admin card-con-franja">
         <div class="card-franja"></div>
-        <div class="card-header-admin">
+        <div class="card-header-admin card-header-gradient">
             <span>Distribución de usuarios</span>
         </div>
         
@@ -203,7 +203,7 @@
     <!-- TARJETA TIMELINE ACTIVIDAD -->
     <div class="card-admin card-con-franja">
         <div class="card-franja"></div>
-        <div class="card-header-admin">
+        <div class="card-header-admin card-header-gradient">
             <span>Actividad reciente</span>
         </div>
         

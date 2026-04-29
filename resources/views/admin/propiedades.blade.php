@@ -109,16 +109,12 @@
 <!-- TABLA DE PROPIEDADES -->
 <div class="card-admin">
     <div class="tabla-header">
-        <span id="contadorPropiedades">{{ $totalPropiedades }} propiedades encontradas</span>
-        <div class="paginacion">
-            <button id="btnAnterior" class="btn-pag">← Anterior</button>
-            <span id="paginas">
-                <button class="pag-numero activo" data-pagina="1">1</button>
-                <button class="pag-numero" data-pagina="2">2</button>
-                <button class="pag-numero" data-pagina="3">3</button>
-            </span>
-            <button id="btnSiguiente" class="btn-pag">Siguiente →</button>
-        </div>
+        <span id="contadorPropiedades" class="info-paginacion">{{ $totalPropiedades }} propiedades encontradas</span>
+        <nav aria-label="Paginación de propiedades">
+            <ul class="pagination pagination-sm mb-0" id="paginas">
+                {{-- Paginación dinámica (JS) --}}
+            </ul>
+        </nav>
     </div>
     
     <table class="tabla-admin" id="tablaPropiedades">
@@ -491,26 +487,26 @@
 </div>
 
 <!-- MODAL DETALLE DE PROPIEDAD -->
-<div class="modal-overlay" id="modalOverlay"></div>
-<div class="modal-admin modal-ancho" id="modalPropiedad">
-    <div class="modal-header-admin">
-        <div class="modal-titulo-grupo">
-            <span class="modal-titulo">Detalle de propiedad</span>
-            <span class="badge-estado badge-alquilada" id="modalBadgeEstado">Alquilada</span>
-        </div>
-        <button id="btnCerrarModal" class="btn-cerrar-modal">
-            <i class="bi bi-x"></i>
-        </button>
-    </div>
-    
-    <!-- IMAGEN PRINCIPAL -->
-    <div class="modal-imagen-propiedad" id="modalImagenPropiedad" style="background: linear-gradient(135deg, #8AAAC4, #B8CCE4);">
-        <div class="modal-imagen-texto">
-            <span id="modalDireccion">Calle Mayor 14, Madrid</span>
-        </div>
-    </div>
-    
-    <div class="modal-cuerpo">
+<div class="modal fade" id="modalPropiedad" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title">Detalle de propiedad</h5>
+                    <span class="badge-estado badge-alquilada" id="modalBadgeEstado">Alquilada</span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <div class="modal-body p-0">
+                <!-- IMAGEN PRINCIPAL -->
+                <div class="modal-imagen-propiedad" id="modalImagenPropiedad" style="background: linear-gradient(135deg, #8AAAC4, #B8CCE4);">
+                    <div class="modal-imagen-texto">
+                        <span id="modalDireccion">Calle Mayor 14, Madrid</span>
+                    </div>
+                </div>
+
+                <div class="p-4 modal-cuerpo">
         <!-- SECCIÓN 1: INFORMACIÓN GENERAL -->
         <span class="seccion-label">INFORMACIÓN GENERAL</span>
         <div class="modal-grid-3">
@@ -678,33 +674,38 @@
             </div>
         </div>
 
-        <div class="modal-separador"></div>
+                    <div class="modal-separador"></div>
 
-        <!-- SECCIÓN 6: SERVICIOS -->
-        <span class="seccion-label">SERVICIOS INCLUIDOS</span>
-        <div class="servicios-tags">
-            <span class="tag-servicio">Agua</span>
-            <span class="tag-servicio">Electricidad</span>
-            <span class="tag-servicio">Gas</span>
-            <span class="tag-servicio">Comunidad</span>
-            <span class="tag-servicio">Internet</span>
-            <span class="tag-servicio">Parking</span>
-            <span class="tag-servicio">Trastero</span>
-        </div>
-    </div>
-    
-    <div class="modal-footer-admin">
-        <button id="btnDesactivarPropiedad" class="btn-desactivar">
-            Desactivar propiedad
-        </button>
-        <div class="modal-footer-derecha">
-            <button id="btnVerMapa" class="btn-exportar">
-                <i class="bi bi-map"></i>
-                <span>Ver en el mapa</span>
-            </button>
-            <button id="btnEditarPropiedad" class="btn-primario">
-                Editar propiedad
-            </button>
+                    <!-- SECCIÓN 6: SERVICIOS -->
+                    <span class="seccion-label">SERVICIOS INCLUIDOS</span>
+                    <div class="servicios-tags">
+                        <span class="tag-servicio">Agua</span>
+                        <span class="tag-servicio">Electricidad</span>
+                        <span class="tag-servicio">Gas</span>
+                        <span class="tag-servicio">Comunidad</span>
+                        <span class="tag-servicio">Internet</span>
+                        <span class="tag-servicio">Parking</span>
+                        <span class="tag-servicio">Trastero</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div class="d-flex align-items-center w-100 justify-content-between">
+                    <button id="btnDesactivarPropiedad" class="btn btn-outline-secondary">
+                        Desactivar propiedad
+                    </button>
+                    <div class="d-flex gap-2">
+                        <button id="btnVerMapa" class="btn btn-light">
+                            <i class="bi bi-map"></i>
+                            <span>Ver en el mapa</span>
+                        </button>
+                        <button id="btnEditarPropiedad" class="btn btn-primary">
+                            Editar propiedad
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

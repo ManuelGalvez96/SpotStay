@@ -217,6 +217,24 @@ class UsuarioController extends Controller
 
         $nuevoEstado = !$usuarioActual;
 
+        // Si intentan desactivar al usuario, comprobar si tiene alquileres activos
+        if (!$nuevoEstado) {
+            $tieneAlquilerActivo = DB::table('tbl_alquiler')
+                ->where(function($q) use ($id) {
+                    $q->where('id_inquilino_fk', $id)
+                      ->orWhere('id_arrendador_fk', $id);
+                })
+                ->where('estado_alquiler', 'activo')
+                ->exists();
+
+            if ($tieneAlquilerActivo) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se puede desactivar el usuario porque tiene contratos activos y/o propiedades publicadas.'
+                ]);
+            }
+        }
+
         DB::table('tbl_usuario')
             ->where('id_usuario', $id)
             ->update(['activo_usuario' => $nuevoEstado]);

@@ -4,10 +4,10 @@
 
 /* ── Hero Admin ── */
 .hero-admin {
-    background: linear-gradient(135deg, #035498 0%, #0275b9 100%);
+    background: #035498;
     padding: 36px 40px;
-    border-radius: 12px;
-    margin-bottom: 28px;
+    border-radius: 0 0 20px 20px;
+    margin: 0 0 16px 0;
     position: relative;
     overflow: hidden;
     color: white;
@@ -26,36 +26,37 @@
 
 .hero-admin p {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.8);
-    margin: 0;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 4px;
+    margin-bottom: 0;
 }
 
 .hero-deco {
     position: absolute;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.12);
     pointer-events: none;
 }
 
 .hero-deco-1 {
-    width: 240px;
-    height: 240px;
-    top: -80px;
+    width: 300px;
+    height: 300px;
+    top: -100px;
     right: -80px;
 }
 
 .hero-deco-2 {
-    width: 120px;
-    height: 120px;
-    bottom: -30px;
-    right: 60px;
+    width: 200px;
+    height: 200px;
+    bottom: -80px;
+    right: 200px;
 }
 
 .hero-deco-3 {
-    width: 160px;
-    height: 160px;
-    bottom: -50px;
-    left: 40px;
+    width: 150px;
+    height: 150px;
+    top: 20px;
+    right: 250px;
 }
 
 /* ── Toolbar Admin ── */
@@ -992,4 +993,53 @@
     .btn-desactivar {
         width: 100%;
     }
+}
+
+/* ── Paginación Bootstrap global ── */
+.pagination {
+    margin-left: auto;
+    gap: 4px;
+}
+
+.page-item {
+    margin: 0;
+}
+
+.page-link {
+    border: 1px solid #E5E7EB;
+    color: #6B7280;
+    background: white;
+    border-radius: 6px;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.page-link:hover:not(.disabled .page-link) {
+    color: #035498;
+    border-color: #035498;
+    background: #EEF4FF;
+}
+
+.page-item.active .page-link {
+    background: #035498;
+    border-color: #035498;
+    color: white;
+    font-weight: 600;
+}
+
+.page-item.disabled .page-link {
+    color: #CBD5E1;
+    background: #F8FAFC;
+    border-color: #E5E7EB;
+    pointer-events: none;
+    cursor: not-allowed;
 }

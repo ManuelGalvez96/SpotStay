@@ -89,32 +89,22 @@ var crearOsoError = function() {
    FUNCIÓN: Mostrar alerta de éxito con oso
 ──────────────────────────────────────────── */
 var mostrarAlertaExito = function(titulo, mensaje) {
-    Swal.fire({
-        title: titulo,
-        html: mensaje,
-        iconHtml: crearOsoExito(),
-        customClass: {
-            icon: 'oso-icon'
-        },
-        confirmButtonText: 'Ok',
-        confirmButtonColor: '#035498'
-    });
+    if (window.mostrarAlertaAdminExito) {
+        window.mostrarAlertaAdminExito(titulo, mensaje);
+        return;
+    }
+    window.alert(mensaje);
 };
 
 /* ──────────────────────────────────────────
    FUNCIÓN: Mostrar alerta de error con oso
 ──────────────────────────────────────────── */
 var mostrarAlertaError = function(titulo, mensaje) {
-    Swal.fire({
-        title: titulo,
-        html: mensaje,
-        iconHtml: crearOsoError(),
-        customClass: {
-            icon: 'oso-icon'
-        },
-        confirmButtonText: 'Ok',
-        confirmButtonColor: '#d9534f'
-    });
+    if (window.mostrarAlertaAdminError) {
+        window.mostrarAlertaAdminError(titulo, mensaje);
+        return;
+    }
+    window.alert(mensaje);
 };
 
 /* ──────────────────────────────────────────
@@ -220,7 +210,7 @@ var asignarEventosTabla = function() {
    FUNCIÓN: Asignar eventos a paginación
 ──────────────────────────────────────────── */
 var asignarEventosPaginacion = function() {
-    var botonesPage = document.querySelectorAll('#paginacionSolicitudes .btn-paginacion');
+    var botonesPage = document.querySelectorAll('#paginacionSolicitudes .page-link[data-page]');
     var i;
     for (i = 0; i < botonesPage.length; i++) {
         var btn = botonesPage[i];
@@ -366,39 +356,29 @@ var actualizarPaginacionUI = function(datos) {
 
     paginacion.innerHTML = '';
 
-    /* Botón anterior */
-    var botIzq = document.createElement('button');
-    botIzq.className = 'btn-paginacion ' + (datos.current_page === 1 ? 'deshabilitado' : '');
-    botIzq.innerHTML = '<i class="bi bi-chevron-left"></i>';
-    botIzq.setAttribute('data-page', datos.current_page - 1);
-    if (datos.current_page > 1) {
-        botIzq.disabled = false;
-    } else {
-        botIzq.disabled = true;
-    }
-    paginacion.appendChild(botIzq);
+    var crearItem = function(page, contenido, deshabilitado, activo) {
+        var li = document.createElement('li');
+        li.className = 'page-item' + (deshabilitado ? ' disabled' : '') + (activo ? ' active' : '');
 
-    /* Botones de página */
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'page-link';
+        if (page !== null && page !== undefined) {
+            button.setAttribute('data-page', page);
+        }
+        button.innerHTML = contenido;
+        li.appendChild(button);
+        return li;
+    };
+
+    paginacion.appendChild(crearItem(datos.current_page - 1, '<i class="bi bi-chevron-left"></i>', datos.current_page === 1, false));
+
     var j;
     for (j = 1; j <= datos.last_page; j++) {
-        var bot = document.createElement('button');
-        bot.className = 'btn-paginacion' + (j === datos.current_page ? ' activo' : '');
-        bot.textContent = j;
-        bot.setAttribute('data-page', j);
-        paginacion.appendChild(bot);
+        paginacion.appendChild(crearItem(j, String(j), false, j === datos.current_page));
     }
 
-    /* Botón siguiente */
-    var botDer = document.createElement('button');
-    botDer.className = 'btn-paginacion ' + (datos.current_page === datos.last_page ? 'deshabilitado' : '');
-    botDer.innerHTML = '<i class="bi bi-chevron-right"></i>';
-    botDer.setAttribute('data-page', datos.current_page + 1);
-    if (datos.current_page < datos.last_page) {
-        botDer.disabled = false;
-    } else {
-        botDer.disabled = true;
-    }
-    paginacion.appendChild(botDer);
+    paginacion.appendChild(crearItem(datos.current_page + 1, '<i class="bi bi-chevron-right"></i>', datos.current_page === datos.last_page, false));
 };
 /* ──────────────────────────────────────────
    FUNCIÓN: Cambiar página de solicitudes

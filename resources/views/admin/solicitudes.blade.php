@@ -4,6 +4,7 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/admin/solicitudes.css') }}">
+<link rel="stylesheet" href="{{ asset('css/admin/responsive-tablas.css') }}">
 @endsection
 
 @section('content')
@@ -118,9 +119,9 @@
                     <thead>
                         <tr>
                             <th>SOLICITANTE</th>
-                            <th>CIUDAD</th>
-                            <th>PROPIEDAD</th>
-                            <th>FECHA</th>
+                            <th class="col-tablet-hide">CIUDAD</th>
+                            <th class="col-mobile-hide">PROPIEDAD</th>
+                            <th class="col-tablet-hide">FECHA</th>
                             <th>ESTADO</th>
                             <th>ACCIONES</th>
                         </tr>
@@ -135,7 +136,7 @@
                                 $fecha = \Carbon\Carbon::parse($solicitud->creado_solicitud_arrendador)->format('d/m/Y');
                             @endphp
                             <tr class="fila-solicitud" data-id="{{ $solicitud->id_solicitud_arrendador }}">
-                                <td>
+                                <td data-label="SOLICITANTE">
                                     <div class="usuario-celda">
                                         <div class="avatar-tabla" style="background:{{ $color }}">{{ $iniciales }}</div>
                                         <div class="usuario-info-tabla">
@@ -144,13 +145,13 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>{{ $solicitud->direccion_fiscal_solicitud ?? '—' }}</td>
-                                <td>{{ $solicitud->tipo_arrendador_solicitud ?? '—' }}</td>
-                                <td>{{ $fecha }}</td>
-                                <td>
+                                <td data-label="CIUDAD" class="col-tablet-hide">{{ $solicitud->direccion_fiscal_solicitud ?? '—' }}</td>
+                                <td data-label="PROPIEDAD" class="col-mobile-hide">{{ $solicitud->tipo_arrendador_solicitud ?? '—' }}</td>
+                                <td data-label="FECHA" class="col-tablet-hide">{{ $fecha }}</td>
+                                <td data-label="ESTADO">
                                     <span class="badge-estado badge-pendiente">Pendiente</span>
                                 </td>
-                                <td>
+                                <td data-label="ACCIONES">
                                     <div class="acciones-tabla">
                                         <button class="btn-icono btn-ver-sol" data-id="{{ $solicitud->id_solicitud_arrendador }}" title="Ver detalles">
                                             <i class="bi bi-eye"></i>

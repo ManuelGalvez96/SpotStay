@@ -214,6 +214,124 @@ body {
     min-height: calc(100vh - 56px);
 }
 
+@media (max-width: 1023px) {
+    .kpi-grid,
+    .kpi-grid-pequeno,
+    .columna-derecha-sol {
+        display: none !important;
+    }
+
+    .solicitudes-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    .topbar {
+        padding: 0 14px;
+    }
+
+    .topbar-logo-img {
+        height: 28px;
+        max-width: 120px;
+    }
+
+    .topbar-central {
+        gap: 2px;
+        flex-wrap: nowrap;
+    }
+
+    .btn-nav-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 15px;
+    }
+
+    .topbar-der {
+        gap: 8px;
+    }
+
+    .admin-container {
+        gap: 6px;
+    }
+
+    .admin-nombre {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 767px) {
+    .topbar {
+        height: auto;
+        min-height: 52px;
+        padding: 8px 10px;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .topbar-izq {
+        order: 1;
+        flex: 0 0 auto;
+    }
+
+    .topbar-central {
+        order: 3;
+        width: 100%;
+        justify-content: space-between;
+        gap: 2px;
+        padding-top: 4px;
+        overflow: hidden;
+    }
+
+    .topbar-der {
+        order: 2;
+        margin-left: auto;
+        gap: 6px;
+    }
+
+    .topbar-logo-img {
+        height: 24px;
+        max-width: 104px;
+    }
+
+    .btn-nav-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+        border-radius: 7px;
+        flex: 1 1 0;
+        max-width: 34px;
+    }
+
+    .admin-container {
+        gap: 4px;
+    }
+
+    .avatar-admin {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+
+    .admin-nombre {
+        display: none;
+    }
+
+    .chevron-admin {
+        font-size: 11px;
+    }
+
+    .admin-dropdown {
+        right: 10px;
+        top: 52px;
+        min-width: 170px;
+    }
+
+    .content-wrapper {
+        min-height: calc(100vh - 52px);
+    }
+}
+
 /* =============================================
    MODALES — Z-INDEX GLOBAL
    ============================================= */

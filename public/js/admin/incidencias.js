@@ -517,13 +517,13 @@ var crearFilaIncidencia = function(inc) {
     var categoriaLabel = inc.categoria_incidencia.charAt(0).toUpperCase() + inc.categoria_incidencia.slice(1);
     
     fila.className = (inc.estado_incidencia === 'cerrada') ? 'fila-inactiva' : '';
-    fila.innerHTML = '<td><strong>' + (inc.titulo_incidencia || '') + '</strong></td>' +
-                     '<td>' + truncarTexto(inc.direccion_propiedad || '', 30) + '</td>' +
-                     '<td>' + categoriaLabel + '</td>' +
-                     '<td><span class="badge-prioridad badge-prioridad-' + inc.prioridad_incidencia + '">' + prioridadLabel + '</span></td>' +
-                     '<td><span id="estadoBadge-' + inc.id_incidencia + '" class="badge-estado ' + estadoBadgeClass + '">' + estadoLabel + '</span></td>' +
-                     '<td>' + (inc.nombre_inquilino || '') + '</td>' +
-                     '<td><button class="btn-accion btn-ver" data-id="' + inc.id_incidencia + '" title="Ver detalles"><i class="bi bi-eye"></i></button></td>';
+    fila.innerHTML = '<td data-label="TÍTULO"><strong>' + (inc.titulo_incidencia || '') + '</strong></td>' +
+                     '<td data-label="PROPIEDAD" class="col-tablet-hide">' + truncarTexto(inc.direccion_propiedad || '', 30) + '</td>' +
+                     '<td data-label="CATEGORÍA" class="col-mobile-hide">' + categoriaLabel + '</td>' +
+                     '<td data-label="PRIORIDAD"><span class="badge-prioridad badge-prioridad-' + inc.prioridad_incidencia + '">' + prioridadLabel + '</span></td>' +
+                     '<td data-label="ESTADO"><span id="estadoBadge-' + inc.id_incidencia + '" class="badge-estado ' + estadoBadgeClass + '">' + estadoLabel + '</span></td>' +
+                     '<td data-label="REPORTADA POR" class="col-tablet-hide">' + (inc.nombre_inquilino || '') + '</td>' +
+                     '<td data-label="ACCIONES"><button class="btn-accion btn-ver" data-id="' + inc.id_incidencia + '" title="Ver detalles"><i class="bi bi-eye"></i></button></td>';
     
     return fila;
 };
@@ -762,6 +762,7 @@ var crearIncidencia = function() {
             mostrarAlertaExito('¡Éxito!', 'Incidencia creada correctamente');
             modalNuevaIncidencia.hide();
             filtrarIncidencias();
+            actualizarKpisIncidencias();
         } else {
             mostrarAlertaError('Error', data.error || 'Error desconocido');
         }
@@ -820,8 +821,40 @@ var actualizarPaginacion = function(paginaActual, totalPaginas) {
 
     contenedor.appendChild(crearItem(paginaActual - 1, '<i class="bi bi-chevron-left"></i>', paginaActual <= 1, false));
 
-    for (var i = 1; i <= totalPaginas; i++) {
-        contenedor.appendChild(crearItem(i, String(i), false, i === paginaActual));
+    var paginasVisibles = [];
+    var inicio = Math.max(1, paginaActual - 1);
+    var fin = Math.min(totalPaginas, paginaActual + 1);
+
+    paginasVisibles.push(1);
+
+    if (inicio > 2) {
+        paginasVisibles.push('...');
+    }
+
+    for (var i = inicio; i <= fin; i++) {
+        if (i !== 1 && i !== totalPaginas) {
+            paginasVisibles.push(i);
+        }
+    }
+
+    if (fin < totalPaginas - 1) {
+        paginasVisibles.push('...');
+    }
+
+    if (totalPaginas > 1) {
+        paginasVisibles.push(totalPaginas);
+    }
+
+    for (var j = 0; j < paginasVisibles.length; j++) {
+        var valor = paginasVisibles[j];
+        if (valor === '...') {
+            var ellipsis = document.createElement('li');
+            ellipsis.className = 'page-item disabled';
+            ellipsis.innerHTML = '<span class="page-link">...</span>';
+            contenedor.appendChild(ellipsis);
+        } else {
+            contenedor.appendChild(crearItem(valor, String(valor), false, valor === paginaActual));
+        }
     }
 
     contenedor.appendChild(crearItem(paginaActual + 1, '<i class="bi bi-chevron-right"></i>', paginaActual >= totalPaginas, false));

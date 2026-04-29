@@ -283,11 +283,11 @@
         <thead>
             <tr>
                 <th>TÍTULO</th>
-                <th>PROPIEDAD</th>
-                <th>CATEGORÍA</th>
+                <th class="col-tablet-hide">PROPIEDAD</th>
+                <th class="col-mobile-hide">CATEGORÍA</th>
                 <th>PRIORIDAD</th>
                 <th>ESTADO</th>
-                <th>REPORTADA POR</th>
+                <th class="col-tablet-hide">REPORTADA POR</th>
                 <th>ACCIONES</th>
             </tr>
         </thead>

@@ -2,6 +2,7 @@
 @section('titulo', 'Suscripciones — SpotStay')
 @section('css')
   <link rel="stylesheet" href="{{ asset('css/admin/suscripciones.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/admin/responsive-tablas.css') }}">
 @endsection
 
 @section('content')
@@ -80,9 +81,9 @@
         <div class="tabla-header">
             <div>ARRENDADOR</div>
             <div>PLAN</div>
-            <div>PROPIEDADES</div>
-            <div>INICIO</div>
-            <div>FIN</div>
+            <div class="col-mobile-hide">PROPIEDADES</div>
+            <div class="col-tablet-hide">INICIO</div>
+            <div class="col-tablet-hide">FIN</div>
             <div>ESTADO</div>
             <div>ACCIONES</div>
         </div>
@@ -110,7 +111,7 @@
                     };
                 @endphp
                 <div class="tabla-row {{ $inactiva }}" data-id="{{ $sus->id_suscripcion }}">
-                    <div>
+                    <div data-label="ARRENDADOR">
                         <div class="usuario-celda">
                             <div class="avatar-tabla" style="background:{{ $color }}">{{ $iniciales }}</div>
                             <div>
@@ -119,7 +120,7 @@
                             </div>
                         </div>
                     </div>
-                    <div>
+                    <div data-label="PLAN">
                         <span class="badge-plan badge-plan-{{ $sus->plan_suscripcion }}">
                             @if($sus->plan_suscripcion === 'pro')
                                 <i class="bi bi-star-fill"></i>
@@ -131,7 +132,7 @@
                             {{ ucfirst($sus->plan_suscripcion) }}
                         </span>
                     </div>
-                    <div>
+                    <div data-label="PROPIEDADES" class="col-mobile-hide">
                         <div class="propiedades-celda">
                             <span class="propiedades-texto">{{ $usadas }} / {{ $maxProps }}</span>
                             <div class="barra-progreso-mini">
@@ -139,20 +140,20 @@
                             </div>
                         </div>
                     </div>
-                    <div>
+                    <div data-label="INICIO" class="col-tablet-hide">
                         <span class="texto-fecha">
                             {{ $sus->inicio_suscripcion ? \Carbon\Carbon::parse($sus->inicio_suscripcion)->format('d M Y') : '—' }}
                         </span>
                     </div>
-                    <div>
+                    <div data-label="FIN" class="col-tablet-hide">
                         <span class="texto-fecha">
                             {{ $sus->fin_suscripcion ? \Carbon\Carbon::parse($sus->fin_suscripcion)->format('d M Y') : '—' }}
                         </span>
                     </div>
-                    <div>
+                    <div data-label="ESTADO">
                         <span class="badge-estado badge-sus-{{ $sus->estado_suscripcion }}">{{ ucfirst($sus->estado_suscripcion) }}</span>
                     </div>
-                    <div>
+                    <div data-label="ACCIONES">
                         <div class="acciones-tabla">
                             <button class="btn-accion btn-ver-sus" data-id="{{ $sus->id_suscripcion }}">
                                 <i class="bi bi-eye"></i>

@@ -161,44 +161,7 @@ var asignarEventosTarjetas = function() {
 };
 
 var asignarEventosModal = function() {
-    var btnAsignar = document.getElementById('btnAsignar');
-    var btnGuardar = document.getElementById('btnGuardarCambios');
-    var btnCerrarInc = document.getElementById('btnCerrarInc');
-    var botonesEstado = document.querySelectorAll('.btn-estado');
-
-    var i;
-    for (i = 0; i < botonesEstado.length; i++) {
-        botonesEstado[i].onclick = function() {
-            marcarEstadoActivo(this.getAttribute('data-estado'));
-            estadoActualModal = this.getAttribute('data-estado');
-        };
-    }
-
-    if (btnAsignar) {
-        btnAsignar.onclick = function() {
-            var selectGestor = document.getElementById('selectGestorModal');
-            var idGestor = selectGestor ? selectGestor.value : '';
-            if (!idGestor) {
-                mostrarAlertaError('Error', 'Selecciona un gestor para asignar');
-                return;
-            }
-            asignarGestor(incidenciaIdActual, idGestor);
-        };
-    }
-
-    if (btnGuardar) {
-        btnGuardar.onclick = function() {
-            var notasTextarea = document.getElementById('modalNotasInc');
-            var comentario = notasTextarea ? notasTextarea.value : '';
-            cambiarEstado(incidenciaIdActual, estadoActualModal, comentario);
-        };
-    }
-
-    if (btnCerrarInc) {
-        btnCerrarInc.onclick = function() {
-            cambiarEstado(incidenciaIdActual, 'cerrada', 'Incidencia cerrada por administrador');
-        };
-    }
+    // El modal de admin es solo lectura: no hay acciones de edición.
 };
 
 var asignarEventosVista = function() {

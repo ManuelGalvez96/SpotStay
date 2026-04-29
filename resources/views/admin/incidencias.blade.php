@@ -343,46 +343,14 @@
                     </div>
                 </div>
 
-                <hr>
-
-                <span class="seccion-label">ASIGNAR GESTOR</span>
-                <div class="d-flex gap-2 mb-3">
-                    <select id="selectGestorModal" class="form-select form-select-sm">
-                        <option value="">Sin asignar</option>
-                        @foreach($gestores as $gestor)
-                            <option value="{{ $gestor->id_usuario }}">{{ $gestor->nombre_usuario }}</option>
-                        @endforeach
-                    </select>
-                    <button id="btnAsignar" class="btn btn-sm btn-primary">Asignar</button>
-                </div>
-
-                <hr>
-
-                <span class="seccion-label">CAMBIAR ESTADO</span>
-                <div class="d-flex gap-2 mb-3 flex-wrap">
-                    <button class="btn btn-sm btn-outline-secondary btn-estado" data-estado="abierta">Abierta</button>
-                    <button class="btn btn-sm btn-outline-secondary btn-estado" data-estado="en_proceso">En proceso</button>
-                    <button class="btn btn-sm btn-outline-secondary btn-estado" data-estado="resuelta">Resuelta</button>
-                    <button class="btn btn-sm btn-outline-secondary btn-estado" data-estado="cerrada">Cerrada</button>
-                </div>
-
-                <hr>
-
                 <span class="seccion-label">HISTORIAL DE CAMBIOS</span>
                 <div id="timelineHistorial" class="mb-3"></div>
-
-                <hr>
-
-                <span class="seccion-label">NOTAS INTERNAS</span>
-                <textarea id="modalNotasInc" class="form-control" rows="3" placeholder="Añade notas sobre esta incidencia..."></textarea>
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="btnCerrarInc">Marcar como cerrada</button>
                 <button type="button" class="btn btn-outline-secondary" id="btnContactarInquilino">
                     <i class="bi bi-chat"></i> Contactar
                 </button>
-                <button type="button" class="btn btn-primary" id="btnGuardarCambios">Guardar cambios</button>
             </div>
         </div>
     </div>

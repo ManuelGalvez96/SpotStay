@@ -121,7 +121,7 @@
             <span>Solicitudes nuevas</span>
             <div class="card-header-acciones">
                 <input type="text" id="buscadorSolicitudes" placeholder="Buscar por nombre..." class="buscador-input">
-                <span class="badge-contador">3</span>
+                <span class="badge-contador">{{ $solicitudesNuevas }}</span>
             </div>
         </div>
         

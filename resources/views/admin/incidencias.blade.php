@@ -24,7 +24,7 @@
             <i class="bi bi-exclamation-triangle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ $totalAbiertas }}</span>
+            <span class="kpi-mini-numero kpi-mini-numero-rojo" id="kpiAbiertasIncidencias">{{ $totalAbiertas }}</span>
             <span class="kpi-mini-label">Abiertas</span>
         </div>
     </div>
@@ -34,7 +34,7 @@
             <i class="bi bi-tools"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-naranja">{{ $totalEnProceso }}</span>
+            <span class="kpi-mini-numero kpi-mini-numero-naranja" id="kpiEnProcesoIncidencias">{{ $totalEnProceso }}</span>
             <span class="kpi-mini-label">En proceso</span>
         </div>
     </div>
@@ -44,7 +44,7 @@
             <i class="bi bi-check-circle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ $totalResueltas }}</span>
+            <span class="kpi-mini-numero" id="kpiResueltasIncidencias">{{ $totalResueltas }}</span>
             <span class="kpi-mini-label">Resueltas este mes</span>
         </div>
     </div>
@@ -55,7 +55,7 @@
         </div>
         <div class="kpi-mini-datos">
             <div class="kpi-urgente-fila">
-                <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ $urgentes }}</span>
+                <span class="kpi-mini-numero kpi-mini-numero-rojo" id="kpiUrgentesIncidencias">{{ $urgentes }}</span>
                 <span class="badge-pulsante"></span>
             </div>
             <span class="kpi-mini-label">Urgentes</span>

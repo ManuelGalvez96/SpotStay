@@ -24,7 +24,7 @@
             <i class="bi bi-clock"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-naranja">{{ $solicitudesPendientes->total() }}</span>
+            <span class="kpi-mini-numero kpi-mini-numero-naranja" id="kpiPendientesSolicitudes">{{ $solicitudesPendientes->total() }}</span>
             <span class="kpi-mini-label">Pendientes este mes</span>
         </div>
     </div>
@@ -34,7 +34,7 @@
             <i class="bi bi-check-circle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ $aprobadas }}</span>
+            <span class="kpi-mini-numero" id="kpiAprobadasSolicitudes">{{ $aprobadas }}</span>
             <span class="kpi-mini-label">Aprobadas este mes</span>
         </div>
     </div>
@@ -44,7 +44,7 @@
             <i class="bi bi-x-circle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ $rechazadas }}</span>
+            <span class="kpi-mini-numero kpi-mini-numero-rojo" id="kpiRechazadasSolicitudes">{{ $rechazadas }}</span>
             <span class="kpi-mini-label">Rechazadas este mes</span>
         </div>
     </div>
@@ -54,7 +54,7 @@
             <i class="bi bi-inbox"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ $totalSolicitudes }}</span>
+            <span class="kpi-mini-numero" id="kpiTotalSolicitudes">{{ $totalSolicitudes }}</span>
             <span class="kpi-mini-label">Total solicitudes</span>
         </div>
     </div>
@@ -98,7 +98,19 @@
         <div class="card-admin">
             <div class="card-header-admin">
                 <span>Solicitudes</span>
-                <span class="badge-contador">{{ $solicitudesPendientes->total() }}</span>
+            </div>
+
+            <div class="tabla-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="tabla-header-info">
+                    <span class="tabla-header-titulo">Solicitudes</span>
+                    <span id="contadorResultados" class="info-paginacion">Mostrando 0-0 de 0 solicitudes</span>
+                </div>
+
+                <nav aria-label="Paginación de solicitudes">
+                    <ul class="pagination pagination-sm mb-0" id="paginacionSolicitudes">
+                        <!-- Generado por JavaScript -->
+                    </ul>
+                </nav>
             </div>
 
             <div class="tabla-contenedor">
@@ -160,15 +172,6 @@
                     </tbody>
                 </table>
             </div>
-
-            <div class="tabla-footer d-flex flex-wrap justify-content-between align-items-center gap-3">
-                <span class="info-paginacion">Mostrando 0-0 de 0 solicitudes</span>
-                <nav aria-label="Paginación de solicitudes">
-                    <ul class="pagination pagination-sm mb-0" id="paginacionSolicitudes">
-                        <!-- Generado por JavaScript -->
-                    </ul>
-                </nav>
-            </div>
         </div>
     </div>
 
@@ -177,7 +180,7 @@
         <div class="card-admin card-estadisticas">
             <div class="card-header-admin">
                 <span>Aprobadas este mes</span>
-                <span class="badge-contador-verde">{{ $aprobadas }}</span>
+                <span class="badge-contador-verde" id="badgeAprobadasDetalles">{{ $aprobadas }}</span>
             </div>
             <div class="historial-lista">
                 @forelse($ultimasAprobadas as $aprobada)
@@ -203,7 +206,7 @@
         <div class="card-admin card-estadisticas">
             <div class="card-header-admin">
                 <span>Rechazadas este mes</span>
-                <span class="badge-contador-rojo">{{ $rechazadas }}</span>
+                <span class="badge-contador-rojo" id="badgeRechazadasDetalles">{{ $rechazadas }}</span>
             </div>
             <div class="historial-lista">
                 @forelse($ultimasRechazadas as $rechazada)
@@ -223,24 +226,6 @@
                 @empty
                     <div class="sin-items">No hay solicitudes rechazadas aún</div>
                 @endforelse
-            </div>
-        </div>
-
-        <div class="card-admin card-tiempo-medio">
-            <div class="tiempo-medio-centro">
-                <span class="tiempo-medio-numero">{{ $tiempoMedio }}</span>
-                <span class="tiempo-medio-unit">horas</span>
-                <span class="tiempo-medio-label">tiempo medio de aprobación</span>
-            </div>
-            <div class="tiempo-medio-stats">
-                <div class="stat-item">
-                    <span class="stat-numero">{{ $solicitudesPendientes->total() }}</span>
-                    <span class="stat-label">Pendientes este mes</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-numero">{{ $totalSolicitudes }}</span>
-                    <span class="stat-label">Total</span>
-                </div>
             </div>
         </div>
 

@@ -211,6 +211,41 @@ var asignarEventosNuevaIncidencia = function() {
    FILTERING AND SEARCH
    ============================================ */
 
+var actualizarKpisIncidencias = function() {
+    fetch('/admin/incidencias/kpis')
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            /* Actualizar KPI abiertas */
+            var elAbiertas = document.getElementById('kpiAbiertasIncidencias');
+            if (elAbiertas) {
+                elAbiertas.textContent = data.abiertas;
+            }
+
+            /* Actualizar KPI en proceso */
+            var elEnProceso = document.getElementById('kpiEnProcesoIncidencias');
+            if (elEnProceso) {
+                elEnProceso.textContent = data.enProceso;
+            }
+
+            /* Actualizar KPI resueltas */
+            var elResueltas = document.getElementById('kpiResueltasIncidencias');
+            if (elResueltas) {
+                elResueltas.textContent = data.resueltas;
+            }
+
+            /* Actualizar KPI urgentes */
+            var elUrgentes = document.getElementById('kpiUrgentesIncidencias');
+            if (elUrgentes) {
+                elUrgentes.textContent = data.urgentes;
+            }
+        })
+        .catch(function(error) {
+            console.error('Error al actualizar KPIs de incidencias:', error);
+        });
+};
+
 var filtrarIncidencias = function() {
     var q = '';
     var categoria = '';
@@ -645,6 +680,7 @@ var cambiarEstado = function(id, estado, comentario) {
             mostrarAlertaExito('¡Éxito!', 'Estado actualizado correctamente');
             cerrarModal();
             filtrarIncidencias();
+            actualizarKpisIncidencias();
         } else {
             mostrarAlertaError('Error', data.error || 'Error desconocido');
         }
@@ -670,6 +706,7 @@ var asignarGestor = function(id, idGestor) {
             mostrarAlertaExito('¡Éxito!', 'Gestor asignado correctamente');
             cerrarModal();
             filtrarIncidencias();
+            actualizarKpisIncidencias();
         } else {
             mostrarAlertaError('Error', data.error || 'Error desconocido');
         }

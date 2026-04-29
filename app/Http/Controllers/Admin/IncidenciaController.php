@@ -348,4 +348,33 @@ class IncidenciaController extends Controller
             ], 500);
         }
     }
+
+    public function getKpisIncidencias()
+    {
+        $totalAbiertas = DB::table('tbl_incidencia')
+            ->where('estado_incidencia', 'abierta')
+            ->count();
+
+        $totalEnProceso = DB::table('tbl_incidencia')
+            ->where('estado_incidencia', 'en_proceso')
+            ->count();
+
+        $totalResueltas = DB::table('tbl_incidencia')
+            ->where('estado_incidencia', 'resuelta')
+            ->whereRaw('MONTH(actualizado_incidencia) = MONTH(NOW())')
+            ->whereRaw('YEAR(actualizado_incidencia) = YEAR(NOW())')
+            ->count();
+
+        $urgentes = DB::table('tbl_incidencia')
+            ->where('prioridad_incidencia', 'urgente')
+            ->whereIn('estado_incidencia', ['abierta', 'en_proceso'])
+            ->count();
+
+        return response()->json([
+            'abiertas' => $totalAbiertas,
+            'enProceso' => $totalEnProceso,
+            'resueltas' => $totalResueltas,
+            'urgentes' => $urgentes
+        ]);
+    }
 }

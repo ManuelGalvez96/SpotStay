@@ -53,7 +53,7 @@
             <i class="bi bi-people"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ number_format($totalUsuarios) }}</span>
+            <span class="kpi-mini-numero" id="kpiTotalUsuarios">{{ number_format($totalUsuarios) }}</span>
             <span class="kpi-mini-label">Total usuarios</span>
         </div>
     </div>
@@ -63,7 +63,7 @@
             <i class="bi bi-check-circle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ number_format($activos) }}</span>
+            <span class="kpi-mini-numero" id="kpiActivos">{{ number_format($activos) }}</span>
             <span class="kpi-mini-label">Activos</span>
         </div>
     </div>
@@ -73,7 +73,7 @@
             <i class="bi bi-x-circle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ number_format($inactivos) }}</span>
+            <span class="kpi-mini-numero kpi-mini-numero-rojo" id="kpiInactivos">{{ number_format($inactivos) }}</span>
             <span class="kpi-mini-label">Inactivos</span>
         </div>
     </div>
@@ -83,7 +83,7 @@
             <i class="bi bi-person-plus"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-naranja">{{ number_format($esteMes) }}</span>
+            <span class="kpi-mini-numero kpi-mini-numero-naranja" id="kpiEsteMes">{{ number_format($esteMes) }}</span>
             <span class="kpi-mini-label">Este mes</span>
         </div>
     </div>

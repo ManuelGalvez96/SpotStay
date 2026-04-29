@@ -65,6 +65,32 @@
             <div class="resumen-pill">Pagados este mes: <strong>{{ $resumenGastos['pagados_mes'] }}</strong></div>
         </div>
 
+        <div class="card-admin" style="margin: 18px 0;">
+            <div class="card-header-admin"><span>Resumen visual mensual (emitidos vs pagados)</span></div>
+            @if($resumenMensualGastos->isEmpty())
+                <div class="tabla-vacia" style="padding: 12px;">Sin datos mensuales para mostrar.</div>
+            @else
+                <div style="display:grid; gap:10px; padding: 12px;">
+                    @foreach($resumenMensualGastos as $mesResumen)
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size: 12px; margin-bottom:4px;">
+                                <strong>{{ $mesResumen['label'] }}</strong>
+                                <span>Emitidos {{ number_format((float) $mesResumen['emitidos'], 2, ',', '.') }} EUR · Pagados {{ number_format((float) $mesResumen['pagados'], 2, ',', '.') }} EUR</span>
+                            </div>
+                            <div style="display:grid; gap:4px;">
+                                <div style="height:10px; background:#eef2f7; border-radius:999px; overflow:hidden;">
+                                    <div style="height:100%; width:{{ $mesResumen['emitidos_pct'] }}%; background:#f59e0b;"></div>
+                                </div>
+                                <div style="height:10px; background:#eef2f7; border-radius:999px; overflow:hidden;">
+                                    <div style="height:100%; width:{{ $mesResumen['pagados_pct'] }}%; background:#10b981;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
         <form method="POST" action="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad . '/gastos') }}" class="form-gasto">
             @csrf
             <div class="fila-form-gasto">
@@ -111,6 +137,57 @@
                 <button type="submit" class="btn-principal-admin">Añadir recibo</button>
             </div>
         </form>
+
+        <div class="card-admin" style="margin-bottom: 18px;">
+            <div class="card-header-admin"><span>Recibos creados (editar/eliminar)</span></div>
+            <table class="tabla-admin tabla-gastos">
+                <thead>
+                    <tr>
+                        <th>CATEGORÍA</th>
+                        <th>CONCEPTO</th>
+                        <th>IMPORTE</th>
+                        <th>FECHA INICIO</th>
+                        <th>ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($gastosGestionables as $gastoItem)
+                        <tr>
+                            <td>
+                                <form method="POST" action="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad . '/gastos/' . $gastoItem->id_gasto . '/editar') }}" style="display:grid; grid-template-columns:1fr; gap:8px;">
+                                    @csrf
+                                    <select name="categoria_gasto" required>
+                                        @foreach(['luz' => 'Luz', 'agua' => 'Agua', 'gas' => 'Gas', 'internet' => 'Internet', 'comunidad' => 'Comunidad', 'otros' => 'Otros'] as $key => $label)
+                                            <option value="{{ $key }}" {{ $gastoItem->categoria_gasto === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                            </td>
+                            <td>
+                                    <input type="text" name="concepto_gasto" value="{{ $gastoItem->concepto_gasto }}" maxlength="200" placeholder="Sin concepto" />
+                            </td>
+                            <td>
+                                    <input type="number" step="0.01" min="0.01" name="importe_estimado" value="{{ number_format((float) $gastoItem->importe_estimado, 2, '.', '') }}" required />
+                            </td>
+                            <td>
+                                    <input type="date" name="fecha_inicio_gasto" value="{{ \Carbon\Carbon::parse($gastoItem->fecha_inicio_gasto)->toDateString() }}" required />
+                            </td>
+                            <td>
+                                    <button type="submit" class="link-ver-todos">Guardar</button>
+                                </form>
+                                <form method="POST" action="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad . '/gastos/' . $gastoItem->id_gasto . '/eliminar') }}" onsubmit="return confirm('¿Seguro que quieres eliminar este recibo?');" style="margin-top:8px;">
+                                    @csrf
+                                    <button type="submit" class="link-ver-todos" style="color:#b91c1c;">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="tabla-vacia">No hay recibos para editar o eliminar.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
 
         <table class="tabla-admin tabla-gastos">
             <thead>

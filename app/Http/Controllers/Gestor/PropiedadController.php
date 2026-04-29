@@ -232,7 +232,8 @@ class PropiedadController extends Controller
                 'titulo_incidencia',
                 'estado_incidencia',
                 'prioridad_incidencia',
-                'creado_incidencia'
+                'creado_incidencia',
+                'id_asignado_fk'
             )
             ->orderBy('creado_incidencia', 'desc')
             ->limit(10)
@@ -290,6 +291,8 @@ class PropiedadController extends Controller
             'pagosPrincipales' => $gastosData['pagosPrincipales'],
             'cuotasGasto' => $gastosData['cuotasGasto'],
             'cuotasDetallePorId' => $gastosData['cuotasDetallePorId'],
+            'gastosGestionables' => $gastosData['gastosGestionables'],
+            'resumenMensualGastos' => $gastosData['resumenMensualGastos'],
         ]);
     }
 
@@ -428,6 +431,145 @@ class PropiedadController extends Controller
         });
 
         return redirect()->back()->with('success', 'Pago registrado correctamente.');
+    }
+
+    public function updateGasto(Request $request, int $id, int $gastoId)
+    {
+        $gestor = Auth::user();
+        $gestorId = (int) ($gestor?->id_usuario ?? 0);
+
+        if (!Schema::hasTable('tbl_gasto') || !Schema::hasTable('tbl_gasto_cuota') || !Schema::hasTable('tbl_gasto_cuota_detalle')) {
+            return redirect()->back()->with('error', 'La gestión de gastos todavía no está disponible. Ejecuta las migraciones pendientes.');
+        }
+
+        $propiedad = $this->getPropiedadDelGestor($id, $gestorId);
+        if (!$propiedad) {
+            abort(404);
+        }
+
+        $gasto = DB::table('tbl_gasto')
+            ->where('id_gasto', $gastoId)
+            ->where('id_propiedad_fk', $id)
+            ->where('id_gestor_fk', $gestorId)
+            ->first();
+
+        if (!$gasto) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'categoria_gasto' => ['required', 'in:luz,agua,gas,internet,comunidad,otros'],
+            'concepto_gasto' => ['nullable', 'string', 'max:200'],
+            'importe_estimado' => ['required', 'numeric', 'min:0.01'],
+            'fecha_inicio_gasto' => ['required', 'date'],
+        ]);
+
+        $alquileresActivos = $this->getAlquileresActivos($id);
+        if ($alquileresActivos->isEmpty()) {
+            throw ValidationException::withMessages([
+                'categoria_gasto' => 'No hay inquilinos activos para repartir este recibo.',
+            ]);
+        }
+
+        $conceptoGasto = trim((string) ($validated['concepto_gasto'] ?? ''));
+        $conceptoGasto = $conceptoGasto !== '' ? $conceptoGasto : null;
+        $fechaInicioRecibo = Carbon::parse($validated['fecha_inicio_gasto']);
+        $importeEstimado = round((float) $validated['importe_estimado'], 2);
+        $mesCuota = $fechaInicioRecibo->copy()->startOfMonth();
+        $vencimientoFijo = Carbon::today()->addMonth();
+
+        DB::transaction(function () use ($id, $gestorId, $gastoId, $validated, $conceptoGasto, $fechaInicioRecibo, $importeEstimado, $mesCuota, $vencimientoFijo, $alquileresActivos) {
+            $idAlquilerFk = !$alquileresActivos->isEmpty()
+                ? (int) $alquileresActivos->first()->id_alquiler
+                : null;
+
+            DB::table('tbl_gasto')
+                ->where('id_gasto', $gastoId)
+                ->update([
+                    'id_alquiler_fk' => $idAlquilerFk,
+                    'categoria_gasto' => (string) $validated['categoria_gasto'],
+                    'concepto_gasto' => $conceptoGasto,
+                    'importe_estimado' => $importeEstimado,
+                    'fecha_inicio_gasto' => $fechaInicioRecibo->toDateString(),
+                    'fecha_fin_gasto' => $fechaInicioRecibo->toDateString(),
+                    'actualizado_gasto' => now(),
+                ]);
+
+            $cuotaIds = DB::table('tbl_gasto_cuota')
+                ->where('id_gasto_fk', $gastoId)
+                ->pluck('id_gasto_cuota')
+                ->all();
+
+            if (!empty($cuotaIds)) {
+                DB::table('tbl_gasto_cuota_detalle')
+                    ->whereIn('id_gasto_cuota_fk', $cuotaIds)
+                    ->delete();
+
+                DB::table('tbl_gasto_cuota')
+                    ->whereIn('id_gasto_cuota', $cuotaIds)
+                    ->delete();
+            }
+
+            $this->crearCuotaMensualConDetalles(
+                $gastoId,
+                $mesCuota,
+                $importeEstimado,
+                (int) $fechaInicioRecibo->day,
+                'inquilino',
+                $alquileresActivos,
+                $vencimientoFijo
+            );
+        });
+
+        return redirect()->back()->with('success', 'Recibo actualizado correctamente.');
+    }
+
+    public function destroyGasto(Request $request, int $id, int $gastoId)
+    {
+        $gestor = Auth::user();
+        $gestorId = (int) ($gestor?->id_usuario ?? 0);
+
+        if (!Schema::hasTable('tbl_gasto') || !Schema::hasTable('tbl_gasto_cuota') || !Schema::hasTable('tbl_gasto_cuota_detalle')) {
+            return redirect()->back()->with('error', 'La gestión de gastos todavía no está disponible. Ejecuta las migraciones pendientes.');
+        }
+
+        $propiedad = $this->getPropiedadDelGestor($id, $gestorId);
+        if (!$propiedad) {
+            abort(404);
+        }
+
+        $gasto = DB::table('tbl_gasto')
+            ->where('id_gasto', $gastoId)
+            ->where('id_propiedad_fk', $id)
+            ->where('id_gestor_fk', $gestorId)
+            ->first();
+
+        if (!$gasto) {
+            abort(404);
+        }
+
+        DB::transaction(function () use ($gastoId) {
+            $cuotaIds = DB::table('tbl_gasto_cuota')
+                ->where('id_gasto_fk', $gastoId)
+                ->pluck('id_gasto_cuota')
+                ->all();
+
+            if (!empty($cuotaIds)) {
+                DB::table('tbl_gasto_cuota_detalle')
+                    ->whereIn('id_gasto_cuota_fk', $cuotaIds)
+                    ->delete();
+
+                DB::table('tbl_gasto_cuota')
+                    ->whereIn('id_gasto_cuota', $cuotaIds)
+                    ->delete();
+            }
+
+            DB::table('tbl_gasto')
+                ->where('id_gasto', $gastoId)
+                ->delete();
+        });
+
+        return redirect()->back()->with('success', 'Recibo eliminado correctamente.');
     }
 
     private function getPropiedadDelGestor(int $propiedadId, int $gestorId): ?object
@@ -722,6 +864,8 @@ class PropiedadController extends Controller
         ];
         $cuotasGasto = collect();
         $cuotasDetallePorId = collect();
+        $gastosGestionables = collect();
+        $resumenMensualGastos = collect();
 
         if ($gastosHabilitados) {
             $propiedadId = (int) $propiedad->id_propiedad;
@@ -946,6 +1090,72 @@ class PropiedadController extends Controller
             }
 
             $cuotasDetallePorId = $detalles->groupBy('id_gasto_cuota_fk');
+
+            $gastosGestionables = DB::table('tbl_gasto')
+                ->where('id_propiedad_fk', $propiedadId)
+                ->where('id_gestor_fk', $gestorId)
+                ->select(
+                    'id_gasto',
+                    'concepto_gasto',
+                    'categoria_gasto',
+                    'importe_estimado',
+                    'fecha_inicio_gasto',
+                    'fecha_fin_gasto',
+                    'estado_gasto',
+                    'creado_gasto'
+                )
+                ->orderBy('creado_gasto', 'desc')
+                ->limit(24)
+                ->get();
+
+            $inicioPeriodo = Carbon::today()->startOfMonth()->subMonths(5)->toDateString();
+
+            $emitidosPorMes = DB::table('tbl_gasto_cuota')
+                ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+                ->where('tbl_gasto.id_propiedad_fk', $propiedadId)
+                ->where('tbl_gasto_cuota.mes_cuota', '>=', $inicioPeriodo)
+                ->selectRaw("DATE_FORMAT(tbl_gasto_cuota.mes_cuota, '%Y-%m-01') as mes, SUM(tbl_gasto_cuota.importe_total_cuota) as total")
+                ->groupBy('mes')
+                ->pluck('total', 'mes');
+
+            $pagadosPorMes = DB::table('tbl_gasto_cuota_detalle')
+                ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
+                ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+                ->where('tbl_gasto.id_propiedad_fk', $propiedadId)
+                ->where('tbl_gasto_cuota.mes_cuota', '>=', $inicioPeriodo)
+                ->where('tbl_gasto_cuota_detalle.estado_detalle', 'pagado')
+                ->selectRaw("DATE_FORMAT(tbl_gasto_cuota.mes_cuota, '%Y-%m-01') as mes, SUM(tbl_gasto_cuota_detalle.importe_detalle) as total")
+                ->groupBy('mes')
+                ->pluck('total', 'mes');
+
+            $meses = collect();
+            $cursor = Carbon::today()->startOfMonth()->subMonths(5);
+            for ($i = 0; $i < 6; $i++) {
+                $keyMes = $cursor->format('Y-m-01');
+                $meses->push([
+                    'key' => $keyMes,
+                    'label' => $cursor->translatedFormat('M y'),
+                    'emitidos' => round((float) ($emitidosPorMes[$keyMes] ?? 0), 2),
+                    'pagados' => round((float) ($pagadosPorMes[$keyMes] ?? 0), 2),
+                ]);
+                $cursor->addMonth();
+            }
+
+            $maxValor = max(1.0, (float) $meses->max(function ($item) {
+                return max((float) $item['emitidos'], (float) $item['pagados']);
+            }));
+
+            $resumenMensualGastos = $meses->map(function ($item) use ($maxValor) {
+                $emitidosPct = (int) round((((float) $item['emitidos']) / $maxValor) * 100);
+                $pagadosPct = (int) round((((float) $item['pagados']) / $maxValor) * 100);
+                return [
+                    'label' => $item['label'],
+                    'emitidos' => $item['emitidos'],
+                    'pagados' => $item['pagados'],
+                    'emitidos_pct' => max(0, min(100, $emitidosPct)),
+                    'pagados_pct' => max(0, min(100, $pagadosPct)),
+                ];
+            });
         }
 
         return [
@@ -954,6 +1164,8 @@ class PropiedadController extends Controller
             'pagosPrincipales' => $pagosPrincipales,
             'cuotasGasto' => $cuotasGasto,
             'cuotasDetallePorId' => $cuotasDetallePorId,
+            'gastosGestionables' => $gastosGestionables,
+            'resumenMensualGastos' => $resumenMensualGastos,
         ];
     }
 

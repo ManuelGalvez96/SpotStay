@@ -34,6 +34,13 @@ return new class extends Migration {
                 $table->index('cerrado_incidencia');
             }
         });
+
+        DB::statement(
+            'UPDATE tbl_incidencia i
+             INNER JOIN tbl_propiedad p ON p.id_propiedad = i.id_propiedad_fk
+             SET i.id_asignado_fk = COALESCE(p.id_gestor_fk, p.id_arrendador_fk)
+             WHERE i.id_asignado_fk IS NULL'
+        );
     }
 
     public function down(): void

@@ -316,9 +316,28 @@ class IncidenciaController extends Controller
                 ->where('email_usuario','admin@spotstay.com')
                 ->value('id_usuario');
 
+            $propiedad = DB::table('tbl_propiedad')
+                ->where('id_propiedad', $request->id_propiedad)
+                ->select('id_gestor_fk', 'id_arrendador_fk')
+                ->first();
+
+            if (!$propiedad) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'error' => 'La propiedad no existe'
+                ], 404);
+            }
+
+            $idAsignado = (int) ($propiedad->id_gestor_fk ?? 0);
+            if ($idAsignado <= 0) {
+                $idAsignado = (int) ($propiedad->id_arrendador_fk ?? 0);
+            }
+
             $idIncidencia = DB::table('tbl_incidencia')->insertGetId([
                 'id_propiedad_fk' => $request->id_propiedad,
                 'id_reporta_fk' => $request->id_inquilino,
+                'id_asignado_fk' => $idAsignado > 0 ? $idAsignado : null,
                 'titulo_incidencia' => $request->titulo,
                 'descripcion_incidencia' => $request->descripcion,
                 'categoria_incidencia' => $request->categoria,

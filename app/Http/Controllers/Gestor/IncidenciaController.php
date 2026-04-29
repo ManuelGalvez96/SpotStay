@@ -98,6 +98,8 @@ class IncidenciaController extends Controller
             ->select(
                 'tbl_incidencia.*',
                 'tbl_propiedad.id_propiedad',
+                'tbl_propiedad.id_gestor_fk as id_gestor_propiedad',
+                'tbl_propiedad.id_arrendador_fk as id_arrendador_propiedad',
                 'tbl_propiedad.titulo_propiedad',
                 DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
                 'tbl_propiedad.ciudad_propiedad',
@@ -116,7 +118,7 @@ class IncidenciaController extends Controller
         $puedeVer = (int) ($incidencia->id_asignado_fk ?? 0) === $gestorId
             || (
                 is_null($incidencia->id_asignado_fk)
-                && (int) ($incidencia->id_gestor_fk ?? 0) === $gestorId
+                && (int) ($incidencia->id_gestor_propiedad ?? 0) === $gestorId
             );
 
         if (!$puedeVer) {

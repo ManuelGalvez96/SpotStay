@@ -1,5 +1,10 @@
 @extends('layouts.admin')
-@section('titulo', 'Nuevo alquiler — SpotStay')
+@php
+    $alquilerEditando = $alquiler ?? null;
+    $modoEdicion = !empty($alquilerEditando);
+@endphp
+
+@section('titulo', $modoEdicion ? 'Editar alquiler — SpotStay' : 'Nuevo alquiler — SpotStay')
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/admin/alquileres.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/alquileres-crear.css') }}">
@@ -7,8 +12,8 @@
 
 @section('content')
 <div class="hero-admin">
-    <h1>Nuevo alquiler</h1>
-    <p>Crea un alquiler desde administración</p>
+    <h1>{{ $modoEdicion ? 'Editar alquiler' : 'Nuevo alquiler' }}</h1>
+    <p>{{ $modoEdicion ? 'Actualiza los datos del alquiler desde administración' : 'Crea un alquiler desde administración' }}</p>
     <div class="hero-deco hero-deco-1"></div>
     <div class="hero-deco hero-deco-2"></div>
     <div class="hero-deco hero-deco-3"></div>
@@ -18,8 +23,8 @@
     <div class="toolbar-admin crear-toolbar">
         <div class="toolbar-izquierda">
             <div class="crear-hint">
-                <strong>Formulario de alquiler</strong>
-                <span>Selecciona propiedad, inquilino y condiciones iniciales.</span>
+                <strong>{{ $modoEdicion ? 'Edición de alquiler' : 'Formulario de alquiler' }}</strong>
+                <span>{{ $modoEdicion ? 'Modifica la propiedad, inquilino o fechas y guarda los cambios.' : 'Selecciona propiedad, inquilino y condiciones iniciales.' }}</span>
             </div>
         </div>
         <div class="toolbar-derecha">
@@ -44,20 +49,21 @@
         <div class="card-header-admin card-header-crear">
             <div class="card-header-title-crear">
                 <i class="bi bi-house-add"></i>
-                <h2>Formulario de alquiler</h2>
+                <h2>{{ $modoEdicion ? 'Formulario de edición' : 'Formulario de alquiler' }}</h2>
             </div>
-            <span class="card-header-sub-crear">Alta manual</span>
+            <span class="card-header-sub-crear">{{ $modoEdicion ? 'Edición' : 'Alta manual' }}</span>
         </div>
 
-        <form action="/admin/alquileres/crear" method="POST" class="form-grid">
+        <form action="{{ $modoEdicion ? url('/admin/alquileres/' . $alquilerEditando->id_alquiler . '/actualizar') : '/admin/alquileres/crear' }}" method="POST" class="form-grid">
             @csrf
+            <input type="hidden" name="id_alquiler" value="{{ old('id_alquiler', $alquilerEditando->id_alquiler ?? '') }}">
 
             <div class="campo-full">
                 <label for="id_propiedad">Propiedad</label>
                 <select id="id_propiedad" name="id_propiedad" required>
                     <option value="">Selecciona una propiedad publicada...</option>
                     @foreach($propiedadesPublicadas as $propiedad)
-                        <option value="{{ $propiedad->id_propiedad }}" data-precio="{{ $propiedad->precio_propiedad }}" {{ old('id_propiedad') == $propiedad->id_propiedad ? 'selected' : '' }}>
+                        <option value="{{ $propiedad->id_propiedad }}" data-precio="{{ $propiedad->precio_propiedad }}" {{ old('id_propiedad', $alquilerEditando->id_propiedad_fk ?? '') == $propiedad->id_propiedad ? 'selected' : '' }}>
                             {{ $propiedad->titulo_propiedad }} - {{ $propiedad->ciudad_propiedad }} - €{{ number_format($propiedad->precio_propiedad, 2) }}/mes
                         </option>
                     @endforeach
@@ -69,7 +75,7 @@
                 <select id="id_inquilino" name="id_inquilino" required>
                     <option value="">Selecciona un inquilino...</option>
                     @foreach($inquilinos as $inquilino)
-                        <option value="{{ $inquilino->id_usuario }}" {{ old('id_inquilino') == $inquilino->id_usuario ? 'selected' : '' }}>
+                        <option value="{{ $inquilino->id_usuario }}" {{ old('id_inquilino', $alquilerEditando->id_inquilino_fk ?? '') == $inquilino->id_usuario ? 'selected' : '' }}>
                             {{ $inquilino->nombre_usuario }} - {{ $inquilino->email_usuario }}
                         </option>
                     @endforeach
@@ -78,17 +84,17 @@
 
             <div>
                 <label for="fecha_inicio">Fecha de inicio</label>
-                <input id="fecha_inicio" name="fecha_inicio" type="date" value="{{ old('fecha_inicio') }}" required>
+                <input id="fecha_inicio" name="fecha_inicio" type="date" value="{{ old('fecha_inicio', isset($alquilerEditando->fecha_inicio_alquiler) ? \Carbon\Carbon::parse($alquilerEditando->fecha_inicio_alquiler)->format('Y-m-d') : '') }}" required>
             </div>
 
             <div>
                 <label for="fecha_fin">Fecha de fin (opcional)</label>
-                <input id="fecha_fin" name="fecha_fin" type="date" value="{{ old('fecha_fin') }}">
+                <input id="fecha_fin" name="fecha_fin" type="date" value="{{ old('fecha_fin', !empty($alquilerEditando->fecha_fin_alquiler) ? \Carbon\Carbon::parse($alquilerEditando->fecha_fin_alquiler)->format('Y-m-d') : '') }}">
             </div>
 
             <div class="campo-full">
                 <label for="precio">Precio mensual</label>
-                <input id="precio" name="precio" type="number" min="0" step="0.01" value="{{ old('precio') }}" required>
+                <input id="precio" name="precio" type="number" min="0" step="0.01" value="{{ old('precio', $alquilerEditando->precio_referencia ?? '') }}" required>
                 <small class="texto-ayuda">Puedes usar el precio de la propiedad o indicar uno distinto.</small>
             </div>
 
@@ -96,7 +102,7 @@
                 <a href="/admin/alquileres" class="btn-exportar">Cancelar</a>
                 <button type="submit" class="btn-primario">
                     <i class="bi bi-check-lg"></i>
-                    <span>Crear alquiler</span>
+                    <span>{{ $modoEdicion ? 'Guardar cambios' : 'Crear alquiler' }}</span>
                 </button>
             </div>
         </form>

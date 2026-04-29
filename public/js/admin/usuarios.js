@@ -7,6 +7,20 @@
 var csrfToken = null;
 var paginaActual = 1;
 
+// Flags para inicializar validación solo una vez
+var _validacionFormularioInicializada = false;
+
+// Estados de validación de campos
+var _valNombre = false;
+var _valEmail = false;
+var _valTelefono = false; // ahora obligatorio por defecto
+var _valRol = false;
+var _valPassword = false; // depende de si es crear/editar
+var errorNombreUsuario = null;
+var errorEmailUsuario = null;
+var errorTelefonoUsuario = null;
+var errorRolUsuario = null;
+var errorPasswordUsuario = null;
 /* ── FUNCIONES DE VALIDACIÓN ── */
 
 /* Validar formato de email */
@@ -21,9 +35,11 @@ var validarNombre = function(nombre) {
 };
 
 /* Validar teléfono (opcional, pero si está, mínimo 9 caracteres) */
+/* Validar teléfono: obligatorio. Debe empezar con +34, un espacio, y 9-11 dígitos */
 var validarTelefono = function(telefono) {
-    if (telefono === '') return true; // Opcional
-    return telefono.length >= 9;
+    if (!telefono) return false;
+    var regex = /^\+34\s\d{9,11}$/;
+    return regex.test(telefono);
 };
 
 /* Validar contraseña (mínimo 6 caracteres) */
@@ -113,44 +129,29 @@ var crearOsoValidacion = function() {
 
 /* Alert de éxito con oso */
 var mostrarAlertaExito = function(titulo, mensaje) {
-    Swal.fire({
-        title: titulo,
-        html: mensaje,
-        iconHtml: crearOsoExito(),
-        customClass: {
-            icon: 'oso-icon'
-        },
-        confirmButtonText: 'Ok',
-        confirmButtonColor: '#035498'
-    });
+    if (window.mostrarAlertaAdminExito) {
+        window.mostrarAlertaAdminExito(titulo, mensaje);
+        return;
+    }
+    window.alert(mensaje);
 };
 
 /* Alert de error con oso */
 var mostrarAlertaError = function(titulo, mensaje) {
-    Swal.fire({
-        title: titulo,
-        html: mensaje,
-        iconHtml: crearOsoError(),
-        customClass: {
-            icon: 'oso-icon'
-        },
-        confirmButtonText: 'Ok',
-        confirmButtonColor: '#d9534f'
-    });
+    if (window.mostrarAlertaAdminError) {
+        window.mostrarAlertaAdminError(titulo, mensaje);
+        return;
+    }
+    window.alert(mensaje);
 };
 
 /* Alert de validación fallida */
 var mostrarAlertaValidacion = function(mensaje) {
-    Swal.fire({
-        title: 'Validación',
-        html: mensaje,
-        iconHtml: crearOsoValidacion(),
-        customClass: {
-            icon: 'oso-icon'
-        },
-        confirmButtonText: 'Ok',
-        confirmButtonColor: '#f0ad4e'
-    });
+    if (window.mostrarAlertaAdminValidacion) {
+        window.mostrarAlertaAdminValidacion(mensaje);
+        return;
+    }
+    window.alert(mensaje);
 };
 
 
@@ -252,6 +253,9 @@ var filtrarUsuarios = function() {
    FUNCIÓN: actualizarTabla
    Actualiza las filas de la tabla con nuevos datos
    ================================================ */
+    // Flags para inicializar validación solo una vez
+    var _validacionFormularioInicializada = false;
+
 var actualizarTabla = function(data) {
     var tbody = document.getElementById('tbodyUsuarios');
     
@@ -450,6 +454,8 @@ var abrirModal = function(id) {
                 item.className = 'list-group-item';
                 item.textContent = 'No tiene propiedades registradas';
                 listaPropiedades.appendChild(item);
+
+                    limpiarValidacionFormulario();
             }
         }
         
@@ -461,8 +467,10 @@ var abrirModal = function(id) {
     })
     .catch(function(error) {
         console.error('Error en fetch abrirModal:', error);
+        limpiarValidacionFormulario();
+
         console.error('Error message:', error.message);
-        alert('Error al cargar datos del usuario: ' + error.message);
+        mostrarAlertaError('Error', 'Error al cargar datos del usuario: ' + error.message);
     });
 };
 
@@ -525,12 +533,12 @@ var toggleEstado = function(id) {
                 tr.classList.toggle('fila-inactiva');
             }
         } else {
-            mostrarAlertaError('Error', data.message || 'No se pudo cambiar el estado del usuario');
+            mostrarAlertaError('Error', data.message || 'No se pudo cambiar el estado del usuario ya que tiene contratos y/o propiedades asociadas');
         }
     })
     .catch(function(error) {
         console.error('Error en fetch toggle-estado:', error);
-        mostrarAlertaError('Error', 'No se pudo cambiar el estado del usuario');
+        mostrarAlertaError('Error', 'No se pudo cambiar el estado del usuario ya que tiene contratos y/o propiedades asociadas');
     });
 };
 
@@ -571,11 +579,28 @@ var editarUsuario = function(id) {
     
     fetch(url, {
         method: 'GET',
+        credentials: 'same-origin',
         headers: {
-            'X-CSRF-TOKEN': csrfToken
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
         }
     })
     .then(function(response) {
+        var contentType = response.headers.get('content-type') || '';
+
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+        }
+
+        if (contentType.indexOf('application/json') === -1) {
+            return response.text().then(function(texto) {
+                if (texto.indexOf('Iniciar Sesión') !== -1 || texto.indexOf('Acceso denegado') !== -1) {
+                    throw new Error('Tu sesión ha expirado o no tienes permisos para cargar este usuario');
+                }
+                throw new Error('La respuesta del servidor no es JSON válido');
+            });
+        }
+
         return response.json();
     })
     .then(function(usuario) {
@@ -595,53 +620,41 @@ var editarUsuario = function(id) {
         
         /* Guardar ID del usuario en el formulario */
         document.getElementById('formUsuario').setAttribute('data-usuario-id', usuario.id_usuario);
-        
+
         /* Mostrar modal de formulario */
         abrirModalFormUsuario();
+        
+        comprobarNombreUsuario();
+        comprobarEmailUsuario();
+        comprobarTelefonoUsuario();
+        comprobarRolUsuario();
+        comprobarPasswordUsuario();
         
         /* Cerrar modal de perfil */
         cerrarModal();
     })
     .catch(function(error) {
         console.error('Error en fetch editarUsuario:', error);
-        mostrarAlertaError('Error', 'No se pudieron cargar los datos del usuario');
+        mostrarAlertaError('Error', error.message || 'No se pudieron cargar los datos del usuario');
     });
 };
 
 /* ================================================
    FUNCIÓN: asignarEventosPaginacion
    Asigna eventos a los botones de paginación
+        limpiarValidacionFormulario();
    ================================================ */
 function asignarEventosPaginacion() {
-    var btnAnterior = document.getElementById('btnAnterior');
-    var btnSiguiente = document.getElementById('btnSiguiente');
-    var botonesNumero = document.querySelectorAll('.pag-numero');
-    
-    // Botón anterior
-    if (btnAnterior) {
-        btnAnterior.onclick = function(event) {
-            event.preventDefault();
-            if (paginaActual > 1) {
-                cambiarPagina(paginaActual - 1);
-            }
-        };
-    }
-    
-    // Botón siguiente
-    if (btnSiguiente) {
-        btnSiguiente.onclick = function(event) {
-            event.preventDefault();
-            cambiarPagina(paginaActual + 1);
-        };
-    }
-    
-    // Botones número de página
+    var botonesNumero = document.querySelectorAll('#paginas .page-link[data-pagina]');
+
     for (var i = 0; i < botonesNumero.length; i++) {
         var btnNum = botonesNumero[i];
         btnNum.onclick = function(event) {
             event.preventDefault();
             var pagina = parseInt(this.getAttribute('data-pagina'));
-            cambiarPagina(pagina);
+            if (!isNaN(pagina)) {
+                cambiarPagina(pagina);
+            }
         };
     }
 }
@@ -709,17 +722,30 @@ var actualizarPaginacion = function(paginaActual, totalPaginas) {
         return;
     }
     
-    // Limpiar botones anteriores
     paginasSpan.innerHTML = '';
     
-    // Crear botones de página
+    var crearItem = function(pagina, contenido, deshabilitado, activo) {
+        var li = document.createElement('li');
+        li.className = 'page-item' + (deshabilitado ? ' disabled' : '') + (activo ? ' active' : '');
+
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'page-link';
+        if (pagina !== null && pagina !== undefined) {
+            button.setAttribute('data-pagina', pagina);
+        }
+        button.innerHTML = contenido;
+        li.appendChild(button);
+        return li;
+    };
+
+    paginasSpan.appendChild(crearItem(paginaActual - 1, '<i class="bi bi-chevron-left"></i>', paginaActual <= 1, false));
+
     for (var i = 1; i <= totalPaginas; i++) {
-        var btn = document.createElement('button');
-        btn.className = 'pag-numero' + (i === paginaActual ? ' activo' : '');
-        btn.textContent = i;
-        btn.setAttribute('data-pagina', i);
-        paginasSpan.appendChild(btn);
+        paginasSpan.appendChild(crearItem(i, String(i), false, i === paginaActual));
     }
+
+    paginasSpan.appendChild(crearItem(paginaActual + 1, '<i class="bi bi-chevron-right"></i>', paginaActual >= totalPaginas, false));
 };
 
 /* ================================================
@@ -758,6 +784,15 @@ var abrirModalFormUsuario = function() {
         return;
     }
     modalFormUsuario.show();
+
+    // Inicializar validación al abrir modal (una sola vez)
+    if (!_validacionFormularioInicializada) {
+        inicializarValidacionFormulario();
+        _validacionFormularioInicializada = true;
+    }
+
+    // Actualizar estado del botón según contenido actual del formulario
+    actualizarEstadoFormulario();
 };
 
 /* ================================================
@@ -767,7 +802,355 @@ var abrirModalFormUsuario = function() {
 var cerrarModalFormUsuario = function() {
     modalFormUsuario.hide();
     document.getElementById('formUsuario').reset();
+    limpiarErroresYActualizarEstado();
 };
+
+/* ================================================
+   VALIDACIÓN EN TIEMPO REAL PARA FORMULARIO USUARIO
+   ================================================ */
+
+// no usamos debounce aquí: usaremos eventos onblur/onchange/onclick para seguir estilo login
+
+function marcarErrorElemento(el, mensaje) {
+    if (!el) return;
+    el.classList.add('is-invalid');
+    var mensajeError = el.nextElementSibling;
+    if (mensajeError && mensajeError.tagName === 'SMALL') {
+        mensajeError.innerText = mensaje || '';
+    }
+}
+
+function marcarValidoElemento(el) {
+    if (!el) return;
+    el.classList.remove('is-invalid');
+    var mensajeError = el.nextElementSibling;
+    if (mensajeError && mensajeError.tagName === 'SMALL') {
+        mensajeError.innerText = '';
+    }
+}
+
+function limpiarErroresYActualizarEstado() {
+    var inputs = ['inputNombre', 'inputEmail', 'inputTelefono', 'selectRolForm', 'inputPassword'];
+    inputs.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) {
+            el.classList.remove('is-invalid');
+        }
+    });
+    if (errorNombreUsuario) errorNombreUsuario.textContent = '';
+    if (errorEmailUsuario) errorEmailUsuario.textContent = '';
+    if (errorTelefonoUsuario) errorTelefonoUsuario.textContent = '';
+    if (errorRolUsuario) errorRolUsuario.textContent = '';
+    if (errorPasswordUsuario) errorPasswordUsuario.textContent = '';
+    // Reset flags conservativamente
+    _valNombre = false; _valEmail = false; _valTelefono = true; _valRol = false; _valPassword = false;
+    actualizarEstadoFormulario();
+}
+
+function limpiarValidacionFormulario() {
+    limpiarErroresYActualizarEstado();
+}
+
+function limpiarTextoError(id) {
+    var elemento = document.getElementById(id);
+    if (elemento) {
+        elemento.textContent = '';
+    }
+}
+
+function mostrarTextoError(id, mensaje) {
+    var elemento = document.getElementById(id);
+    if (elemento) {
+        elemento.textContent = mensaje;
+    }
+}
+
+function comprobarNombreUsuario() {
+    var input = document.getElementById('inputNombre');
+    if (!input) return;
+
+    var valor = input.value.trim();
+    if (valor === '' || valor.length < 3) {
+        marcarErrorElemento(input, 'El nombre es obligatorio y debe tener mínimo 3 caracteres');
+        mostrarTextoError('errorNombreUsuario', 'El nombre es obligatorio y debe tener mínimo 3 caracteres');
+        _valNombre = false;
+    } else {
+        marcarValidoElemento(input);
+        limpiarTextoError('errorNombreUsuario');
+        _valNombre = true;
+    }
+
+    actualizarEstadoFormulario();
+}
+
+function comprobarEmailUsuario() {
+    var input = document.getElementById('inputEmail');
+    if (!input) return;
+
+    var valor = input.value.trim();
+    if (valor === '') {
+        marcarErrorElemento(input, 'El correo electrónico es obligatorio.');
+        mostrarTextoError('errorEmailUsuario', 'El correo electrónico es obligatorio.');
+        _valEmail = false;
+    } else if (!validarEmail(valor)) {
+        marcarErrorElemento(input, 'Introduce un correo válido.');
+        mostrarTextoError('errorEmailUsuario', 'Introduce un correo válido.');
+        _valEmail = false;
+    } else {
+        marcarValidoElemento(input);
+        limpiarTextoError('errorEmailUsuario');
+        _valEmail = true;
+    }
+
+    actualizarEstadoFormulario();
+}
+
+function comprobarTelefonoUsuario() {
+    var input = document.getElementById('inputTelefono');
+    if (!input) return;
+
+    var valor = input.value.trim();
+    if (valor === '') {
+        marcarErrorElemento(input, 'El teléfono es obligatorio.');
+        mostrarTextoError('errorTelefonoUsuario', 'El teléfono es obligatorio.');
+        _valTelefono = false;
+    } else if (!validarTelefono(valor)) {
+        marcarErrorElemento(input, 'Formato: +34 612345678.');
+        mostrarTextoError('errorTelefonoUsuario', 'Formato: +34 612345678. Debe empezar por +34, llevar un espacio y tener entre 9 y 11 dígitos.');
+        _valTelefono = false;
+    } else {
+        marcarValidoElemento(input);
+        limpiarTextoError('errorTelefonoUsuario');
+        _valTelefono = true;
+    }
+
+    actualizarEstadoFormulario();
+}
+
+function comprobarRolUsuario() {
+    var input = document.getElementById('selectRolForm');
+    if (!input) return;
+
+    var valor = input.value;
+    if (valor === '') {
+        marcarErrorElemento(input, 'Debes seleccionar un rol.');
+        mostrarTextoError('errorRolUsuario', 'Debes seleccionar un rol.');
+        _valRol = false;
+    } else {
+        marcarValidoElemento(input);
+        limpiarTextoError('errorRolUsuario');
+        _valRol = true;
+    }
+
+    actualizarEstadoFormulario();
+}
+
+function comprobarPasswordUsuario() {
+    var input = document.getElementById('inputPassword');
+    var form = document.getElementById('formUsuario');
+    if (!input) return;
+
+    var valor = input.value.trim();
+    var esEdicion = !!(form && form.getAttribute('data-usuario-id'));
+
+    if (valor === '' && esEdicion) {
+        marcarValidoElemento(input);
+        limpiarTextoError('errorPasswordUsuario');
+        _valPassword = true;
+    } else if (valor === '') {
+        marcarErrorElemento(input, 'La contraseña es obligatoria.');
+        mostrarTextoError('errorPasswordUsuario', 'La contraseña es obligatoria.');
+        _valPassword = false;
+    } else if (!validarPassword(valor)) {
+        marcarErrorElemento(input, 'La contraseña debe tener al menos 6 caracteres.');
+        mostrarTextoError('errorPasswordUsuario', 'La contraseña debe tener al menos 6 caracteres.');
+        _valPassword = false;
+    } else {
+        marcarValidoElemento(input);
+        limpiarTextoError('errorPasswordUsuario');
+        _valPassword = true;
+    }
+
+    actualizarEstadoFormulario();
+}
+
+function actualizarEstadoFormulario() {
+    var form = document.getElementById('formUsuario');
+    if (!form) return;
+
+    var usuarioId = form.getAttribute('data-usuario-id');
+
+    // Si es edición, password puede estar vacío y sigue siendo válido
+    if (usuarioId) {
+        _valPassword = true; // hasta que el usuario escriba algo
+        var pwd = document.getElementById('inputPassword').value || '';
+        if (pwd !== '') {
+            _valPassword = validarPassword(pwd);
+        }
+    } else {
+        // Crear: password obligatorio
+        var pwd2 = document.getElementById('inputPassword').value || '';
+        _valPassword = validarPassword(pwd2);
+    }
+
+    // Comprobar el resto de flags ya actualizados por los listeners
+    var formularioValido = _valNombre && _valEmail && _valTelefono && _valRol && _valPassword;
+
+    var btn = document.getElementById('btnGuardarUsuario');
+    if (btn) {
+        btn.disabled = !formularioValido;
+        if (btn.disabled) btn.classList.add('disabled'); else btn.classList.remove('disabled');
+    }
+}
+
+function inicializarValidacionFormulario() {
+    var nombre = document.getElementById('inputNombre');
+    var email = document.getElementById('inputEmail');
+    var telefono = document.getElementById('inputTelefono');
+    var rol = document.getElementById('selectRolForm');
+    var password = document.getElementById('inputPassword');
+
+    errorNombreUsuario = document.getElementById('errorNombreUsuario');
+    errorEmailUsuario = document.getElementById('errorEmailUsuario');
+    errorTelefonoUsuario = document.getElementById('errorTelefonoUsuario');
+    errorRolUsuario = document.getElementById('errorRolUsuario');
+    errorPasswordUsuario = document.getElementById('errorPasswordUsuario');
+
+    if (nombre) {
+        nombre.oninput = function() {
+            var valor = this.value.trim();
+            if (valor === '') {
+                marcarErrorElemento(this, 'El nombre es obligatorio y debe tener mínimo 3 caracteres');
+                _valNombre = false;
+            } else if (valor.length < 3) {
+                marcarErrorElemento(this, 'El nombre es obligatorio y debe tener mínimo 3 caracteres');
+                _valNombre = false;
+            } else {
+                marcarValidoElemento(this);
+                limpiarTextoError('errorNombreUsuario');
+                _valNombre = true;
+            }
+            actualizarEstadoFormulario();
+        };
+        nombre.onblur = function() {
+            var v = this.value.trim();
+            _valNombre = validarNombre(v);
+            if (!_valNombre) marcarErrorElemento(this, 'El nombre es obligatorio y debe tener mínimo 3 caracteres'); else marcarValidoElemento(this);
+            actualizarEstadoFormulario();
+        };
+        // Validar también al hacer clic fuera del formulario (por consistencia)
+        nombre.onclick = function() { /* noop para seguir estilo onclick disponible */ };
+    }
+
+    if (email) {
+        email.oninput = function() {
+            var valor = this.value.trim();
+            if (valor === '') {
+                marcarErrorElemento(this, 'El correo electrónico es obligatorio.');
+                _valEmail = false;
+            } else if (!validarEmail(valor)) {
+                marcarErrorElemento(this, 'Introduce un correo válido.');
+                _valEmail = false;
+            } else {
+                marcarValidoElemento(this);
+                limpiarTextoError('errorEmailUsuario');
+                _valEmail = true;
+            }
+            actualizarEstadoFormulario();
+        };
+        email.onblur = function() {
+            var v = this.value.trim();
+            _valEmail = validarEmail(v);
+            if (!_valEmail) marcarErrorElemento(this, 'Introduce un correo válido'); else marcarValidoElemento(this);
+            actualizarEstadoFormulario();
+        };
+    }
+
+    if (telefono) {
+        telefono.oninput = function() {
+            var valor = this.value.trim();
+            if (valor === '') {
+                marcarErrorElemento(this, 'El teléfono es obligatorio.');
+                _valTelefono = false;
+            } else if (!validarTelefono(valor)) {
+                marcarErrorElemento(this, 'Formato: +34 612345678. Debe empezar por +34, llevar un espacio y tener entre 9 y 11 dígitos.');
+                _valTelefono = false;
+            } else {
+                marcarValidoElemento(this);
+                limpiarTextoError('errorTelefonoUsuario');
+                _valTelefono = true;
+            }
+            actualizarEstadoFormulario();
+        };
+        telefono.onblur = function() {
+            var v = this.value.trim();
+            _valTelefono = validarTelefono(v);
+            if (!_valTelefono) marcarErrorElemento(this, 'El teléfono es obligatorio y debe comenzar con +34 seguido de un espacio y entre 9 y 11 dígitos (ej: +34 612345678)'); else marcarValidoElemento(this);
+            actualizarEstadoFormulario();
+        };
+    }
+
+    if (rol) {
+        rol.oninput = function() {
+            var v = this.value;
+            _valRol = !!v && v !== '';
+            if (!_valRol) marcarErrorElemento(this, 'Selecciona un rol'); else marcarValidoElemento(this);
+            actualizarEstadoFormulario();
+        };
+        rol.onchange = function() {
+            var v = this.value;
+            _valRol = !!v && v !== '';
+            if (!_valRol) marcarErrorElemento(this, 'Selecciona un rol'); else marcarValidoElemento(this);
+            actualizarEstadoFormulario();
+        };
+    }
+
+    if (password) {
+        password.oninput = function() {
+            var v = this.value || '';
+            var form = document.getElementById('formUsuario');
+            var usuarioId = form ? form.getAttribute('data-usuario-id') : null;
+            if (usuarioId && v === '') {
+                limpiarTextoError('errorPasswordUsuario');
+                _valPassword = true;
+            } else if (v === '') {
+                marcarErrorElemento(this, 'La contraseña es obligatoria.');
+                _valPassword = false;
+            } else if (!validarPassword(v)) {
+                marcarErrorElemento(this, 'La contraseña debe tener al menos 6 caracteres.');
+                _valPassword = false;
+            } else {
+                marcarValidoElemento(this);
+                limpiarTextoError('errorPasswordUsuario');
+                _valPassword = true;
+            }
+            actualizarEstadoFormulario();
+        };
+        password.onblur = function() {
+            var v = this.value || '';
+            var form = document.getElementById('formUsuario');
+            var usuarioId = form ? form.getAttribute('data-usuario-id') : null;
+            if (usuarioId) {
+                // edición: solo validar si hay contenido
+                if (v === '') {
+                    _valPassword = true;
+                    marcarValidoElemento(this);
+                } else {
+                    _valPassword = validarPassword(v);
+                    if (!_valPassword) marcarErrorElemento(this, 'La contraseña debe tener mínimo 6 caracteres'); else marcarValidoElemento(this);
+                }
+            } else {
+                // crear: obligatorio
+                _valPassword = validarPassword(v);
+                if (!_valPassword) marcarErrorElemento(this, 'La contraseña es obligatoria y debe tener mínimo 6 caracteres'); else marcarValidoElemento(this);
+            }
+            actualizarEstadoFormulario();
+        };
+    }
+
+    // Ejecutar primera vez para ajustar botón según valores iniciales
+    actualizarEstadoFormulario();
+}
 
 /* ================================================
    FUNCIÓN: guardarUsuario
@@ -794,9 +1177,9 @@ var guardarUsuario = function() {
         return;
     }
     
-    /* Validaciones de teléfono */
+    /* Validaciones de teléfono (obligatorio, formato +34 9-11 dígitos) */
     if (!validarTelefono(telefono)) {
-        mostrarAlertaValidacion('El teléfono debe tener mínimo 9 caracteres');
+        mostrarAlertaValidacion('El teléfono es obligatorio y debe comenzar con +34 seguido de un espacio y entre 9 y 11 dígitos (ej: +34 612345678)');
         return;
     }
     

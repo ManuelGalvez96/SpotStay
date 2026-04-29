@@ -66,29 +66,19 @@ var crearOsoError = function() {
 };
 
 var mostrarAlertaExito = function(titulo, mensaje) {
-    Swal.fire({
-        title: titulo,
-        html: mensaje,
-        iconHtml: crearOsoExito(),
-        customClass: {
-            icon: 'oso-icon'
-        },
-        confirmButtonText: 'Ok',
-        confirmButtonColor: '#035498'
-    });
+    if (window.mostrarAlertaAdminExito) {
+        window.mostrarAlertaAdminExito(titulo, mensaje);
+        return;
+    }
+    window.alert(mensaje);
 };
 
 var mostrarAlertaError = function(titulo, mensaje) {
-    Swal.fire({
-        title: titulo,
-        html: mensaje,
-        iconHtml: crearOsoError(),
-        customClass: {
-            icon: 'oso-icon'
-        },
-        confirmButtonText: 'Ok',
-        confirmButtonColor: '#d9534f'
-    });
+    if (window.mostrarAlertaAdminError) {
+        window.mostrarAlertaAdminError(titulo, mensaje);
+        return;
+    }
+    window.alert(mensaje);
 };
 
 /* ============================================
@@ -787,36 +777,17 @@ var crearIncidencia = function() {
    ============================================ */
 
 var asignarEventosPaginacion = function() {
-    var btnAnterior = document.getElementById('btnAnteriorInc');
-    var btnSiguiente = document.getElementById('btnSiguienteInc');
     var contenedor = document.getElementById('paginasInc');
-    var botonesNumero = contenedor ? contenedor.querySelectorAll('.pag-numero') : [];
-    
-    // Botón anterior
-    if (btnAnterior) {
-        btnAnterior.onclick = function(event) {
-            event.preventDefault();
-            if (paginaActualInc > 1) {
-                cambiarPaginaInc(paginaActualInc - 1);
-            }
-        };
-    }
-    
-    // Botón siguiente
-    if (btnSiguiente) {
-        btnSiguiente.onclick = function(event) {
-            event.preventDefault();
-            cambiarPaginaInc(paginaActualInc + 1);
-        };
-    }
-    
-    // Botones número de página
+    var botonesNumero = contenedor ? contenedor.querySelectorAll('.page-link[data-pagina]') : [];
+
     for (var i = 0; i < botonesNumero.length; i++) {
         var btnNum = botonesNumero[i];
         btnNum.onclick = function(event) {
             event.preventDefault();
             var pagina = parseInt(this.getAttribute('data-pagina'));
-            cambiarPaginaInc(pagina);
+            if (!isNaN(pagina)) {
+                cambiarPaginaInc(pagina);
+            }
         };
     }
 };
@@ -830,15 +801,28 @@ var actualizarPaginacion = function(paginaActual, totalPaginas) {
     var contenedor = document.getElementById('paginasInc');
     if (!contenedor) return;
     
-    // Limpiar los botones anteriores
     contenedor.innerHTML = '';
     
-    // Generar los botones de página
+    var crearItem = function(pagina, contenido, deshabilitado, activo) {
+        var li = document.createElement('li');
+        li.className = 'page-item' + (deshabilitado ? ' disabled' : '') + (activo ? ' active' : '');
+
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'page-link';
+        if (pagina !== null && pagina !== undefined) {
+            button.setAttribute('data-pagina', pagina);
+        }
+        button.innerHTML = contenido;
+        li.appendChild(button);
+        return li;
+    };
+
+    contenedor.appendChild(crearItem(paginaActual - 1, '<i class="bi bi-chevron-left"></i>', paginaActual <= 1, false));
+
     for (var i = 1; i <= totalPaginas; i++) {
-        var btn = document.createElement('button');
-        btn.className = 'pag-numero' + (i === paginaActual ? ' activo' : '');
-        btn.setAttribute('data-pagina', i);
-        btn.textContent = i;
-        contenedor.appendChild(btn);
+        contenedor.appendChild(crearItem(i, String(i), false, i === paginaActual));
     }
+
+    contenedor.appendChild(crearItem(paginaActual + 1, '<i class="bi bi-chevron-right"></i>', paginaActual >= totalPaginas, false));
 };

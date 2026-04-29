@@ -79,7 +79,13 @@ class DashboardController extends Controller
             ->join('tbl_usuario',
               'tbl_usuario.id_usuario', '=',
               'tbl_notificacion.id_usuario_fk')
-            ->where('tbl_usuario.email_usuario', 'admin@spotstay.com')
+            ->select(
+              'tbl_notificacion.titulo_notificacion',
+              'tbl_notificacion.tipo_notificacion',
+              'tbl_notificacion.color_notificacion',
+              'tbl_notificacion.creado_notificacion',
+              'tbl_usuario.nombre_usuario'
+            )
             ->orderBy('tbl_notificacion.creado_notificacion', 'desc')
             ->limit(5)
             ->get();

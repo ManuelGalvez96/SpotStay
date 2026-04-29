@@ -38,6 +38,46 @@ class AlquilerController extends Controller
     }
 
     /**
+     * Mostrar formulario de edicion de alquiler
+     */
+    public function editar($id)
+    {
+        $alquiler = DB::table('tbl_alquiler')
+            ->join('tbl_propiedad', 'tbl_alquiler.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad')
+            ->select(
+                'tbl_alquiler.id_alquiler',
+                'tbl_alquiler.id_propiedad_fk',
+                'tbl_alquiler.id_inquilino_fk',
+                'tbl_alquiler.fecha_inicio_alquiler',
+                'tbl_alquiler.fecha_fin_alquiler',
+                'tbl_alquiler.estado_alquiler',
+                'tbl_propiedad.precio_propiedad as precio_referencia'
+            )
+            ->where('tbl_alquiler.id_alquiler', $id)
+            ->first();
+
+        if (!$alquiler) {
+            abort(404);
+        }
+
+        $propiedadesPublicadas = DB::table('tbl_propiedad')
+            ->where('estado_propiedad', 'publicada')
+            ->select('id_propiedad', 'titulo_propiedad', 'ciudad_propiedad', 'precio_propiedad')
+            ->orderBy('titulo_propiedad')
+            ->get();
+
+        $inquilinos = DB::table('tbl_usuario')
+            ->join('tbl_rol_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_rol_usuario.id_usuario_fk')
+            ->join('tbl_rol', 'tbl_rol_usuario.id_rol_fk', '=', 'tbl_rol.id_rol')
+            ->where('tbl_rol.nombre_rol', 'inquilino')
+            ->select('tbl_usuario.id_usuario', 'tbl_usuario.nombre_usuario', 'tbl_usuario.email_usuario')
+            ->orderBy('tbl_usuario.nombre_usuario')
+            ->get();
+
+        return view('admin.alquileres-crear', compact('propiedadesPublicadas', 'inquilinos', 'alquiler'));
+    }
+
+    /**
      * Mostrar listado de alquileres con KPI
      */
     public function index()
@@ -122,7 +162,7 @@ class AlquilerController extends Controller
                 'tbl_propiedad.titulo_propiedad',
                 'tbl_propiedad.ciudad_propiedad',
                 'tbl_propiedad.precio_propiedad',
-                'tbl_propiedad.foto_propiedad',
+                DB::raw($this->obtenerSelectFotoPropiedad()),
                 'inquilino.nombre_usuario as nombre_usuario_inquilino',
                 'inquilino.email_usuario as email_inquilino',
                 'inquilino.telefono_usuario as telefono_inquilino',
@@ -135,7 +175,10 @@ class AlquilerController extends Controller
             ->first();
 
         if (!$alquiler) {
-            return response()->view('error.404');
+            return response()->json([
+                'success' => false,
+                'message' => 'Alquiler no encontrado'
+            ], 404);
         }
 
         // Generar initiales
@@ -455,6 +498,144 @@ class AlquilerController extends Controller
         }
     }
 
+    /**
+     * Actualizar un alquiler existente
+     */
+    public function actualizar(Request $request, $id)
+    {
+        $alquilerExistente = DB::table('tbl_alquiler')
+            ->where('id_alquiler', $id)
+            ->first();
+
+        if (!$alquilerExistente) {
+            abort(404);
+        }
+
+        $datos = $request->validate([
+            'id_propiedad' => 'required|exists:tbl_propiedad,id_propiedad',
+            'id_inquilino' => 'required|exists:tbl_usuario,id_usuario',
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
+            'precio' => 'required|numeric|min:0'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            DB::table('tbl_alquiler')
+                ->where('id_alquiler', $id)
+                ->update([
+                    'id_propiedad_fk' => $datos['id_propiedad'],
+                    'id_inquilino_fk' => $datos['id_inquilino'],
+                    'fecha_inicio_alquiler' => $datos['fecha_inicio'],
+                    'fecha_fin_alquiler' => $datos['fecha_fin'] ?? null,
+                    'actualizado_alquiler' => now(),
+                ]);
+
+            DB::table('tbl_pago')
+                ->where('id_alquiler_fk', $id)
+                ->where('tipo_pago', 'fianza')
+                ->update([
+                    'id_pagador_fk' => $datos['id_inquilino'],
+                    'importe_pago' => $datos['precio'] * 2,
+                    'referencia_pago' => 'FZ-' . $id . '-' . now()->format('Ymd'),
+                    'actualizado_pago' => now(),
+                ]);
+
+            DB::commit();
+
+            if ($request->expectsJson()) {
+                return response()->json(['success' => true, 'id_alquiler' => $id]);
+            }
+
+            return redirect('/admin/alquileres')->with('success', 'Alquiler actualizado correctamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'error' => $e->getMessage()]);
+            }
+
+            return back()->withErrors(['general' => 'No se pudo actualizar el alquiler.'])->withInput();
+        }
+    }
+
+    /**
+     * Eliminar un alquiler y sus dependencias
+     */
+    public function eliminar(Request $request, $id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $alquiler = DB::table('tbl_alquiler')
+                ->where('id_alquiler', $id)
+                ->first();
+
+            if (!$alquiler) {
+                DB::rollBack();
+
+                if ($request->expectsJson()) {
+                    return response()->json(['success' => false, 'error' => 'Alquiler no encontrado.'], 404);
+                }
+
+                return redirect('/admin/alquileres')->with('error', 'Alquiler no encontrado.');
+            }
+
+            DB::table('tbl_pago')
+                ->where('id_alquiler_fk', $id)
+                ->delete();
+
+            DB::table('tbl_contrato')
+                ->where('id_alquiler_fk', $id)
+                ->delete();
+
+            if (Schema::hasTable('tbl_alquiler_cuota')) {
+                DB::table('tbl_alquiler_cuota')
+                    ->where('id_alquiler_fk', $id)
+                    ->delete();
+            }
+
+            DB::table('tbl_gasto')
+                ->where('id_alquiler_fk', $id)
+                ->delete();
+
+            DB::table('tbl_alquiler')
+                ->where('id_alquiler', $id)
+                ->delete();
+
+            $hayOtroAlquilerActivo = DB::table('tbl_alquiler')
+                ->where('id_propiedad_fk', $alquiler->id_propiedad_fk)
+                ->whereIn('estado_alquiler', ['pendiente', 'activo'])
+                ->exists();
+
+            if (!$hayOtroAlquilerActivo) {
+                DB::table('tbl_propiedad')
+                    ->where('id_propiedad', $alquiler->id_propiedad_fk)
+                    ->update([
+                        'estado_propiedad' => 'publicada',
+                        'actualizado_propiedad' => now(),
+                    ]);
+            }
+
+            DB::commit();
+
+            if ($request->expectsJson()) {
+                return response()->json(['success' => true]);
+            }
+
+            return redirect('/admin/alquileres')->with('success', 'Alquiler eliminado correctamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'error' => $e->getMessage()]);
+            }
+
+            return redirect('/admin/alquileres')->with('error', 'No se pudo eliminar el alquiler.');
+        }
+    }
+
     private function generarCuotasAlAprobar(object $alquiler): void
     {
         if (!Schema::hasTable('tbl_alquiler_cuota')) {
@@ -503,5 +684,14 @@ class AlquilerController extends Controller
 
             $cursor->addMonth();
         }
+    }
+
+    private function obtenerSelectFotoPropiedad(): string
+    {
+        if (Schema::hasColumn('tbl_propiedad', 'foto_propiedad')) {
+            return 'tbl_propiedad.foto_propiedad as foto_propiedad';
+        }
+
+        return 'NULL as foto_propiedad';
     }
 }

@@ -66,16 +66,14 @@
     <div class="suscripciones-tabla">
         <!-- HEADER CON CONTADOR Y PAGINACION -->
         <div class="tabla-header-top">
-            <span id="contadorSus">{{ $suscripciones->total() }} suscripciones encontradas</span>
-            <div class="paginacion">
-                <button id="btnAnteriorSus" class="btn-pag">← Anterior</button>
-                <span id="paginasSus">
+            <span id="contadorSus" class="info-paginacion">{{ $suscripciones->total() }} suscripciones encontradas</span>
+            <nav aria-label="Paginación de suscripciones">
+                <ul class="pagination pagination-sm mb-0" id="paginasSus">
                     @for($i = 1; $i <= min($suscripciones->lastPage(), 3); $i++)
-                        <span class="pag-numero {{ $i === 1 ? 'activo' : '' }}" data-pagina="{{ $i }}">{{ $i }}</span>
+                        <li class="page-item {{ $i === 1 ? 'active' : '' }}"><button type="button" class="page-link" data-pagina="{{ $i }}">{{ $i }}</button></li>
                     @endfor
-                </span>
-                <button id="btnSiguienteSus" class="btn-pag">Siguiente →</button>
-            </div>
+                </ul>
+            </nav>
         </div>
 
         <!-- HEADERS COLUMNAS -->

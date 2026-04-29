@@ -114,8 +114,17 @@ var abrirModal = function(id) {
         return r.json();
     }).then(function(data) {
         rellenarModal(data);
-        document.getElementById('modalOverlay').classList.add('visible');
-        document.getElementById('modalSuscripcion').classList.add('visible');
+        var overlay = document.getElementById('modalOverlay');
+        var modal = document.getElementById('modalSuscripcion');
+        if (overlay) overlay.classList.add('visible');
+        if (modal) {
+            // If Bootstrap modal exists in future, use it; otherwise keep custom
+            if (typeof bootstrap !== 'undefined' && modal.classList.contains('modal')) {
+                bootstrap.Modal.getOrCreateInstance(modal).show();
+            } else {
+                modal.classList.add('visible');
+            }
+        }
     }).catch(function(e) {
         console.error('Error:', e);
     });
@@ -263,6 +272,37 @@ var guardarCambios = function() {
 
 var cancelarSuscripcion = function() {
     if (!suscripcionIdActual) return;
+    if (window.confirmarAdmin) {
+        window.confirmarAdmin('Cancelar suscripción', '¿Estás seguro de que deseas cancelar esta suscripción?').then(function(confirmado) {
+            if (!confirmado) return;
+
+            fetch('/admin/suscripciones/' + suscripcionIdActual + '/cancelar', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: JSON.stringify({})
+    }).then(function(r) {
+        return r.json();
+    }).then(function(data) {
+        if (data.success) {
+            cerrarModal();
+            location.reload();
+        } else {
+                    if (window.mostrarAlertaAdminError) {
+                        window.mostrarAlertaAdminError('Error', data.error || 'Error desconocido');
+                    } else {
+                        alert('Error: ' + (data.error || 'Error desconocido'));
+                    }
+        }
+    }).catch(function(e) {
+        console.error('Error:', e);
+    });
+        });
+        return;
+    }
+
     if (!confirm('¿Estás seguro de que deseas cancelar esta suscripción?')) return;
 
     fetch('/admin/suscripciones/' + suscripcionIdActual + '/cancelar', {
@@ -327,26 +367,10 @@ var asignarEventosModal = function() {
 
 /* ── PAGINACIÓN ── */
 var asignarEventosPaginacion = function() {
-    var btnAnt = document.getElementById('btnAnteriorSus');
-    var btnSig = document.getElementById('btnSiguienteSus');
-
-    if (btnAnt) {
-        btnAnt.onclick = function() {
-            if (paginaActual > 1) {
-                cambiarPagina(paginaActual - 1);
-            }
-        };
-    }
-
-    if (btnSig) {
-        btnSig.onclick = function() {
-            cambiarPagina(paginaActual + 1);
-        };
-    }
-
-    var nums = document.querySelectorAll('#paginasSus .pag-numero');
-    var i;
-    for (i = 0; i < nums.length; i++) {
+    var cont = document.getElementById('paginasSus');
+    if (!cont) return;
+    var nums = cont.querySelectorAll('.page-link[data-pagina]');
+    for (var i = 0; i < nums.length; i++) {
         nums[i].onclick = function() {
             cambiarPagina(parseInt(this.getAttribute('data-pagina')));
         };
@@ -356,6 +380,24 @@ var asignarEventosPaginacion = function() {
 var cambiarPagina = function(num) {
     paginaActual = num;
     window.location.href = '/admin/suscripciones?page=' + num;
+};
+
+var actualizarPaginacion = function(paginaActiva, totalPaginas) {
+    var cont = document.getElementById('paginasSus');
+    if (!cont) return;
+
+    var html = '';
+    html += '<li class="page-item' + (paginaActiva <= 1 ? ' disabled' : '') + '"><button type="button" class="page-link" data-pagina="' + Math.max(1, paginaActiva - 1) + '"><i class="bi bi-chevron-left"></i></button></li>';
+
+    for (var i = 1; i <= totalPaginas; i++) {
+        var activo = i === paginaActiva ? ' active' : '';
+        html += '<li class="page-item' + activo + '"><button type="button" class="page-link" data-pagina="' + i + '">' + i + '</button></li>';
+    }
+
+    html += '<li class="page-item' + (paginaActiva >= totalPaginas ? ' disabled' : '') + '"><button type="button" class="page-link" data-pagina="' + Math.min(totalPaginas, paginaActiva + 1) + '"><i class="bi bi-chevron-right"></i></button></li>';
+
+    cont.innerHTML = html;
+    asignarEventosPaginacion();
 };
 
 /* ── MODAL PLANES ── */

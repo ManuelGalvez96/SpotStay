@@ -56,10 +56,6 @@
         
         <!-- Zona derecha -->
         <div class="topbar-der">
-            <div class="campana-container">
-                <i class="bi bi-bell icon-campana" id="iconCampana"></i>
-                <span class="badge-campana" id="badgeCampana">9</span>
-            </div>
             <div class="admin-container" id="adminContainer">
                 <div class="avatar-admin">A</div>
                 <span class="admin-nombre">Admin</span>
@@ -78,6 +74,44 @@
     <!-- CONTENIDO -->
     <div class="content-wrapper">
         @yield('content')
+    </div>
+
+    <!-- MODAL ALERTA ADMIN -->
+    <div class="modal fade" id="modalAlertaAdmin" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="modalAlertaTituloAdmin">Aviso</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body text-center pt-2">
+                    <div id="modalAlertaIconoAdmin" class="oso-icon d-flex justify-content-center mb-3"></div>
+                    <p id="modalAlertaMensajeAdmin" class="mb-0 text-muted"></p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center pt-0">
+                    <button type="button" class="btn btn-primary" id="modalAlertaBotonAdmin" data-bs-dismiss="modal">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL CONFIRMACIÓN ADMIN -->
+    <div class="modal fade" id="modalConfirmAdmin" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="modalConfirmTituloAdmin">Confirmar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body text-center pt-2">
+                    <p id="modalConfirmMensajeAdmin" class="mb-0 text-muted"></p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center pt-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="modalConfirmCancelarAdmin">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="modalConfirmBotonConfirmarAdmin">Confirmar</button>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Bootstrap 5.3.8 JS Bundle -->

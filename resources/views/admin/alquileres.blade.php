@@ -10,8 +10,10 @@
 
 <!-- HERO AZUL -->
 <div class="hero-admin">
-    <h1>Gestión de alquileres</h1>
-    <p>Supervisa y aprueba todas las relaciones de alquiler</p>
+    <div class="hero-content">
+        <h1>Gestión de alquileres</h1>
+        <p>Supervisa y aprueba todas las relaciones de alquiler</p>
+    </div>
     <div class="hero-deco hero-deco-1"></div>
     <div class="hero-deco hero-deco-2"></div>
     <div class="hero-deco hero-deco-3"></div>
@@ -115,16 +117,14 @@
 <div class="card-admin">
 
     <div class="tabla-header">
-        <span id="contadorAlquileres">{{ $alquileres->total() }} alquileres encontrados</span>
-        <div class="paginacion">
-            <button id="btnAnteriorAlq" class="btn-pag">← Anterior</button>
-            <span id="paginasAlq">
+        <span id="contadorAlquileres" class="info-paginacion">{{ $alquileres->total() }} alquileres encontrados</span>
+        <nav aria-label="Paginación de alquileres">
+            <ul class="pagination pagination-sm mb-0" id="paginasAlq">
                 @for($i = 1; $i <= min($alquileres->lastPage(), 3); $i++)
-                    <span class="pag-numero {{ $i === 1 ? 'activo' : '' }}" data-pagina="{{ $i }}">{{ $i }}</span>
+                    <li class="page-item {{ $i === 1 ? 'active' : '' }}"><button type="button" class="page-link" data-pagina="{{ $i }}">{{ $i }}</button></li>
                 @endfor
-            </span>
-            <button id="btnSiguienteAlq" class="btn-pag">Siguiente →</button>
-        </div>
+            </ul>
+        </nav>
     </div>
 
     <table class="tabla-admin" id="tablaAlquileres">
@@ -200,6 +200,12 @@
                         <div class="acciones-tabla">
                             <button class="btn-accion btn-ver-alq" data-id="{{ $alquiler->id_alquiler }}" title="Ver detalle">
                                 <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn-accion btn-editar-alq" data-id="{{ $alquiler->id_alquiler }}" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn-accion btn-eliminar-alq" data-id="{{ $alquiler->id_alquiler }}" title="Eliminar">
+                                <i class="bi bi-trash"></i>
                             </button>
                             @if($alquiler->estado_alquiler === 'pendiente')
                                 <button class="btn-accion btn-editar btn-aprobar-alq" data-id="{{ $alquiler->id_alquiler }}" title="Aprobar">
@@ -371,12 +377,14 @@
     </div>
 
     <div class="modal-footer-admin">
+        <button id="btnEditarModal" class="btn-exportar">Editar alquiler</button>
         <button id="btnRechazarModal" class="btn-desactivar">Rechazar alquiler</button>
         <div class="modal-footer-derecha">
             <button id="btnVerContrato" class="btn-exportar">
                 <i class="bi bi-file-text"></i>
                 <span>Ver contrato</span>
             </button>
+            <button id="btnEliminarModal" class="btn-desactivar">Eliminar alquiler</button>
             <button id="btnAprobarModal" class="btn-aprobar-verde">Aprobar alquiler</button>
         </div>
     </div>

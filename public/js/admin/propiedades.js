@@ -6,6 +6,38 @@ var csrfToken;
 var paginaActual = 1;
 var totalPaginas = 1;
 
+var esEstadoAlquilada = function(estado) {
+    return String(estado || '').trim().toLowerCase() === 'alquilada';
+};
+
+var actualizarEstadoBotonDesactivar = function(estado) {
+    var btnDesactivarPropiedad = document.getElementById('btnDesactivarPropiedad');
+    var modalPropiedad = document.getElementById('modalPropiedad');
+    if (!btnDesactivarPropiedad) {
+        return;
+    }
+
+    var estadoNormalizado = String(estado || '').trim().toLowerCase();
+    if (modalPropiedad) {
+        modalPropiedad.setAttribute('data-estado-propiedad', estadoNormalizado);
+    }
+    btnDesactivarPropiedad.setAttribute('data-estado-propiedad', estadoNormalizado);
+
+    if (esEstadoAlquilada(estadoNormalizado)) {
+        btnDesactivarPropiedad.disabled = true;
+        btnDesactivarPropiedad.classList.add('is-disabled');
+        btnDesactivarPropiedad.setAttribute('aria-disabled', 'true');
+        btnDesactivarPropiedad.title = 'No se puede desactivar una propiedad alquilada';
+        btnDesactivarPropiedad.textContent = 'No disponible (alquilada)';
+    } else {
+        btnDesactivarPropiedad.disabled = false;
+        btnDesactivarPropiedad.classList.remove('is-disabled');
+        btnDesactivarPropiedad.setAttribute('aria-disabled', 'false');
+        btnDesactivarPropiedad.title = '';
+        btnDesactivarPropiedad.textContent = 'Desactivar propiedad';
+    }
+};
+
 /* ── window.onload ── */
 window.onload = function() {
     csrfToken = document.querySelector('meta[name=csrf-token]').content;
@@ -197,6 +229,8 @@ var asignarEventosTabla = function() {
 
 /* ── Abrir modal ── */
 var abrirModal = function(id) {
+    actualizarEstadoBotonDesactivar('alquilada');
+
     fetch('/admin/propiedades/' + id)
         .then(function(response) {
             if (!response.ok) throw new Error('Error al cargar propiedad');
@@ -280,10 +314,13 @@ var abrirModal = function(id) {
 
             document.getElementById('modalDireccion').setAttribute('data-propiedad-id', String(id));
 
-            var overlay = document.getElementById('modalOverlay');
-            var modal = document.getElementById('modalPropiedad');
-            overlay.classList.add('visible');
-            modal.classList.add('visible');
+            actualizarEstadoBotonDesactivar(propiedad.estado_propiedad);
+
+            // Mostrar modal Bootstrap
+            var modalEl = document.getElementById('modalPropiedad');
+            if (typeof bootstrap !== 'undefined' && modalEl) {
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            }
         })
         .catch(function(error) {
             console.error('Error al cargar propiedad:', error);
@@ -293,10 +330,10 @@ var abrirModal = function(id) {
 
 /* ── Cerrar modal ── */
 var cerrarModal = function() {
-    var overlay = document.getElementById('modalOverlay');
-    var modal = document.getElementById('modalPropiedad');
-    overlay.classList.remove('visible');
-    modal.classList.remove('visible');
+    var modalEl = document.getElementById('modalPropiedad');
+    if (typeof bootstrap !== 'undefined' && modalEl) {
+        bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+    }
 };
 
 /* ── Asignar eventos al modal ── */
@@ -308,16 +345,32 @@ var asignarEventosModal = function() {
     var btnVerMapa = document.getElementById('btnVerMapa');
     var btnDescargarPDF = document.getElementById('btnDescargarPDF');
 
-    btnCerrarModal.onclick = function() {
-        cerrarModal();
-    };
+    if (btnCerrarModal) {
+        btnCerrarModal.onclick = function() {
+            cerrarModal();
+        };
+    }
 
-    modalOverlay.onclick = function() {
-        cerrarModal();
-    };
+    if (modalOverlay) {
+        modalOverlay.onclick = function() {
+            cerrarModal();
+        };
+    }
 
     btnDesactivarPropiedad.onclick = function() {
         var propiedadId = parseInt(document.getElementById('modalDireccion').getAttribute('data-propiedad-id') || '1');
+        var modalPropiedad = document.getElementById('modalPropiedad');
+        var estadoBoton = btnDesactivarPropiedad.getAttribute('data-estado-propiedad') || '';
+        var estadoModal = modalPropiedad ? (modalPropiedad.getAttribute('data-estado-propiedad') || '') : '';
+
+        if (btnDesactivarPropiedad.disabled || esEstadoAlquilada(estadoBoton) || esEstadoAlquilada(estadoModal)) {
+            if (window.mostrarAlertaAdminValidacion) {
+                window.mostrarAlertaAdminValidacion('No puedes desactivar una propiedad alquilada.');
+            } else {
+                alert('No puedes desactivar una propiedad alquilada.');
+            }
+            return;
+        }
         desactivarPropiedad(propiedadId);
     };
 
@@ -340,76 +393,126 @@ var asignarEventosModal = function() {
 /* ── Desactivar propiedad ── */
 var desactivarPropiedad = function(id) {
     var url = '/admin/propiedades/' + id + '/desactivar';
-    var data = JSON.stringify({ _method: 'PUT' });
+    var formData = new FormData();
+    formData.append('_token', csrfToken);
 
     fetch(url, {
         method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': csrfToken,
-            'Content-Type': 'application/json'
-        },
-        body: data
+        body: formData
     })
     .then(function(response) {
-        return response.json();
+        return response.text().then(function(texto) {
+            var data = null;
+            try {
+                data = JSON.parse(texto);
+            } catch (e) {
+                data = null;
+            }
+
+            return {
+                ok: response.ok,
+                status: response.status,
+                data: data
+            };
+        });
     })
-    .then(function(data) {
-        if (data.success) {
+    .then(function(resultado) {
+        if (resultado.ok && resultado.data && resultado.data.success) {
             var row = document.querySelector('tr[data-id="' + id + '"]');
             if (row) {
                 row.classList.add('fila-inactiva');
+
+                var badgeTabla = row.querySelector('.badge-estado');
+                if (badgeTabla) {
+                    badgeTabla.className = 'badge-estado badge-inactiva';
+                    badgeTabla.textContent = 'Inactiva';
+                }
             }
+
+            var badgeModal = document.getElementById('modalBadgeEstado');
+            if (badgeModal) {
+                badgeModal.className = 'badge-estado badge-inactiva';
+                badgeModal.textContent = 'Inactiva';
+            }
+
+            actualizarEstadoBotonDesactivar('inactiva');
+
             cerrarModal();
+            return;
+        }
+
+        var mensajeError = (resultado.data && resultado.data.message)
+                ? resultado.data.message
+                : 'La propiedad no se pudo desactivar (' + resultado.status + ').';
+
+        if (window.mostrarAlertaAdminValidacion) {
+            window.mostrarAlertaAdminValidacion(mensajeError);
+        } else {
+            alert(mensajeError);
         }
     })
     .catch(function(error) {
         console.error('Error:', error);
+        if (window.mostrarAlertaAdminError) {
+            window.mostrarAlertaAdminError('Error', 'No se pudo desactivar la propiedad.');
+        } else {
+            alert('No se pudo desactivar la propiedad.');
+        }
     });
 };
 
 /* ── Confirmar eliminar ── */
 var confirmarEliminar = function(id) {
-    if (confirm('¿Estás seguro de que deseas eliminar esta propiedad?')) {
-        var url = '/admin/propiedades/' + id;
+    if (window.confirmarAdmin) {
+        window.confirmarAdmin('Eliminar propiedad', '¿Eliminar propiedad? Esta acción no se puede deshacer.')
+            .then(function(confirmado) {
+                if (!confirmado) return;
 
-        fetch(url, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken
-            }
-        })
-        .then(function(response) {
-            return response.json();
-        })
-        .then(function(data) {
-            if (data.success) {
-                var row = document.querySelector('tr[data-id="' + id + '"]');
-                if (row) {
-                    row.parentNode.removeChild(row);
-                }
-            }
-        })
-        .catch(function(error) {
-            console.error('Error:', error);
-        });
+                var url = '/admin/propiedades/' + id;
+
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken
+                    }
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.success) {
+                        var row = document.querySelector('tr[data-id="' + id + '"]');
+                        if (row) {
+                            row.parentNode.removeChild(row);
+                        }
+
+                        if (window.mostrarAlertaAdminExito) {
+                            window.mostrarAlertaAdminExito('Eliminada', 'La propiedad se eliminó correctamente.');
+                        }
+                        return;
+                    }
+
+                    if (window.mostrarAlertaAdminError) {
+                        window.mostrarAlertaAdminError('No se pudo eliminar', data.message || 'La propiedad no se pudo eliminar.');
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    if (window.mostrarAlertaAdminError) {
+                        window.mostrarAlertaAdminError('Error', 'Ocurrió un error al eliminar la propiedad.');
+                    }
+                });
+            });
+    } else {
+        // Fallback a confirm nativo
+        if (!confirm('¿Eliminar propiedad?')) return;
+        confirmarEliminar(id);
     }
 };
 
 /* ── Asignar eventos a paginación ── */
 var asignarEventosPaginacion = function() {
-    var btnAnterior = document.getElementById('btnAnterior');
-    var btnSiguiente = document.getElementById('btnSiguiente');
-    var botonesPagina = document.querySelectorAll('.pag-numero');
-
-    btnAnterior.onclick = function() {
-        if (paginaActual > 1) {
-            cambiarPagina(paginaActual - 1);
-        }
-    };
-
-    btnSiguiente.onclick = function() {
-        cambiarPagina(paginaActual + 1);
-    };
+    var botonesPagina = document.querySelectorAll('.page-link[data-pagina]');
 
     for (var i = 0; i < botonesPagina.length; i++) {
         botonesPagina[i].onclick = function() {
@@ -443,30 +546,23 @@ var actualizarPaginacion = function(paginaActiva, totalPaginasNuevas) {
     if (!contenedor) {
         return;
     }
-
     var html = '';
+    html += '<li class="page-item' + (paginaActiva <= 1 ? ' disabled' : '') + '"><button type="button" class="page-link" data-pagina="' + Math.max(1, paginaActiva - 1) + '"><i class="bi bi-chevron-left"></i></button></li>';
     for (var i = 1; i <= totalPaginasNuevas; i++) {
-        var clase = i === paginaActiva ? 'pag-numero activo' : 'pag-numero';
-        html += '<button class="' + clase + '" data-pagina="' + i + '">' + i + '</button>';
+        var activo = i === paginaActiva ? ' active' : '';
+        html += '<li class="page-item' + activo + '"><button type="button" class="page-link" data-pagina="' + i + '">' + i + '</button></li>';
     }
+
+    html += '<li class="page-item' + (paginaActiva >= totalPaginasNuevas ? ' disabled' : '') + '"><button type="button" class="page-link" data-pagina="' + Math.min(totalPaginasNuevas, paginaActiva + 1) + '"><i class="bi bi-chevron-right"></i></button></li>';
 
     contenedor.innerHTML = html;
 
-    var botonesPagina = document.querySelectorAll('.pag-numero');
+    var botonesPagina = contenedor.querySelectorAll('.page-link[data-pagina]');
     for (var j = 0; j < botonesPagina.length; j++) {
         botonesPagina[j].onclick = function() {
             var pagina = parseInt(this.getAttribute('data-pagina'));
             cambiarPagina(pagina);
         };
-    }
-
-    var btnAnterior = document.getElementById('btnAnterior');
-    var btnSiguiente = document.getElementById('btnSiguiente');
-    if (btnAnterior) {
-        btnAnterior.disabled = paginaActiva <= 1;
-    }
-    if (btnSiguiente) {
-        btnSiguiente.disabled = paginaActiva >= totalPaginasNuevas;
     }
 };
 

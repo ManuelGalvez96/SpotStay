@@ -39,10 +39,6 @@
         </select>
     </div>
     <div class="toolbar-derecha">
-        <button id="btnExportar" class="btn-exportar">
-            <i class="bi bi-download"></i>
-            <span>Exportar</span>
-        </button>
         <button id="btnNuevoUsuario" class="btn-primario">
             <i class="bi bi-plus"></i>
             <span>Nuevo usuario</span>
@@ -95,22 +91,32 @@
 
 <!-- TABLA DE USUARIOS -->
 <div class="card-admin">
-    <div class="tabla-header">
-        <span id="contadorResultados">{{ number_format($totalUsuarios) }} usuarios encontrados</span>
-        <div class="paginacion">
-            <button id="btnAnterior" class="btn-pag">← Anterior</button>
-            <span id="paginas">
-                {{-- Generar botones de página dinámicamente --}}
-                @php
-                    $totalPages = $usuarios->lastPage() ?? 1;
-                    $paginaActual = $usuarios->currentPage() ?? 1;
-                @endphp
-                @for($i = 1; $i <= $totalPages; $i++)
-                    <button class="pag-numero {{ $paginaActual === $i ? 'activo' : '' }}" data-pagina="{{ $i }}">{{ $i }}</button>
-                @endfor
-            </span>
-            <button id="btnSiguiente" class="btn-pag">Siguiente →</button>
+    <div class="tabla-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div class="tabla-header-info">
+            <span class="tabla-header-titulo">Usuarios</span>
+            <span id="contadorResultados" class="info-paginacion">{{ number_format($totalUsuarios) }} usuarios encontrados</span>
         </div>
+
+        @php
+            $totalPages = $usuarios->lastPage() ?? 1;
+            $paginaActual = $usuarios->currentPage() ?? 1;
+        @endphp
+
+        <nav aria-label="Paginación de usuarios">
+            <ul class="pagination pagination-sm mb-0" id="paginas">
+                <li class="page-item {{ $paginaActual <= 1 ? 'disabled' : '' }}">
+                    <button type="button" class="page-link" data-pagina="{{ max(1, $paginaActual - 1) }}">←</button>
+                </li>
+                @for($i = 1; $i <= $totalPages; $i++)
+                    <li class="page-item {{ $paginaActual === $i ? 'active' : '' }}">
+                        <button type="button" class="page-link" data-pagina="{{ $i }}">{{ $i }}</button>
+                    </li>
+                @endfor
+                <li class="page-item {{ $paginaActual >= $totalPages ? 'disabled' : '' }}">
+                    <button type="button" class="page-link" data-pagina="{{ min($totalPages, $paginaActual + 1) }}">→</button>
+                </li>
+            </ul>
+        </nav>
     </div>
     
     <table class="tabla-admin" id="tablaUsuarios">
@@ -181,9 +187,6 @@
         </tbody>
     </table>
     
-    <div class="tabla-footer" id="tablaFooter">
-        <span>Mostrando {{ $usuarios->firstItem() ?? 0 }}-{{ $usuarios->lastItem() ?? 0 }} de {{ $totalUsuarios }} usuarios</span>
-    </div>
 </div>
 
 <!-- MODAL PERFIL DE USUARIO (Bootstrap 5) -->
@@ -273,16 +276,19 @@
                     <div class="mb-3">
                         <label for="inputNombre" class="form-label">Nombre completo</label>
                         <input type="text" class="form-control" id="inputNombre" name="nombre" placeholder="Ej. Juan García" required>
+                        <small class="text-danger d-block mt-1" id="errorNombreUsuario"></small>
                     </div>
                     
                     <div class="mb-3">
                         <label for="inputEmail" class="form-label">Correo electrónico</label>
                         <input type="email" class="form-control" id="inputEmail" name="email" placeholder="juan@example.com" required>
+                        <small class="text-danger d-block mt-1" id="errorEmailUsuario"></small>
                     </div>
                     
                     <div class="mb-3">
                         <label for="inputTelefono" class="form-label">Teléfono</label>
                         <input type="tel" class="form-control" id="inputTelefono" name="telefono" placeholder="+34 612 345 678">
+                        <small class="text-danger d-block mt-1" id="errorTelefonoUsuario"></small>
                     </div>
                     
                     <div class="mb-3">
@@ -295,11 +301,13 @@
                             <option value="gestor">Gestor</option>
                             <option value="miembro">Miembro</option>
                         </select>
+                        <small class="text-danger d-block mt-1" id="errorRolUsuario"></small>
                     </div>
                     
                     <div class="mb-3">
                         <label for="inputPassword" class="form-label">Contraseña</label>
                         <input type="password" class="form-control" id="inputPassword" name="password" placeholder="Contraseña">
+                        <small class="text-danger d-block mt-1" id="errorPasswordUsuario"></small>
                     </div>
                 </form>
             </div>

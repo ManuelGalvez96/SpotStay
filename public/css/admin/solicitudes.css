@@ -48,7 +48,7 @@ body {
 .hero-deco {
     position: absolute;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.12);
     pointer-events: none;
 }
 
@@ -75,15 +75,16 @@ body {
 
 /* ── Toolbar Admin ── */
 .toolbar-admin {
-    background: white;
+    background: linear-gradient(90deg, #035498, #1AA068);
     border-radius: 14px;
-    border: 1px solid #E5E7EB;
+    border: 1px solid rgba(255, 255, 255, 0.16);
     padding: 16px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 16px;
     margin-top: 24px;
+    box-shadow: 0 8px 24px rgba(3, 84, 152, 0.12);
 }
 
 .toolbar-izquierda {
@@ -133,6 +134,10 @@ body {
 
 .input-busqueda input::placeholder {
     color: #9CA3AF;
+}
+
+.toolbar-derecha {
+    color: rgba(255, 255, 255, 0.9);
 }
 
 /* ── Select Filtros ── */
@@ -207,9 +212,9 @@ body {
 
 /* ── KPI Mini ── */
 .kpi-mini {
-    background: white;
+    background: linear-gradient(135deg, #035498, #1AA068);
     border-radius: 12px;
-    border: 1px solid #E5E7EB;
+    border: 1px solid rgba(255, 255, 255, 0.16);
     padding: 0 20px;
     display: flex;
     align-items: center;
@@ -219,7 +224,7 @@ body {
 }
 
 .kpi-mini:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 14px rgba(3, 84, 152, 0.18);
 }
 
 .kpi-mini-icono {
@@ -231,26 +236,28 @@ body {
     justify-content: center;
     font-size: 18px;
     flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-azul {
-    background: #E8F0FB;
-    color: #035498;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-verde {
-    background: #E6F7F1;
-    color: #1AA068;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-rojo {
-    background: #FEE2E2;
-    color: #EF4444;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-naranja {
-    background: #FEF3C7;
-    color: #D97706;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-datos {
@@ -261,22 +268,22 @@ body {
 .kpi-mini-numero {
     font-size: 24px;
     font-weight: 700;
-    color: #111827;
+    color: #ffffff;
     line-height: 1;
     margin: 0;
 }
 
 .kpi-mini-numero-rojo {
-    color: #EF4444;
+    color: #ffffff;
 }
 
 .kpi-mini-numero-naranja {
-    color: #D97706;
+    color: #ffffff;
 }
 
 .kpi-mini-label {
     font-size: 12px;
-    color: #6B7280;
+    color: rgba(255, 255, 255, 0.82);
     margin: 0;
     margin-top: 2px;
 }
@@ -681,15 +688,15 @@ body {
 }
 
 .card-header-admin {
-    background: #F9FAFB;
+    background: linear-gradient(90deg, #035498, #1AA068);
     padding: 16px 20px;
-    border-bottom: 1px solid #E5E7EB;
+    border-bottom: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-weight: 600;
     font-size: 14px;
-    color: #111827;
+    color: white;
 }
 
 /* ── Card Estadísticas ── */
@@ -700,6 +707,14 @@ body {
 .card-estadisticas .card-header-admin {
     padding: 14px 16px;
     font-size: 13px;
+}
+
+.card-header-admin .badge-contador,
+.card-header-admin .badge-contador-verde,
+.card-header-admin .badge-contador-rojo {
+    background: rgba(255, 255, 255, 0.18);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.22);
 }
 
 /* ── Historial Lista ── */
@@ -1321,5 +1336,54 @@ body {
     border-radius: 12px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
     padding: 30px 20px;
+}
+
+/* ── Paginación Bootstrap global ── */
+.pagination {
+    margin-left: auto;
+    gap: 4px;
+}
+
+.page-item {
+    margin: 0;
+}
+
+.page-link {
+    border: 1px solid #E5E7EB;
+    color: #6B7280;
+    background: white;
+    border-radius: 6px;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.page-link:hover:not(.disabled .page-link) {
+    color: #035498;
+    border-color: #035498;
+    background: #EEF4FF;
+}
+
+.page-item.active .page-link {
+    background: #035498;
+    border-color: #035498;
+    color: white;
+    font-weight: 600;
+}
+
+.page-item.disabled .page-link {
+    color: #CBD5E1;
+    background: #F8FAFC;
+    border-color: #E5E7EB;
+    pointer-events: none;
+    cursor: not-allowed;
 }
 

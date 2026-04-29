@@ -9,8 +9,10 @@
 @section('content')
 
 <div class="hero-admin">
-    <h1>Gestión de solicitudes</h1>
-    <p>Revisa y aprueba las solicitudes de nuevos arrendadores</p>
+    <div class="hero-content">
+        <h1>Gestión de solicitudes</h1>
+        <p>Revisa y aprueba las solicitudes de nuevos arrendadores</p>
+    </div>
     <div class="hero-deco hero-deco-1"></div>
     <div class="hero-deco hero-deco-2"></div>
     <div class="hero-deco hero-deco-3"></div>
@@ -159,11 +161,13 @@
                 </table>
             </div>
 
-            <div class="tabla-footer">
+            <div class="tabla-footer d-flex flex-wrap justify-content-between align-items-center gap-3">
                 <span class="info-paginacion">Mostrando 0-0 de 0 solicitudes</span>
-                <div class="paginacion-links" id="paginacionSolicitudes">
-                    <!-- Generado por JavaScript -->
-                </div>
+                <nav aria-label="Paginación de solicitudes">
+                    <ul class="pagination pagination-sm mb-0" id="paginacionSolicitudes">
+                        <!-- Generado por JavaScript -->
+                    </ul>
+                </nav>
             </div>
         </div>
     </div>

@@ -10,8 +10,10 @@
 
 <!-- HERO AZUL -->
 <div class="hero-admin">
-    <h1>Gestión de alquileres</h1>
-    <p>Supervisa y aprueba todas las relaciones de alquiler</p>
+    <div class="hero-content">
+        <h1>Gestión de alquileres</h1>
+        <p>Supervisa y aprueba todas las relaciones de alquiler</p>
+    </div>
     <div class="hero-deco hero-deco-1"></div>
     <div class="hero-deco hero-deco-2"></div>
     <div class="hero-deco hero-deco-3"></div>

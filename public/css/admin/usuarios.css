@@ -48,7 +48,7 @@ body {
 .hero-deco {
     position: absolute;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.12);
     pointer-events: none;
 }
 
@@ -241,18 +241,18 @@ body {
 }
 
 .kpi-mini-azul {
-    background: #E8F0FB;
-    color: #035498;
+    background: #ffffff;
+    color: #6B7280;
 }
 
 .kpi-mini-verde {
-    background: #E6F7F1;
-    color: #1AA068;
+    background: #ffffff;
+    color: #6B7280;
 }
 
 .kpi-mini-rojo {
-    background: #FEE2E2;
-    color: #EF4444;
+    background: #ffffff;
+    color: #6B7280;
 }
 
 .kpi-mini-naranja {

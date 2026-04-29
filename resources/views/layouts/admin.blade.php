@@ -56,10 +56,6 @@
         
         <!-- Zona derecha -->
         <div class="topbar-der">
-            <div class="campana-container">
-                <i class="bi bi-bell icon-campana" id="iconCampana"></i>
-                <span class="badge-campana" id="badgeCampana">9</span>
-            </div>
             <div class="admin-container" id="adminContainer">
                 <div class="avatar-admin">A</div>
                 <span class="admin-nombre">Admin</span>

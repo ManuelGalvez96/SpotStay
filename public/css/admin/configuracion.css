@@ -39,7 +39,7 @@ body {
 .hero-deco {
     position: absolute;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.12);
     pointer-events: none;
 }
 
@@ -53,6 +53,7 @@ body {
 .hero-deco-2 {
     width: 200px;
     height: 200px;
+    background: rgba(255, 255, 255, 0.12);
     bottom: -80px;
     right: 200px;
 }
@@ -91,26 +92,28 @@ body {
     justify-content: center;
     font-size: 18px;
     flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-azul {
-    background: #E8F0FB;
-    color: #035498;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-verde {
-    background: #E6F7F1;
-    color: #1AA068;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-rojo {
-    background: #FEE2E2;
-    color: #EF4444;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-naranja {
-    background: #FEF3C7;
-    color: #D97706;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-datos {
@@ -126,11 +129,11 @@ body {
 }
 
 .kpi-mini-numero-rojo {
-    color: #EF4444;
+    color: #ffffff;
 }
 
 .kpi-mini-numero-naranja {
-    color: #D97706;
+    color: #ffffff;
 }
 
 .kpi-mini-label {

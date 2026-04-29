@@ -48,7 +48,7 @@ body {
 .hero-deco {
     position: absolute;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.12);
     pointer-events: none;
 }
 
@@ -75,15 +75,16 @@ body {
 
 /* ── Toolbar Admin ── */
 .toolbar-admin {
-    background: white;
+    background: linear-gradient(90deg, #035498, #1AA068);
     border-radius: 14px;
-    border: 1px solid #E5E7EB;
+    border: 1px solid rgba(255, 255, 255, 0.16);
     padding: 16px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 16px;
     margin-top: 24px;
+    box-shadow: 0 8px 24px rgba(3, 84, 152, 0.12);
 }
 
 .toolbar-izquierda {
@@ -133,6 +134,10 @@ body {
 
 .input-busqueda input::placeholder {
     color: #9CA3AF;
+}
+
+.toolbar-derecha {
+    color: rgba(255, 255, 255, 0.9);
 }
 
 /* ── Select Filtros ── */
@@ -231,26 +236,28 @@ body {
     justify-content: center;
     font-size: 18px;
     flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-azul {
-    background: #E8F0FB;
-    color: #035498;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-verde {
-    background: #E6F7F1;
-    color: #1AA068;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-rojo {
-    background: #FEE2E2;
-    color: #EF4444;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-naranja {
-    background: #FEF3C7;
-    color: #D97706;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-datos {
@@ -261,17 +268,17 @@ body {
 .kpi-mini-numero {
     font-size: 24px;
     font-weight: 700;
-    color: #111827;
+    color: #ffffff;
     line-height: 1;
     margin: 0;
 }
 
 .kpi-mini-numero-rojo {
-    color: #EF4444;
+    color: #ffffff;
 }
 
 .kpi-mini-numero-naranja {
-    color: #D97706;
+    color: #ffffff;
 }
 
 .kpi-mini-label {

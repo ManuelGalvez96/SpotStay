@@ -9,8 +9,10 @@
 @section('content')
 
 <div class="hero-admin">
-    <h1>Gestión de incidencias</h1>
-    <p>Supervisa y resuelve los problemas reportados por los inquilinos</p>
+    <div class="hero-content">
+        <h1>Gestión de incidencias</h1>
+        <p>Supervisa y resuelve los problemas reportados por los inquilinos</p>
+    </div>
     <div class="hero-deco hero-deco-1"></div>
     <div class="hero-deco hero-deco-2"></div>
     <div class="hero-deco hero-deco-3"></div>
@@ -269,10 +271,12 @@
 <!-- Vista de Lista -->
 <div class="card-admin" id="vistaLista" style="display: none;">
     <div class="tabla-header d-flex flex-wrap justify-content-between align-items-center gap-3">
-        <span id="contadorResultados" class="info-paginacion">0 incidencias encontradas</span>
+        <div class="tabla-header-info">
+            <span class="tabla-header-titulo">Incidencias</span>
+            <span id="contadorResultados" class="info-paginacion">0 incidencias encontradas</span>
+        </div>
         <nav aria-label="Paginación de incidencias">
-            <ul class="pagination pagination-sm mb-0" id="paginasInc">
-            </ul>
+            <ul class="pagination pagination-sm mb-0" id="paginasInc"></ul>
         </nav>
     </div>
     <table class="tabla-admin" id="tablaIncidencias">

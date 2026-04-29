@@ -276,16 +276,19 @@
                     <div class="mb-3">
                         <label for="inputNombre" class="form-label">Nombre completo</label>
                         <input type="text" class="form-control" id="inputNombre" name="nombre" placeholder="Ej. Juan García" required>
+                        <small class="text-danger d-block mt-1" id="errorNombreUsuario"></small>
                     </div>
                     
                     <div class="mb-3">
                         <label for="inputEmail" class="form-label">Correo electrónico</label>
                         <input type="email" class="form-control" id="inputEmail" name="email" placeholder="juan@example.com" required>
+                        <small class="text-danger d-block mt-1" id="errorEmailUsuario"></small>
                     </div>
                     
                     <div class="mb-3">
                         <label for="inputTelefono" class="form-label">Teléfono</label>
                         <input type="tel" class="form-control" id="inputTelefono" name="telefono" placeholder="+34 612 345 678">
+                        <small class="text-danger d-block mt-1" id="errorTelefonoUsuario"></small>
                     </div>
                     
                     <div class="mb-3">
@@ -298,11 +301,13 @@
                             <option value="gestor">Gestor</option>
                             <option value="miembro">Miembro</option>
                         </select>
+                        <small class="text-danger d-block mt-1" id="errorRolUsuario"></small>
                     </div>
                     
                     <div class="mb-3">
                         <label for="inputPassword" class="form-label">Contraseña</label>
                         <input type="password" class="form-control" id="inputPassword" name="password" placeholder="Contraseña">
+                        <small class="text-danger d-block mt-1" id="errorPasswordUsuario"></small>
                     </div>
                 </form>
             </div>

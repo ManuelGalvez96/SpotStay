@@ -71,44 +71,76 @@
             <a href="{{ url('/gestor/incidencias') }}" class="link-ver-todos">Ver todas →</a>
         </div>
 
-        <table class="tabla-admin">
-            <thead>
-                <tr>
-                    <th>TÍTULO</th>
-                    <th>PROPIEDAD</th>
-                    <th>ESTADO</th>
-                    <th>PRIORIDAD</th>
-                    <th>FECHA</th>
-                    <th>ACCIÓN</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($incidenciasRecientes as $incidencia)
-                    @php
-                        $prioridad = strtolower($incidencia->prioridad_incidencia);
-                        $badgePrioridad = $prioridad === 'urgente' ? 'alta' : $prioridad;
-                        $badgeEstado = match($incidencia->estado_incidencia) {
-                            'abierta' => 'pendiente',
-                            'en_proceso' => 'activo',
-                            'resuelta' => 'activo',
-                            default => 'rechazado'
-                        };
-                    @endphp
+        <!-- Vista desktop: tabla -->
+        <div class="incidencias-tabla-desktop">
+            <table class="tabla-admin">
+                <thead>
                     <tr>
-                        <td>{{ $incidencia->titulo_incidencia }}</td>
-                        <td>{{ $incidencia->direccion_propiedad }}</td>
-                        <td><span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span></td>
-                        <td><span class="badge-prioridad badge-prioridad-{{ $badgePrioridad }}">{{ ucfirst($prioridad) }}</span></td>
-                        <td>{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y') }}</td>
-                        <td><a class="link-ver-todos" href="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia) }}">Ver</a></td>
+                        <th>TÍTULO</th>
+                        <th>PROPIEDAD</th>
+                        <th>ESTADO</th>
+                        <th>PRIORIDAD</th>
+                        <th>FECHA</th>
+                        <th>ACCIÓN</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="tabla-vacia">No hay incidencias registradas.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @forelse($incidenciasRecientes as $incidencia)
+                        @php
+                            $prioridad = strtolower($incidencia->prioridad_incidencia);
+                            $badgePrioridad = $prioridad === 'urgente' ? 'alta' : $prioridad;
+                            $badgeEstado = match($incidencia->estado_incidencia) {
+                                'abierta' => 'pendiente',
+                                'en_proceso' => 'activo',
+                                'resuelta' => 'activo',
+                                default => 'rechazado'
+                            };
+                        @endphp
+                        <tr>
+                            <td>{{ $incidencia->titulo_incidencia }}</td>
+                            <td>{{ $incidencia->direccion_propiedad }}</td>
+                            <td><span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span></td>
+                            <td><span class="badge-prioridad badge-prioridad-{{ $badgePrioridad }}">{{ ucfirst($prioridad) }}</span></td>
+                            <td>{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y') }}</td>
+                            <td><a class="link-ver-todos" href="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia) }}">Ver</a></td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="tabla-vacia">No hay incidencias registradas.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Vista mobile: lista compacta -->
+        <div class="incidencias-lista-mobile">
+            @forelse($incidenciasRecientes as $incidencia)
+                @php
+                    $iniciales = strtoupper(substr($incidencia->titulo_incidencia, 0, 2));
+                    $prioridad = strtolower($incidencia->prioridad_incidencia);
+                    $badgeEstado = match($incidencia->estado_incidencia) {
+                        'abierta' => 'pendiente',
+                        'en_proceso' => 'activo',
+                        'resuelta' => 'activo',
+                        default => 'rechazado'
+                    };
+                @endphp
+                <div class="solicitud-item">
+                    <div class="solicitud-avatar" style="background:#EF4444;">{{ $iniciales }}</div>
+                    <div class="solicitud-info">
+                        <p class="solicitud-nombre">{{ $incidencia->titulo_incidencia }}</p>
+                        <p class="solicitud-ciudad">{{ $incidencia->direccion_propiedad }}</p>
+                    </div>
+                    <div class="solicitud-meta">
+                        <span class="solicitud-tiempo">{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->diffForHumans() }}</span>
+                        <a href="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia) }}" class="btn-revisar">Abrir →</a>
+                    </div>
+                </div>
+            @empty
+                <p class="tarjeta-vacia">No hay incidencias registradas.</p>
+            @endforelse
+        </div>
     </div>
 
     <div class="card-admin card-con-franja">
@@ -150,7 +182,7 @@
 
         <div class="lista-solicitudes">
             @forelse($propiedadesAsignadas as $propiedad)
-                <div class="solicitud-item">
+                <a class="solicitud-item solicitud-item-link" href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad) }}">
                     <div class="solicitud-avatar" style="background:#035498;">{{ strtoupper(substr($propiedad->titulo_propiedad, 0, 2)) }}</div>
                     <div class="solicitud-info">
                         <p class="solicitud-nombre">{{ $propiedad->titulo_propiedad }}</p>
@@ -159,7 +191,7 @@
                     <div class="solicitud-meta">
                         <span class="badge-estado badge-pendiente">{{ $propiedad->incidencias_activas }} activas</span>
                     </div>
-                </div>
+                </a>
             @empty
                 <p class="tarjeta-vacia">No hay propiedades asignadas.</p>
             @endforelse

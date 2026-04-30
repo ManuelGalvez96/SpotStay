@@ -278,6 +278,15 @@
     color: #6B7280;
 }
 
+/* Desktop: mostrar tabla, ocultar lista */
+.propiedades-tabla-desktop {
+    display: block;
+}
+
+.propiedades-lista-mobile {
+    display: none;
+}
+
 @media (max-width: 1024px) {
     .resumen-kpis-gestor {
         margin-left: 16px;
@@ -296,25 +305,145 @@
 }
 
 @media (max-width: 768px) {
+    .hero-admin {
+        padding: 20px 16px;
+        border-radius: 0 0 14px 14px;
+    }
+
+    .hero-admin h1 {
+        font-size: 22px;
+        line-height: 1.2;
+    }
+
+    .hero-admin p {
+        font-size: 13px;
+    }
+
     .resumen-kpis-gestor {
+        margin: 12px;
         padding: 12px;
     }
 
     .resumen-kpis-label {
         font-size: 0.9rem;
+        margin-bottom: 8px;
+    }
+
+    .kpi-grid-pequeno {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 0;
+    }
+
+    .kpi-mini {
+        padding: 10px;
+        gap: 8px;
+        border-radius: 10px;
+    }
+
+    .kpi-mini-icono {
+        width: 34px;
+        height: 34px;
+        font-size: 15px;
+        border-radius: 8px;
+    }
+
+    .kpi-mini-numero {
+        font-size: 15px;
+    }
+
+    .kpi-mini-label {
+        font-size: 10px;
+        letter-spacing: 0.2px;
+    }
+
+    .filtros-card-gestor,
+    .tabla-propiedades-card {
+        margin: 12px;
     }
 
     .filtros-propiedades {
         grid-template-columns: 1fr;
-        padding: 16px;
+        padding: 14px;
+        gap: 10px;
+    }
+
+    .card-header-admin {
+        gap: 8px;
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 12px 14px;
+        font-size: 14px;
+    }
+
+    .tabla-propiedades-card {
+        margin: 12px;
+        overflow-x: visible;
+    }
+
+    .propiedades-tabla-desktop {
+        display: none;
+    }
+
+    .propiedades-lista-mobile {
+        display: block;
+        padding: 0 4px;
+    }
+
+    .propiedades-lista-mobile .solicitud-item {
+        gap: 10px;
+        padding: 12px 10px;
+    }
+
+    .propiedades-lista-mobile .solicitud-avatar {
+        width: 34px;
+        height: 34px;
+        font-size: 11px;
+    }
+
+    .propiedades-lista-mobile .solicitud-nombre {
+        font-size: 13px;
+    }
+
+    .propiedades-lista-mobile .solicitud-ciudad {
+        font-size: 11px;
+    }
+
+    .propiedades-lista-mobile .solicitud-meta {
+        gap: 6px;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .pagos-legend-box {
+        right: auto;
+        left: 0;
     }
 
     .acciones-filtros-propiedades {
         justify-content: flex-start;
     }
 
-    .paginacion-admin {
+    .acciones-rapidas {
         flex-direction: column;
         align-items: flex-start;
+        gap: 4px;
+    }
+
+    .paginacion-admin {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 12px 14px;
+    }
+
+    .pagina-btn-admin,
+    .pagina-btn-admin.disabled {
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .kpi-grid-pequeno {
+        grid-template-columns: 1fr;
     }
 }

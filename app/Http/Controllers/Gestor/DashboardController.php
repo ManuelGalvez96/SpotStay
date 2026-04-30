@@ -50,7 +50,7 @@ class DashboardController extends Controller
                 'tbl_propiedad.ciudad_propiedad'
             )
             ->orderBy('tbl_incidencia.creado_incidencia', 'desc')
-            ->limit(8)
+            ->limit(5)
             ->get();
 
         $incidenciasUrgentes = (clone $baseIncidencias)

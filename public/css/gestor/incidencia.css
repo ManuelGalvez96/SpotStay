@@ -382,3 +382,73 @@
         grid-template-columns: 1fr;
     }
 }
+
+@media (max-width: 768px) {
+    .incidencia-shell {
+        gap: 12px;
+    }
+
+    .card-gestor {
+        border-radius: 12px;
+        padding: 14px;
+    }
+
+    .incidencia-head h1 {
+        font-size: 24px;
+    }
+
+    .meta-linea,
+    .descripcion,
+    .timeline-comentario,
+    .doc-item p {
+        font-size: 13px;
+    }
+
+    .card-gestor h2 {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .timeline {
+        max-height: none;
+    }
+
+    .doc-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .bloque-accion {
+        padding: 10px;
+        border-radius: 10px;
+    }
+
+    .bloque-accion input,
+    .bloque-accion textarea,
+    .bloque-accion select {
+        font-size: 13px;
+    }
+
+    .btn-principal {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .incidencia-head h1 {
+        font-size: 21px;
+    }
+
+    .badge {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+
+    .kicker {
+        font-size: 11px;
+    }
+
+    .dato-valor {
+        font-size: 13px;
+    }
+}

@@ -325,8 +325,222 @@
     }
 }
 
+@media (max-width: 768px) {
+    .hero-admin {
+        padding: 20px 16px;
+        border-radius: 0 0 14px 14px;
+    }
+
+    .hero-admin h1 {
+        font-size: 22px;
+        line-height: 1.2;
+    }
+
+    .hero-admin p {
+        font-size: 13px;
+    }
+
+    .btn-volver-propiedades {
+        width: 100%;
+        text-align: center;
+    }
+
+    .card-header-admin {
+        gap: 8px;
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 12px 14px;
+        font-size: 14px;
+    }
+
+    .detalle-cuerpo,
+    .resumen-incidencias,
+    .pagos-principales-grid,
+    .form-gasto,
+    .resumen-gastos {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .mensaje-estado,
+    .total-pendiente-box {
+        margin-left: 14px;
+        margin-right: 14px;
+    }
+
+    .pago-principal-importe {
+        font-size: 1.25rem;
+    }
+
+    .detalle-grid-inferior .card-admin,
+    #gastos-propiedad {
+        overflow-x: visible;
+    }
+
+    .detalle-grid-inferior .tabla-admin {
+        min-width: auto;
+        display: block;
+        width: 100%;
+    }
+
+    .tabla-gastos {
+        min-width: auto;
+        display: block;
+        width: 100%;
+    }
+
+    .detalle-grid-inferior .tabla-admin thead,
+    .tabla-gastos thead {
+        display: none;
+    }
+
+    .detalle-grid-inferior .tabla-admin tbody,
+    .tabla-gastos tbody {
+        display: block;
+    }
+
+    .detalle-grid-inferior .tabla-admin tbody tr,
+    .tabla-gastos tbody tr {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 12px;
+    }
+
+    .detalle-grid-inferior .tabla-admin tbody td,
+    .tabla-gastos tbody td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 0;
+        border: none;
+        padding-left: 0;
+        padding-right: 0;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .detalle-grid-inferior .tabla-admin tbody td:first-child::before {
+        content: "ESTADO: ";
+        font-weight: 600;
+        color: #6B7280;
+        font-size: 12px;
+        margin-right: 8px;
+    }
+
+    .detalle-grid-inferior .tabla-admin tbody td:nth-child(2)::before {
+        content: "IMPORTE: ";
+        font-weight: 600;
+        color: #6B7280;
+        font-size: 12px;
+        margin-right: 8px;
+    }
+
+    .detalle-grid-inferior .tabla-admin tbody td:nth-child(3)::before {
+        content: "FECHA: ";
+        font-weight: 600;
+        color: #6B7280;
+        font-size: 12px;
+        margin-right: 8px;
+    }
+
+    .detalle-grid-inferior .tabla-admin tbody td:last-child {
+        justify-content: flex-end;
+        padding-top: 12px;
+        border-top: 1px solid #E5E7EB;
+    }
+
+    .detalle-grid-inferior .tabla-admin tbody td:last-child::before {
+        display: none;
+    }
+
+    .tabla-gastos tbody td:first-child::before {
+        content: "CONCEPTO: ";
+        font-weight: 600;
+        color: #6B7280;
+        font-size: 12px;
+        margin-right: 8px;
+    }
+
+    .tabla-gastos tbody td:nth-child(2)::before {
+        content: "CANTIDAD: ";
+        font-weight: 600;
+        color: #6B7280;
+        font-size: 12px;
+        margin-right: 8px;
+    }
+
+    .tabla-gastos tbody td:nth-child(3)::before {
+        content: "PRECIO: ";
+        font-weight: 600;
+        color: #6B7280;
+        font-size: 12px;
+        margin-right: 8px;
+    }
+
+    .tabla-gastos tbody td:nth-child(4)::before {
+        content: "SUBTOTAL: ";
+        font-weight: 600;
+        color: #6B7280;
+        font-size: 12px;
+        margin-right: 8px;
+    }
+
+    .tabla-gastos tbody td:last-child {
+        justify-content: flex-end;
+        padding-top: 12px;
+        border-top: 1px solid #E5E7EB;
+    }
+
+    .tabla-gastos tbody td:last-child::before {
+        display: none;
+    }
+
+    .acciones-form-gasto {
+        justify-content: stretch;
+    }
+
+    .acciones-form-gasto .btn-principal {
+        width: 100%;
+    }
+
+    .tabla-gastos td > div {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .detalle-acciones {
+        min-width: 0 !important;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+}
+
 @media (max-width: 640px) {
     .pagos-principales-grid {
         grid-template-columns: 1fr;
+    }
+
+    .resumen-pill {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-admin h1 {
+        font-size: 20px;
+    }
+
+    .detalle-dato .label {
+        font-size: 11px;
+    }
+
+    .pago-principal-estado,
+    .pago-principal-fecha {
+        font-size: 11px;
     }
 }

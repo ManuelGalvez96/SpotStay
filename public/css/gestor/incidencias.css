@@ -110,6 +110,15 @@
     color: #6B7280;
 }
 
+/* Desktop: mostrar tabla, ocultar lista */
+.incidencias-tabla-desktop {
+    display: block;
+}
+
+.incidencias-lista-mobile {
+    display: none;
+}
+
 @media (max-width: 1024px) {
     .incidencias-filtros-wrap {
         grid-template-columns: 1fr;
@@ -121,17 +130,116 @@
 }
 
 @media (max-width: 768px) {
+    .hero-admin {
+        padding: 20px 16px;
+        border-radius: 0 0 14px 14px;
+    }
+
+    .hero-admin h1 {
+        font-size: 22px;
+        line-height: 1.2;
+    }
+
+    .hero-admin p {
+        font-size: 13px;
+    }
+
+    .central-grid.incidencias-filtros-wrap {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .card-admin {
+        border-radius: 12px;
+    }
+
+    .card-header-admin {
+        padding: 12px 14px;
+        font-size: 14px;
+        gap: 8px;
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
     .form-filtros-admin {
         grid-template-columns: 1fr;
-        padding: 16px;
+        padding: 14px;
+        gap: 10px;
+    }
+
+    .acciones-filtros-admin {
+        flex-wrap: wrap;
+    }
+
+    .btn-aplicar-admin,
+    .btn-limpiar-admin {
+        width: 100%;
+        text-align: center;
+    }
+
+    .resumen-filtros {
+        padding: 14px;
+        gap: 8px;
+    }
+
+    .resumen-filtros p {
+        font-size: 13px;
     }
 
     .incidencias-tabla-wrap {
-        padding: 0 16px 16px;
+        padding: 0 12px 12px;
+    }
+
+    .incidencias-tabla-desktop {
+        display: none;
+    }
+
+    .incidencias-lista-mobile {
+        display: block;
+        padding: 0 4px;
+    }
+
+    .incidencias-lista-mobile .solicitud-item {
+        gap: 10px;
+        padding: 12px 10px;
+    }
+
+    .incidencias-lista-mobile .solicitud-avatar {
+        width: 34px;
+        height: 34px;
+        font-size: 11px;
+    }
+
+    .incidencias-lista-mobile .solicitud-nombre {
+        font-size: 13px;
+    }
+
+    .incidencias-lista-mobile .solicitud-ciudad {
+        font-size: 11px;
+    }
+
+    .incidencias-lista-mobile .solicitud-meta {
+        gap: 6px;
     }
 
     .paginacion-admin {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        padding: 12px 14px;
+    }
+
+    .pagina-btn-admin,
+    .pagina-btn-admin.disabled {
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-admin h1 {
+        font-size: 20px;
+    }
+
+    .incidencias-tabla-wrap .tabla-admin {
+        min-width: 680px;
     }
 }

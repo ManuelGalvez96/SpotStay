@@ -1,58 +1,122 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="public/img/logo.png" width="400" alt="Laravel Logo">
 </p>
 
-## About Laravel
+# SpotStay - Plataforma de Gestión de Alquileres
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**SpotStay** es una solución integral diseñada para simplificar y profesionalizar la gestión de alquileres de viviendas. La plataforma conecta a propietarios, inquilinos y gestores técnicos en un ecosistema digital eficiente, permitiendo desde la búsqueda de inmuebles hasta la gestión compleja de incidencias y contratos.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Roles y Flujos del Sistema
 
-## Learning Laravel
+El sistema se basa en cuatro pilares de usuario, cada uno con un panel de control especializado:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 1. Administrador (Control Total)
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+* **Gestión de Usuarios**: Alta, baja y edición de perfiles.
+* **Supervisión**: Monitorización de todas las propiedades, alquileres y suscripciones.
+* **KPIs**: Estadísticas en tiempo real sobre el estado de la plataforma.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### 2. Arrendador (Propietario)
 
-## Agentic Development
+* **Publicación**: Gestión del catálogo de propiedades (fotos, precios, características).
+* **Filtro de Candidatos**: Recepción y gestión de solicitudes de alquiler.
+* **Contratos**: Firma digital de contratos y seguimiento de cobros.
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### 3. Gestor (Mantenimiento Técnico)
 
-```bash
-composer require laravel/boost --dev
+* **Incidencias**: Recepción de avisos técnicos reportados por inquilinos.
+* **Presupuestos**: Creación y gestión de presupuestos para reparaciones.
+* **Intervenciones**: Registro de acciones realizadas en la propiedad.
 
-php artisan boost:install
-```
+### 4. Miembro / Inquilino
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+* **Búsqueda**: Exploración de propiedades mediante listas y mapas interactivos.
+* **Solicitud**: Proceso de aplicación para alquilar una vivienda.
+* **Vida en la Vivienda**: Una vez alquilada, el miembro pasa a ser **Inquilino**, pudiendo reportar incidencias, chatear con el propietario y pagar sus cuotas mensuales.
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Flujo Operativo Principal
 
-## Code of Conduct
+1. **Exploración**: Un usuario se registra como **Miembro** y busca una propiedad.
+2. **Solicitud**: Envía una solicitud de alquiler al **Arrendador**.
+3. **Aprobación y Firma**: El arrendador aprueba la solicitud y se genera un **Contrato**. Ambos firman digitalmente.
+4. **Gestión Activa**: El miembro se convierte en **Inquilino**. Recibe avisos de pago mensuales (**Cuotas**).
+5. **Mantenimiento**: Si surge un problema, el inquilino reporta una **Incidencia**. El **Gestor** la recibe, genera un presupuesto y, tras la aprobación/pago, realiza la reparación.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## Base de Datos
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+El sistema utiliza una arquitectura relacional sólida. Las entidades principales son:
 
-## License
+* **`tbl_usuarios`**: Almacena credenciales, datos fiscales y roles (Polimorfismo para roles).
+* **`tbl_propiedades`**: Detalles técnicos, dirección (desglosada por calle, número, ciudad) y estado de disponibilidad.
+* **`tbl_alquileres`**: El nexo de unión entre inquilino, propiedad y arrendador.
+* **`tbl_incidencias`**: Registro de problemas, estados (abierta, en proceso, cerrada) y asignación a gestores.
+* **`tbl_cuotas_alquiler`**: Control financiero de los pagos mensuales.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## Acceso Rápido (Demo)
+
+Para probar el sistema rápidamente, utiliza las siguientes credenciales tras ejecutar los seeders. Todas las cuentas comparten la misma contraseña:
+
+**Contraseña**: `password123`
+
+| Rol               | Email                     | Propósito                            |
+| :---------------- | :------------------------ | :----------------------------------- |
+| **Administrador** | `agarcia@spotstay.com`    | Gestión global y configuración.      |
+| **Arrendador**    | `jlavignole@spotstay.com` | Gestionar propiedades y solicitudes. |
+| **Gestor**        | `mgestor@spotstay.com`    | Atender incidencias técnicas.        |
+| **Inquilino**     | `snebot@spotstay.com`     | Ver su alquiler y reportar fallos.   |
+| **Miembro**       | `rdiaz@spotstay.com`      | Navegar y solicitar alquileres.      |
+
+---
+
+## Instalación
+
+Sigue estos pasos para levantar el proyecto localmente:
+
+1. **Clonar el repositorio**:
+
+   ```bash
+   git clone https://github.com/ManuelGalvez96/SpotStay.git
+   cd SpotStay
+   ```
+2. **Configurar dependencias**:
+
+   ```bash
+   composer install
+   npm install
+   ```
+3. **Configurar entorno**:
+
+   * Crea una copia de `.env.example` y nómbrala `.env`.
+   * Configura tu base de datos en las variables `DB_DATABASE`, `DB_USERNAME`, etc.
+   * Genera la clave de aplicación: `php artisan key:generate`.
+4. **Base de Datos y Datos de Prueba**:
+
+   ```bash
+   php artisan migrate --seed
+   ```
+5. **Ejecución**:
+
+   ```bash
+   # En terminales separadas o usando el script dev de composer:
+   composer run dev
+   ```
+
+---
+
+## Documentación Adicional
+
+Para más detalles sobre módulos específicos, consulta los siguientes manuales:
+
+* [Gestión de Propiedades](README_PROPIEDADES.md)
+* [Flujo de Solicitudes](README_SOLICITUDES.md)
+* [Administración de Usuarios](README_USUARIOS.md)
+* [Panel de Administración](README_ADMIN_DASHBOARD.md)
+  <hr>

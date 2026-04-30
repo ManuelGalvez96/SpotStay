@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Services\PdfMonkeyService;
 
 class PropiedadController extends Controller
 {
@@ -375,6 +377,338 @@ class PropiedadController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function eliminar(Request $request, $id)
+    {
+        $propiedad = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->select('id_propiedad', 'estado_propiedad')
+            ->first();
+
+        if (!$propiedad) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Propiedad no encontrada.'
+            ], 404);
+        }
+
+        DB::beginTransaction();
+        try {
+            $alquileresIds = DB::table('tbl_alquiler')
+                ->where('id_propiedad_fk', $id)
+                ->pluck('id_alquiler')
+                ->all();
+
+            $gastosIds = Schema::hasTable('tbl_gasto')
+                ? DB::table('tbl_gasto')
+                    ->where('id_propiedad_fk', $id)
+                    ->pluck('id_gasto')
+                    ->all()
+                : [];
+
+            $gastoCuotasIds = !empty($gastosIds) && Schema::hasTable('tbl_gasto_cuota')
+                ? DB::table('tbl_gasto_cuota')
+                    ->whereIn('id_gasto_fk', $gastosIds)
+                    ->pluck('id_gasto_cuota')
+                    ->all()
+                : [];
+
+            $detallesIds = [];
+            if (Schema::hasTable('tbl_gasto_cuota_detalle') && !empty($gastoCuotasIds)) {
+                $tieneColAlquiler = Schema::hasColumn('tbl_gasto_cuota_detalle', 'id_alquiler_fk');
+
+                if ($tieneColAlquiler && !empty($alquileresIds)) {
+                    $detallesIds = DB::table('tbl_gasto_cuota_detalle')
+                        ->where(function ($query) use ($alquileresIds, $gastoCuotasIds) {
+                            $query->whereIn('id_alquiler_fk', $alquileresIds)
+                                ->orWhereIn('id_gasto_cuota_fk', $gastoCuotasIds);
+                        })
+                        ->pluck('id_gasto_cuota_detalle')
+                        ->all();
+                } else {
+                    $detallesIds = DB::table('tbl_gasto_cuota_detalle')
+                        ->whereIn('id_gasto_cuota_fk', $gastoCuotasIds)
+                        ->pluck('id_gasto_cuota_detalle')
+                        ->all();
+                }
+            }
+
+            if (Schema::hasTable('tbl_pago')) {
+                DB::table('tbl_pago')
+                    ->where(function ($query) use ($alquileresIds, $gastoCuotasIds, $detallesIds) {
+                        $hasCondition = false;
+                        if (!empty($alquileresIds)) {
+                            $query->whereIn('id_alquiler_fk', $alquileresIds);
+                            $hasCondition = true;
+                        }
+
+                        if (!empty($gastoCuotasIds)) {
+                            $hasCondition ? $query->orWhereIn('id_gasto_cuota_fk', $gastoCuotasIds) : $query->whereIn('id_gasto_cuota_fk', $gastoCuotasIds);
+                            $hasCondition = true;
+                        }
+
+                        if (!empty($detallesIds)) {
+                            $hasCondition ? $query->orWhereIn('id_gasto_cuota_detalle_fk', $detallesIds) : $query->whereIn('id_gasto_cuota_detalle_fk', $detallesIds);
+                        }
+                    })
+                    ->delete();
+            }
+
+            if (!empty($alquileresIds)) {
+                DB::table('tbl_contrato')
+                    ->whereIn('id_alquiler_fk', $alquileresIds)
+                    ->delete();
+
+                if (Schema::hasTable('tbl_valoracion')) {
+                    DB::table('tbl_valoracion')
+                        ->where('id_propiedad_fk', $id)
+                        ->orWhereIn('id_alquiler_fk', $alquileresIds)
+                        ->delete();
+                }
+            }
+
+            if (!empty($gastosIds) && Schema::hasTable('tbl_gasto')) {
+                DB::table('tbl_gasto')
+                    ->where('id_propiedad_fk', $id)
+                    ->delete();
+            }
+
+            DB::table('tbl_incidencia')
+                ->where('id_propiedad_fk', $id)
+                ->delete();
+
+            if (Schema::hasTable('tbl_conversacion')) {
+                DB::table('tbl_conversacion')
+                    ->where('id_propiedad_fk', $id)
+                    ->delete();
+            }
+
+            DB::table('tbl_alquiler')
+                ->where('id_propiedad_fk', $id)
+                ->delete();
+
+            DB::table('tbl_propiedad')
+                ->where('id_propiedad', $id)
+                ->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Propiedad eliminada correctamente.'
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Error al eliminar propiedad ID ' . $id . ': ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo eliminar la propiedad. Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function descargarPdf($id)
+    {
+        $propiedad = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->select('id_propiedad')
+            ->first();
+
+        if (!$propiedad) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Propiedad no encontrada.'
+            ], 404);
+        }
+
+        $contrato = DB::table('tbl_contrato as c')
+            ->join('tbl_alquiler as a', 'a.id_alquiler', '=', 'c.id_alquiler_fk')
+            ->where('a.id_propiedad_fk', $id)
+            ->whereNotNull('c.url_pdf_contrato')
+            ->orderByDesc('c.id_contrato')
+            ->select('c.id_contrato', 'a.id_alquiler', 'c.url_pdf_contrato')
+            ->first();
+
+        if (!$contrato) {
+            $alquilerActivo = DB::table('tbl_alquiler')
+                ->where('id_propiedad_fk', $id)
+                ->whereIn('estado_alquiler', ['activo', 'pendiente'])
+                ->orderByDesc('id_alquiler')
+                ->select('id_alquiler')
+                ->first();
+
+            if (!$alquilerActivo) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No hay un contrato disponible para esta propiedad.'
+                ], 404);
+            }
+
+            $urlPdfNueva = $this->generarPdfContrato($alquilerActivo->id_alquiler, null);
+
+            if (!$urlPdfNueva) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se pudo generar el PDF del contrato.'
+                ], 500);
+            }
+
+            return redirect()->away($urlPdfNueva);
+        }
+
+        if ($this->esUrlPdfExpirada($contrato->url_pdf_contrato)) {
+            $urlPdfNueva = $this->generarPdfContrato($contrato->id_alquiler, $contrato->id_contrato);
+
+            if (!$urlPdfNueva) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se pudo regenerar el PDF del contrato.'
+                ], 500);
+            }
+
+            return redirect()->away($urlPdfNueva);
+        }
+
+        return redirect()->away($this->normalizarUrlPdf($contrato->url_pdf_contrato));
+    }
+
+    private function esUrlPdfExpirada(string $urlPdf): bool
+    {
+        $componentes = parse_url($urlPdf);
+        if (!$componentes || empty($componentes['query'])) {
+            return false;
+        }
+
+        parse_str($componentes['query'], $parametros);
+        $ahora = Carbon::now('UTC')->timestamp;
+        $margenSeguridad = 30;
+
+        if (isset($parametros['Expires']) && is_numeric($parametros['Expires'])) {
+            return $ahora >= (((int) $parametros['Expires']) - $margenSeguridad);
+        }
+
+        $xAmzDate = $parametros['X-Amz-Date'] ?? null;
+        $xAmzExpires = $parametros['X-Amz-Expires'] ?? null;
+        if ($xAmzDate && $xAmzExpires && is_numeric($xAmzExpires)) {
+            $fechaFirma = Carbon::createFromFormat('Ymd\\THis\\Z', $xAmzDate, 'UTC');
+            if ($fechaFirma !== false) {
+                $expiraEn = $fechaFirma->copy()->addSeconds((int) $xAmzExpires)->timestamp;
+                return $ahora >= ($expiraEn - $margenSeguridad);
+            }
+        }
+
+        return false;
+    }
+
+    private function normalizarUrlPdf(string $urlPdf): string
+    {
+        if (preg_match('#^https?://#i', $urlPdf)) {
+            return $urlPdf;
+        }
+
+        return url('/' . ltrim($urlPdf, '/\\'));
+    }
+
+    private function generarPdfContrato(int $idAlquiler, ?int $idContrato = null): ?string
+    {
+        try {
+            $pdfMonkey = new PdfMonkeyService();
+
+            if (!$pdfMonkey->estaConfigurado()) {
+                Log::warning('PdfMonkey no está configurado para regenerar el contrato.');
+                return null;
+            }
+
+            $datosAlquiler = DB::table('tbl_alquiler as a')
+                ->join('tbl_propiedad as p', 'a.id_propiedad_fk', '=', 'p.id_propiedad')
+                ->join('tbl_usuario as arrendador', 'p.id_arrendador_fk', '=', 'arrendador.id_usuario')
+                ->join('tbl_usuario as inquilino', 'a.id_inquilino_fk', '=', 'inquilino.id_usuario')
+                ->where('a.id_alquiler', $idAlquiler)
+                ->select(
+                    'a.id_alquiler',
+                    'a.fecha_inicio_alquiler',
+                    'a.fecha_fin_alquiler',
+                    'arrendador.nombre_usuario as nombre_arrendador',
+                    'arrendador.email_usuario as email_arrendador',
+                    'inquilino.nombre_usuario as nombre_inquilino',
+                    'inquilino.email_usuario as email_inquilino',
+                    'p.titulo_propiedad',
+                    DB::raw($this->obtenerSelectDireccionPropiedad('p')),
+                    'p.ciudad_propiedad',
+                    'p.precio_propiedad'
+                )
+                ->first();
+
+            if (!$datosAlquiler) {
+                return null;
+            }
+
+            $precioMensual = (float) ($datosAlquiler->precio_propiedad ?? 0);
+            $fianza = $precioMensual * 2;
+
+            $datosContrato = [
+                'nombre_arrendador' => $datosAlquiler->nombre_arrendador,
+                'email_arrendador' => $datosAlquiler->email_arrendador,
+                'nombre_inquilino' => $datosAlquiler->nombre_inquilino,
+                'email_inquilino' => $datosAlquiler->email_inquilino,
+                'titulo_propiedad' => $datosAlquiler->titulo_propiedad,
+                'direccion_propiedad' => $datosAlquiler->direccion_propiedad,
+                'ciudad_propiedad' => $datosAlquiler->ciudad_propiedad,
+                'precio_mensual' => number_format($precioMensual, 2, '.', ''),
+                'fianza' => number_format($fianza, 2, '.', ''),
+                'fecha_inicio' => Carbon::parse($datosAlquiler->fecha_inicio_alquiler)->format('d/m/Y'),
+                'fecha_fin' => $datosAlquiler->fecha_fin_alquiler
+                    ? Carbon::parse($datosAlquiler->fecha_fin_alquiler)->format('d/m/Y')
+                    : 'Indefinida',
+                'fecha_generacion' => Carbon::now()->format('d/m/Y'),
+            ];
+
+            $respuesta = $pdfMonkey->crearDocumentoSincronizado(
+                $datosContrato,
+                $pdfMonkey->construirMeta([], 'contrato_' . $idAlquiler . '.pdf')
+            );
+
+            $urlPdf = $respuesta['document_card']['download_url']
+                ?? ($respuesta['document']['id'] ?? null ? $pdfMonkey->obtenerUrlDescarga($respuesta['document']['id']) : null);
+
+            if (!$urlPdf) {
+                return null;
+            }
+
+            $datosActualizar = [
+                'url_pdf_contrato' => $urlPdf,
+                'actualizado_contrato' => Carbon::now(),
+            ];
+
+            if ($idContrato) {
+                DB::table('tbl_contrato')
+                    ->where('id_contrato', $idContrato)
+                    ->update($datosActualizar);
+            } else {
+                DB::table('tbl_contrato')->insertOrIgnore([
+                    'id_alquiler_fk' => $idAlquiler,
+                    'url_pdf_contrato' => $urlPdf,
+                    'estado_contrato' => 'pendiente',
+                    'creado_contrato' => Carbon::now(),
+                    'actualizado_contrato' => Carbon::now(),
+                ]);
+            }
+
+            return $urlPdf;
+        } catch (\Throwable $e) {
+            Log::error('Error al regenerar PDF del contrato de propiedad: ' . $e->getMessage(), [
+                'id_alquiler' => $idAlquiler,
+                'id_contrato' => $idContrato,
+            ]);
+
+            return null;
+        }
+    }
+
     public function exportar()
     {
         $propiedades = DB::table('tbl_propiedad')
@@ -389,6 +723,26 @@ class PropiedadController extends Controller
             ->get();
 
         return response()->json($propiedades);
+    }
+
+    private function obtenerSelectDireccionPropiedad(string $aliasTabla = 'p'): string
+    {
+        if (Schema::hasColumn('tbl_propiedad', 'direccion_propiedad')) {
+            return "{$aliasTabla}.direccion_propiedad as direccion_propiedad";
+        }
+
+        $partes = [];
+        foreach (['calle_propiedad', 'numero_propiedad', 'piso_propiedad', 'puerta_propiedad'] as $columna) {
+            if (Schema::hasColumn('tbl_propiedad', $columna)) {
+                $partes[] = "NULLIF(TRIM({$aliasTabla}.{$columna}), '')";
+            }
+        }
+
+        if (empty($partes)) {
+            return "'' as direccion_propiedad";
+        }
+
+        return 'TRIM(CONCAT_WS(\' \' , ' . implode(', ', $partes) . ')) as direccion_propiedad';
     }
 
     private function obtenerColumnaPrecio(): string

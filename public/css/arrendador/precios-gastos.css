@@ -129,7 +129,21 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
 }
 @media (max-width: 680px) {
   .pagina { padding: 14px; }
-  .cabecera { flex-direction: column; align-items: flex-start; }
+  .cabecera { flex-direction: column; align-items: flex-start; padding: 16px; }
   .acciones-cabecera { align-items: flex-start; }
   .kpis { grid-template-columns: 1fr; }
+  .panel { padding: 12px; }
+}
+@media (max-width: 480px) {
+  .pagina { padding: 10px; }
+  .cabecera { padding: 14px; }
+  .cabecera h1 { font-size: 20px; }
+  .panel { padding: 10px; }
+  .tabla th, .tabla td { padding: 8px 6px; font-size: 12px; }
+  .kpi { padding: 12px; }
+  .kpi span { font-size: 20px; }
+  .form-precios { padding: 8px; }
+  .btn-guardar { padding: 8px 14px; font-size: 13px; min-width: auto; width: 100%; }
+  .resumen-mensual { padding: 6px 8px; }
+  .resumen-mensual strong { font-size: 16px; }
 }

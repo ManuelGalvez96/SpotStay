@@ -12,6 +12,8 @@ return [
 
     'connect_timeout' => env('PDFMONKEY_CONNECT_TIMEOUT', 10),
 
+    'verify_ssl' => env('PDFMONKEY_VERIFY_SSL', true),
+
     'default_status' => env('PDFMONKEY_DEFAULT_STATUS', 'pending'),
 
     'default_filename_prefix' => env('PDFMONKEY_FILENAME_PREFIX', 'spotstay'),

@@ -49,10 +49,11 @@
                 @endif
             </div>
 
-            <form method="POST" action="{{ route('arrendador.propiedades.store') }}" class="property-form" data-ajax-form="true">
+            <form method="POST" action="{{ route('arrendador.propiedades.store') }}" class="property-form" data-ajax-form="true" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="id_propiedad" value="{{ old('id_propiedad', $propiedadEditando->id_propiedad ?? '') }}" />
                 <input type="hidden" name="arrendador_id" value="{{ $arrendadorId }}" />
+                <input type="hidden" name="imagen-principal-indice" id="imagen-principal-indice" value="-1" />
 
                 <div class="form-grid">
                     <label>
@@ -91,14 +92,19 @@
                         <span>Precio mensual</span>
                         <input type="number" step="0.01" name="precio_propiedad" value="{{ old('precio_propiedad', $propiedadEditando->precio_propiedad ?? '') }}" required>
                     </label>
-                    <label>
-                        <span>Gastos JSON</span>
-                        <textarea name="gastos_propiedad" rows="4" placeholder='{"agua":30,"luz":45}'>{{ old('gastos_propiedad', is_array($propiedadEditando->gastos_propiedad ?? null) ? json_encode($propiedadEditando->gastos_propiedad) : ($propiedadEditando->gastos_propiedad ?? '')) }}</textarea>
-                    </label>
                     <label class="wide">
                         <span>Descripción</span>
                         <textarea name="descripcion_propiedad" rows="5">{{ old('descripcion_propiedad', $propiedadEditando->descripcion_propiedad ?? '') }}</textarea>
                     </label>
+                    <label class="wide">
+                        <span>Imágenes de la propiedad (máximo 10)</span>
+                        <input type="file" name="imagenes_propiedad[]" id="imagenes-propiedad" accept="image/jpeg,image/png,image/webp" multiple>
+                        <small class="input-help">Puedes subir hasta 10 imágenes (JPG, PNG, WEBP). Solo puedes anclar una como principal.</small>
+                    </label>
+                    <div id="contenedor-previa-imagenes" style="display: none; margin-top: 15px;">
+                        <p class="input-help"><strong>Vista previa y seleccionar principal:</strong></p>
+                        <div id="lista-previa-imagenes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 10px;"></div>
+                    </div>
                 </div>
 
                 <button class="btn-primary" type="submit">{{ $propiedadEditando ? 'Guardar cambios' : 'Crear propiedad' }}</button>

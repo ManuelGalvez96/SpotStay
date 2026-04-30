@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
+use App\Services\PdfMonkeyService;
 
 class ContratoController extends Controller
 {
@@ -133,6 +136,222 @@ class ContratoController extends Controller
         ]);
     }
 
+    public function descargarPDF(Request $request, int $id)
+    {
+        $arrendadorId = $this->obtenerIdArrendador($request);
+        $columnas = $this->obtenerColumnasContrato();
+
+        $contrato = DB::table('tbl_contrato as c')
+            ->join('tbl_alquiler as a', 'a.id_alquiler', '=', 'c.id_alquiler_fk')
+            ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'a.id_propiedad_fk')
+            ->where('c.id_contrato', $id)
+            ->where('p.id_arrendador_fk', $arrendadorId)
+            ->select(
+                'c.id_contrato',
+                'a.id_alquiler',
+                DB::raw($this->seleccionarColumnaContrato($columnas['url_pdf'], 'url_pdf_contrato', "''"))
+            )
+            ->first();
+
+        if (!$contrato) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró el contrato.',
+            ], 404);
+        }
+
+        // Si tiene URL de PDF, redirigir directamente solo si el recurso existe
+        if (!empty($contrato->url_pdf_contrato)) {
+            if ($this->esUrlPdfLocalExistente($contrato->url_pdf_contrato)) {
+                return redirect()->away($this->normalizarUrlPdf($contrato->url_pdf_contrato));
+            }
+
+            Log::warning("PDF guardado pero no disponible, se regenerará", [
+                'contrato_id' => $id,
+                'url_pdf_contrato' => $contrato->url_pdf_contrato,
+            ]);
+        }
+
+        // Si no tiene URL o la URL local no existe, generar PDF on-demand
+        Log::info("Generando PDF on-demand para alquiler: {$contrato->id_alquiler}");
+        
+        $urlPdf = $this->generarPDFOnDemand($contrato->id_alquiler);
+        
+        if (!$urlPdf) {
+            Log::error("Fallo al generar PDF on-demand para alquiler: {$contrato->id_alquiler}");
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo generar el PDF del contrato. Por favor, contacta con soporte.',
+            ], 500);
+        }
+
+        // Guardar la URL en la BD para futuras descargas
+        $datosActualizar = [];
+        if ($columnas['url_pdf']) {
+            $datosActualizar[$columnas['url_pdf']] = $urlPdf;
+        }
+        if ($columnas['actualizado']) {
+            $datosActualizar[$columnas['actualizado']] = Carbon::now();
+        }
+
+        if (!empty($datosActualizar)) {
+            DB::table('tbl_contrato')
+                ->where('id_contrato', $id)
+                ->update($datosActualizar);
+            
+            Log::info("PDF guardado para contrato: {$id}");
+        }
+
+        return redirect()->away($urlPdf);
+    }
+
+    private function esUrlPdfLocalExistente(string $urlPdf): bool
+    {
+        if (preg_match('#^https?://#i', $urlPdf)) {
+            return $this->esUrlRemotaVigente($urlPdf);
+        }
+
+        $rutaRelativa = ltrim($urlPdf, '/\\');
+
+        return File::exists(public_path($rutaRelativa));
+    }
+
+    private function esUrlRemotaVigente(string $urlPdf): bool
+    {
+        $componentes = parse_url($urlPdf);
+        if (!$componentes || empty($componentes['query'])) {
+            return true;
+        }
+
+        parse_str($componentes['query'], $parametros);
+        $ahora = Carbon::now('UTC')->timestamp;
+        $margenSeguridad = 30;
+
+        if (isset($parametros['Expires']) && is_numeric($parametros['Expires'])) {
+            return $ahora < (((int) $parametros['Expires']) - $margenSeguridad);
+        }
+
+        $xAmzDate = $parametros['X-Amz-Date'] ?? null;
+        $xAmzExpires = $parametros['X-Amz-Expires'] ?? null;
+        if ($xAmzDate && $xAmzExpires && is_numeric($xAmzExpires)) {
+            $fechaFirma = Carbon::createFromFormat('Ymd\\THis\\Z', $xAmzDate, 'UTC');
+            if ($fechaFirma !== false) {
+                $expiraEn = $fechaFirma->copy()->addSeconds((int) $xAmzExpires)->timestamp;
+
+                return $ahora < ($expiraEn - $margenSeguridad);
+            }
+        }
+
+        return true;
+    }
+
+    private function normalizarUrlPdf(string $urlPdf): string
+    {
+        if (preg_match('#^https?://#i', $urlPdf)) {
+            return $urlPdf;
+        }
+
+        return url('/' . ltrim($urlPdf, '/\\'));
+    }
+
+    private function generarPDFOnDemand(int $idAlquiler): ?string
+    {
+        try {
+            $pdfMonkey = new PdfMonkeyService();
+            
+            Log::info("Verificando configuración de PdfMonkey");
+            if (!$pdfMonkey->estaConfigurado()) {
+                Log::error("PdfMonkey no está configurado");
+                return null;
+            }
+
+            // Obtener datos del alquiler
+            Log::info("Obteniendo datos del alquiler: {$idAlquiler}");
+            $datosAlquiler = DB::table('tbl_alquiler as a')
+                ->join('tbl_propiedad as p', 'a.id_propiedad_fk', '=', 'p.id_propiedad')
+                ->join('tbl_usuario as arrendador', 'p.id_arrendador_fk', '=', 'arrendador.id_usuario')
+                ->join('tbl_usuario as inquilino', 'a.id_inquilino_fk', '=', 'inquilino.id_usuario')
+                ->where('a.id_alquiler', $idAlquiler)
+                ->select(
+                    'a.id_alquiler',
+                    'a.fecha_inicio_alquiler',
+                    'a.fecha_fin_alquiler',
+                    'arrendador.nombre_usuario as nombre_arrendador',
+                    'arrendador.email_usuario as email_arrendador',
+                    'inquilino.nombre_usuario as nombre_inquilino',
+                    'inquilino.email_usuario as email_inquilino',
+                    'p.titulo_propiedad',
+                    DB::raw($this->obtenerSelectDireccionPropiedad('p')),
+                    'p.ciudad_propiedad',
+                    'p.precio_propiedad'
+                )
+                ->first();
+
+            if (!$datosAlquiler) {
+                Log::error("No se encontraron datos del alquiler: {$idAlquiler}");
+                return null;
+            }
+
+            Log::info("Datos del alquiler obtenidos correctamente");
+
+            $precioMensual = (float) ($datosAlquiler->precio_propiedad ?? 0);
+            $fianza = $precioMensual * 2;
+
+            $datosContrato = [
+                'nombre_arrendador' => $datosAlquiler->nombre_arrendador,
+                'email_arrendador' => $datosAlquiler->email_arrendador,
+                'nombre_inquilino' => $datosAlquiler->nombre_inquilino,
+                'email_inquilino' => $datosAlquiler->email_inquilino,
+                'titulo_propiedad' => $datosAlquiler->titulo_propiedad,
+                'direccion_propiedad' => $datosAlquiler->direccion_propiedad,
+                'ciudad_propiedad' => $datosAlquiler->ciudad_propiedad,
+                'precio_mensual' => number_format($precioMensual, 2, '.', ''),
+                'fianza' => number_format($fianza, 2, '.', ''),
+                'fecha_inicio' => Carbon::parse($datosAlquiler->fecha_inicio_alquiler)->format('d/m/Y'),
+                'fecha_fin' => $datosAlquiler->fecha_fin_alquiler 
+                    ? Carbon::parse($datosAlquiler->fecha_fin_alquiler)->format('d/m/Y')
+                    : 'Indefinida',
+                'fecha_generacion' => Carbon::now()->format('d/m/Y'),
+            ];
+
+            Log::info("Enviando solicitud a PdfMonkey para alquiler: {$idAlquiler}");
+
+            // Generar PDF sincronizado
+            $respuesta = $pdfMonkey->crearDocumentoSincronizado(
+                $datosContrato,
+                $pdfMonkey->construirMeta([], 'contrato_' . $idAlquiler . '.pdf')
+            ); 
+
+            Log::info("Respuesta de PdfMonkey recibida", ['respuesta' => $respuesta]);
+
+            if (isset($respuesta['document_card']['download_url'])) {
+                $urlDescarga = $respuesta['document_card']['download_url'];
+
+                Log::info("URL de descarga obtenida desde document_card: {$urlDescarga}");
+
+                return $urlDescarga;
+            }
+
+            if (isset($respuesta['document']) && isset($respuesta['document']['id'])) {
+                $idDocumentoPdf = $respuesta['document']['id'];
+                $urlDescarga = $pdfMonkey->obtenerUrlDescarga($idDocumentoPdf);
+                
+                Log::info("URL de descarga obtenida: {$urlDescarga}");
+                
+                return $urlDescarga;
+            }
+
+            Log::error("Respuesta inválida de PdfMonkey", ['respuesta' => $respuesta]);
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Error al generar PDF on-demand: ' . $e->getMessage(), [
+                'exception' => $e,
+                'alquiler_id' => $idAlquiler
+            ]);
+            return null;
+        }
+    }
+
     private function contarFirmados(int $arrendadorId, array $columnas): int
     {
         $consulta = DB::table('tbl_contrato as c')
@@ -230,7 +449,7 @@ class ContratoController extends Controller
             ->value('u.id_usuario');
     }
 
-    private function obtenerInicialAvatar(?string $nombre): string
+    private function obtenerInicialAvatar(?string $nombre): string 
     {
         if (empty($nombre)) {
             return 'A';

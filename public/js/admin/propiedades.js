@@ -5,6 +5,7 @@
 var csrfToken;
 var paginaActual = 1;
 var totalPaginas = 1;
+var propiedadActual = null;
 
 var esEstadoAlquilada = function(estado) {
     return String(estado || '').trim().toLowerCase() === 'alquilada';
@@ -36,6 +37,22 @@ var actualizarEstadoBotonDesactivar = function(estado) {
         btnDesactivarPropiedad.title = '';
         btnDesactivarPropiedad.textContent = 'Desactivar propiedad';
     }
+};
+
+var actualizarBotonMapaGeneral = function() {
+    var btnVerMapaGeneral = document.getElementById('btnVerMapaGeneral');
+    if (!btnVerMapaGeneral) {
+        return;
+    }
+
+    if (propiedadActual && propiedadActual.direccion) {
+        btnVerMapaGeneral.disabled = false;
+        btnVerMapaGeneral.title = 'Abrir la ubicación de la última propiedad vista';
+        return;
+    }
+
+    btnVerMapaGeneral.disabled = true;
+    btnVerMapaGeneral.title = 'Abre primero una propiedad para ver su ubicación';
 };
 
 /* ── window.onload ── */
@@ -239,6 +256,12 @@ var abrirModal = function(id) {
         .then(function(data) {
             var propiedad = data.propiedad;
             var alquileres = data.alquileres || [];
+            propiedadActual = {
+                id: id,
+                direccion: propiedad.direccion_propiedad,
+                ciudad: propiedad.ciudad_propiedad,
+                titulo: propiedad.titulo_propiedad
+            };
 
             // Información general
             document.getElementById('modalDireccion').textContent = propiedad.direccion_propiedad + ', ' + propiedad.ciudad_propiedad;
@@ -315,6 +338,7 @@ var abrirModal = function(id) {
             document.getElementById('modalDireccion').setAttribute('data-propiedad-id', String(id));
 
             actualizarEstadoBotonDesactivar(propiedad.estado_propiedad);
+            actualizarBotonMapaGeneral();
 
             // Mostrar modal Bootstrap
             var modalEl = document.getElementById('modalPropiedad');
@@ -342,7 +366,7 @@ var asignarEventosModal = function() {
     var modalOverlay = document.getElementById('modalOverlay');
     var btnDesactivarPropiedad = document.getElementById('btnDesactivarPropiedad');
     var btnEditarPropiedad = document.getElementById('btnEditarPropiedad');
-    var btnVerMapa = document.getElementById('btnVerMapa');
+    var btnVerMapaGeneral = document.getElementById('btnVerMapaGeneral');
     var btnDescargarPDF = document.getElementById('btnDescargarPDF');
 
     if (btnCerrarModal) {
@@ -381,12 +405,29 @@ var asignarEventosModal = function() {
         }
     };
 
-    btnVerMapa.onclick = function() {
-        console.log('Abrir mapa');
-    };
+    if (btnVerMapaGeneral) {
+        btnVerMapaGeneral.onclick = function() {
+            if (!propiedadActual || !propiedadActual.direccion) {
+                return;
+            }
+
+            var consulta = propiedadActual.direccion + ', ' + (propiedadActual.ciudad || '');
+            var urlMapa = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(consulta);
+            window.open(urlMapa, '_blank', 'noopener');
+        };
+    }
 
     btnDescargarPDF.onclick = function() {
-        console.log('Descargar PDF del contrato');
+        if (!propiedadActual || !propiedadActual.id) {
+            if (window.mostrarAlertaAdminError) {
+                window.mostrarAlertaAdminError('PDF no disponible', 'Abre una propiedad primero.');
+            } else {
+                alert('Abre una propiedad primero.');
+            }
+            return;
+        }
+
+        window.open('/admin/propiedades/' + propiedadActual.id + '/descargar-pdf', '_blank', 'noopener');
     };
 };
 
@@ -463,50 +504,68 @@ var desactivarPropiedad = function(id) {
 
 /* ── Confirmar eliminar ── */
 var confirmarEliminar = function(id) {
+    var ejecutarEliminacion = function() {
+        var url = '/admin/propiedades/' + id;
+
+        fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            }
+        })
+        .then(function(response) {
+            return response.text().then(function(texto) {
+                var data = null;
+                try {
+                    data = JSON.parse(texto);
+                } catch (e) {
+                    console.error('Respuesta del servidor (no JSON):', texto);
+                    data = { success: false, message: 'Error del servidor: ' + texto.substring(0, 100) };
+                }
+                return { ok: response.ok, status: response.status, data: data };
+            });
+        })
+        .then(function(resultado) {
+            if (resultado.ok && resultado.data && resultado.data.success) {
+                var row = document.querySelector('tr[data-id="' + id + '"]');
+                if (row) {
+                    row.parentNode.removeChild(row);
+                }
+
+                if (window.mostrarAlertaAdminExito) {
+                    window.mostrarAlertaAdminExito('Eliminada', 'La propiedad se eliminó correctamente.');
+                }
+                return;
+            }
+
+            var mensaje = (resultado.data && resultado.data.message)
+                ? resultado.data.message
+                : 'Error ' + resultado.status + ' al eliminar.';
+
+            console.error('Error al eliminar:', resultado);
+            if (window.mostrarAlertaAdminError) {
+                window.mostrarAlertaAdminError('No se pudo eliminar', mensaje);
+            }
+        })
+        .catch(function(error) {
+            console.error('Error de red al eliminar:', error);
+            if (window.mostrarAlertaAdminError) {
+                window.mostrarAlertaAdminError('Error', 'Ocurrió un error al eliminar la propiedad.');
+            }
+        });
+    };
+
     if (window.confirmarAdmin) {
         window.confirmarAdmin('Eliminar propiedad', '¿Eliminar propiedad? Esta acción no se puede deshacer.')
             .then(function(confirmado) {
                 if (!confirmado) return;
-
-                var url = '/admin/propiedades/' + id;
-
-                fetch(url, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken
-                    }
-                })
-                .then(function(response) {
-                    return response.json();
-                })
-                .then(function(data) {
-                    if (data.success) {
-                        var row = document.querySelector('tr[data-id="' + id + '"]');
-                        if (row) {
-                            row.parentNode.removeChild(row);
-                        }
-
-                        if (window.mostrarAlertaAdminExito) {
-                            window.mostrarAlertaAdminExito('Eliminada', 'La propiedad se eliminó correctamente.');
-                        }
-                        return;
-                    }
-
-                    if (window.mostrarAlertaAdminError) {
-                        window.mostrarAlertaAdminError('No se pudo eliminar', data.message || 'La propiedad no se pudo eliminar.');
-                    }
-                })
-                .catch(function(error) {
-                    console.error('Error:', error);
-                    if (window.mostrarAlertaAdminError) {
-                        window.mostrarAlertaAdminError('Error', 'Ocurrió un error al eliminar la propiedad.');
-                    }
-                });
+                ejecutarEliminacion();
             });
     } else {
-        // Fallback a confirm nativo
-        if (!confirm('¿Eliminar propiedad?')) return;
-        confirmarEliminar(id);
+        if (confirm('¿Eliminar propiedad? Esta acción no se puede deshacer.')) {
+            ejecutarEliminacion();
+        }
     }
 };
 

@@ -56,6 +56,10 @@
             <i class="bi bi-download"></i>
             <span>Exportar</span>
         </button>
+        <button id="btnVerMapaGeneral" class="btn-exportar" type="button" disabled>
+            <i class="bi bi-map"></i>
+            <span>Ver en el mapa</span>
+        </button>
         <a href="/admin/propiedades/nueva" id="btnAniadirPropiedad" class="btn-primario">
             <i class="bi bi-plus"></i>
             <span>Añadir propiedad</span>
@@ -696,10 +700,6 @@
                         Desactivar propiedad
                     </button>
                     <div class="d-flex gap-2">
-                        <button id="btnVerMapa" class="btn btn-light">
-                            <i class="bi bi-map"></i>
-                            <span>Ver en el mapa</span>
-                        </button>
                         <button id="btnEditarPropiedad" class="btn btn-primary">
                             Editar propiedad
                         </button>

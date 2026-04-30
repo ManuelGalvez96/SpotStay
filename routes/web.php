@@ -73,7 +73,9 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/propiedades/{id}/editar', [PropiedadController::class, 'editar']);
     Route::post('/admin/propiedades/{id}/editar', [PropiedadController::class, 'actualizar']);
     Route::get('/admin/propiedades/{id}', [PropiedadController::class, 'show']);
+    Route::delete('/admin/propiedades/{id}', [PropiedadController::class, 'eliminar']);
     Route::post('/admin/propiedades/{id}/desactivar', [PropiedadController::class, 'desactivar']);
+    Route::get('/admin/propiedades/{id}/descargar-pdf', [PropiedadController::class, 'descargarPdf']);
     Route::get('/admin/propiedades/exportar', [PropiedadController::class, 'exportar']);
 
     // Solicitudes
@@ -144,6 +146,9 @@ Route::middleware(['role:arrendador'])->group(function () {
     Route::get('/arrendador/solicitudes', [ArrendadorSolicitudController::class, 'inicio'])->name('arrendador.solicitudes');
     Route::post('/arrendador/solicitudes/{id}/aprobar', [ArrendadorSolicitudController::class, 'aprobar'])->name('arrendador.solicitudes.aprobar');
     Route::post('/arrendador/solicitudes/{id}/rechazar', [ArrendadorSolicitudController::class, 'rechazar'])->name('arrendador.solicitudes.rechazar');
+    Route::get('/arrendador/solicitudes/{id}/ver', [ArrendadorSolicitudController::class, 'ver'])->name('arrendador.solicitudes.ver');
+    Route::post('/arrendador/solicitudes/{id}/actualizar', [ArrendadorSolicitudController::class, 'actualizar'])->name('arrendador.solicitudes.actualizar');
+    Route::post('/arrendador/solicitudes/{id}/eliminar', [ArrendadorSolicitudController::class, 'eliminar'])->name('arrendador.solicitudes.eliminar');
 
     Route::get('/arrendador/precios-gastos', [ArrendadorPrecioGastoController::class, 'inicio'])->name('arrendador.precios-gastos');
     Route::post('/arrendador/precios-gastos/{id}', [ArrendadorPrecioGastoController::class, 'actualizar'])->name('arrendador.precios-gastos.actualizar');
@@ -157,6 +162,7 @@ Route::middleware(['role:arrendador'])->group(function () {
 
     Route::get('/arrendador/contratos', [ArrendadorContratoController::class, 'inicio'])->name('arrendador.contratos');
     Route::post('/arrendador/contratos/{id}/firmar', [ArrendadorContratoController::class, 'firmarArrendador'])->name('arrendador.contratos.firmar');
+    Route::get('/arrendador/contratos/{id}/descargar-pdf', [ArrendadorContratoController::class, 'descargarPDF'])->name('arrendador.contratos.descargar-pdf');
 
     Route::get('/arrendador/gestor', [ArrendadorGestorController::class, 'inicio'])->name('arrendador.gestor');
     Route::post('/arrendador/gestor/{id}', [ArrendadorGestorController::class, 'actualizar'])->name('arrendador.gestor.actualizar');

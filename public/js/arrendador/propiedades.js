@@ -79,6 +79,13 @@ function enviarFormularioConFetch(formulario) {
 
     var datosFormulario = new FormData(formulario);
 
+    // Caso especial: formulario de propiedades con archivos acumulados
+    if (formulario._archivosAcumulados && formulario._archivosAcumulados.length > 0) {
+      formulario._archivosAcumulados.forEach(function(obj) {
+        datosFormulario.append('imagenes_propiedad[]', obj.archivo);
+      });
+    }
+
     fetch(formulario.action, {
       method: 'POST',
       headers: {
@@ -121,5 +128,142 @@ function enviarFormularioConFetch(formulario) {
   };
 }
 
+function iniciarValidacionImagenes() {
+  var inputImagenes = document.getElementById('imagenes-propiedad');
+  var formulario = document.querySelector('form[data-ajax-form="true"]');
+  var contenedorPrevia = document.getElementById('contenedor-previa-imagenes');
+  var listaPrevia = document.getElementById('lista-previa-imagenes');
+
+  if (!inputImagenes || !formulario || !contenedorPrevia || !listaPrevia) {
+    return;
+  }
+
+  var botonEnviar = formulario.querySelector('button[type="submit"]');
+  var archivosAcumulados = [];
+  formulario._archivosAcumulados = archivosAcumulados;
+
+  function actualizarPrevia() {
+    listaPrevia.innerHTML = '';
+    
+    if (archivosAcumulados.length > 0) {
+      contenedorPrevia.style.display = 'block';
+
+      archivosAcumulados.forEach(function (archivoObj, indice) {
+        var lector = new FileReader();
+
+        lector.onload = function (evento) {
+          var divFoto = document.createElement('div');
+          divFoto.style.cssText = 'border: 2px solid #ccc; border-radius: 8px; padding: 8px; position: relative; cursor: pointer; transition: border-color 0.2s;';
+          divFoto.dataset.indice = indice;
+
+          var img = document.createElement('img');
+          img.src = evento.target.result;
+          img.style.cssText = 'width: 100%; height: 100px; object-fit: cover; border-radius: 4px; display: block;';
+
+          var checkboxDiv = document.createElement('div');
+          checkboxDiv.style.cssText = 'margin-top: 6px; display: flex; align-items: center; justify-content: space-between;';
+
+          var checkboxLabel = document.createElement('div');
+          checkboxLabel.style.cssText = 'display: flex; align-items: center; gap: 6px;';
+
+          var checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.dataset.indice = indice;
+          checkbox.style.cssText = 'cursor: pointer;';
+
+          var label = document.createElement('label');
+          label.textContent = 'Ancla';
+          label.style.cssText = 'cursor: pointer; font-size: 12px; margin: 0;';
+
+          checkbox.onchange = function () {
+            if (checkbox.checked) {
+              var todosChequeados = document.querySelectorAll('input[type="checkbox"][data-indice]');
+              todosChequeados.forEach(function (ch) {
+                if (ch.dataset.indice !== checkbox.dataset.indice) {
+                  ch.checked = false;
+                  var divPadre = ch.closest('div[data-indice]');
+                  if (divPadre) {
+                    divPadre.style.borderColor = '#ccc';
+                    divPadre.style.backgroundColor = 'transparent';
+                  }
+                }
+              });
+              divFoto.style.borderColor = '#4CAF50';
+              divFoto.style.backgroundColor = '#f1f8f4';
+              document.getElementById('imagen-principal-indice').value = indice;
+            } else {
+              divFoto.style.borderColor = '#ccc';
+              divFoto.style.backgroundColor = 'transparent';
+              document.getElementById('imagen-principal-indice').value = '-1';
+            }
+          };
+
+          checkboxLabel.appendChild(checkbox);
+          checkboxLabel.appendChild(label);
+
+          var botonEliminar = document.createElement('button');
+          botonEliminar.type = 'button';
+          botonEliminar.textContent = '✕';
+          botonEliminar.style.cssText = 'background: #ff6b6b; color: white; border: none; border-radius: 4px; padding: 2px 6px; cursor: pointer; font-size: 12px; font-weight: bold;';
+          
+          botonEliminar.onclick = function (e) {
+            e.preventDefault();
+            archivosAcumulados.splice(indice, 1);
+            actualizarPrevia();
+          };
+
+          checkboxDiv.appendChild(checkboxLabel);
+          checkboxDiv.appendChild(botonEliminar);
+          divFoto.appendChild(img);
+          divFoto.appendChild(checkboxDiv);
+
+          divFoto.onmouseover = function () {
+            if (!checkbox.checked) {
+              divFoto.style.borderColor = '#999';
+            }
+          };
+          divFoto.onmouseout = function () {
+            if (!checkbox.checked) {
+              divFoto.style.borderColor = '#ccc';
+            }
+          };
+
+          listaPrevia.appendChild(divFoto);
+        };
+
+        lector.readAsDataURL(archivoObj.archivo);
+      });
+    } else {
+      contenedorPrevia.style.display = 'none';
+    }
+  }
+
+  inputImagenes.onchange = function () {
+    var nuevosArchivos = inputImagenes.files ? Array.from(inputImagenes.files) : [];
+    
+    if ((archivosAcumulados.length + nuevosArchivos.length) > 10) {
+      mostrarMensaje('No puedes superar 10 imágenes en total.', true);
+      inputImagenes.value = '';
+      return;
+    }
+
+    nuevosArchivos.forEach(function (archivo) {
+      archivosAcumulados.push({
+        archivo: archivo,
+        nombre: archivo.name
+      });
+    });
+
+    inputImagenes.value = '';
+    actualizarPrevia();
+
+    if (botonEnviar) {
+      botonEnviar.disabled = false;
+    }
+  };
+}
+
+
 document.querySelectorAll('form[data-ajax-form="true"]').forEach(enviarFormularioConFetch);
 document.querySelectorAll('form[data-ajax-state-form="true"]').forEach(enviarFormularioConFetch);
+iniciarValidacionImagenes();

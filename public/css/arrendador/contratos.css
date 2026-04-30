@@ -39,7 +39,7 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
 .kpi { background: #fff; border: 1px solid var(--borde); border-radius: 14px; padding: 14px; box-shadow: var(--sombra); }
 .kpi span { display: block; font-size: 24px; font-weight: 700; }
 .kpi small { color: var(--muted); }
-.panel { background: #fff; border: 1px solid var(--borde); border-radius: 18px; padding: 16px; box-shadow: var(--sombra); }
+.panel { background: #fff; border: 1px solid var(--borde); border-radius: 18px; padding: 16px; box-shadow: var(--sombra); overflow-x: auto; }
 .tabla { width: 100%; border-collapse: collapse; }
 .tabla th, .tabla td {
   border-bottom: 1px solid var(--borde);
@@ -93,10 +93,25 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
 
 @media (max-width: 980px) {
   .cabecera { flex-direction: column; align-items: flex-start; }
-  .kpis { grid-template-columns: 1fr; }
+  .kpis { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 760px) {
   .pagina { padding: 14px; }
   .acciones { flex-direction: column; }
+  .kpis { grid-template-columns: 1fr; }
+  .cabecera { padding: 16px; border-radius: 14px; }
+  .panel { padding: 12px; }
+}
+
+@media (max-width: 480px) {
+  .pagina { padding: 10px; }
+  .cabecera { padding: 14px; }
+  .cabecera h1 { font-size: 20px; }
+  .panel { padding: 10px; border-radius: 12px; }
+  .tabla th, .tabla td { padding: 8px 6px; font-size: 12px; }
+  .kpi { padding: 12px; }
+  .kpi span { font-size: 20px; }
+  .btn-firmar, .btn-ver { padding: 6px 8px; font-size: 12px; }
+  .btn-volver { padding: 7px 12px; font-size: 13px; }
 }

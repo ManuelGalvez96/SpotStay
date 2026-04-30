@@ -532,6 +532,9 @@ var toggleEstado = function(id) {
                 /* Alternar clase fila-inactiva */
                 tr.classList.toggle('fila-inactiva');
             }
+
+            /* Actualizar KPIs */
+            actualizarKpisUsuarios();
         } else {
             mostrarAlertaError('Error', data.message || 'No se pudo cambiar el estado del usuario ya que tiene contratos y/o propiedades asociadas');
         }
@@ -540,6 +543,45 @@ var toggleEstado = function(id) {
         console.error('Error en fetch toggle-estado:', error);
         mostrarAlertaError('Error', 'No se pudo cambiar el estado del usuario ya que tiene contratos y/o propiedades asociadas');
     });
+};
+
+/* ================================================
+   FUNCIÓN: actualizarKpisUsuarios
+   Actualiza los números de KPI dinámicamente
+   ================================================ */
+var actualizarKpisUsuarios = function() {
+    fetch('/admin/usuarios/kpis')
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            /* Actualizar total usuarios */
+            var elTotal = document.getElementById('kpiTotalUsuarios');
+            if (elTotal) {
+                elTotal.textContent = data.totalUsuarios;
+            }
+
+            /* Actualizar activos */
+            var elActivos = document.getElementById('kpiActivos');
+            if (elActivos) {
+                elActivos.textContent = data.activos;
+            }
+
+            /* Actualizar inactivos */
+            var elInactivos = document.getElementById('kpiInactivos');
+            if (elInactivos) {
+                elInactivos.textContent = data.inactivos;
+            }
+
+            /* Actualizar este mes */
+            var elMes = document.getElementById('kpiEsteMes');
+            if (elMes) {
+                elMes.textContent = data.esteMes;
+            }
+        })
+        .catch(function(error) {
+            console.error('Error al actualizar KPIs:', error);
+        });
 };
 
 /* ================================================
@@ -1234,6 +1276,9 @@ var guardarUsuario = function() {
             
             /* Recargar tabla */
             filtrarUsuarios();
+            
+            /* Actualizar KPIs */
+            actualizarKpisUsuarios();
             
             /* Mostrar alerta de éxito */
             var mensaje = usuarioId ? 'El usuario ha sido actualizado correctamente' : 'El nuevo usuario ha sido creado correctamente';

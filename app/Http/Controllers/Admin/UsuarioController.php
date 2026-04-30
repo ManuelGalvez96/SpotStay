@@ -211,37 +211,71 @@ class UsuarioController extends Controller
 
     public function toggleEstado($id)
     {
-        $usuarioActual = DB::table('tbl_usuario')
+        $usuario = DB::table('tbl_usuario')
             ->where('id_usuario', $id)
-            ->value('activo_usuario');
+            ->first();
 
-        $nuevoEstado = !$usuarioActual;
+        if (!$usuario) {
+            return response()->json(['success' => false, 'message' => 'Usuario no encontrado'], 404);
+        }
 
-        // Si intentan desactivar al usuario, comprobar si tiene alquileres activos
+        $nuevoEstado = !$usuario->activo_usuario;
+
+        // Si intentan desactivar al usuario, comprobar si tiene alquileres activos o propiedades publicadas
         if (!$nuevoEstado) {
-            $tieneAlquilerActivo = DB::table('tbl_alquiler')
-                ->where(function($q) use ($id) {
-                    $q->where('id_inquilino_fk', $id)
-                      ->orWhere('id_arrendador_fk', $id);
-                })
+            // Verificar si es inquilino con alquileres activos
+            $tieneAlquilerActivoInquilino = DB::table('tbl_alquiler')
+                ->where('id_inquilino_fk', $id)
                 ->where('estado_alquiler', 'activo')
                 ->exists();
 
-            if ($tieneAlquilerActivo) {
+            // Verificar si es arrendador con alquileres activos O propiedades publicadas
+            $tieneAlquilerActivoArrendador = DB::table('tbl_alquiler')
+                ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
+                ->where('tbl_propiedad.id_arrendador_fk', $id)
+                ->where('tbl_alquiler.estado_alquiler', 'activo')
+                ->exists();
+
+            $tienePropiedadesPublicadas = DB::table('tbl_propiedad')
+                ->where('id_arrendador_fk', $id)
+                ->whereIn('estado_propiedad', ['publicada', 'alquilada'])
+                ->exists();
+
+            if ($tieneAlquilerActivoInquilino || $tieneAlquilerActivoArrendador || $tienePropiedadesPublicadas) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No se puede desactivar el usuario porque tiene contratos activos y/o propiedades publicadas.'
+                    'message' => 'No se puede desactivar el usuario porque tiene contratos activos o propiedades publicadas.'
                 ]);
             }
         }
 
         DB::table('tbl_usuario')
             ->where('id_usuario', $id)
-            ->update(['activo_usuario' => $nuevoEstado]);
+            ->update(['activo_usuario' => $nuevoEstado, 'actualizado_usuario' => Carbon::now()]);
 
         return response()->json([
             'success' => true,
             'activo' => $nuevoEstado
+        ]);
+    }
+
+    public function getKpisUsuarios()
+    {
+        $totalUsuarios = DB::table('tbl_usuario')->count();
+        $activos = DB::table('tbl_usuario')
+            ->where('activo_usuario', true)->count();
+        $inactivos = DB::table('tbl_usuario')
+            ->where('activo_usuario', false)->count();
+        $esteMes = DB::table('tbl_usuario')
+            ->whereMonth('creado_usuario', Carbon::now()->month)
+            ->whereYear('creado_usuario', Carbon::now()->year)
+            ->count();
+
+        return response()->json([
+            'totalUsuarios' => $totalUsuarios,
+            'activos' => $activos,
+            'inactivos' => $inactivos,
+            'esteMes' => $esteMes
         ]);
     }
 

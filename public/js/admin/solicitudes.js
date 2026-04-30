@@ -389,6 +389,61 @@ var cambiarPaginaSol = function(pagina) {
 };
 
 /* ──────────────────────────────────────────
+   FUNCIÓN: Actualizar KPIs de solicitudes
+──────────────────────────────────────────── */
+var actualizarKpisSolicitudes = function() {
+    fetch('/admin/solicitudes/kpis')
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            /* Actualizar KPI pendientes */
+            var elPendientes = document.getElementById('kpiPendientesSolicitudes');
+            if (elPendientes) {
+                elPendientes.textContent = data.pendientes;
+            }
+
+            /* Actualizar KPI aprobadas */
+            var elAprobadas = document.getElementById('kpiAprobadasSolicitudes');
+            if (elAprobadas) {
+                elAprobadas.textContent = data.aprobadas;
+            }
+
+            /* Actualizar KPI rechazadas */
+            var elRechazadas = document.getElementById('kpiRechazadasSolicitudes');
+            if (elRechazadas) {
+                elRechazadas.textContent = data.rechazadas;
+            }
+
+            /* Actualizar KPI total */
+            var elTotal = document.getElementById('kpiTotalSolicitudes');
+            if (elTotal) {
+                elTotal.textContent = data.total;
+            }
+
+            /* Actualizar badges del sidebar */
+            var badgeAprobadas = document.getElementById('badgeAprobadasDetalles');
+            if (badgeAprobadas) {
+                badgeAprobadas.textContent = data.aprobadas;
+            }
+
+            var badgeRechazadas = document.getElementById('badgeRechazadasDetalles');
+            if (badgeRechazadas) {
+                badgeRechazadas.textContent = data.rechazadas;
+            }
+
+            /* Actualizar texto de toolbar */
+            var txtPendientes = document.querySelector('.texto-pendientes');
+            if (txtPendientes) {
+                txtPendientes.textContent = data.pendientes + ' pendientes de revisión este mes';
+            }
+        })
+        .catch(function(error) {
+            console.error('Error al actualizar KPIs:', error);
+        });
+};
+
+/* ──────────────────────────────────────────
    FUNCIÓN: Abrir modal para ver solicitud
 ──────────────────────────────────────────── */
 var abrirModal = function(id) {
@@ -543,9 +598,12 @@ var aprobarSolicitud = function(id) {
             if (datos.success) {
                 modalSolicitud.hide();
                 mostrarAlertaExito('¡Éxito!', 'Solicitud aprobada correctamente');
+                /* Actualizar KPIs y tabla sin recargar la página */
                 setTimeout(function() {
-                    location.reload();
-                }, 2000);
+                    paginaActualSol = 1;
+                    filtrarSolicitudes();
+                    actualizarKpisSolicitudes();
+                }, 500);
             } else {
                 mostrarAlertaError('Error', datos.error || 'Error desconocido al aprobar');
             }
@@ -580,9 +638,12 @@ var rechazarSolicitud = function(id, notas) {
             if (datos.success) {
                 modalSolicitud.hide();
                 mostrarAlertaExito('¡Rechazada!', 'Solicitud rechazada correctamente');
+                /* Actualizar KPIs y tabla sin recargar la página */
                 setTimeout(function() {
-                    location.reload();
-                }, 2000);
+                    paginaActualSol = 1;
+                    filtrarSolicitudes();
+                    actualizarKpisSolicitudes();
+                }, 500);
             } else {
                 mostrarAlertaError('Error', datos.error || 'Error desconocido al rechazar');
             }

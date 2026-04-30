@@ -2,6 +2,7 @@
 @section('titulo', 'Panel general — SpotStay')
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/admin/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/responsive-tablas.css') }}">
 @endsection
 
 @section('content')
@@ -84,7 +85,7 @@
                         <th>PROPIEDAD</th>
                         <th>INQUILINO</th>
                         <th>ESTADO</th>
-                        <th>ACCIÓN</th>
+                        <th class="col-mobile-hide">ACCIÓN</th>
                     </tr>
                 </thead>
                 <tbody id="tbodyAlquileres">
@@ -93,7 +94,7 @@
                         <td>{{ $alquiler->titulo_propiedad }}, {{ $alquiler->ciudad_propiedad }}</td>
                         <td>{{ $alquiler->nombre_inquilino }}</td>
                         <td><span class="badge-estado badge-{{ str_replace('_', '-', $alquiler->estado_alquiler) }}">{{ ucfirst($alquiler->estado_alquiler) }}</span></td>
-                        <td>
+                        <td class="col-mobile-hide">
                             @if($alquiler->estado_alquiler === 'pendiente')
                             <div class="acciones-tabla">
                                 <button class="btn-aprobar" data-id="{{ $alquiler->id_alquiler }}">✓ Aprobar</button>
@@ -121,7 +122,7 @@
             <span>Solicitudes nuevas</span>
             <div class="card-header-acciones">
                 <input type="text" id="buscadorSolicitudes" placeholder="Buscar por nombre..." class="buscador-input">
-                <span class="badge-contador">3</span>
+                <span class="badge-contador">{{ $solicitudesNuevas }}</span>
             </div>
         </div>
         

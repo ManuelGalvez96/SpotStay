@@ -28,7 +28,7 @@ class SolicitudController extends Controller
               'tbl_usuario.telefono_usuario'
             )
             ->orderBy('tbl_solicitud_arrendador.creado_solicitud_arrendador','desc')
-            ->paginate(10);
+            ->paginate(7);
 
         $aprobadas = DB::table('tbl_solicitud_arrendador')
             ->where('estado_solicitud_arrendador','aprobada')
@@ -236,7 +236,7 @@ class SolicitudController extends Controller
 
         $solicitudesPaginadas = $query
             ->orderBy('creado_solicitud_arrendador', 'desc')
-            ->paginate(6);
+            ->paginate(7);
 
         /* Transformar datos para incluir campos individuales normalizados */
         $items = $solicitudesPaginadas->items();
@@ -264,6 +264,73 @@ class SolicitudController extends Controller
             'per_page' => $solicitudesPaginadas->perPage(),
             'from' => $solicitudesPaginadas->firstItem(),
             'to' => $solicitudesPaginadas->lastItem()
+        ]);
+    }
+
+    /* ─────────────────────────────────────
+       FUNCIÓN: Obtener estadísticas KPI actualizadas
+       Llamado por JS cuando se filtra
+    ───────────────────────────────────────── */
+    public function getKpisStatistics(Request $request)
+    {
+        $rango = $request->rango ?? 'mes';
+        
+        /* Consulta base para filtros temporales */
+        $queryBase = DB::table('tbl_solicitud_arrendador');
+        
+        switch ($rango) {
+            case 'all':
+                break;
+            case 'mes':
+                $queryBase->whereMonth('actualizado_solicitud_arrendador', Carbon::now()->month)
+                          ->whereYear('actualizado_solicitud_arrendador', Carbon::now()->year);
+                break;
+            case '3meses':
+                $fechaHace3Meses = Carbon::now()->subMonths(3);
+                $queryBase->where('actualizado_solicitud_arrendador', '>=', $fechaHace3Meses);
+                break;
+            case 'anio':
+                $queryBase->whereYear('actualizado_solicitud_arrendador', Carbon::now()->year);
+                break;
+        }
+
+        $totalSolicitudes = (clone $queryBase)->count();
+        $solicitudesPendientes = (clone $queryBase)->where('estado_solicitud_arrendador', 'pendiente')->count();
+        $aprobadas = (clone $queryBase)->where('estado_solicitud_arrendador', 'aprobada')->count();
+        $rechazadas = (clone $queryBase)->where('estado_solicitud_arrendador', 'rechazada')->count();
+
+        return response()->json([
+            'total' => $totalSolicitudes,
+            'pendientes' => $solicitudesPendientes,
+            'aprobadas' => $aprobadas,
+            'rechazadas' => $rechazadas
+        ]);
+    }
+
+    public function getKpisSolicitudes()
+    {
+        $totalSolicitudes = DB::table('tbl_solicitud_arrendador')->count();
+        $solicitudesPendientes = DB::table('tbl_solicitud_arrendador')
+            ->where('estado_solicitud_arrendador', 'pendiente')
+            ->whereMonth('actualizado_solicitud_arrendador', Carbon::now()->month)
+            ->whereYear('actualizado_solicitud_arrendador', Carbon::now()->year)
+            ->count();
+        $aprobadas = DB::table('tbl_solicitud_arrendador')
+            ->where('estado_solicitud_arrendador', 'aprobada')
+            ->whereMonth('actualizado_solicitud_arrendador', Carbon::now()->month)
+            ->whereYear('actualizado_solicitud_arrendador', Carbon::now()->year)
+            ->count();
+        $rechazadas = DB::table('tbl_solicitud_arrendador')
+            ->where('estado_solicitud_arrendador', 'rechazada')
+            ->whereMonth('actualizado_solicitud_arrendador', Carbon::now()->month)
+            ->whereYear('actualizado_solicitud_arrendador', Carbon::now()->year)
+            ->count();
+
+        return response()->json([
+            'total' => $totalSolicitudes,
+            'pendientes' => $solicitudesPendientes,
+            'aprobadas' => $aprobadas,
+            'rechazadas' => $rechazadas
         ]);
     }
 }

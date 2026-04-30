@@ -2,6 +2,7 @@
 @section('titulo', 'Usuarios — SpotStay')
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/admin/usuarios.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/responsive-tablas.css') }}">
 @endsection
 
 @section('content')
@@ -53,7 +54,7 @@
             <i class="bi bi-people"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ number_format($totalUsuarios) }}</span>
+            <span class="kpi-mini-numero" id="kpiTotalUsuarios">{{ number_format($totalUsuarios) }}</span>
             <span class="kpi-mini-label">Total usuarios</span>
         </div>
     </div>
@@ -63,7 +64,7 @@
             <i class="bi bi-check-circle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ number_format($activos) }}</span>
+            <span class="kpi-mini-numero" id="kpiActivos">{{ number_format($activos) }}</span>
             <span class="kpi-mini-label">Activos</span>
         </div>
     </div>
@@ -73,7 +74,7 @@
             <i class="bi bi-x-circle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ number_format($inactivos) }}</span>
+            <span class="kpi-mini-numero kpi-mini-numero-rojo" id="kpiInactivos">{{ number_format($inactivos) }}</span>
             <span class="kpi-mini-label">Inactivos</span>
         </div>
     </div>
@@ -83,7 +84,7 @@
             <i class="bi bi-person-plus"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-naranja">{{ number_format($esteMes) }}</span>
+            <span class="kpi-mini-numero kpi-mini-numero-naranja" id="kpiEsteMes">{{ number_format($esteMes) }}</span>
             <span class="kpi-mini-label">Este mes</span>
         </div>
     </div>
@@ -124,9 +125,9 @@
             <tr>
                 <th>USUARIO</th>
                 <th>ROL</th>
-                <th>ESTADO</th>
-                <th>PROPIEDADES</th>
-                <th>FECHA REGISTRO</th>
+                <th class="col-mobile-hide">ESTADO</th>
+                <th class="col-tablet-hide">PROPIEDADES</th>
+                <th class="col-tablet-hide">FECHA REGISTRO</th>
                 <th>ACCIONES</th>
             </tr>
         </thead>
@@ -152,7 +153,7 @@
                     $propiedadesText = $propiedades > 0 ? $propiedades : '—';
                 @endphp
                 <tr data-id="{{ $usuario->id_usuario }}" data-activo="{{ $activo }}" {{ $inactivaClass }}>
-                    <td>
+                    <td data-label="USUARIO">
                         <div class="usuario-celda">
                             <div class="avatar-tabla" style="background: {{ $colorAvatar }};">{{ $avatarText }}</div>
                             <div>
@@ -161,11 +162,11 @@
                             </div>
                         </div>
                     </td>
-                    <td><span class="badge-rol badge-usuario">{{ $rolLabel }}</span></td>
-                    <td><span class="badge-estado badge-{{ $estadoClass }}">{{ $estadoLabel }}</span></td>
-                    <td>{{ $propiedadesText }}</td>
-                    <td>{{ \Carbon\Carbon::parse($usuario->creado_usuario)->format('d M Y') }}</td>
-                    <td>
+                    <td data-label="ROL"><span class="badge-rol badge-usuario">{{ $rolLabel }}</span></td>
+                    <td data-label="ESTADO" class="col-mobile-hide"><span class="badge-estado badge-{{ $estadoClass }}">{{ $estadoLabel }}</span></td>
+                    <td data-label="PROPIEDADES" class="col-tablet-hide">{{ $propiedadesText }}</td>
+                    <td data-label="FECHA REGISTRO" class="col-tablet-hide">{{ \Carbon\Carbon::parse($usuario->creado_usuario)->format('d M Y') }}</td>
+                    <td data-label="ACCIONES">
                         <div class="acciones-tabla">
                             <button class="btn-accion btn-ver" data-id="{{ $usuario->id_usuario }}" title="Ver perfil">
                                 <i class="bi bi-eye"></i>

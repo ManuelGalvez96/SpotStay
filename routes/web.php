@@ -59,11 +59,12 @@ Route::middleware(['role:admin'])->group(function () {
     // Usuarios
     Route::get('/admin/usuarios', [UsuarioController::class, 'index']);
     Route::get('/admin/usuarios/filtrar', [UsuarioController::class, 'filtrar']);
+    Route::get('/admin/usuarios/kpis', [UsuarioController::class, 'getKpisUsuarios']);
+    Route::get('/admin/usuarios/exportar', [UsuarioController::class, 'exportar']);
     Route::get('/admin/usuarios/{id}', [UsuarioController::class, 'show']);
     Route::post('/admin/usuarios/crear', [UsuarioController::class, 'crear']);
     Route::post('/admin/usuarios/{id}/editar', [UsuarioController::class, 'editar']);
     Route::post('/admin/usuarios/{id}/toggle-estado', [UsuarioController::class, 'toggleEstado']);
-    Route::get('/admin/usuarios/exportar', [UsuarioController::class, 'exportar']);
 
     // Propiedades
     Route::get('/admin/propiedades', [PropiedadController::class, 'index']);
@@ -81,6 +82,7 @@ Route::middleware(['role:admin'])->group(function () {
     // Solicitudes
     Route::get('/admin/solicitudes', [SolicitudController::class, 'index']);
     Route::get('/admin/solicitudes/filtrar', [SolicitudController::class, 'filtrar']);
+    Route::get('/admin/solicitudes/kpis', [SolicitudController::class, 'getKpisSolicitudes']);
     Route::get('/admin/solicitudes/{id}', [SolicitudController::class, 'show']);
     Route::post('/admin/solicitudes/{id}/aprobar', [SolicitudController::class, 'aprobar']);
     Route::post('/admin/solicitudes/{id}/rechazar', [SolicitudController::class, 'rechazar']);
@@ -88,6 +90,7 @@ Route::middleware(['role:admin'])->group(function () {
     // Incidencias
     Route::get('/admin/incidencias', [IncidenciaController::class, 'index']);
     Route::get('/admin/incidencias/filtrar', [IncidenciaController::class, 'filtrar']);
+    Route::get('/admin/incidencias/kpis', [IncidenciaController::class, 'getKpisIncidencias']);
     Route::get('/admin/incidencias/{id}', [IncidenciaController::class, 'show']);
     Route::post('/admin/incidencias/{id}/estado', [IncidenciaController::class, 'cambiarEstado']);
     Route::post('/admin/incidencias/{id}/asignar', [IncidenciaController::class, 'asignar']);

@@ -59,6 +59,8 @@ function cargarFiltrosInicio() {
         var parametros = new URLSearchParams();
         var i;
 
+        parametros.append('ajax', '1');
+
         for (i = 0; i < ids.length; i++) {
             var campo = document.getElementById(ids[i]);
             if (campo && campo.value !== '') {
@@ -66,25 +68,31 @@ function cargarFiltrosInicio() {
             }
         }
 
-        var url = formulario.getAttribute('action') || window.location.pathname;
+        var urlBase = formulario.getAttribute('action') || window.location.pathname;
         var query = parametros.toString();
-        if (query !== '') {
-            url += '?' + query;
-        }
+        var url = urlBase + '?' + query;
+
+        console.log('=== DEBUG FILTROS ===');
+        console.log('URL base:', urlBase);
+        console.log('Query:', query);
+        console.log('URL final:', url);
 
         fetch(url, {
             headers: {
-                Accept: 'application/json',
+                'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
             .then(function (respuesta) {
+                console.log('Status:', respuesta.status);
+                console.log('Content-Type:', respuesta.headers.get('content-type'));
                 if (!respuesta.ok) {
                     throw new Error('No se pudo cargar el listado');
                 }
                 return respuesta.json();
             })
             .then(function (datos) {
+                console.log('Respuesta JSON:', datos);
                 var data = datos && datos.data ? datos.data : {};
                 var propiedades = data.propiedades ? data.propiedades : [];
                 var total = data.total ? data.total : 0;
@@ -92,6 +100,8 @@ function cargarFiltrosInicio() {
                 var contadorActual = document.getElementById('contador-propiedades');
                 var html = '';
                 var i;
+
+                console.log('Propiedades recibidas:', propiedades.length);
 
                 if (gridActual) {
                     for (i = 0; i < propiedades.length; i++) {

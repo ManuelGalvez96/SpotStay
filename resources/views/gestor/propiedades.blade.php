@@ -96,102 +96,145 @@
         $nextDir = $dir === 'asc' ? 'desc' : 'asc';
     @endphp
 
-    <table class="tabla-admin">
-        <thead>
-            <tr>
-                <th>
-                    <a class="th-sort {{ $sort === 'titulo_propiedad' ? 'activo' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'titulo_propiedad', 'dir' => $sort === 'titulo_propiedad' ? $nextDir : 'asc']) }}">
-                        PROPIEDAD
-                    </a>
-                </th>
-                <th>ARRENDADOR</th>
-                <th class="th-pagos">
-                    <span class="th-sort activo">PAGOS</span>
-                    <span class="pagos-help-wrap">
-                        <button type="button" class="pagos-help-square" aria-label="Mostrar leyenda del indicador de pagos">
-                            i
-                        </button>
-                        <span class="pagos-legend-box" role="tooltip">
-                            <strong>Leyenda de pagos</strong>
-                            <span class="pagos-legend-row"><b class="pagos-legend-tag pagos-legend-verde">Verde:</b> todo pagado</span>
-                            <span class="pagos-legend-row"><b class="pagos-legend-tag pagos-legend-amarillo">Amarillo:</b> hay algún pago pendiente</span>
-                            <span class="pagos-legend-row"><b class="pagos-legend-tag pagos-legend-rojo">Rojo:</b> hay algún pago atrasado</span>
+    <!-- Vista desktop: tabla -->
+    <div class="propiedades-tabla-desktop">
+        <table class="tabla-admin">
+            <thead>
+                <tr>
+                    <th>
+                        <a class="th-sort {{ $sort === 'titulo_propiedad' ? 'activo' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'titulo_propiedad', 'dir' => $sort === 'titulo_propiedad' ? $nextDir : 'asc']) }}">
+                            PROPIEDAD
+                        </a>
+                    </th>
+                    <th>ARRENDADOR</th>
+                    <th class="th-pagos">
+                        <span class="th-sort activo">PAGOS</span>
+                        <span class="pagos-help-wrap">
+                            <button type="button" class="pagos-help-square" aria-label="Mostrar leyenda del indicador de pagos">
+                                i
+                            </button>
+                            <span class="pagos-legend-box" role="tooltip">
+                                <strong>Leyenda de pagos</strong>
+                                <span class="pagos-legend-row"><b class="pagos-legend-tag pagos-legend-verde">Verde:</b> todo pagado</span>
+                                <span class="pagos-legend-row"><b class="pagos-legend-tag pagos-legend-amarillo">Amarillo:</b> hay algún pago pendiente</span>
+                                <span class="pagos-legend-row"><b class="pagos-legend-tag pagos-legend-rojo">Rojo:</b> hay algún pago atrasado</span>
+                            </span>
                         </span>
+                    </th>
+                    <th>ESTADO</th>
+                    <th>
+                        <a class="th-sort {{ $sort === 'precio_propiedad' ? 'activo' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'precio_propiedad', 'dir' => $sort === 'precio_propiedad' ? $nextDir : 'asc']) }}">
+                            PRECIO
+                        </a>
+                    </th>
+                    <th>
+                        <a class="th-sort {{ $sort === 'incidencias_activas' ? 'activo' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'incidencias_activas', 'dir' => $sort === 'incidencias_activas' ? $nextDir : 'desc']) }}">
+                            INCIDENCIAS ACTIVAS
+                        </a>
+                    </th>
+                    <th>
+                        <a class="th-sort {{ $sort === 'alquileres_activos' ? 'activo' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'alquileres_activos', 'dir' => $sort === 'alquileres_activos' ? $nextDir : 'desc']) }}">
+                            ALQUILERES ACTIVOS
+                        </a>
+                    </th>
+                    <th>ACCIONES</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($propiedades as $propiedad)
+                    @php
+                        $badgeEstado = match($propiedad->estado_propiedad) {
+                            'publicada' => 'pendiente',
+                            'alquilada' => 'activo',
+                            'inactiva' => 'inactiva',
+                            default => 'pendiente'
+                        };
+
+                        $estadoPagos = 'verde';
+                        $textoPagos = 'Al día';
+
+                        if ((int) $propiedad->total_pagos_atrasados > 0) {
+                            $estadoPagos = 'rojo';
+                            $textoPagos = 'Atrasado';
+                        } elseif ((int) $propiedad->total_pagos_pendientes > 0) {
+                            $estadoPagos = 'amarillo';
+                            $textoPagos = 'Pendiente';
+                        }
+                    @endphp
+                    <tr>
+                        <td>
+                            <div class="propiedad-col">
+                                <p class="propiedad-nombre">{{ $propiedad->titulo_propiedad }}</p>
+                                <p class="propiedad-meta">{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }}</p>
+                            </div>
+                        </td>
+                        <td>{{ $propiedad->nombre_arrendador }}</td>
+                        <td>
+                            <span class="pagos-chip pagos-{{ $estadoPagos }}">
+                                <span class="pagos-punto"></span>
+                                {{ $textoPagos }}
+                            </span>
+                        </td>
+                        <td><span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst($propiedad->estado_propiedad) }}</span></td>
+                        <td>{{ number_format((float) $propiedad->precio_propiedad, 2, ',', '.') }} EUR/mes</td>
+                        <td>{{ $propiedad->total_incidencias_activas }}</td>
+                        <td>{{ $propiedad->total_alquileres_activos }}</td>
+                        <td>
+                            <div class="acciones-rapidas">
+                                <a href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad) }}" class="link-ver-todos">Detalle</a>
+                                <a href="{{ url('/gestor/incidencias?propiedad_id=' . $propiedad->id_propiedad) }}" class="link-secundario">Incidencias</a>
+                                <a href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad . '#alquileres-activos') }}" class="link-secundario">Alquileres</a>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="8" class="tabla-vacia">No tienes propiedades asignadas con esos filtros.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Vista mobile: lista compacta -->
+    <div class="propiedades-lista-mobile">
+        @forelse($propiedades as $propiedad)
+            @php
+                $iniciales = strtoupper(substr($propiedad->titulo_propiedad, 0, 2));
+                $badgeEstado = match($propiedad->estado_propiedad) {
+                    'publicada' => 'pendiente',
+                    'alquilada' => 'activo',
+                    'inactiva' => 'inactiva',
+                    default => 'pendiente'
+                };
+                $estadoPagos = 'verde';
+                $textoPagos = 'Al día';
+                if ((int) $propiedad->total_pagos_atrasados > 0) {
+                    $estadoPagos = 'rojo';
+                    $textoPagos = 'Atrasado';
+                } elseif ((int) $propiedad->total_pagos_pendientes > 0) {
+                    $estadoPagos = 'amarillo';
+                    $textoPagos = 'Pendiente';
+                }
+            @endphp
+            <div class="solicitud-item">
+                <div class="solicitud-avatar" style="background:#035498;">{{ $iniciales }}</div>
+                <div class="solicitud-info">
+                    <p class="solicitud-nombre">{{ $propiedad->titulo_propiedad }}</p>
+                    <p class="solicitud-ciudad">{{ $propiedad->direccion_propiedad }}</p>
+                </div>
+                <div class="solicitud-meta">
+                    <span class="pagos-chip pagos-{{ $estadoPagos }}">
+                        <span class="pagos-punto"></span>
+                        {{ $textoPagos }}
                     </span>
-                </th>
-                <th>ESTADO</th>
-                <th>
-                    <a class="th-sort {{ $sort === 'precio_propiedad' ? 'activo' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'precio_propiedad', 'dir' => $sort === 'precio_propiedad' ? $nextDir : 'asc']) }}">
-                        PRECIO
-                    </a>
-                </th>
-                <th>
-                    <a class="th-sort {{ $sort === 'incidencias_activas' ? 'activo' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'incidencias_activas', 'dir' => $sort === 'incidencias_activas' ? $nextDir : 'desc']) }}">
-                        INCIDENCIAS ACTIVAS
-                    </a>
-                </th>
-                <th>
-                    <a class="th-sort {{ $sort === 'alquileres_activos' ? 'activo' : '' }}" href="{{ request()->fullUrlWithQuery(['sort' => 'alquileres_activos', 'dir' => $sort === 'alquileres_activos' ? $nextDir : 'desc']) }}">
-                        ALQUILERES ACTIVOS
-                    </a>
-                </th>
-                <th>ACCIONES</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($propiedades as $propiedad)
-                @php
-                    $badgeEstado = match($propiedad->estado_propiedad) {
-                        'publicada' => 'pendiente',
-                        'alquilada' => 'activo',
-                        'inactiva' => 'inactiva',
-                        default => 'pendiente'
-                    };
-
-                    $estadoPagos = 'verde';
-                    $textoPagos = 'Al día';
-
-                    if ((int) $propiedad->total_pagos_atrasados > 0) {
-                        $estadoPagos = 'rojo';
-                        $textoPagos = 'Atrasado';
-                    } elseif ((int) $propiedad->total_pagos_pendientes > 0) {
-                        $estadoPagos = 'amarillo';
-                        $textoPagos = 'Pendiente';
-                    }
-                @endphp
-                <tr>
-                    <td>
-                        <div class="propiedad-col">
-                            <p class="propiedad-nombre">{{ $propiedad->titulo_propiedad }}</p>
-                            <p class="propiedad-meta">{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }}</p>
-                        </div>
-                    </td>
-                    <td>{{ $propiedad->nombre_arrendador }}</td>
-                    <td>
-                        <span class="pagos-chip pagos-{{ $estadoPagos }}">
-                            <span class="pagos-punto"></span>
-                            {{ $textoPagos }}
-                        </span>
-                    </td>
-                    <td><span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst($propiedad->estado_propiedad) }}</span></td>
-                    <td>{{ number_format((float) $propiedad->precio_propiedad, 2, ',', '.') }} EUR/mes</td>
-                    <td>{{ $propiedad->total_incidencias_activas }}</td>
-                    <td>{{ $propiedad->total_alquileres_activos }}</td>
-                    <td>
-                        <div class="acciones-rapidas">
-                            <a href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad) }}" class="link-ver-todos">Detalle</a>
-                            <a href="{{ url('/gestor/incidencias?propiedad_id=' . $propiedad->id_propiedad) }}" class="link-secundario">Incidencias</a>
-                            <a href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad . '#alquileres-activos') }}" class="link-secundario">Alquileres</a>
-                        </div>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="8" class="tabla-vacia">No tienes propiedades asignadas con esos filtros.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+                    <a href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad) }}" class="btn-revisar">Detalle →</a>
+                </div>
+            </div>
+        @empty
+            <p class="tarjeta-vacia">No tienes propiedades asignadas con esos filtros.</p>
+        @endforelse
+    </div>
 
     @if($propiedades->lastPage() > 1)
         <div class="paginacion-admin">

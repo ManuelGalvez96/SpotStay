@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Miembro;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class DetallePropiedadController extends Controller
 {
@@ -26,8 +27,14 @@ class DetallePropiedadController extends Controller
         $fotosPropiedad = $propiedad->fotos;
         $arrendador = $propiedad->arrendador;
 
-        return view('miembro.detalle_propiedad', compact('id', 'propiedad', 'fotosPropiedad', 'arrendador'));
+        return view('miembro.detalle_propiedad', [
+            'id' => $id,
+            'propiedad' => $propiedad,
+            'fotosPropiedad' => $fotosPropiedad,
+            'arrendador' => $arrendador
+        ]);
     }
+
     public function cargarFotos($id)
     {
         $fotos = DB::table('tbl_fotos')

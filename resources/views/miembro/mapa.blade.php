@@ -21,6 +21,7 @@
 
 		<main class="contenido-mapa">
 			<aside class="panel-filtros" id="panel-filtros">
+				<form id="form-filtros-mapa">
 				<div class="panel-filtros-encabezado">
 					<a class="detalle-volver" href="/miembro/inicio" aria-label="Volver">
 						<i class="bi bi-arrow-left" aria-hidden="true"></i>
@@ -30,16 +31,26 @@
 				</div>
 
 				<div class="grupo-filtro">
+					<label class="etiqueta-filtro" for="ciudad-propiedad">Ciudad</label>
+					<select id="ciudad-propiedad" name="ciudad" class="campo-filtro">
+						<option value="">Todas</option>
+						@foreach ($ciudades as $ciudad)
+							<option value="{{ $ciudad }}">{{ $ciudad }}</option>
+						@endforeach
+					</select>
+				</div>
+
+				<div class="grupo-filtro">
 					<label class="etiqueta-filtro" for="precio-minimo">Rango de precio</label>
 					<div class="fila-campos">
-						<input type="number" id="precio-minimo" class="campo-filtro" placeholder="Min" min="0"/>
-						<input type="number" id="precio-maximo" class="campo-filtro" placeholder="Max" min="0"/>
+						<input type="number" id="precio-minimo" class="campo-filtro" name="precio_minimo" placeholder="Min" min="0"/>
+						<input type="number" id="precio-maximo" class="campo-filtro" name="precio_maximo" placeholder="Max" min="0"/>
 					</div>
 				</div>
 
 				<div class="grupo-filtro">
 					<label class="etiqueta-filtro" for="tipo-inmueble">Tipo de inmueble</label>
-					<select id="tipo-inmueble" class="campo-filtro">
+					<select id="tipo-inmueble" class="campo-filtro" name="tipo_inmueble">
 						<option value="">Todos</option>
 						<option value="piso">Piso</option>
 						<option value="casa">Casa</option>
@@ -50,18 +61,80 @@
 
 				<div class="grupo-filtro">
 					<label class="etiqueta-filtro" for="numero-habitaciones">Numero de habitaciones</label>
-					<input type="text" id="numero-habitaciones" class="campo-filtro" placeholder="Ej: 1, 2, 3, 4" />
+					<select id="numero-habitaciones" class="campo-filtro" name="habitaciones">
+						<option value="">Todas</option>
+						<option value="1">1</option>
+						<option value="2">2</option>
+						<option value="3">3</option>
+						<option value="4+">4+</option>
+					</select>
+				</div>
+
+				<div class="grupo-filtro">
+					<label class="etiqueta-filtro" for="banos-propiedad">Baños</label>
+					<select id="banos-propiedad" class="campo-filtro" name="banos">
+						<option value="">Todos</option>
+						<option value="1">1</option>
+						<option value="2">2</option>
+						<option value="3">3</option>
+						<option value="4+">4 o más</option>
+					</select>
 				</div>
 
 				<div class="grupo-filtro">
 					<label class="etiqueta-filtro" for="metros-minimo">Metros cuadrados</label>
 					<div class="fila-campos">
-						<input type="number" id="metros-minimo" class="campo-filtro" placeholder="Min" min="0" />
-						<input type="number" id="metros-maximo" class="campo-filtro" placeholder="Max" min="0" />
+						<input type="number" id="metros-minimo" class="campo-filtro" name="metros_minimo" placeholder="Min" min="0" />
+						<input type="number" id="metros-maximo" class="campo-filtro" name="metros_maximo" placeholder="Max" min="0" />
 					</div>
 				</div>
 
-				<button class="boton-aplicar" id="boton-aplicar-filtros" type="button">Aplicar filtros</button>
+				<div class="grupo-filtro filtros-propiedad-grid">
+					<select id="amueblado-propiedad" name="amueblado" class="campo-filtro">
+						<option value="">Amueblado</option>
+						<option value="1">Sí</option>
+						<option value="0">No</option>
+					</select>
+					<select id="terraza-propiedad" name="terraza" class="campo-filtro">
+						<option value="">Terraza</option>
+						<option value="1">Sí</option>
+						<option value="0">No</option>
+					</select>
+					<select id="piscina-propiedad" name="piscina" class="campo-filtro">
+						<option value="">Piscina</option>
+						<option value="1">Sí</option>
+						<option value="0">No</option>
+					</select>
+					<select id="garaje-propiedad" name="garaje" class="campo-filtro">
+						<option value="">Garaje</option>
+						<option value="1">Sí</option>
+						<option value="0">No</option>
+					</select>
+					<select id="ascensor-propiedad" name="ascensor" class="campo-filtro">
+						<option value="">Ascensor</option>
+						<option value="1">Sí</option>
+						<option value="0">No</option>
+					</select>
+					<select id="aire-acondicionado-propiedad" name="aire_acondicionado" class="campo-filtro">
+						<option value="">Aire acondicionado</option>
+						<option value="1">Sí</option>
+						<option value="0">No</option>
+					</select>
+					<select id="calefaccion-propiedad" name="calefaccion" class="campo-filtro">
+						<option value="">Calefacción</option>
+						<option value="1">Sí</option>
+						<option value="0">No</option>
+					</select>
+					<select id="trastero-propiedad" name="trastero" class="campo-filtro">
+						<option value="">Trastero</option>
+						<option value="1">Sí</option>
+						<option value="0">No</option>
+					</select>
+				</div>
+
+				<button class="boton-aplicar" id="boton-aplicar-filtros" type="submit">Aplicar filtros</button>
+				<button class="boton-aplicar" id="boton-borrar-filtros" type="reset">Borrar filtros</button>
+				</form>
 			</aside>
 
 			<section class="contenedor-mapa">

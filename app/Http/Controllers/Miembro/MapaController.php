@@ -5,9 +5,24 @@ namespace App\Http\Controllers\Miembro;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class MapaController extends Controller
 {
+    public function index(Request $request)
+    {
+        $ciudades = DB::table('tbl_propiedad')
+            ->where('estado_propiedad', 'publicada')
+            ->whereNotNull('ciudad_propiedad')
+            ->distinct()
+            ->orderBy('ciudad_propiedad')
+            ->pluck('ciudad_propiedad');
+
+        return view('miembro.mapa', [
+            'ciudades' => $ciudades
+        ]);
+    }
+
     public function propiedades(Request $request)
     {
         $query = DB::table('tbl_propiedad')
@@ -62,6 +77,18 @@ class MapaController extends Controller
             $query->where('habitaciones_propiedad', trim((string) $request->habitaciones));
         }
 
+        if ($request->filled('ciudad')) {
+            $query->where('ciudad_propiedad', $request->ciudad);
+        }
+
+        if ($request->filled('banos')) {
+            if ($request->banos === '4+') {
+                $query->where('banos_propiedad', '>=', 4);
+            } else {
+                $query->where('banos_propiedad', (int) $request->banos);
+            }
+        }
+
         // Filtro por metros cuadrados
         if ($request->filled('metros_minimo')) {
             $query->where('metros_cuadrados_propiedad', '>=', (int) $request->metros_minimo);
@@ -69,6 +96,12 @@ class MapaController extends Controller
 
         if ($request->filled('metros_maximo')) {
             $query->where('metros_cuadrados_propiedad', '<=', (int) $request->metros_maximo);
+        }
+
+        foreach (['amueblado', 'terraza', 'piscina', 'garaje', 'ascensor', 'aire_acondicionado', 'calefaccion', 'trastero'] as $campoBooleano) {
+            if ($request->filled($campoBooleano)) {
+                $query->where($campoBooleano . '_propiedad', (int) $request->$campoBooleano);
+            }
         }
 
         $propiedades = $query->orderByDesc('id_propiedad')->limit(300)->get();

@@ -44,9 +44,75 @@ function iniciarValidacionSolicitudArrendador() {
 	registrarCampo("aceptaVeracidad", validarCheckboxObligatorio);
 
 	formularioSolicitud.onsubmit = function (evento) {
+		evento.preventDefault();
+
 		if (!validarFormulario(true)) {
-			evento.preventDefault();
+			return;
 		}
+
+		// preparar envio por fetch
+		botonEnviarSolicitud.disabled = true;
+		botonEnviarSolicitud.classList.add('btn-login-desabilitado');
+
+		var tokenMeta = document.getElementsByName('csrf-token');
+		var csrf = '';
+		if (tokenMeta && tokenMeta.length > 0) {
+			csrf = tokenMeta[0].content || tokenMeta[0].getAttribute('content') || '';
+		}
+		// fallback: obtener token del campo oculto _token del formulario
+		if (!csrf && formularioSolicitud && formularioSolicitud.elements && formularioSolicitud.elements['_token']) {
+			csrf = formularioSolicitud.elements['_token'].value || '';
+		}
+
+		var fd = new FormData(formularioSolicitud);
+
+		fetch(formularioSolicitud.action, {
+			method: 'POST',
+			headers: {
+				'X-CSRF-TOKEN': csrf,
+				'Accept': 'application/json'
+			},
+			body: fd
+		})
+		.then(function (response) {
+			var ct = response.headers.get('content-type') || '';
+			if (ct.indexOf('application/json') !== -1) {
+				return response.json();
+			}
+			// si no es JSON recargar página
+			window.location.reload();
+		})
+		.then(function (data) {
+			if (!data) return;
+			if (data.success) {
+				if (typeof mostrarAlertaExito === 'function') {
+					mostrarAlertaExito('Solicitud enviada', data.message || 'Solicitud enviada correctamente');
+				} else {
+					alert(data.message || 'Solicitud enviada correctamente');
+				}
+				formularioSolicitud.reset();
+				// resetear estados locales
+				for (var k in tocados) { if (tocados.hasOwnProperty(k)) tocados[k] = false; }
+				actualizarEstadoBoton(false);
+			} else {
+				if (typeof mostrarAlertaError === 'function') {
+					mostrarAlertaError('Error', data.message || 'No se pudo enviar la solicitud');
+				} else {
+					alert(data.message || 'No se pudo enviar la solicitud');
+				}
+			}
+		})
+		.catch(function (err) {
+			if (typeof mostrarAlertaError === 'function') {
+				mostrarAlertaError('Error', 'Error de red al enviar la solicitud');
+			} else {
+				alert('Error de red al enviar la solicitud');
+			}
+		})
+		.finally(function () {
+			botonEnviarSolicitud.disabled = false;
+			botonEnviarSolicitud.classList.remove('btn-login-desabilitado');
+		});
 	};
 
 	actualizarEstadoBoton(validarFormulario(false));

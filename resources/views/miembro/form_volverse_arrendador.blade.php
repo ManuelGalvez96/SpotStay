@@ -8,6 +8,8 @@
     <title>SpotStay | Solicitud Arrendador</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+    <link rel="stylesheet" href="{{ asset('css/shared/sweetalert-oso.css') }}" />
 </head>
 
 <body class="pagina-miembro">
@@ -147,6 +149,8 @@
             </div>
         </section>
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+    <script src="{{ asset('js/miembro/sweetalert_oso.js') }}"></script>
     <script src="{{ asset('js/miembro/solicitud_arrendador.js') }}"></script>
 </body>
 

@@ -11,7 +11,11 @@ class PropiedadSeeder extends Seeder
 {
     public function run(): void
     {
-        $ciudades = ['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao', 'Malaga'];
+        $ciudades = [
+            'Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao', 'Malaga',
+            'Zaragoza', 'Alicante', 'Murcia', 'Palma', 'Las Palmas', 'Valladolid',
+            'Vigo', 'Gijon', 'Granada', 'San Sebastian'
+        ];
 
         $arrendadores = [
             ['email' => 'jlavignole@spotstay.com', 'nombre' => 'Jaume Lavignole'],
@@ -52,7 +56,6 @@ class PropiedadSeeder extends Seeder
         $propiedadesData = [];
         $counter = 0;
 
-        // Generar propiedades para cada arrendador con una mezcla realista de estados.
         foreach ($arrendadores as $arrendadorData) {
             $arrendador = Usuario::where('email_usuario', $arrendadorData['email'])->first();
 
@@ -60,11 +63,10 @@ class PropiedadSeeder extends Seeder
                 continue;
             }
 
-            // Cada arrendador tiene mínimo 2 propiedades
-            // Definimos un gestor para este bloque de propiedades
             $gestor = $gestores->get($counter % $gestores->count());
 
             // Primera: estado 'borrador'
+            $ciudad1 = $ciudades[$counter % count($ciudades)];
             $propiedadesData[] = [
                 'arrendador_id' => $arrendador->id_usuario,
                 'gestor_id' => $gestor->id_usuario,
@@ -72,13 +74,13 @@ class PropiedadSeeder extends Seeder
                 'calle' => $this->generarCalle($counter),
                 'numero' => rand(1, 999),
                 'piso' => rand(0, 6),
-                'puerta' => chr(65 + rand(0, 4)), // A-E
-                'ciudad' => $ciudades[$counter % count($ciudades)],
-                'cp' => $this->generarCP($ciudades[$counter % count($ciudades)]),
-                'lat' => $this->generarLatitud($ciudades[$counter % count($ciudades)]),
-                'lng' => $this->generarLongitud($ciudades[$counter % count($ciudades)]),
+                'puerta' => chr(65 + rand(0, 4)),
+                'ciudad' => $ciudad1,
+                'cp' => $this->generarCP($ciudad1),
+                'lat' => $this->generarLatitud($ciudad1),
+                'lng' => $this->generarLongitud($ciudad1),
                 'descripcion' => 'Piso completamente equipado en zona céntrica con acceso a transporte público.',
-                'precio' => rand(60, 250) * 10, // 600-2500
+                'precio' => rand(60, 250) * 10,
                 'tipo' => $this->generarTipo($counter),
                 'habitaciones' => rand(1, 4),
                 'metros' => rand(45, 120),
@@ -88,6 +90,7 @@ class PropiedadSeeder extends Seeder
 
             // Segunda: estado 'alquilada' o 'publicada'
             $gestor2 = $gestores->get(($counter + 1) % $gestores->count());
+            $ciudad2 = $ciudades[($counter + 1) % count($ciudades)];
             $propiedadesData[] = [
                 'arrendador_id' => $arrendador->id_usuario,
                 'gestor_id' => $gestor2->id_usuario,
@@ -96,10 +99,10 @@ class PropiedadSeeder extends Seeder
                 'numero' => rand(1, 999),
                 'piso' => rand(0, 6),
                 'puerta' => chr(65 + rand(0, 4)),
-                'ciudad' => $ciudades[($counter + 1) % count($ciudades)],
-                'cp' => $this->generarCP($ciudades[($counter + 1) % count($ciudades)]),
-                'lat' => $this->generarLatitud($ciudades[($counter + 1) % count($ciudades)]),
-                'lng' => $this->generarLongitud($ciudades[($counter + 1) % count($ciudades)]),
+                'ciudad' => $ciudad2,
+                'cp' => $this->generarCP($ciudad2),
+                'lat' => $this->generarLatitud($ciudad2),
+                'lng' => $this->generarLongitud($ciudad2),
                 'descripcion' => 'Apartamento moderno con todas las comodidades en pleno centro urbano.',
                 'precio' => rand(60, 250) * 10,
                 'tipo' => $this->generarTipo($counter + 1),
@@ -109,21 +112,22 @@ class PropiedadSeeder extends Seeder
                 'creado' => now()->subDays(rand(5, 60)),
             ];
 
-            // Tercera propiedad (algunos arrendadores): compartida con múltiples inquilinos
+            // Tercera propiedad
             if ($counter % 3 === 0) {
                 $gestor3 = $gestores->get(($counter + 2) % $gestores->count());
+                $ciudad3 = $ciudades[($counter + 2) % count($ciudades)];
                 $propiedadesData[] = [
                     'arrendador_id' => $arrendador->id_usuario,
                     'gestor_id' => $gestor3->id_usuario,
-                    'titulo' => $this->generarTitulo($counter + 2) . ' - ' . $arrendador->id_usuario,
+                    'titulo' => $this->generarTitulo($counter + 2) . ' Premium',
                     'calle' => $this->generarCalle($counter + 2),
                     'numero' => rand(1, 999),
                     'piso' => rand(0, 6),
                     'puerta' => chr(65 + rand(0, 4)),
-                    'ciudad' => $ciudades[($counter + 2) % count($ciudades)],
-                    'cp' => $this->generarCP($ciudades[($counter + 2) % count($ciudades)]),
-                    'lat' => $this->generarLatitud($ciudades[($counter + 2) % count($ciudades)]),
-                    'lng' => $this->generarLongitud($ciudades[($counter + 2) % count($ciudades)]),
+                    'ciudad' => $ciudad3,
+                    'cp' => $this->generarCP($ciudad3),
+                    'lat' => $this->generarLatitud($ciudad3),
+                    'lng' => $this->generarLongitud($ciudad3),
                     'descripcion' => 'Vivienda amplia compartida, ideal para grupos de amigos o compañeros de trabajo.',
                     'precio' => rand(60, 180) * 10,
                     'tipo' => 'Casa',
@@ -137,7 +141,6 @@ class PropiedadSeeder extends Seeder
             $counter += 3;
         }
 
-        // Insertar propiedades
         foreach ($propiedadesData as $data) {
             Propiedad::firstOrCreate(
                 [
@@ -167,58 +170,6 @@ class PropiedadSeeder extends Seeder
         }
     }
 
-    private function generarEstadoPropiedad(int $indice, int $total): string
-    {
-        $roll = rand(1, 100);
-
-        if ($indice === 0) {
-            return match (true) {
-                $roll <= 35 => 'borrador',
-                $roll <= 75 => 'publicada',
-                $roll <= 95 => 'alquilada',
-                default => 'inactiva',
-            };
-        }
-
-        if ($indice === $total - 1) {
-            return match (true) {
-                $roll <= 15 => 'borrador',
-                $roll <= 55 => 'publicada',
-                $roll <= 90 => 'alquilada',
-                default => 'inactiva',
-            };
-        }
-
-        return match (true) {
-            $roll <= 20 => 'borrador',
-            $roll <= 55 => 'publicada',
-            $roll <= 85 => 'alquilada',
-            default => 'inactiva',
-        };
-    }
-
-    private function generarDescripcion(string $estado): string
-    {
-        return match ($estado) {
-            'borrador' => 'Propiedad en preparación, pendiente de validar fotografía, tarifas o disponibilidad.',
-            'publicada' => 'Vivienda lista para enseñar, con buena ubicación y servicios básicos activos.',
-            'alquilada' => 'Propiedad ocupada actualmente con contrato activo y mantenimiento regular.',
-            'inactiva' => 'Propiedad temporalmente fuera de mercado por reforma, revisión o cambio de inquilino.',
-            default => 'Vivienda con características estándar y ubicación céntrica.',
-        };
-    }
-
-    private function generarFechaCreacion(string $estado): string
-    {
-        return match ($estado) {
-            'borrador' => now()->subDays(rand(3, 45)),
-            'publicada' => now()->subDays(rand(10, 180)),
-            'alquilada' => now()->subDays(rand(60, 420)),
-            'inactiva' => now()->subDays(rand(30, 240)),
-            default => now()->subDays(rand(10, 120)),
-        };
-    }
-
     private function generarTitulo(int $index): string
     {
         $titulos = [
@@ -239,21 +190,10 @@ class PropiedadSeeder extends Seeder
     private function generarCalle(int $index): string
     {
         $calles = [
-            'Calle Mayor',
-            'Avenida de la Paz',
-            'Calle Príncipe',
-            'Paseo del Prado',
-            'Calle Alcalá',
-            'Gran Vía',
-            'Calle Serrano',
-            'Avenida Paseo de Gracia',
-            'Calle Ramblas',
-            'Avenida Diagonal',
-            'Calle Colón',
-            'Paseo de la Costa',
-            'Calle del Carmen',
-            'Avenida de la Libertad',
-            'Calle Nueva',
+            'Calle Mayor', 'Avenida de la Paz', 'Calle Príncipe', 'Paseo del Prado',
+            'Calle Alcalá', 'Gran Vía', 'Calle Serrano', 'Avenida Paseo de Gracia',
+            'Calle Ramblas', 'Avenida Diagonal', 'Calle Colón', 'Paseo de la Costa',
+            'Calle del Carmen', 'Avenida de la Libertad', 'Calle Nueva', 'Calle Real'
         ];
         return $calles[$index % count($calles)];
     }
@@ -267,6 +207,16 @@ class PropiedadSeeder extends Seeder
             'Sevilla' => ['41001', '41002', '41003', '41004'],
             'Bilbao' => ['48001', '48002', '48003', '48004'],
             'Malaga' => ['29001', '29002', '29005', '29007'],
+            'Zaragoza' => ['50001', '50002', '50003'],
+            'Alicante' => ['03001', '03002', '03003'],
+            'Murcia' => ['30001', '30002', '30003'],
+            'Palma' => ['07001', '07002', '07003'],
+            'Las Palmas' => ['35001', '35002', '35003'],
+            'Valladolid' => ['47001', '47002', '47003'],
+            'Vigo' => ['36201', '36202', '36203'],
+            'Gijon' => ['33201', '33202', '33203'],
+            'Granada' => ['18001', '18002', '18003'],
+            'San Sebastian' => ['20001', '20002', '20003']
         ];
         $codigos = $cps[$ciudad] ?? ['00000'];
         return $codigos[array_rand($codigos)];
@@ -275,12 +225,12 @@ class PropiedadSeeder extends Seeder
     private function generarLatitud(string $ciudad): float
     {
         $lats = [
-            'Madrid' => 40.4168,
-            'Barcelona' => 41.3874,
-            'Valencia' => 39.4699,
-            'Sevilla' => 37.3891,
-            'Bilbao' => 43.2630,
-            'Malaga' => 36.7213,
+            'Madrid' => 40.4168, 'Barcelona' => 41.3874, 'Valencia' => 39.4699,
+            'Sevilla' => 37.3891, 'Bilbao' => 43.2630, 'Malaga' => 36.7213,
+            'Zaragoza' => 41.6488, 'Alicante' => 38.3452, 'Murcia' => 37.9922,
+            'Palma' => 39.5693, 'Las Palmas' => 28.1235, 'Valladolid' => 41.6523,
+            'Vigo' => 42.2406, 'Gijon' => 43.5357, 'Granada' => 37.1773,
+            'San Sebastian' => 43.3183
         ];
         return $lats[$ciudad] + (rand(-100, 100) / 1000);
     }
@@ -288,12 +238,12 @@ class PropiedadSeeder extends Seeder
     private function generarLongitud(string $ciudad): float
     {
         $lngs = [
-            'Madrid' => -3.7038,
-            'Barcelona' => 2.1686,
-            'Valencia' => -0.3761,
-            'Sevilla' => -5.9845,
-            'Bilbao' => -2.9350,
-            'Malaga' => -4.4214,
+            'Madrid' => -3.7038, 'Barcelona' => 2.1686, 'Valencia' => -0.3761,
+            'Sevilla' => -5.9845, 'Bilbao' => -2.9350, 'Malaga' => -4.4214,
+            'Zaragoza' => -0.8891, 'Alicante' => -0.4810, 'Murcia' => -1.1307,
+            'Palma' => 2.6502, 'Las Palmas' => -15.4363, 'Valladolid' => -4.7245,
+            'Vigo' => -8.7207, 'Gijon' => -5.6615, 'Granada' => -3.5986,
+            'San Sebastian' => -1.9812
         ];
         return $lngs[$ciudad] + (rand(-100, 100) / 1000);
     }

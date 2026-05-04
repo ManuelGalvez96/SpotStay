@@ -94,7 +94,7 @@
 
             @if ($proximaFinalizacion)
             {{-- ⚠️ AVISO: Contrato próximo a finalizar (menos de 30 días) --}}
-            <div class="card-gestion fin-contrato">
+            <div class="card-gestion fin-contrato" data-id-alquiler="{{ $alquiler->id_alquiler }}">
                 <div class="card-icon">
                     <i class="bi bi-exclamation-triangle-fill"></i>
                 </div>
@@ -109,6 +109,9 @@
                         <p class="nota">Tu contrato vence el <strong>{{ $fechaFinContrato }}</strong>.</p>
                         @endif
                         <p class="nota nota-fin-contrato">Contacta con el propietario para renovar o gestionar la salida.</p>
+                        <div id="contenedor-alerta-contrato" class="alerta-semana-exceso-dinamica">
+                            <!-- El mensaje se cargará por fetch -->
+                        </div>
                 </div>
             </div>
             @elseif ($esIndefinido)
@@ -148,7 +151,7 @@
                         <button type="button" id="boton-pagar" class="btn-accion btn-pago" {{ empty($cuotaPendienteId) ? 'disabled' : '' }}>Pagar Ahora</button>
                     </form>
                     @endif
-                    <button type="button" class="btn-accion w-100 mt-3" data-bs-toggle="modal" data-bs-target="#modalHistorialPagos" style="background-color: var(--fondo-suave); color: var(--texto); border: 1px solid var(--borde); display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: var(--radio); height: 44px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+                    <button type="button" class="btn-accion w-100 mt-3 btn-ver-historial" data-bs-toggle="modal" data-bs-target="#modalHistorialPagos">
                         <i class="bi bi-clock-history"></i> Ver Historial de Pagos
                     </button>
                 </div>
@@ -195,7 +198,7 @@
                     <button class="btn-accion btn-pago" type="button" disabled>Sin cuotas pendientes</button>
                     @endif
                     @endif
-                    <button type="button" class="btn-accion w-100 mt-3" data-bs-toggle="modal" data-bs-target="#modalHistorialPagos" style="background-color: var(--fondo-suave); color: var(--texto); border: 1px solid var(--borde); display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: var(--radio); height: 44px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+                    <button type="button" class="btn-accion w-100 mt-3 btn-ver-historial" data-bs-toggle="modal" data-bs-target="#modalHistorialPagos">
                         <i class="bi bi-clock-history"></i> Ver Historial de Pagos
                     </button>
                 </div>
@@ -212,9 +215,9 @@
                     @if ($numGastosPendientes > 0)
                     <span class="valor-kpi">{{ number_format($totalGastosPendientes, 2, ',', '.') }}€</span>
                     <p class="nota">Tienes <strong>{{ $numGastosPendientes }} suministros</strong> pendientes:</p>
-                    <ul class="lista-suministros-pendiente" style="list-style: none; padding: 0; margin: 10px 0; font-size: 0.9rem; color: var(--texto-suave);">
+                    <ul class="lista-suministros-limpia">
                         @foreach($listaGastos as $gasto)
-                        <li style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed var(--borde);">
+                        <li class="item-suministro-pendiente-limpio">
                             <span><i class="bi bi-dot"></i> {{ ucfirst($gasto->categoria_gasto) }}{{ !empty($gasto->concepto_gasto) ? ' - ' . $gasto->concepto_gasto : '' }}</span>
                             @php
                             $importeInd = $numInquilinos > 1 ? ($gasto->importe_detalle / $numInquilinos) : $gasto->importe_detalle;
@@ -260,7 +263,7 @@
                     <p class="nota">Si tienes alguna duda o problema, comunícate directamente con él.</p>
                     <form method="POST" action="{{ route('miembro.mensajes.iniciar', $alquiler->id_propiedad) }}" class="m-0 w-100 mt-2">
                         @csrf
-                        <button type="submit" class="btn-accion w-100 text-center" style="background-color: transparent; border: 1px solid var(--borde); color: var(--primario); border-radius: var(--radio); height: 44px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+                        <button type="submit" class="btn-accion w-100 text-center btn-contacto-limpio">
                             <i class="bi bi-chat-dots"></i> Contactar al Propietario
                         </button>
                     </form>
@@ -293,7 +296,7 @@
                         <div class="incidencia-info">
                             <span class="titulo btn-detalle-incidencia"
                                 data-bs-toggle="modal"
-                                data-bs-target="#modalDetalleIncidencia"
+                                data-bs-target="#modal-detalle-incidencia"
                                 data-id="{{ $incidencia->id_incidencia }}">
                                 {{ $incidencia->titulo_incidencia }}
                             </span>
@@ -391,21 +394,20 @@
             <div class="modal-body p-0">
                 <ul class="nav nav-tabs nav-fill" id="tabHistorial" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="alquiler-tab" data-bs-toggle="tab" data-bs-target="#alquiler-history" type="button" role="tab" aria-controls="alquiler-history" aria-selected="true" style="border-radius: 0; font-weight: 600;">
+                        <button class="nav-link active tab-historial-btn" id="alquiler-tab" data-bs-toggle="tab" data-bs-target="#alquiler-history" type="button" role="tab" aria-controls="alquiler-history" aria-selected="true">
                             <i class="bi bi-house-door"></i> Alquiler
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="gastos-tab" data-bs-toggle="tab" data-bs-target="#gastos-history" type="button" role="tab" aria-controls="gastos-history" aria-selected="false" style="border-radius: 0; font-weight: 600;">
+                        <button class="nav-link tab-historial-btn" id="gastos-tab" data-bs-toggle="tab" data-bs-target="#gastos-history" type="button" role="tab" aria-controls="gastos-history" aria-selected="false">
                             <i class="bi bi-lightning-charge"></i> Suministros
                         </button>
                     </li>
                 </ul>
 
-                <div class="tab-content" id="tabHistorialContent">
+                <div class="tab-content" id="tabHistorialContent" data-id-alquiler="{{ $alquiler->id_alquiler }}">
                     {{-- Historial Alquiler --}}
                     <div class="tab-pane fade show active" id="alquiler-history" role="tabpanel" aria-labelledby="alquiler-tab">
-                        @if($historialAlquiler->count() > 0)
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
@@ -417,27 +419,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($historialAlquiler as $pago)
-                                    <tr>
-                                        <td class="ps-3 align-middle">{{ \Carbon\Carbon::parse($pago->creado_pago)->format('d/m/Y') }}</td>
-                                        <td class="align-middle">{{ $pago->concepto_pago }}</td>
-                                        <td class="text-end fw-bold align-middle">{{ number_format($pago->importe_pago, 2, ',', '.') }} €</td>
-                                        <td class="text-center pe-3 align-middle">
-                                            <span class="badge bg-success">Pagado</span>
-                                        </td>
-                                    </tr>
-                                    @endforeach
+                                    {{-- Se carga vía fetch --}}
                                 </tbody>
                             </table>
                         </div>
-                        @else
-                        <div class="p-4 text-center text-muted">No hay pagos de alquiler registrados todavía.</div>
-                        @endif
                     </div>
 
                     {{-- Historial Gastos --}}
                     <div class="tab-pane fade" id="gastos-history" role="tabpanel" aria-labelledby="gastos-tab">
-                        @if($historialGastos->count() > 0)
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
@@ -449,22 +438,10 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($historialGastos as $pago)
-                                    <tr>
-                                        <td class="ps-3 align-middle">{{ \Carbon\Carbon::parse($pago->creado_pago)->format('d/m/Y') }}</td>
-                                        <td class="align-middle">{{ $pago->concepto_pago }}</td>
-                                        <td class="text-end fw-bold align-middle" style="color: #00c4cc;">{{ number_format($pago->importe_pago, 2, ',', '.') }} €</td>
-                                        <td class="text-center pe-3 align-middle">
-                                            <span class="badge" style="background-color: #00c4cc;">Abonado</span>
-                                        </td>
-                                    </tr>
-                                    @endforeach
+                                    {{-- Se carga vía fetch --}}
                                 </tbody>
                             </table>
                         </div>
-                        @else
-                        <div class="p-4 text-center text-muted">No hay pagos de suministros registrados todavía.</div>
-                        @endif
                     </div>
                 </div>
             </div>

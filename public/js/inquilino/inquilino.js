@@ -377,3 +377,160 @@ function iniciarTemporizadorAlquileres() {
         }
     });
 }
+
+/**
+ * Realiza un fetch para comprobar si el contrato ha superado la semana de exceso.
+ */
+function verificarEstadoAlquilerFetch() {
+    const tarjetaFin = document.querySelector('.card-gestion.fin-contrato');
+    const contenedorAlerta = document.getElementById('contenedor-alerta-contrato');
+    
+    if (!tarjetaFin || !contenedorAlerta) return;
+
+    const idAlquiler = tarjetaFin.getAttribute('data-id-alquiler');
+    if (!idAlquiler) return;
+
+    fetch(`/inquilino/alquiler/${idAlquiler}/estado-contrato`)
+        .then(respuesta => respuesta.json())
+        .then(datos => {
+            if (datos.semana_excedida) {
+                contenedorAlerta.innerText = datos.mensaje;
+                contenedorAlerta.style.display = 'block';
+                
+                // Aplicamos un estilo de urgencia a la tarjeta
+                tarjetaFin.style.border = '2px solid #ff4d4d';
+                tarjetaFin.style.boxShadow = '0 0 15px rgba(255, 77, 77, 0.2)';
+            }
+        })
+        .catch(error => {
+            console.error('Error al verificar estado del contrato:', error);
+        });
+}
+
+// Ejecución inicial al cargar
+verificarEstadoAlquilerFetch();
+// Comprobamos cada 5 minutos por si el tiempo pasa dinámicamente
+setInterval(verificarEstadoAlquilerFetch, 300000);
+
+/**
+ * Inicializa los eventos para los botones de detalle de incidencia
+ * (Asignación directa para cumplir estándares SpotStay)
+ */
+function inicializarEventosIncidencias() {
+    const botonesDetalle = document.querySelectorAll('.btn-detalle-incidencia');
+    botonesDetalle.forEach(btn => {
+        btn.onclick = () => {
+            const id = btn.getAttribute('data-id');
+            cargarDetalleIncidencia(id);
+        };
+    });
+}
+
+/**
+ * Carga el historial de pagos (alquiler o suministros) vía fetch
+ */
+function cargarHistorialPagosFetch(tipo) {
+    const tabContent = document.getElementById('tabHistorialContent');
+    if (!tabContent) return;
+    
+    const idAlquiler = tabContent.getAttribute('data-id-alquiler');
+    if (!idAlquiler) {
+        console.error("No se encontró el ID del alquiler.");
+        return;
+    }
+
+    const idTab = tipo === 'alquiler' ? 'alquiler-history' : 'gastos-history';
+    const tabPane = document.getElementById(idTab);
+    const endpoint = tipo === 'alquiler' ? 'historial-alquiler' : 'historial-suministros';
+    
+    // Configuraciones visuales según tipo
+    const colorTexto = tipo === 'alquiler' ? '' : 'texto-suministro';
+    const colorBadge = tipo === 'alquiler' ? 'bg-success' : 'badge-suministro-abonado';
+    const textoBadge = tipo === 'alquiler' ? 'Pagado' : 'Abonado';
+    const spinnerColor = tipo === 'alquiler' ? 'text-primary' : 'text-info';
+
+    // Asegurar que la tabla existe antes de buscar el tbody
+    let cuerpoTabla = tabPane.querySelector('tbody');
+    if (!cuerpoTabla) {
+        tabPane.innerHTML = `
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Fecha</th>
+                            <th>${tipo === 'alquiler' ? 'Concepto' : 'Categoria(Concepto)'}</th>
+                            <th class="text-end">Importe</th>
+                            <th class="text-center pe-3">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>`;
+        cuerpoTabla = tabPane.querySelector('tbody');
+    }
+
+    // Spinner de carga dentro de la tabla
+    cuerpoTabla.innerHTML = `<tr><td colspan="4" class="text-center p-5"><div class="spinner-border ${spinnerColor}" role="status"></div><p class="mt-2 small text-muted">Cargando ${tipo}...</p></td></tr>`;
+
+    fetch(`/inquilino/alquiler/${idAlquiler}/${endpoint}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(datos => {
+        if (!datos || datos.length === 0) {
+            cuerpoTabla.innerHTML = `<tr><td colspan="4" class="p-5 text-center text-muted">No hay registros de ${tipo} en este alquiler.</td></tr>`;
+            return;
+        }
+
+        cuerpoTabla.innerHTML = datos.map(pago => {
+            const fecha = new Date(pago.creado_pago);
+            const fechaFormateada = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const importe = parseFloat(pago.importe_pago).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            
+            return `
+            <tr>
+                <td class="ps-3 align-middle">${fechaFormateada}</td>
+                <td class="align-middle">${pago.concepto_pago}</td>
+                <td class="text-end fw-bold align-middle ${colorTexto}">${importe} €</td>
+                <td class="text-center pe-3 align-middle">
+                    <span class="badge ${colorBadge}">${textoBadge}</span>
+                </td>
+            </tr>`;
+        }).join('');
+    })
+    .catch(error => {
+        console.error('Error al cargar historial:', error);
+        cuerpoTabla.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-danger">Error al conectar con el servidor.</td></tr>`;
+    });
+}
+
+/**
+ * Inicializa los eventos del modal de historial para disparar las cargas fetch
+ */
+function inicializarHistorialPagosEvents() {
+    const botonTabAlquiler = document.getElementById('alquiler-tab');
+    const botonTabGastos = document.getElementById('gastos-tab');
+    const botonesVerHistorial = document.querySelectorAll('.btn-ver-historial');
+
+    if (botonTabAlquiler) botonTabAlquiler.onclick = () => cargarHistorialPagosFetch('alquiler');
+    if (botonTabGastos) botonTabGastos.onclick = () => cargarHistorialPagosFetch('suministros');
+
+    // Al abrir el modal desde cualquier botón, cargamos la pestaña que esté activa
+    botonesVerHistorial.forEach(btn => {
+        btn.onclick = () => {
+            // Un pequeño retardo para asegurar que el modal y las pestañas están listos en el DOM
+            setTimeout(() => {
+                const activeTab = document.querySelector('#tabHistorial .nav-link.active');
+                if (activeTab && activeTab.id === 'alquiler-tab') {
+                    cargarHistorialPagosFetch('alquiler');
+                } else if (activeTab) {
+                    cargarHistorialPagosFetch('suministros');
+                }
+            }, 150);
+        };
+    });
+}
+
+// Inicializar interacciones
+inicializarEventosIncidencias();
+inicializarHistorialPagosEvents();

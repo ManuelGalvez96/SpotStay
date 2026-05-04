@@ -713,3 +713,70 @@
 	font-weight: 500;
 	font-size: 0.95rem;
 }
+/* ===== CLASES PARA LIMPIEZA DE BLADE (ESTILOS SEPARADOS) ===== */
+
+.alerta-semana-exceso-dinamica {
+	display: none;
+	margin-top: 10px;
+	padding: 10px;
+	background: #fff5f5;
+	border-left: 4px solid #ff4d4d;
+	border-radius: 4px;
+	color: #cc0000;
+	font-weight: 600;
+	font-size: 0.85rem;
+}
+
+.btn-ver-historial {
+	background-color: var(--fondo-suave) !important;
+	color: var(--texto) !important;
+	border: 1px solid var(--borde) !important;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	border-radius: var(--radio);
+	height: 44px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.lista-suministros-limpia {
+	list-style: none;
+	padding: 0;
+	margin: 10px 0;
+	font-size: 0.9rem;
+	color: var(--texto-suave);
+}
+
+.item-suministro-pendiente-limpio {
+	display: flex;
+	justify-content: space-between;
+	padding: 4px 0;
+	border-bottom: 1px dashed var(--borde);
+}
+
+.btn-contacto-limpio {
+	background-color: transparent !important;
+	border: 1px solid var(--borde) !important;
+	color: var(--primario) !important;
+	border-radius: var(--radio);
+	height: 44px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.tab-historial-btn {
+	border-radius: 0 !important;
+	font-weight: 600 !important;
+}
+
+.texto-suministro {
+	color: #00c4cc !important;
+}
+
+.badge-suministro-abonado {
+	background-color: #00c4cc !important;
+}

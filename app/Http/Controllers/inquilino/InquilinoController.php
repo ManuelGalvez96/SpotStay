@@ -430,6 +430,45 @@ class InquilinoController extends Controller
         ]);
     }
 
+    public function obtenerEstadoContrato($id)
+    {
+        $usuario = Auth::user();
+        if (!$usuario) return response()->json(['error' => 'No autorizado'], 401);
+
+        $alquiler = DB::table('tbl_alquiler')
+            ->where('id_alquiler', $id)
+            ->first();
+
+        if (!$alquiler) return response()->json(['error' => 'Alquiler no encontrado'], 404);
+
+        $hoy = Carbon::now();
+        $fechaFin = !empty($alquiler->fecha_fin_alquiler) ? Carbon::parse($alquiler->fecha_fin_alquiler)->endOfDay() : null;
+        
+        $datos = [
+            'es_indefinido' => empty($fechaFin),
+            'expirado' => false,
+            'dias_exceso' => 0,
+            'semana_excedida' => false,
+            'mensaje' => ''
+        ];
+
+        if ($fechaFin) {
+            $datos['expirado'] = $hoy->gt($fechaFin);
+            if ($datos['expirado']) {
+                $datos['dias_exceso'] = (int) $fechaFin->diffInDays($hoy);
+                $datos['semana_excedida'] = $datos['dias_exceso'] >= 7;
+                
+                if ($datos['semana_excedida']) {
+                    $datos['mensaje'] = "⚠️ Alerta: Has superado el plazo de una semana tras el fin de contrato.";
+                } else {
+                    $datos['mensaje'] = "Contrato finalizado hace " . $datos['dias_exceso'] . " días.";
+                }
+            }
+        }
+
+        return response()->json($datos);
+    }
+
     public function reportarIncidencia(Request $request, $id)
     {
         $usuario = Auth::user();
@@ -870,5 +909,39 @@ class InquilinoController extends Controller
             }
             return back()->with('error', 'Error al cerrar la incidencia: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Devuelve el historial de pagos de suministros en JSON.
+     */
+    public function obtenerHistorialSuministros($id)
+    {
+        $userId = Auth::id();
+
+        $historial = DB::table('tbl_pago')
+            ->where('id_alquiler_fk', $id)
+            ->where('id_pagador_fk', $userId)
+            ->where('tipo_pago', 'gasto')
+            ->orderBy('creado_pago', 'desc')
+            ->get();
+
+        return response()->json($historial);
+    }
+
+    /**
+     * Devuelve el historial de pagos de alquiler en JSON.
+     */
+    public function obtenerHistorialAlquiler($id)
+    {
+        $userId = Auth::id();
+
+        $historial = DB::table('tbl_pago')
+            ->where('id_alquiler_fk', $id)
+            ->where('id_pagador_fk', $userId)
+            ->where('tipo_pago', 'alquiler')
+            ->orderBy('creado_pago', 'desc')
+            ->get();
+
+        return response()->json($historial);
     }
 }

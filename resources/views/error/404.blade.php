@@ -53,13 +53,17 @@
 
             @php
             $urlInicio = url('/login');
-            if (auth()->check()) {
-            $user = auth()->user();
-            if ($user->roles()->where('slug_rol', 'admin')->exists()) {
-            $urlInicio = url('/admin/dashboard');
-            } elseif ($user->roles()->whereIn('slug_rol', ['miembro', 'inquilino'])->exists()) {
-            $urlInicio = url('/miembro/inicio');
-            }
+            if (Auth::check()) {
+                $user = Auth::user();
+                if ($user->roles()->where('slug_rol', 'admin')->exists()) {
+                    $urlInicio = url('/admin/dashboard');
+                } elseif ($user->roles()->where('slug_rol', 'arrendador')->exists()) {
+                    $urlInicio = url('/arrendador/dashboard');
+                } elseif ($user->roles()->where('slug_rol', 'gestor')->exists()) {
+                    $urlInicio = url('/gestor/dashboard');
+                } else {
+                    $urlInicio = url('/miembro/inicio');
+                }
             }
             @endphp
 

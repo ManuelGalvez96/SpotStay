@@ -20,8 +20,17 @@ class AuthController extends Controller
         if (Auth::check()) {
             /** @var Usuario $user */
             $user = Auth::user();
+
             if ($user->roles()->where('slug_rol', 'admin')->exists()) {
                 return redirect('/admin/dashboard');
+            }
+
+            if ($user->roles()->where('slug_rol', 'arrendador')->exists()) {
+                return redirect('/arrendador/dashboard');
+            }
+
+            if ($user->roles()->where('slug_rol', 'gestor')->exists()) {
+                return redirect('/gestor/dashboard');
             }
 
             if ($user->roles()->whereIn('slug_rol', ['miembro', 'inquilino', 'propietario'])->exists()) {

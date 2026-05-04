@@ -53,18 +53,6 @@
 
             @php
             $urlInicio = url('/login');
-            if (Auth::check()) {
-                $user = Auth::user();
-                if ($user->roles()->where('slug_rol', 'admin')->exists()) {
-                    $urlInicio = url('/admin/dashboard');
-                } elseif ($user->roles()->where('slug_rol', 'arrendador')->exists()) {
-                    $urlInicio = url('/arrendador/dashboard');
-                } elseif ($user->roles()->where('slug_rol', 'gestor')->exists()) {
-                    $urlInicio = url('/gestor/dashboard');
-                } else {
-                    $urlInicio = url('/miembro/inicio');
-                }
-            }
             @endphp
 
             <div class="action-buttons">

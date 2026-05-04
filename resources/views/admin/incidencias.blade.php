@@ -102,10 +102,13 @@
                 <i class="bi bi-list-ul"></i>
             </button>
         </div>
+        {{-- Botón comentado: Nueva incidencia oculto --}}
+        {{--
         <button id="btnNuevaIncidencia" class="btn-primario">
             <i class="bi bi-plus"></i>
             <span>Nueva incidencia</span>
         </button>
+        --}}
     </div>
 </div>
 

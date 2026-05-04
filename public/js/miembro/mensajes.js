@@ -1,3 +1,9 @@
+/* =========================================================
+   SECCIÓN 1: CONFIGURACIÓN Y CARGA INICIAL DEL CHAT
+   Define variables globales y arranca la carga de mensajes
+   y el intervalo de actualización automática (polling).
+   ========================================================= */
+
 var urlMensajesActual = "";
 var urlEnviarActual = "";
 var tokenCsrfActual = "";
@@ -35,6 +41,11 @@ function inicializarChatFetch() {
 		}
 	}, 3000);
 }
+
+/* =========================================================
+   SECCIÓN 2: LÓGICA DE COMUNICACIÓN (FETCH)
+   Se encarga de obtener y enviar mensajes al servidor.
+   ========================================================= */
 
 function obtenerTokenFormulario(formulario) {
 	var tokenInput = formulario.elements["_token"];
@@ -118,6 +129,11 @@ function enviarMensaje(campoMensaje, listaMensajes) {
 		});
 }
 
+/* =========================================================
+   SECCIÓN 3: RENDERIZADO DE UI (BURBUJAS)
+   Genera el HTML de los mensajes y actualiza el DOM.
+   ========================================================= */
+
 function pintarMensajes(listaMensajes, mensajes) {
 	var html = "";
 	var i;
@@ -145,6 +161,11 @@ function construirBurbuja(mensaje) {
 		'<span class="mensajes-burbuja-fecha">' + fecha + '</span>' +
 		'</div>';
 }
+
+/* =========================================================
+   SECCIÓN 4: UTILIDADES DE SEGURIDAD
+   Escapa caracteres para prevenir inyección de código (XSS).
+   ========================================================= */
 
 function escaparHtml(valor) {
 	var texto = String(valor);

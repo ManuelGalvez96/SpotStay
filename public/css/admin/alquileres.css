@@ -148,6 +148,54 @@
     border-color: #035498;
 }
 
+/* ── Paginación Bootstrap global (estilo propiedades) ── */
+.pagination {
+    margin-left: auto;
+    gap: 4px;
+}
+
+.page-item {
+    margin: 0;
+}
+
+.page-link {
+    border: 1px solid #E5E7EB;
+    color: #6B7280;
+    background: white;
+    border-radius: 6px;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.page-link:hover:not(.disabled .page-link) {
+    color: #035498;
+    border-color: #035498;
+    background: #EEF4FF;
+}
+
+.page-item.active .page-link {
+    background: #035498;
+    border-color: #035498;
+    color: white;
+    font-weight: 600;
+}
+
+.page-item.disabled .page-link {
+    background: #F9FAFB;
+    color: #D1D5DB;
+    border-color: #F3F4F6;
+    cursor: not-allowed;
+}
+
 .tabla-footer {
     padding: 12px 16px;
     background: #F9FAFB;

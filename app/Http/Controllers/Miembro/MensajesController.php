@@ -52,32 +52,51 @@ class MensajesController extends Controller
         ]);
     }
 
+    /**
+     * Inicia una conversación directa entre el miembro actual y el arrendador de una propiedad.
+     * Si el chat ya existe, lo reutiliza; si no, crea la sala y añade a los participantes.
+     */
     public function iniciarDesdePropiedad($id)
     {
+        // 1. IDENTIFICACIÓN: Obtenemos quién intenta iniciar el chat
         $usuarioId = Auth::id();
 
+        // Obtenemos la propiedad específica y quién es su dueño (arrendador_fk)
         $propiedad = Propiedad::select('id_propiedad', 'id_arrendador_fk')
             ->findOrFail($id);
 
+        // 2. SEGURIDAD: Evitar que el dueño chatee consigo mismo
         if ((int) $propiedad->id_arrendador_fk === (int) $usuarioId) {
             return redirect()->back()->with('error', 'No puedes iniciar chat con tu propia propiedad.');
         }
 
+        // 3. BÚSQUEDA: ¿Existe ya un chat entre ESTOS dos sobre ESTA propiedad?
+        // Usamos una cadena de condiciones para ser muy estrictos:
         $conversacion = Conversacion::where('id_propiedad_fk', $propiedad->id_propiedad)
             ->where('tipo_conversacion', 'directa')
+            
+            // FILTRO A: La conversación debe incluir al USUARIO ACTUAL
             ->whereHas('participantes', function ($query) use ($usuarioId) {
                 $query->where('tbl_conversacion_usuario.id_usuario_fk', $usuarioId);
             })
+            
+            // FILTRO B: La conversación debe incluir al DUEÑO de la propiedad
             ->whereHas('participantes', function ($query) use ($propiedad) {
                 $query->where('tbl_conversacion_usuario.id_usuario_fk', $propiedad->id_arrendador_fk);
             })
+            
+            // FILTRO C: Deben haber EXACTAMENTE 2 personas (ni más, ni menos)
             ->withCount('participantes')
             ->having('participantes_count', 2)
+            
+            // Traemos el resultado (o null si no encuentra nada)
             ->first();
 
+        // 4. CREACIÓN: Si no existe la conversación, la creamos desde cero
         if (!$conversacion) {
             $ahora = Carbon::now();
 
+            // A. Crear la "sala" principal (tbl_conversacion)
             $conversacion = Conversacion::create([
                 'id_propiedad_fk' => $propiedad->id_propiedad,
                 'tipo_conversacion' => 'directa',
@@ -85,12 +104,16 @@ class MensajesController extends Controller
                 'actualizado_conversacion' => $ahora,
             ]);
 
+            // B. Registrar al USUARIO ACTUAL como participante (tbl_conversacion_usuario)
+            // Ponemos 'ultima_lectura' en 'ahora' porque él acaba de entrar
             ConversacionUsuario::create([
                 'id_conversacion_fk' => $conversacion->id_conversacion,
                 'id_usuario_fk' => $usuarioId,
                 'ultima_lectura_conv_usuario' => $ahora,
             ]);
 
+            // C. Registrar al ARRENDADOR como participante (tbl_conversacion_usuario)
+            // Ponemos 'ultima_lectura' en 'null' porque el dueño aún no ha visto nada
             ConversacionUsuario::create([
                 'id_conversacion_fk' => $conversacion->id_conversacion,
                 'id_usuario_fk' => $propiedad->id_arrendador_fk,
@@ -98,6 +121,7 @@ class MensajesController extends Controller
             ]);
         }
 
+        // 5. REDIRECCIÓN: Llevamos al usuario a la vista del chat activo
         return redirect()->route('miembro.mensajes.show', ['id' => $conversacion->id_conversacion]);
     }
 

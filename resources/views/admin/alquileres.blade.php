@@ -103,10 +103,12 @@
         </select>
     </div>
     <div class="toolbar-derecha">
+        {{-- 
         <button id="btnExportarAlq" class="btn-exportar">
             <i class="bi bi-download"></i>
             <span>Exportar</span>
         </button>
+        --}}
         <a href="/admin/alquileres/nuevo" id="btnNuevoAlquiler" class="btn-primario">
             <i class="bi bi-plus"></i>
             <span>Nuevo alquiler</span>

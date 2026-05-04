@@ -1,3 +1,8 @@
+/* =========================================================
+   SECCIÓN 1: TOPBAR Y LAYOUT ADMIN
+   Barra superior fija con navegación y perfil del admin.
+   ========================================================= */
+
 /* =============================================
    TOPBAR Y LAYOUT ADMIN
    ============================================= */
@@ -113,6 +118,11 @@ body {
     text-align: center;
 }
 
+/* =========================================================
+   SECCIÓN 2: DROPDOWN DE ADMIN
+   Menú desplegable del perfil de administrador.
+   ========================================================= */
+
 /* =============================================
    DROPDOWN ADMIN
    ============================================= */
@@ -208,6 +218,11 @@ body {
 .dropdown-item-logout:hover {
     background: #FEE2E2;
 }
+
+/* =========================================================
+   SECCIÓN 3: CONTENIDO Y RESPONSIVE
+   Fondo de la página y ajustes para móviles/tablets.
+   ========================================================= */
 
 .content-wrapper {
     background: linear-gradient(135deg, #E3F2FD 0%, #E8F5E9 100%);
@@ -331,6 +346,11 @@ body {
         min-height: calc(100vh - 52px);
     }
 }
+
+/* =========================================================
+   SECCIÓN 4: MODALES Y MASCOTA (OSO)
+   Z-Index para overlays y estilos del oso (reutilizados).
+   ========================================================= */
 
 /* =============================================
    MODALES — Z-INDEX GLOBAL

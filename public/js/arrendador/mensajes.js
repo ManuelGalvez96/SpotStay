@@ -1,3 +1,8 @@
+/* =========================================================
+   SECCIÓN 1: UTILIDADES Y HELPERS
+   Funciones para obtener datos, formatear fechas y marcar UI.
+   ========================================================= */
+
 function obtenerArrendadorId() {
   var contenedor = document.querySelector('[data-arrendador-id]');
   return contenedor ? contenedor.getAttribute('data-arrendador-id') : '';
@@ -31,6 +36,11 @@ function formatearFecha(valor) {
   return fecha.toLocaleString('es-ES');
 }
 
+/* =========================================================
+   SECCIÓN 2: RENDERIZADO DE MENSAJES
+   Genera el HTML de las burbujas de chat.
+   ========================================================= */
+
 function renderizarMensajes(mensajes, arrendadorId) {
   var lista = document.getElementById('listaMensajes');
   if (!lista) {
@@ -55,6 +65,11 @@ function renderizarMensajes(mensajes, arrendadorId) {
   lista.innerHTML = contenidoHtml;
   lista.scrollTop = lista.scrollHeight;
 }
+
+/* =========================================================
+   SECCIÓN 3: CARGA DE CONVERSACIÓN (FETCH)
+   Obtiene los datos del hilo y actualiza la interfaz.
+   ========================================================= */
 
 function cargarConversacion(idConversacion) {
   var arrendadorId = obtenerArrendadorId();
@@ -106,6 +121,11 @@ function cargarConversacion(idConversacion) {
       alert('No se pudo cargar la conversación.');
     });
 }
+
+/* =========================================================
+   SECCIÓN 4: ENVÍO DE MENSAJES
+   Intercepta el formulario y envía el texto al servidor.
+   ========================================================= */
 
 function enviarMensajeConFetch(evento) {
   evento.preventDefault();

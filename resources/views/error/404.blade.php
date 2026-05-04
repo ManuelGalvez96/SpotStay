@@ -52,13 +52,14 @@
             <p class="error-message">Nuestra mascota Empresaria ha buscado por toda la pagina, pero no ha encontrado lo que buscas.</p>
 
             @php
-            $urlInicio = url('/login');
             if (auth()->check()) {
             $user = auth()->user();
             if ($user->roles()->where('slug_rol', 'admin')->exists()) {
             $urlInicio = url('/admin/dashboard');
             } elseif ($user->roles()->whereIn('slug_rol', ['miembro', 'inquilino'])->exists()) {
             $urlInicio = url('/miembro/inicio');
+            } elseif ($user->roles()->where('slug_rol', 'arrendador')->exists()) {
+            $urlInicio = url('/arrendador/dashboard');
             }
             }
             @endphp

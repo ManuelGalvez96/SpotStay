@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Arrendador;
 
 use App\Http\Controllers\Controller;
+use App\Models\Usuario;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -20,7 +22,6 @@ class DashboardController extends Controller
         $ingresosEsteMes = 0;
         $solicitudesPendientes = 0;
         $ultimasSolicitudes = collect();
-        $mensajesRecientes = collect();
         $propiedadesActivasDetalle = collect();
 
         if ($arrendadorId !== null) {
@@ -31,7 +32,6 @@ class DashboardController extends Controller
 
             $columnaPrecio = $this->obtenerColumnaPrecioPropiedad();
             $selectDireccionPropiedad = $this->obtenerSelectDireccionPropiedad('p');
-            [$mensajeRemitenteColumna, $mensajeCuerpoColumna] = $this->obtenerColumnasMensaje();
 
             $propiedadesActivas = DB::table('tbl_propiedad')
                 ->where('id_arrendador_fk', $arrendadorId)
@@ -76,20 +76,6 @@ class DashboardController extends Controller
                 ->limit(5)
                 ->get();
 
-            $mensajesRecientes = DB::table('tbl_mensaje as m')
-                ->join('tbl_conversacion_usuario as cu', 'cu.id_conversacion_fk', '=', 'm.id_conversacion_fk')
-                ->join('tbl_usuario as remitente', 'remitente.id_usuario', '=', "m.{$mensajeRemitenteColumna}")
-                ->where('cu.id_usuario_fk', $arrendadorId)
-                ->where("m.{$mensajeRemitenteColumna}", '!=', $arrendadorId)
-                ->select(
-                    'remitente.nombre_usuario',
-                    DB::raw("m.{$mensajeCuerpoColumna} as cuerpo_mensaje"),
-                    'm.creado_mensaje'
-                )
-                ->orderBy('m.creado_mensaje', 'desc')
-                ->limit(5)
-                ->get();
-
             $propiedadesActivasDetalle = DB::table('tbl_propiedad as p')
                 ->where('p.id_arrendador_fk', $arrendadorId)
                 ->whereIn('p.estado_propiedad', ['publicada', 'alquilada'])
@@ -123,13 +109,21 @@ class DashboardController extends Controller
             'ingresosEsteMes' => $ingresosEsteMes,
             'solicitudesPendientes' => $solicitudesPendientes,
             'ultimasSolicitudes' => $ultimasSolicitudes,
-            'mensajesRecientes' => $mensajesRecientes,
             'propiedadesActivasDetalle' => $propiedadesActivasDetalle,
         ]);
     }
 
     private function obtenerIdArrendador(Request $request): ?int
     {
+        /** @var Usuario|null $usuarioAutenticado */
+        if (Auth::check()) {
+            $usuarioAutenticado = Auth::user();
+
+            if ($usuarioAutenticado instanceof Usuario && $usuarioAutenticado->roles()->where('slug_rol', 'arrendador')->exists()) {
+                return (int) ($usuarioAutenticado->id_usuario ?? $usuarioAutenticado->id ?? 0);
+            }
+        }
+
         $arrendadorIdEnConsulta = (int) $request->query('arrendador_id', 0);
         if ($arrendadorIdEnConsulta > 0) {
             return $arrendadorIdEnConsulta;
@@ -200,19 +194,6 @@ class DashboardController extends Controller
         }
 
         return 'TRIM(CONCAT_WS(\' \' , ' . implode(', ', $partesDireccion) . ')) as direccion_propiedad';
-    }
-
-    private function obtenerColumnasMensaje(): array
-    {
-        $columnaRemitente = Schema::hasColumn('tbl_mensaje', 'id_remitente_fk')
-            ? 'id_remitente_fk'
-            : 'id_usuario_fk';
-
-        $columnaCuerpo = Schema::hasColumn('tbl_mensaje', 'cuerpo_mensaje')
-            ? 'cuerpo_mensaje'
-            : 'contenido_mensaje';
-
-        return [$columnaRemitente, $columnaCuerpo];
     }
 
     private function obtenerInicialAvatar(?string $nombre): string

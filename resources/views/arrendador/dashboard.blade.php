@@ -227,33 +227,6 @@
                 </div>
             </section>
 
-            <!-- Section: Mensajes Recientes -->
-            <section class="section">
-                <div class="section-header">
-                    <h2 class="section-title">Mensajes Recientes</h2>
-                    <div class="section-actions">
-                        <button class="btn btn-outline btn-sm">Ver Todos</button>
-                    </div>
-                </div>
-                
-                <div class="message-list">
-                    @forelse ($mensajesRecientes as $mensaje)
-                        <div class="message-item">
-                            <div class="message-tenant">{{ $mensaje->nombre_usuario }}</div>
-                            <div class="message-text">{{ $mensaje->cuerpo_mensaje }}</div>
-                            <div class="message-time">
-                                {{ $mensaje->creado_mensaje ? \Carbon\Carbon::parse($mensaje->creado_mensaje)->diffForHumans() : 'Reciente' }}
-                            </div>
-                        </div>
-                    @empty
-                        <div class="message-item">
-                            <div class="message-tenant">Sin mensajes</div>
-                            <div class="message-text">Todavía no hay mensajes recientes con inquilinos.</div>
-                            <div class="message-time">-</div>
-                        </div>
-                    @endforelse
-                </div>
-            </section>
 
             <!-- Section: Propiedades Activas -->
             <section class="section">

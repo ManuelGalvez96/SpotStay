@@ -1,3 +1,9 @@
+/* =========================================================
+   SECCIÓN 1: CONFIGURACIÓN E INICIALIZACIÓN
+   Captura los campos del formulario y registra los
+   validadores para cada uno.
+   ========================================================= */
+
 var formularioSolicitud = null;
 var botonEnviarSolicitud = null;
 var campos = {};
@@ -118,6 +124,12 @@ function iniciarValidacionSolicitudArrendador() {
 	actualizarEstadoBoton(validarFormulario(false));
 }
 
+/* =========================================================
+   SECCIÓN 2: REGISTRO DE EVENTOS Y VALIDACIÓN
+   Asocia eventos (blur, input, change) a cada campo para
+   validar en tiempo real y controlar el estado del botón.
+   ========================================================= */
+
 function registrarCampo(clave, validador) {
 	var campo = campos[clave];
 
@@ -167,62 +179,14 @@ function validarFormulario(mostrarErrores) {
 function validarCampo(clave, validador, mostrarErrores) {
 	var campo = campos[clave];
 	if (!campo) {
-		return 1;
-	}
-
-	var error = validador(campo);
-	var idError = "error-" + obtenerIdCampo(clave);
-
-	if (error === 0) {
-		limpiarError(idError);
-		marcarCampo(campo, true);
-		return 0;
-	}
-
-	if (mostrarErrores || tocados[clave]) {
-		mostrarError(idError, obtenerMensajeError(clave));
-		marcarCampo(campo, false);
-	} else {
-		limpiarError(idError);
-		marcarCampo(campo, true);
-	}
-
 	return 1;
 }
 
-function obtenerIdCampo(clave) {
-	if (clave === "fechaNacimiento") return "fecha-nacimiento-solicitud";
-	if (clave === "tipoDocumento") return "tipo-documento-solicitud";
-	if (clave === "numeroDocumento") return "numero-documento-solicitud";
-	if (clave === "titular") return "titular-cuenta-solicitud";
-	if (clave === "tipoArrendador") return "tipo-arrendador-solicitud";
-	if (clave === "numPropiedades") return "num-propiedades-previstas-solicitud";
-	if (clave === "descripcion") return "descripcion-solicitud";
-	if (clave === "aceptaTerminos") return "acepta-terminos-solicitud";
-	if (clave === "aceptaVeracidad") return "acepta-veracidad-solicitud";
-	if (clave === "direccion") return "direccion-fiscal-solicitud";
-	if (clave === "telefono") return "telefono-solicitud";
-	if (clave === "iban") return "iban-solicitud";
-	if (clave === "nif") return "nif-solicitud";
-	return clave;
-}
-
-function obtenerMensajeError(clave) {
-	if (clave === "telefono") return "El telefono debe tener formato +34 600123456 y solo numeros despues del prefijo.";
-	if (clave === "fechaNacimiento") return "La fecha de nacimiento debe ser anterior a hoy.";
-	if (clave === "tipoDocumento") return "Selecciona un tipo de documento.";
-	if (clave === "numeroDocumento") return "El numero de documento es obligatorio.";
-	if (clave === "iban") return "El IBAN es obligatorio y debe tener un formato valido.";
-	if (clave === "titular") return "El titular de la cuenta es obligatorio.";
-	if (clave === "nif") return "El NIF es obligatorio y debe tener un formato valido.";
-	if (clave === "direccion") return "La direccion fiscal es obligatoria.";
-	if (clave === "tipoArrendador") return "Selecciona el tipo de arrendador.";
-	if (clave === "numPropiedades") return "El valor debe estar entre 1 y 255.";
-	if (clave === "descripcion") return "La descripcion debe tener al menos 15 caracteres.";
-	if (clave === "aceptaTerminos") return "Debes aceptar los terminos.";
-	if (clave === "aceptaVeracidad") return "Debes aceptar la veracidad de los datos.";
-	return "Campo invalido.";
-}
+/* =========================================================
+   SECCIÓN 3: VALIDADORES ESPECÍFICOS
+   Funciones que contienen la lógica (Regex/Date) para
+   validar cada tipo de dato (IBAN, NIF, etc.).
+   ========================================================= */
 
 function validarTelefono(campo) {
 	var valor = String(campo.value || "").trim();
@@ -239,81 +203,11 @@ function validarTelefono(campo) {
 	return 0;
 }
 
-function validarFechaNacimiento(campo) {
-	var valor = String(campo.value || "").trim();
-	if (valor === "") {
-		return 1;
-	}
-
-	var hoy = new Date();
-	hoy.setHours(0, 0, 0, 0);
-	var fecha = new Date(valor + "T00:00:00");
-
-	if (isNaN(fecha.getTime()) || fecha >= hoy) {
-		return 1;
-	}
-
-	return 0;
-}
-
-function validarSelectObligatorio(campo) {
-	return String(campo.value || "").trim() === "" ? 1 : 0;
-}
-
-function validarTextoObligatorio(campo) {
-	var valor = String(campo.value || "").trim();
-	return valor === "" ? 1 : 0;
-}
-
-function validarIban(campo) {
-	var valor = String(campo.value || "").replace(/\s+/g, "").toUpperCase();
-	var regex = /^[A-Z]{2}[0-9]{2}[0-9]{10,30}$/;
-
-	if (valor === "") {
-		return 1;
-	}
-
-	if (!regex.test(valor)) {
-		return 1;
-	}
-
-	return 0;
-}
-
-function validarNif(campo) {
-	var valor = String(campo.value || "").trim().toUpperCase();
-	var regex = /^[A-Z0-9\-]{5,20}$/;
-
-	if (valor === "") {
-		return 1;
-	}
-
-	if (!regex.test(valor)) {
-		return 1;
-	}
-
-	return 0;
-}
-
-function validarNumeroPropiedades(campo) {
-	var valor = String(campo.value || "").trim();
-	var numero = parseInt(valor, 10);
-
-	if (valor === "" || isNaN(numero) || numero < 1 || numero > 255) {
-		return 1;
-	}
-
-	return 0;
-}
-
-function validarDescripcion(campo) {
-	var valor = String(campo.value || "").trim();
-	return valor.length >= 15 ? 0 : 1;
-}
-
-function validarCheckboxObligatorio(campo) {
-	return campo.checked ? 0 : 1;
-}
+/* =========================================================
+   SECCIÓN 4: HELPERS DE UI
+   Funciones para mostrar errores visuales y habilitar
+   el botón de envío cuando todo es válido.
+   ========================================================= */
 
 function mostrarError(idError, mensaje) {
 	var error = document.getElementById(idError);

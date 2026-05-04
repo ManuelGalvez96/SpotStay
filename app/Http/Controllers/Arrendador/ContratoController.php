@@ -136,11 +136,25 @@ class ContratoController extends Controller
         ]);
     }
 
+    /**
+     * GESTIONA LA DESCARGA O VISUALIZACIÓN DEL PDF DE UN CONTRATO.
+     *
+     * Flujo lógico:
+     * 1. Busca si el contrato ya tiene una URL de PDF guardada en la BD.
+     * 2. Si existe URL, verifica si sigue siendo válida (que no haya caducado).
+     *    - Si es válida: Redirige al usuario directamente (ahorra tiempo y recursos).
+     *    - Si NO es válida o no existe: Genera un PDF nuevo desde cero.
+     * 3. Si genera uno nuevo, guarda la nueva URL en la BD para la próxima vez.
+     * 4. Redirige al usuario a la URL del PDF.
+     */
     public function descargarPDF(Request $request, int $id)
     {
+        // Obtenemos el ID del arrendador y las columnas válidas de la tabla contrato
         $arrendadorId = $this->obtenerIdArrendador($request);
         $columnas = $this->obtenerColumnasContrato();
 
+        // 1. CONSULTA A BD: Buscamos si ya tenemos un PDF generado para este contrato.
+        // Hacemos JOIN para verificar que el contrato pertenezca a este arrendador.
         $contrato = DB::table('tbl_contrato as c')
             ->join('tbl_alquiler as a', 'a.id_alquiler', '=', 'c.id_alquiler_fk')
             ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'a.id_propiedad_fk')
@@ -160,19 +174,22 @@ class ContratoController extends Controller
             ], 404);
         }
 
-        // Si tiene URL de PDF, redirigir directamente solo si el recurso existe
+        // 2. VERIFICACIÓN DE CACHE: ¿Tenemos ya una URL guardada?
         if (!empty($contrato->url_pdf_contrato)) {
+            // Verificamos que el archivo exista (si es local) o que el enlace no haya caducado (si es remoto)
             if ($this->esUrlPdfLocalExistente($contrato->url_pdf_contrato)) {
+                // ¡Éxito! La URL es buena. Enviamos al usuario allí directamente.
                 return redirect()->away($this->normalizarUrlPdf($contrato->url_pdf_contrato));
             }
 
+            // Si llegamos aquí, la URL existe pero está rota o caducada.
             Log::warning("PDF guardado pero no disponible, se regenerará", [
                 'contrato_id' => $id,
                 'url_pdf_contrato' => $contrato->url_pdf_contrato,
             ]);
         }
 
-        // Si no tiene URL o la URL local no existe, generar PDF on-demand
+        // 3. GENERACIÓN: Si no hay URL o está caducada, creamos el PDF de nuevo.
         Log::info("Generando PDF on-demand para alquiler: {$contrato->id_alquiler}");
         
         $urlPdf = $this->generarPDFOnDemand($contrato->id_alquiler);
@@ -185,7 +202,7 @@ class ContratoController extends Controller
             ], 500);
         }
 
-        // Guardar la URL en la BD para futuras descargas
+        // 4. ACTUALIZACIÓN: Guardamos la nueva URL en la base de datos para no tener que generarlo la próxima vez.
         $datosActualizar = [];
         if ($columnas['url_pdf']) {
             $datosActualizar[$columnas['url_pdf']] = $urlPdf;
@@ -202,6 +219,7 @@ class ContratoController extends Controller
             Log::info("PDF guardado para contrato: {$id}");
         }
 
+        // 5. REDIRECCIÓN FINAL: Enviamos al usuario al PDF recién generado.
         return redirect()->away($urlPdf);
     }
 
@@ -254,18 +272,33 @@ class ContratoController extends Controller
         return url('/' . ltrim($urlPdf, '/\\'));
     }
 
+    /**
+     * GENERA UN PDF NUEVO LLAMANDO A LA API DE PDFMONKEY.
+     *
+     * Este método se encarga de:
+     * 1. Recopilar todos los datos necesarios del alquiler (inquilino, arrendador, propiedad, precios).
+     * 2. Formatear estos datos en un array (Payload) compatible con la plantilla HTML de PdfMonkey.
+     * 3. Enviar una petición POST a la API de PdfMonkey para generar el documento.
+     * 4. Extraer y devolver la URL de descarga del PDF generado.
+     *
+     * @param int $idAlquiler El ID del alquiler para el cual se genera el contrato.
+     * @return string|null La URL de descarga del PDF o null si falla.
+     */
     private function generarPDFOnDemand(int $idAlquiler): ?string
     {
         try {
+            // Inicializamos el servicio de conexión con la API
             $pdfMonkey = new PdfMonkeyService();
             
             Log::info("Verificando configuración de PdfMonkey");
+            // Comprobamos que tenemos las credenciales (API Key y Template ID)
             if (!$pdfMonkey->estaConfigurado()) {
                 Log::error("PdfMonkey no está configurado");
                 return null;
             }
 
-            // Obtener datos del alquiler
+            // 1. RECOGIDA DE DATOS:
+            // Hacemos una consulta compleja (JOINs) para obtener toda la info del contrato en una sola fila.
             Log::info("Obteniendo datos del alquiler: {$idAlquiler}");
             $datosAlquiler = DB::table('tbl_alquiler as a')
                 ->join('tbl_propiedad as p', 'a.id_propiedad_fk', '=', 'p.id_propiedad')
@@ -281,7 +314,7 @@ class ContratoController extends Controller
                     'inquilino.nombre_usuario as nombre_inquilino',
                     'inquilino.email_usuario as email_inquilino',
                     'p.titulo_propiedad',
-                    DB::raw($this->obtenerSelectDireccionPropiedad('p')),
+                    DB::raw($this->obtenerSelectDireccionPropiedad('p')), // Construye la dirección completa
                     'p.ciudad_propiedad',
                     'p.precio_propiedad'
                 )
@@ -294,9 +327,13 @@ class ContratoController extends Controller
 
             Log::info("Datos del alquiler obtenidos correctamente");
 
+            // Calculamos la fianza automáticamente (ej: 2 meses)
             $precioMensual = (float) ($datosAlquiler->precio_propiedad ?? 0);
             $fianza = $precioMensual * 2;
 
+            // 2. CONSTRUCCIÓN DEL PAYLOAD:
+            // Creamos un array asociativo donde las claves coinciden con las variables de la plantilla HTML en PdfMonkey.
+            // Ej: Si en la plantilla pone {{nombre_arrendador}}, aquí usamos la clave 'nombre_arrendador'.
             $datosContrato = [
                 'nombre_arrendador' => $datosAlquiler->nombre_arrendador,
                 'email_arrendador' => $datosAlquiler->email_arrendador,
@@ -305,7 +342,7 @@ class ContratoController extends Controller
                 'titulo_propiedad' => $datosAlquiler->titulo_propiedad,
                 'direccion_propiedad' => $datosAlquiler->direccion_propiedad,
                 'ciudad_propiedad' => $datosAlquiler->ciudad_propiedad,
-                'precio_mensual' => number_format($precioMensual, 2, '.', ''),
+                'precio_mensual' => number_format($precioMensual, 2, '.', ''), // Formato decimal estricto
                 'fianza' => number_format($fianza, 2, '.', ''),
                 'fecha_inicio' => Carbon::parse($datosAlquiler->fecha_inicio_alquiler)->format('d/m/Y'),
                 'fecha_fin' => $datosAlquiler->fecha_fin_alquiler 
@@ -316,7 +353,9 @@ class ContratoController extends Controller
 
             Log::info("Enviando solicitud a PdfMonkey para alquiler: {$idAlquiler}");
 
-            // Generar PDF sincronizado
+            // 3. PETICIÓN A LA API:
+            // Enviamos los datos a PdfMonkey de forma SÍNCRONA (esperamos a que termine de generar).
+            // También le pasamos un nombre de archivo personalizado en el 'meta'.
             $respuesta = $pdfMonkey->crearDocumentoSincronizado(
                 $datosContrato,
                 $pdfMonkey->construirMeta([], 'contrato_' . $idAlquiler . '.pdf')
@@ -324,26 +363,31 @@ class ContratoController extends Controller
 
             Log::info("Respuesta de PdfMonkey recibida", ['respuesta' => $respuesta]);
 
+            // 4. PROCESAMIENTO DE RESPUESTA:
+            // Extraemos la URL de descarga del JSON que nos devuelve la API.
+            
+            // Opción A: La API devuelve la URL directamente en 'document_card'
             if (isset($respuesta['document_card']['download_url'])) {
+                
                 $urlDescarga = $respuesta['document_card']['download_url'];
-
                 Log::info("URL de descarga obtenida desde document_card: {$urlDescarga}");
-
                 return $urlDescarga;
             }
 
+            // Opción B: La API devuelve solo el ID del documento y tenemos que pedir la URL aparte
             if (isset($respuesta['document']) && isset($respuesta['document']['id'])) {
                 $idDocumentoPdf = $respuesta['document']['id'];
                 $urlDescarga = $pdfMonkey->obtenerUrlDescarga($idDocumentoPdf);
                 
                 Log::info("URL de descarga obtenida: {$urlDescarga}");
-                
                 return $urlDescarga;
             }
 
+            // Si la respuesta no tiene el formato esperado
             Log::error("Respuesta inválida de PdfMonkey", ['respuesta' => $respuesta]);
             return null;
         } catch (\Exception $e) {
+            // Captura cualquier error de red o de la API
             Log::error('Error al generar PDF on-demand: ' . $e->getMessage(), [
                 'exception' => $e,
                 'alquiler_id' => $idAlquiler

@@ -1,254 +1,429 @@
-/* =========================================================
-   SECCIÓN 1: CONFIGURACIÓN E INICIALIZACIÓN
-   Captura los campos del formulario y registra los
-   validadores para cada uno.
-   ========================================================= */
+function iniciarAplicacionSolicitudArrendador() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', iniciarValidacionSolicitudArrendador, { once: true });
+        return;
+    }
 
-var formularioSolicitud = null;
-var botonEnviarSolicitud = null;
-var campos = {};
-var tocados = {};
+    iniciarValidacionSolicitudArrendador();
+}
 
-window.onload = function () {
-	iniciarValidacionSolicitudArrendador();
-};
+iniciarAplicacionSolicitudArrendador();
 
 function iniciarValidacionSolicitudArrendador() {
-	formularioSolicitud = document.getElementById("formulario-solicitud-arrendador");
-	botonEnviarSolicitud = document.getElementById("boton-enviar-solicitud");
+    // --- REFERENCIAS DOM ---
+    const formulario = document.getElementById("formulario-solicitud-arrendador");
+    const botonEnviar = document.getElementById("boton-enviar-solicitud");
 
-	if (!formularioSolicitud || !botonEnviarSolicitud) {
-		return;
-	}
+    // Elementos de error
+    const errorTelefono = document.getElementById("error-telefono-solicitud");
+    const errorFechaNacimiento = document.getElementById("error-fecha-nacimiento-solicitud");
+    const errorTipoDocumento = document.getElementById("error-tipo-documento-solicitud");
+    const errorNumeroDocumento = document.getElementById("error-numero-documento-solicitud");
+    const errorIban = document.getElementById("error-iban-solicitud");
+    const errorTitular = document.getElementById("error-titular-cuenta-solicitud");
+    const errorNif = document.getElementById("error-nif-solicitud");
+    const errorDireccion = document.getElementById("error-direccion-fiscal-solicitud");
+    const errorTipoArrendador = document.getElementById("error-tipo-arrendador-solicitud");
+    const errorNumPropiedades = document.getElementById("error-num-propiedades-previstas-solicitud");
+    const errorDescripcion = document.getElementById("error-descripcion-solicitud");
+    const errorAceptaTerminos = document.getElementById("error-acepta-terminos-solicitud");
+    const errorAceptaVeracidad = document.getElementById("error-acepta-veracidad-solicitud");
 
-	campos.telefono = document.getElementById("telefono-solicitud");
-	campos.fechaNacimiento = document.getElementById("fecha-nacimiento-solicitud");
-	campos.tipoDocumento = document.getElementById("tipo-documento-solicitud");
-	campos.numeroDocumento = document.getElementById("numero-documento-solicitud");
-	campos.iban = document.getElementById("iban-solicitud");
-	campos.titular = document.getElementById("titular-cuenta-solicitud");
-	campos.nif = document.getElementById("nif-solicitud");
-	campos.direccion = document.getElementById("direccion-fiscal-solicitud");
-	campos.tipoArrendador = document.getElementById("tipo-arrendador-solicitud");
-	campos.numPropiedades = document.getElementById("num-propiedades-previstas-solicitud");
-	campos.descripcion = document.getElementById("descripcion-solicitud");
-	campos.aceptaTerminos = document.getElementById("acepta-terminos-solicitud");
-	campos.aceptaVeracidad = document.getElementById("acepta-veracidad-solicitud");
+    // Inputs
+    const entradaTelefono = document.getElementById("telefono-solicitud");
+    const entradaFechaNacimiento = document.getElementById("fecha-nacimiento-solicitud");
+    const entradaTipoDocumento = document.getElementById("tipo-documento-solicitud");
+    const entradaNumeroDocumento = document.getElementById("numero-documento-solicitud");
+    const entradaIban = document.getElementById("iban-solicitud");
+    const entradaTitular = document.getElementById("titular-cuenta-solicitud");
+    const entradaNif = document.getElementById("nif-solicitud");
+    const entradaDireccion = document.getElementById("direccion-fiscal-solicitud");
+    const entradaTipoArrendador = document.getElementById("tipo-arrendador-solicitud");
+    const entradaNumPropiedades = document.getElementById("num-propiedades-previstas-solicitud");
+    const entradaDescripcion = document.getElementById("descripcion-solicitud");
+    const entradaAceptaTerminos = document.getElementById("acepta-terminos-solicitud");
+    const entradaAceptaVeracidad = document.getElementById("acepta-veracidad-solicitud");
 
-	registrarCampo("telefono", validarTelefono);
-	registrarCampo("fechaNacimiento", validarFechaNacimiento);
-	registrarCampo("tipoDocumento", validarSelectObligatorio);
-	registrarCampo("numeroDocumento", validarTextoObligatorio);
-	registrarCampo("iban", validarIban);
-	registrarCampo("titular", validarTextoObligatorio);
-	registrarCampo("nif", validarNif);
-	registrarCampo("direccion", validarTextoObligatorio);
-	registrarCampo("tipoArrendador", validarSelectObligatorio);
-	registrarCampo("numPropiedades", validarNumeroPropiedades);
-	registrarCampo("descripcion", validarDescripcion);
-	registrarCampo("aceptaTerminos", validarCheckboxObligatorio);
-	registrarCampo("aceptaVeracidad", validarCheckboxObligatorio);
+    if (!formulario || !botonEnviar) return;
 
-	formularioSolicitud.onsubmit = function (evento) {
-		evento.preventDefault();
+    // --- FUNCIONES DE VALIDACIÓN ---
 
-		if (!validarFormulario(true)) {
-			return;
-		}
+    function comprobarBoton() {
+        const telefono = entradaTelefono.value.trim();
+        const fechaNacimiento = entradaFechaNacimiento.value;
+        const tipoDocumento = entradaTipoDocumento.value;
+        const numeroDocumento = entradaNumeroDocumento.value.trim();
+        const iban = entradaIban.value.trim();
+        const titular = entradaTitular.value.trim();
+        const nif = entradaNif.value.trim();
+        const direccion = entradaDireccion.value.trim();
+        const tipoArrendador = entradaTipoArrendador.value;
+        const numPropiedades = entradaNumPropiedades.value.trim();
+        const descripcion = entradaDescripcion.value.trim();
+        const aceptaTerminos = entradaAceptaTerminos.checked;
+        const aceptaVeracidad = entradaAceptaVeracidad.checked;
 
-		// preparar envio por fetch
-		botonEnviarSolicitud.disabled = true;
-		botonEnviarSolicitud.classList.add('btn-login-desabilitado');
+        const regexTel = /^\+\d{1,4} \d{6,11}$/;
+        const regexIban = /^[A-Z]{2}\d{2}\s?[\d\s]{10,30}$/i;
+        const regexNif = /^[A-Z0-9]\d{7}[A-Z0-9]$/i;
 
-		var tokenMeta = document.getElementsByName('csrf-token');
-		var csrf = '';
-		if (tokenMeta && tokenMeta.length > 0) {
-			csrf = tokenMeta[0].content || tokenMeta[0].getAttribute('content') || '';
-		}
-		// fallback: obtener token del campo oculto _token del formulario
-		if (!csrf && formularioSolicitud && formularioSolicitud.elements && formularioSolicitud.elements['_token']) {
-			csrf = formularioSolicitud.elements['_token'].value || '';
-		}
+        let telefonoValido = regexTel.test(telefono);
+        let fechaValida = fechaNacimiento !== "" && new Date(fechaNacimiento) < new Date();
+        let tipoDocValido = tipoDocumento !== "";
+        let numDocValido = numeroDocumento !== "";
+        let ibanValido = regexIban.test(iban.replace(/\s/g, ""));
+        let titularValido = titular !== "";
+        let nifValido = regexNif.test(nif.replace(/\s/g, ""));
+        let direccionValida = direccion !== "";
+        let tipoArrendadorValido = tipoArrendador !== "";
+        let numPropValido = numPropiedades !== "" && parseInt(numPropiedades) >= 1;
+        let descValida = descripcion !== "";
+        let terminosValidos = aceptaTerminos;
+        let veracidadValida = aceptaVeracidad;
 
-		var fd = new FormData(formularioSolicitud);
+        if (
+            telefonoValido && fechaValida && tipoDocValido && numDocValido &&
+            ibanValido && titularValido && nifValido && direccionValida &&
+            tipoArrendadorValido && numPropValido && descValida &&
+            terminosValidos && veracidadValida
+        ) {
+            botonEnviar.disabled = false;
+            botonEnviar.classList.remove("btn-login-desabilitado");
+        } else {
+            botonEnviar.disabled = true;
+            botonEnviar.classList.add("btn-login-desabilitado");
+        }
+    }
 
-		fetch(formularioSolicitud.action, {
-			method: 'POST',
-			headers: {
-				'X-CSRF-TOKEN': csrf,
-				'Accept': 'application/json'
-			},
-			body: fd
-		})
-		.then(function (response) {
-			var ct = response.headers.get('content-type') || '';
-			if (ct.indexOf('application/json') !== -1) {
-				return response.json();
-			}
-			// si no es JSON recargar página
-			window.location.reload();
-		})
-		.then(function (data) {
-			if (!data) return;
-			if (data.success) {
-				if (typeof mostrarAlertaExito === 'function') {
-					mostrarAlertaExito('Solicitud enviada', data.message || 'Solicitud enviada correctamente');
-				} else {
-					alert(data.message || 'Solicitud enviada correctamente');
-				}
-				formularioSolicitud.reset();
-				// resetear estados locales
-				for (var k in tocados) { if (tocados.hasOwnProperty(k)) tocados[k] = false; }
-				actualizarEstadoBoton(false);
-			} else {
-				if (typeof mostrarAlertaError === 'function') {
-					mostrarAlertaError('Error', data.message || 'No se pudo enviar la solicitud');
-				} else {
-					alert(data.message || 'No se pudo enviar la solicitud');
-				}
-			}
-		})
-		.catch(function (err) {
-			if (typeof mostrarAlertaError === 'function') {
-				mostrarAlertaError('Error', 'Error de red al enviar la solicitud');
-			} else {
-				alert('Error de red al enviar la solicitud');
-			}
-		})
-		.finally(function () {
-			botonEnviarSolicitud.disabled = false;
-			botonEnviarSolicitud.classList.remove('btn-login-desabilitado');
-		});
-	};
+    function comprobarTelefono() {
+        const valor = entradaTelefono.value.trim();
+        const regex = /^\+\d{1,4} \d{6,11}$/;
 
-	actualizarEstadoBoton(validarFormulario(false));
-}
+        if (valor === "") {
+            errorTelefono.innerText = "El teléfono es obligatorio.";
+        } else if (!regex.test(valor)) {
+            errorTelefono.innerText = "Formato: +34 600123456 (Prefijo + Espacio + 6 a 11 dígitos)";
+        } else {
+            errorTelefono.innerText = "";
+        }
+        comprobarBoton();
+    }
 
-/* =========================================================
-   SECCIÓN 2: REGISTRO DE EVENTOS Y VALIDACIÓN
-   Asocia eventos (blur, input, change) a cada campo para
-   validar en tiempo real y controlar el estado del botón.
-   ========================================================= */
+    function comprobarFechaNacimiento() {
+        const valor = entradaFechaNacimiento.value;
 
-function registrarCampo(clave, validador) {
-	var campo = campos[clave];
+        if (valor === "") {
+            errorFechaNacimiento.innerText = "La fecha de nacimiento es obligatoria.";
+        } else {
+            const hoy = new Date();
+            const nacimiento = new Date(valor);
+            let edad = hoy.getFullYear() - nacimiento.getFullYear();
+            const mesDiff = hoy.getMonth() - nacimiento.getMonth();
+            if (mesDiff < 0 || (mesDiff === 0 && hoy.getDate() < nacimiento.getDate())) {
+                edad--;
+            }
 
-	if (!campo) {
-		return;
-	}
+            if (edad < 18) {
+                errorFechaNacimiento.innerText = "Debes tener al menos 18 años.";
+            } else if (edad > 120) {
+                errorFechaNacimiento.innerText = "Introduce una fecha válida.";
+            } else {
+                errorFechaNacimiento.innerText = "";
+            }
+        }
+        comprobarBoton();
+    }
 
-	campos[clave].onblur = function () {
-		tocados[clave] = true;
-		validarCampo(clave, validador, true);
-		actualizarEstadoBoton(validarFormulario(false));
-	};
+    function comprobarTipoDocumento() {
+        const valor = entradaTipoDocumento.value;
 
-	campos[clave].oninput = function () {
-		if (tocados[clave]) {
-			validarCampo(clave, validador, true);
-		}
+        if (valor === "") {
+            errorTipoDocumento.innerText = "Selecciona un tipo de documento.";
+        } else {
+            errorTipoDocumento.innerText = "";
+        }
+        comprobarBoton();
+    }
 
-		actualizarEstadoBoton(validarFormulario(false));
-	};
+    function comprobarNumeroDocumento() {
+        const valor = entradaNumeroDocumento.value.trim();
 
-	campos[clave].onchange = function () {
-		tocados[clave] = true;
-		validarCampo(clave, validador, true);
-		actualizarEstadoBoton(validarFormulario(false));
-	};
-}
+        if (valor === "") {
+            errorNumeroDocumento.innerText = "El número de documento es obligatorio.";
+        } else {
+            errorNumeroDocumento.innerText = "";
+        }
+        comprobarBoton();
+    }
 
-function validarFormulario(mostrarErrores) {
-	var errores = 0;
-	errores += validarCampo("telefono", validarTelefono, mostrarErrores);
-	errores += validarCampo("fechaNacimiento", validarFechaNacimiento, mostrarErrores);
-	errores += validarCampo("tipoDocumento", validarSelectObligatorio, mostrarErrores);
-	errores += validarCampo("numeroDocumento", validarTextoObligatorio, mostrarErrores);
-	errores += validarCampo("iban", validarIban, mostrarErrores);
-	errores += validarCampo("titular", validarTextoObligatorio, mostrarErrores);
-	errores += validarCampo("nif", validarNif, mostrarErrores);
-	errores += validarCampo("direccion", validarTextoObligatorio, mostrarErrores);
-	errores += validarCampo("tipoArrendador", validarSelectObligatorio, mostrarErrores);
-	errores += validarCampo("numPropiedades", validarNumeroPropiedades, mostrarErrores);
-	errores += validarCampo("descripcion", validarDescripcion, mostrarErrores);
-	errores += validarCampo("aceptaTerminos", validarCheckboxObligatorio, mostrarErrores);
-	errores += validarCampo("aceptaVeracidad", validarCheckboxObligatorio, mostrarErrores);
-	return errores === 0;
-}
+    function comprobarIban() {
+        const valor = entradaIban.value.trim().replace(/\s/g, "");
+        const regex = /^[A-Z]{2}\d{2}\d{10,30}$/i;
 
-function validarCampo(clave, validador, mostrarErrores) {
-	var campo = campos[clave];
-	if (!campo) {
-	return 1;
-}
+        if (valor === "") {
+            errorIban.innerText = "El IBAN es obligatorio.";
+        } else if (!regex.test(valor)) {
+            errorIban.innerText = "Introduce un IBAN válido (ej: ES12 1234 5678 9012 3456 7890)";
+        } else {
+            errorIban.innerText = "";
+        }
+        comprobarBoton();
+    }
 
-/* =========================================================
-   SECCIÓN 3: VALIDADORES ESPECÍFICOS
-   Funciones que contienen la lógica (Regex/Date) para
-   validar cada tipo de dato (IBAN, NIF, etc.).
-   ========================================================= */
+    function comprobarTitular() {
+        const valor = entradaTitular.value.trim();
 
-function validarTelefono(campo) {
-	var valor = String(campo.value || "").trim();
-	var regex = /^\+\d{1,4} \d{6,11}$/;
+        if (valor === "") {
+            errorTitular.innerText = "El titular de la cuenta es obligatorio.";
+        } else {
+            errorTitular.innerText = "";
+        }
+        comprobarBoton();
+    }
 
-	if (valor === "") {
-		return 1;
-	}
+    function comprobarNif() {
+        const valor = entradaNif.value.trim().replace(/\s/g, "");
+        const regex = /^[A-Z0-9]\d{7}[A-Z0-9]$/i;
 
-	if (!regex.test(valor)) {
-		return 1;
-	}
+        if (valor === "") {
+            errorNif.innerText = "El NIF es obligatorio.";
+        } else if (!regex.test(valor)) {
+            errorNif.innerText = "Introduce un NIF válido (ej: 12345678A o B12345678)";
+        } else {
+            errorNif.innerText = "";
+        }
+        comprobarBoton();
+    }
 
-	return 0;
-}
+    function comprobarDireccion() {
+        const valor = entradaDireccion.value.trim();
 
-/* =========================================================
-   SECCIÓN 4: HELPERS DE UI
-   Funciones para mostrar errores visuales y habilitar
-   el botón de envío cuando todo es válido.
-   ========================================================= */
+        if (valor === "") {
+            errorDireccion.innerText = "La dirección fiscal es obligatoria.";
+        } else {
+            errorDireccion.innerText = "";
+        }
+        comprobarBoton();
+    }
 
-function mostrarError(idError, mensaje) {
-	var error = document.getElementById(idError);
-	if (!error) {
-		return;
-	}
+    function comprobarTipoArrendador() {
+        const valor = entradaTipoArrendador.value;
 
-	error.textContent = mensaje;
-}
+        if (valor === "") {
+            errorTipoArrendador.innerText = "Selecciona un tipo de arrendador.";
+        } else {
+            errorTipoArrendador.innerText = "";
+        }
+        comprobarBoton();
+    }
 
-function limpiarError(idError) {
-	var error = document.getElementById(idError);
-	if (!error) {
-		return;
-	}
+    function comprobarNumPropiedades() {
+        const valor = entradaNumPropiedades.value.trim();
 
-	error.textContent = "";
-}
+        if (valor === "") {
+            errorNumPropiedades.innerText = "El número de propiedades es obligatorio.";
+        } else if (parseInt(valor) < 1) {
+            errorNumPropiedades.innerText = "Debe ser al menos 1.";
+        } else {
+            errorNumPropiedades.innerText = "";
+        }
+        comprobarBoton();
+    }
 
-function marcarCampo(campo, esValido) {
-	if (!campo || !campo.classList) {
-		return;
-	}
+    function comprobarDescripcion() {
+        const valor = entradaDescripcion.value.trim();
 
-	if (esValido) {
-		campo.classList.remove("solicitud-campo-error");
-		return;
-	}
+        if (valor === "") {
+            errorDescripcion.innerText = "La descripción es obligatoria.";
+        } else if (valor.length < 20) {
+            errorDescripcion.innerText = "Mínimo 20 caracteres.";
+        } else {
+            errorDescripcion.innerText = "";
+        }
+        comprobarBoton();
+    }
 
-	campo.classList.add("solicitud-campo-error");
-}
+    function comprobarAceptaTerminos() {
+        if (!entradaAceptaTerminos.checked) {
+            errorAceptaTerminos.innerText = "Debes aceptar los términos y condiciones.";
+        } else {
+            errorAceptaTerminos.innerText = "";
+        }
+        comprobarBoton();
+    }
 
-function actualizarEstadoBoton(habilitar) {
-	if (!botonEnviarSolicitud) {
-		return;
-	}
+    function comprobarAceptaVeracidad() {
+        if (!entradaAceptaVeracidad.checked) {
+            errorAceptaVeracidad.innerText = "Debes declarar que los datos son veraces.";
+        } else {
+            errorAceptaVeracidad.innerText = "";
+        }
+        comprobarBoton();
+    }
 
-	botonEnviarSolicitud.disabled = !habilitar;
-	if (habilitar) {
-		botonEnviarSolicitud.classList.remove("btn-login-desabilitado");
-	} else {
-		botonEnviarSolicitud.classList.add("btn-login-desabilitado");
-	}
+    // --- ASIGNACIÓN DE EVENTOS ---
+
+    entradaTelefono.oninput = comprobarTelefono;
+
+    entradaFechaNacimiento.oninput = comprobarFechaNacimiento;
+
+    entradaTipoDocumento.onchange = comprobarTipoDocumento;
+
+    entradaNumeroDocumento.oninput = comprobarNumeroDocumento;
+
+    entradaIban.oninput = comprobarIban;
+
+    entradaTitular.oninput = comprobarTitular;
+
+    entradaNif.oninput = comprobarNif;
+
+    entradaDireccion.oninput = comprobarDireccion;
+
+    entradaTipoArrendador.onchange = comprobarTipoArrendador;
+
+    entradaNumPropiedades.oninput = comprobarNumPropiedades;
+
+    entradaDescripcion.oninput = comprobarDescripcion;
+
+    entradaAceptaTerminos.onchange = comprobarAceptaTerminos;
+
+    entradaAceptaVeracidad.onchange = comprobarAceptaVeracidad;
+
+    // --- ENVÍO DEL FORMULARIO ---
+
+    formulario.onsubmit = (evento) => {
+        evento.preventDefault();
+
+        comprobarTelefono();
+        comprobarFechaNacimiento();
+        comprobarTipoDocumento();
+        comprobarNumeroDocumento();
+        comprobarIban();
+        comprobarTitular();
+        comprobarNif();
+        comprobarDireccion();
+        comprobarTipoArrendador();
+        comprobarNumPropiedades();
+        comprobarDescripcion();
+        comprobarAceptaTerminos();
+        comprobarAceptaVeracidad();
+
+        if (botonEnviar.disabled) return;
+
+        botonEnviar.disabled = true;
+        botonEnviar.classList.add("btn-login-desabilitado");
+
+        var csrf = "";
+        var tokenInput = formulario.elements["_token"];
+        if (tokenInput) {
+            csrf = tokenInput.value;
+        }
+
+        var fd = new FormData(formulario);
+
+        fetch(formulario.action, {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": csrf,
+                "Accept": "application/json"
+            },
+            body: fd
+        })
+        .then(function (response) {
+            if (!response.ok) {
+                if (response.status === 422) {
+                    return response.json().then(function (errData) {
+                        actualizarErroresVacios();
+                        var mapaErrores = {
+                            telefono_solicitud: errorTelefono,
+                            fecha_nacimiento_solicitud: errorFechaNacimiento,
+                            tipo_documento_solicitud: errorTipoDocumento,
+                            numero_documento_solicitud: errorNumeroDocumento,
+                            iban_solicitud: errorIban,
+                            titular_cuenta_solicitud: errorTitular,
+                            nif_solicitud: errorNif,
+                            direccion_fiscal_solicitud: errorDireccion,
+                            tipo_arrendador_solicitud: errorTipoArrendador,
+                            num_propiedades_previstas_solicitud: errorNumPropiedades,
+                            descripcion_solicitud: errorDescripcion,
+                            acepta_terminos_solicitud: errorAceptaTerminos,
+                            acepta_veracidad_solicitud: errorAceptaVeracidad,
+                        };
+                        for (var campo in errData.errors) {
+                            if (errData.errors.hasOwnProperty(campo) && mapaErrores[campo]) {
+                                mapaErrores[campo].innerText = errData.errors[campo][0];
+                            }
+                        }
+                        throw new Error("Errores de validacion del servidor");
+                    });
+                }
+                throw new Error("Error del servidor");
+            }
+            var ct = response.headers.get("content-type") || "";
+            if (ct.indexOf("application/json") !== -1) {
+                return response.json();
+            }
+            window.location.reload();
+        })
+        .then(function (data) {
+            if (!data) return;
+            if (data.success) {
+                if (typeof mostrarAlertaExito === "function") {
+                    mostrarAlertaExito("Solicitud enviada", data.message || "Solicitud enviada correctamente");
+                } else {
+                    alert(data.message || "Solicitud enviada correctamente");
+                }
+                formulario.reset();
+                actualizarErroresVacios();
+                comprobarBoton();
+            } else {
+                if (typeof mostrarAlertaError === "function") {
+                    mostrarAlertaError("Error", data.message || "No se pudo enviar la solicitud");
+                } else {
+                    alert(data.message || "No se pudo enviar la solicitud");
+                }
+            }
+        })
+        .catch(function () {
+            if (typeof mostrarAlertaError === "function") {
+                mostrarAlertaError("Error", "No se pudo enviar la solicitud. Revisa los campos.");
+            } else {
+                alert("No se pudo enviar la solicitud. Revisa los campos.");
+            }
+        })
+        .finally(function () {
+            botonEnviar.disabled = false;
+            botonEnviar.classList.remove("btn-login-desabilitado");
+        });
+    };
+
+    function actualizarErroresVacios() {
+        errorTelefono.innerText = "";
+        errorFechaNacimiento.innerText = "";
+        errorTipoDocumento.innerText = "";
+        errorNumeroDocumento.innerText = "";
+        errorIban.innerText = "";
+        errorTitular.innerText = "";
+        errorNif.innerText = "";
+        errorDireccion.innerText = "";
+        errorTipoArrendador.innerText = "";
+        errorNumPropiedades.innerText = "";
+        errorDescripcion.innerText = "";
+        errorAceptaTerminos.innerText = "";
+        errorAceptaVeracidad.innerText = "";
+    }
+
+    // Inicialización si hay valores previos (old input del servidor)
+    if (entradaTelefono.value !== "") comprobarTelefono();
+    if (entradaFechaNacimiento.value !== "") comprobarFechaNacimiento();
+    if (entradaTipoDocumento.value !== "") comprobarTipoDocumento();
+    if (entradaNumeroDocumento.value !== "") comprobarNumeroDocumento();
+    if (entradaIban.value !== "") comprobarIban();
+    if (entradaTitular.value !== "") comprobarTitular();
+    if (entradaNif.value !== "") comprobarNif();
+    if (entradaDireccion.value !== "") comprobarDireccion();
+    if (entradaTipoArrendador.value !== "") comprobarTipoArrendador();
+    if (entradaNumPropiedades.value !== "") comprobarNumPropiedades();
+    if (entradaDescripcion.value !== "") comprobarDescripcion();
+    comprobarBoton();
 }

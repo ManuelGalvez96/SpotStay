@@ -186,6 +186,7 @@ class SolicitudController extends Controller
             ->first();
 
         if (!$alquiler) {
+            \Log::info('Solicitud no encontrada', ['id' => $id, 'arrendadorId' => $arrendadorId]);
             return response()->json([
                 'success' => false,
                 'message' => 'No se encontró la solicitud.',
@@ -194,6 +195,12 @@ class SolicitudController extends Controller
 
         DB::beginTransaction();
         try {
+            // Eliminar contratos relacionados
+            DB::table('tbl_contrato')
+                ->where('id_alquiler_fk', $id)
+                ->delete();
+
+            // Eliminar el alquiler
             DB::table('tbl_alquiler')
                 ->where('id_alquiler', $id)
                 ->delete();
@@ -206,9 +213,10 @@ class SolicitudController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Error al eliminar solicitud', ['id' => $id, 'error' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
-                'message' => 'Error al eliminar la solicitud.',
+                'message' => 'Error al eliminar la solicitud: ' . $e->getMessage(),
             ], 500);
         }
     }

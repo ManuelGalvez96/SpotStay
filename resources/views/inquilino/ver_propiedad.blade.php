@@ -287,6 +287,7 @@
                         <option value="todas">Todos los estados</option>
                         <option value="abierta">Abiertas</option>
                         <option value="en_proceso">En proceso</option>
+                        <option value="Esperando decision">Esperando decisión</option>
                         <option value="resuelta">Resueltas</option>
                     </select>
                 </div>

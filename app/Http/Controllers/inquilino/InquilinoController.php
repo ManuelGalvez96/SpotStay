@@ -483,10 +483,26 @@ class InquilinoController extends Controller
 
         DB::beginTransaction();
         try {
+            // Obtener el gestor de la propiedad (o el arrendador si no hay gestor)
+            $propiedad = DB::table('tbl_propiedad')
+                ->where('id_propiedad', $id)
+                ->select('id_gestor_fk', 'id_arrendador_fk')
+                ->first();
+
+            $idAsignado = null;
+            if ($propiedad) {
+                $idAsignado = (int) ($propiedad->id_gestor_fk ?? 0);
+                if ($idAsignado <= 0) {
+                    $idAsignado = (int) ($propiedad->id_arrendador_fk ?? 0);
+                }
+                $idAsignado = $idAsignado > 0 ? $idAsignado : null;
+            }
+
             // 1. Crear la incidencia
             $idIncidencia = DB::table('tbl_incidencia')->insertGetId([
                 'id_propiedad_fk' => $id,
                 'id_reporta_fk' => $usuario->id_usuario,
+                'id_asignado_fk' => $idAsignado,
                 'titulo_incidencia' => $request->titulo,
                 'descripcion_incidencia' => $request->descripcion,
                 'categoria_incidencia' => $request->categoria,

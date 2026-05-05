@@ -128,7 +128,7 @@
                         <div class="property-actions">
                             <span class="badge badge-{{ $propiedad->estado_propiedad }}">{{ ucfirst($propiedad->estado_propiedad) }}</span>
                             <a class="mini-link" href="{{ route('arrendador.propiedades', ['arrendador_id' => $arrendadorId, 'editar' => $propiedad->id_propiedad]) }}">Editar</a>
-                            <a class="mini-link" href="{{ route('arrendador.propiedades.show', ['id' => $propiedad->id_propiedad, 'arrendador_id' => $arrendadorId]) }}" target="_blank">Ver</a>
+                            <button class="mini-link" type="button" onclick="abrirModalPropiedad({{ $propiedad->id_propiedad }}, {{ $arrendadorId }})">Ver</button>
                             <form method="POST" action="{{ route('arrendador.propiedades.estado', $propiedad->id_propiedad) }}" data-ajax-state-form="true">
                                 @csrf
                                 <input type="hidden" name="arrendador_id" value="{{ $arrendadorId }}" />
@@ -147,6 +147,116 @@
         </div>
     </section>
 </div>
+
+<div id="modal-propiedad" class="modal" style="display: none;">
+    <div class="modal-backdrop" onclick="cerrarModalPropiedad()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-titulo">Detalles de la propiedad</h2>
+            <button class="modal-close" type="button" onclick="cerrarModalPropiedad()">✕</button>
+        </div>
+        <div class="modal-body" id="modal-body">
+            <div class="spinner">Cargando...</div>
+        </div>
+    </div>
+</div>
+
+<style>
+.modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+}
+
+.modal-content {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    z-index: 1001;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: #000;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.spinner {
+    text-align: center;
+    color: #999;
+    padding: 40px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-borrador { background: #fff3cd; color: #856404; }
+.badge-publicada { background: #d4edda; color: #155724; }
+.badge-alquilada { background: #cce5ff; color: #004085; }
+.badge-inactiva { background: #f8d7da; color: #721c24; }
+
+.error {
+    color: #d32f2f;
+    text-align: center;
+    padding: 20px;
+}
+</style>
+
 <script src="{{ asset('js/arrendador/propiedades.js') }}"></script>
 </body>
 </html>

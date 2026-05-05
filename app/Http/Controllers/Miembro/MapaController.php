@@ -9,6 +9,12 @@ use Illuminate\Support\Facades\Auth;
 
 class MapaController extends Controller
 {
+    /**
+     * Muestra la vista del mapa de búsqueda de propiedades.
+     *
+     * Consulta las ciudades únicas de propiedades publicadas
+     * para alimentar el dropdown de filtro por ciudad.
+     */
     public function index(Request $request)
     {
         $ciudades = DB::table('tbl_propiedad')
@@ -23,6 +29,22 @@ class MapaController extends Controller
         ]);
     }
 
+    /**
+     * API: Retorna propiedades publicadas como JSON para pintar marcadores en el mapa.
+     *
+     * Filtros aplicables (todos opcionales):
+     *   - lat_min/lat_max/lng_min/lng_max: límites visibles del mapa (bounds)
+     *   - precio_minimo/precio_maximo: rango de precio
+     *   - tipo_inmueble: tipo de propiedad (piso, casa, etc.)
+     *   - habitaciones: número exacto de habitaciones
+     *   - ciudad: ciudad exacta
+     *   - banos: número de baños (4+ trata como >= 4)
+     *   - metros_minimo/metros_maximo: rango de metros cuadrados
+     *   - extras booleanos: amueblado, terraza, piscina, garaje, ascensor,
+     *     aire_acondicionado, calefaccion, trastero
+     *
+     * Retorna máximo 300 propiedades ordenadas por ID descendente.
+     */
     public function propiedades(Request $request)
     {
         $query = DB::table('tbl_propiedad')

@@ -256,45 +256,57 @@ function guardarEdicion(id, arrendadorId, modal) {
 }
 
 function eliminarSolicitud(id, arrendadorId) {
-  if (!confirm('¿Estás seguro de que deseas eliminar esta solicitud? Esta acción no se puede deshacer.')) {
-    return;
-  }
+  Swal.fire({
+    title: '¿Eliminar solicitud?',
+    text: 'Esta acción no se puede deshacer.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d32f2f',
+    cancelButtonColor: '#757575',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar'
+  }).then(function (result) {
+    if (!result.isConfirmed) {
+      return;
+    }
 
-  fetch('/arrendador/solicitudes/' + id + '/eliminar', {
-    method: 'POST',
-    headers: {
-      'X-CSRF-TOKEN': obtenerTokenCsrf(),
-      'X-Requested-With': 'XMLHttpRequest',
-      'Accept': 'application/json'
-    },
-    body: new URLSearchParams({ arrendador_id: arrendadorId || '' }),
-    credentials: 'same-origin'
-  })
-    .then(function (respuesta) {
-      return respuesta.json().then(function (datosRespuesta) {
-        return { ok: respuesta.ok, datosRespuesta: datosRespuesta };
+    fetch('/arrendador/solicitudes/' + id + '/eliminar', {
+      method: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': obtenerTokenCsrf(),
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json'
+      },
+      body: new URLSearchParams({ arrendador_id: arrendadorId || '' }),
+      credentials: 'same-origin'
+    })
+      .then(function (respuesta) {
+        return respuesta.json().then(function (datosRespuesta) {
+          return { ok: respuesta.ok, datosRespuesta: datosRespuesta };
+        });
+      })
+      .then(function (resultado) {
+        if (!resultado.ok || !resultado.datosRespuesta.success) {
+          console.error('Error response:', resultado);
+          throw new Error(resultado.datosRespuesta.message || 'No se pudo eliminar la solicitud.');
+        }
+
+        var fila = document.getElementById('fila-' + id);
+        if (fila) {
+          fila.style.opacity = '0';
+          setTimeout(function () {
+            if (fila.parentNode) {
+              fila.parentNode.removeChild(fila);
+            }
+          }, 200);
+        }
+
+        mostrarToast('Solicitud eliminada correctamente.');
+      })
+      .catch(function (error) {
+        mostrarToast(error.message || 'Error al eliminar la solicitud.');
       });
-    })
-    .then(function (resultado) {
-      if (!resultado.ok || !resultado.datosRespuesta.success) {
-        throw new Error(resultado.datosRespuesta.message || 'No se pudo eliminar la solicitud.');
-      }
-
-      var fila = document.getElementById('fila-' + id);
-      if (fila) {
-        fila.style.opacity = '0';
-        setTimeout(function () {
-          if (fila.parentNode) {
-            fila.parentNode.removeChild(fila);
-          }
-        }, 200);
-      }
-
-      mostrarToast('Solicitud eliminada correctamente.');
-    })
-    .catch(function (error) {
-      mostrarToast(error.message || 'Error al eliminar la solicitud.');
-    });
+  });
 }
 
 /* =========================================================

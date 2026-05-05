@@ -419,6 +419,7 @@ setInterval(verificarEstadoAlquilerFetch, 300000);
 function inicializarEventosIncidencias() {
     const botonesDetalle = document.querySelectorAll('.btn-detalle-incidencia');
     botonesDetalle.forEach(btn => {
+        // Asignación directa de evento según norma Nº2 de SpotStay
         btn.onclick = () => {
             const id = btn.getAttribute('data-id');
             cargarDetalleIncidencia(id);
@@ -435,7 +436,7 @@ function cargarHistorialPagosFetch(tipo) {
     
     const idAlquiler = tabContent.getAttribute('data-id-alquiler');
     if (!idAlquiler) {
-        console.error("No se encontró el ID del alquiler.");
+        console.error("No se encontró el ID del alquiler en el atributo data.");
         return;
     }
 
@@ -443,13 +444,13 @@ function cargarHistorialPagosFetch(tipo) {
     const tabPane = document.getElementById(idTab);
     const endpoint = tipo === 'alquiler' ? 'historial-alquiler' : 'historial-suministros';
     
-    // Configuraciones visuales según tipo
+    // Configuraciones visuales según tipo (Colores de SpotStay)
     const colorTexto = tipo === 'alquiler' ? '' : 'texto-suministro';
     const colorBadge = tipo === 'alquiler' ? 'bg-success' : 'badge-suministro-abonado';
     const textoBadge = tipo === 'alquiler' ? 'Pagado' : 'Abonado';
     const spinnerColor = tipo === 'alquiler' ? 'text-primary' : 'text-info';
 
-    // Asegurar que la tabla existe antes de buscar el tbody
+    // Asegurar que la tabla existe antes de buscar el cuerpo (tbody)
     let cuerpoTabla = tabPane.querySelector('tbody');
     if (!cuerpoTabla) {
         tabPane.innerHTML = `
@@ -458,7 +459,7 @@ function cargarHistorialPagosFetch(tipo) {
                     <thead class="table-light">
                         <tr>
                             <th class="ps-3">Fecha</th>
-                            <th>${tipo === 'alquiler' ? 'Concepto' : 'Categoria(Concepto)'}</th>
+                            <th>${tipo === 'alquiler' ? 'Concepto' : 'Categoría(Concepto)'}</th>
                             <th class="text-end">Importe</th>
                             <th class="text-center pe-3">Estado</th>
                         </tr>
@@ -469,19 +470,21 @@ function cargarHistorialPagosFetch(tipo) {
         cuerpoTabla = tabPane.querySelector('tbody');
     }
 
-    // Spinner de carga dentro de la tabla
+    // Spinner de carga dinámico dentro de la tabla
     cuerpoTabla.innerHTML = `<tr><td colspan="4" class="text-center p-5"><div class="spinner-border ${spinnerColor}" role="status"></div><p class="mt-2 small text-muted">Cargando ${tipo}...</p></td></tr>`;
 
+    // Petición fetch para obtener datos JSON
     fetch(`/inquilino/alquiler/${idAlquiler}/${endpoint}`, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
-    .then(r => r.json())
+    .then(respuesta => respuesta.json())
     .then(datos => {
         if (!datos || datos.length === 0) {
-            cuerpoTabla.innerHTML = `<tr><td colspan="4" class="p-5 text-center text-muted">No hay registros de ${tipo} en este alquiler.</td></tr>`;
+            cuerpoTabla.innerHTML = `<tr><td colspan="4" class="p-5 text-center text-muted">No hay registros de ${tipo} en este alquiler todavía.</td></tr>`;
             return;
         }
 
+        // Mapeo y generación dinámica de filas
         cuerpoTabla.innerHTML = datos.map(pago => {
             const fecha = new Date(pago.creado_pago);
             const fechaFormateada = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -499,31 +502,37 @@ function cargarHistorialPagosFetch(tipo) {
         }).join('');
     })
     .catch(error => {
-        console.error('Error al cargar historial:', error);
-        cuerpoTabla.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-danger">Error al conectar con el servidor.</td></tr>`;
+        console.error('Error crítico al cargar el historial:', error);
+        cuerpoTabla.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-danger">Error de conexión con el servidor.</td></tr>`;
     });
 }
 
 /**
- * Inicializa los eventos del modal de historial para disparar las cargas fetch
+ * Inicializa los eventos del modal de historial
+ * (Asignación directa de eventos)
  */
 function inicializarHistorialPagosEvents() {
     const botonTabAlquiler = document.getElementById('alquiler-tab');
     const botonTabGastos = document.getElementById('gastos-tab');
     const botonesVerHistorial = document.querySelectorAll('.btn-ver-historial');
 
-    if (botonTabAlquiler) botonTabAlquiler.onclick = () => cargarHistorialPagosFetch('alquiler');
-    if (botonTabGastos) botonTabGastos.onclick = () => cargarHistorialPagosFetch('suministros');
+    if (botonTabAlquiler) {
+        botonTabAlquiler.onclick = () => cargarHistorialPagosFetch('alquiler');
+    }
+    
+    if (botonTabGastos) {
+        botonTabGastos.onclick = () => cargarHistorialPagosFetch('suministros');
+    }
 
-    // Al abrir el modal desde cualquier botón, cargamos la pestaña que esté activa
-    botonesVerHistorial.forEach(btn => {
-        btn.onclick = () => {
-            // Un pequeño retardo para asegurar que el modal y las pestañas están listos en el DOM
+    // Gestión de apertura de modal mediante botones
+    botonesVerHistorial.forEach(boton => {
+        boton.onclick = () => {
+            // Retardo para asegurar la carga del DOM del modal
             setTimeout(() => {
-                const activeTab = document.querySelector('#tabHistorial .nav-link.active');
-                if (activeTab && activeTab.id === 'alquiler-tab') {
+                const pestañaActiva = document.querySelector('#tabHistorial .nav-link.active');
+                if (pestañaActiva && pestañaActiva.id === 'alquiler-tab') {
                     cargarHistorialPagosFetch('alquiler');
-                } else if (activeTab) {
+                } else if (pestañaActiva) {
                     cargarHistorialPagosFetch('suministros');
                 }
             }, 150);
@@ -531,6 +540,6 @@ function inicializarHistorialPagosEvents() {
     });
 }
 
-// Inicializar interacciones
+// Inicialización final de todos los componentes del Inquilino
 inicializarEventosIncidencias();
 inicializarHistorialPagosEvents();

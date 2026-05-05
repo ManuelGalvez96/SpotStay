@@ -284,39 +284,11 @@
                         <option value="mias">Mis reportes</option>
                     </select>
                     <select id="filtro-estado" class="select-filtro-mini">
-                        <option value="todas">Todos los estados</option>
-                        <option value="abierta">Abiertas</option>
-                        <option value="en_proceso">En proceso</option>
-                        <option value="resuelta">Resueltas</option>
+                        <!-- Se cargará dinámicamente por JS -->
                     </select>
                 </div>
                 <div class="lista-incidencias" id="contenedor-lista-incidencias" data-propiedad-id="{{ $alquiler->id_propiedad }}">
-                    @forelse ($incidencias as $incidencia)
-                    <div class="item-incidencia">
-                        <div class="incidencia-info">
-                            <span class="titulo btn-detalle-incidencia"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modal-detalle-incidencia"
-                                data-id="{{ $incidencia->id_incidencia }}">
-                                {{ $incidencia->titulo_incidencia }}
-                            </span>
-                            <span class="fecha">{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y') }}</span>
-                        </div>
-                        <div class="incidencia-acciones">
-                            <span class="estado-tag {{ $incidencia->estado_incidencia }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span>
-
-                            @if($incidencia->id_reporta_fk == auth()->id() && $incidencia->estado_incidencia != 'resuelta')
-                            <button type="button" class="btn-resolver" title="Marcar como resuelta" onclick="cerrarIncidencia({{ $incidencia->id_incidencia }})">
-                                <i class="bi bi-check-circle"></i>
-                            </button>
-                            @endif
-                        </div>
-                    </div>
-                    @empty
-                    <div class="aviso-vacio">
-                        <p>No hay incidencias registradas.</p>
-                    </div>
-                    @endforelse
+                    <!-- Se cargará dinámicamente por JS -->
                 </div>
             </div>
 
@@ -455,5 +427,6 @@
 
 @section('scripts')
 <script src="{{ asset('js/inquilino/validacion_incidencia.js') }}"></script>
+<script src="{{ asset('js/inquilino/incidencias.js') }}"></script>
 <script src="{{ asset('js/inquilino/inquilino.js') }}"></script>
 @endsection

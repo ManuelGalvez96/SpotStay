@@ -422,7 +422,6 @@ class InquilinoController extends Controller
             'conceptosGastos'     => $conceptosGastos,
             'numInquilinos'       => $numInquilinos,
             'companeros'          => $companeros,
-            'incidencias'         => $incidencias,
             'historialAlquiler'   => $historialAlquiler,
             'historialGastos'     => $historialGastos,
             'esInquilino'         => true,
@@ -579,6 +578,24 @@ class InquilinoController extends Controller
             'prioridad' => ucfirst($incidencia->prioridad_incidencia ?? 'N/A'),
             'estado' => ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia ?? 'N/A')),
             'fecha' => Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y H:i')
+        ]);
+    }
+
+    public function obtenerEstadosIncidencias()
+    {
+        // Estados disponibles en el sistema (completos)
+        $estados = [
+            'abierta' => 'Abiertas',
+            'en_proceso' => 'En proceso',
+            'esperando_decision' => 'Esperando decisión',
+            'esperando_pago' => 'Esperando pago',
+            'resuelta' => 'Resueltas',
+            'cerrada' => 'Cerradas'
+        ];
+
+        return response()->json([
+            'success' => true,
+            'estados' => $estados
         ]);
     }
 

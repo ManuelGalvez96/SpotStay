@@ -174,6 +174,21 @@
                         <a class="btn btn-outline btn-sm" href="{{ route('arrendador.gestor', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Configurar Gestor</a>
                     </div>
                 </div>
+                <!-- Card: Incidencias esperando acción -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">⚙️</div>
+                        <div>
+                            <div class="card-title">Incidencias</div>
+                        </div>
+                    </div>
+                    <p class="card-description">
+                        Decide sobre las incidencias que requieren tu atención.
+                    </p>
+                    <div class="card-footer">
+                        <a class="btn btn-outline btn-sm" href="{{ route('arrendador.incidencias', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Gestionar Incidencias</a>
+                    </div>
+                </div>
             </div>
 
             <!-- Section: Últimas Aplicaciones -->

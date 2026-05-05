@@ -18,7 +18,7 @@
 </div>
 
 <div class="kpi-grid">
-    <a class="kpi-card-link" href="{{ url('/gestor/incidencias?estado=abierta') }}">
+    <a class="kpi-card-link" href="{{ route('gestor.incidencias', ['estado' => 'abierta']) }}">
         <div class="kpi-card">
             <div class="kpi-header">
                 <span class="kpi-label">INCIDENCIAS NUEVAS</span>
@@ -29,7 +29,7 @@
         </div>
     </a>
 
-    <a class="kpi-card-link" href="{{ url('/gestor/incidencias?estado=en_proceso') }}">
+    <a class="kpi-card-link" href="{{ route('gestor.incidencias', ['estado' => 'en_proceso']) }}">
         <div class="kpi-card">
             <div class="kpi-header">
                 <span class="kpi-label">EN PROCESO</span>
@@ -40,7 +40,7 @@
         </div>
     </a>
 
-    <a class="kpi-card-link" href="{{ url('/gestor/incidencias?estado=esperando') }}">
+    <a class="kpi-card-link" href="{{ route('gestor.incidencias', ['estado' => 'esperando']) }}">
         <div class="kpi-card">
             <div class="kpi-header">
                 <span class="kpi-label">EN ESPERA</span>
@@ -51,7 +51,7 @@
         </div>
     </a>
 
-    <a class="kpi-card-link" href="{{ url('/gestor/incidencias') }}">
+    <a class="kpi-card-link" href="{{ route('gestor.incidencias') }}">
         <div class="kpi-card">
             <div class="kpi-header">
                 <span class="kpi-label">URGENTES</span>
@@ -68,7 +68,7 @@
         <div class="card-franja"></div>
         <div class="card-header-admin card-header-gradient">
             <span>Incidencias recientes</span>
-            <a href="{{ url('/gestor/incidencias') }}" class="link-ver-todos">Ver todas →</a>
+            <a href="{{ route('gestor.incidencias') }}" class="link-ver-todos">Ver todas →</a>
         </div>
 
         <!-- Vista desktop: tabla -->
@@ -102,7 +102,7 @@
                             <td><span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span></td>
                             <td><span class="badge-prioridad badge-prioridad-{{ $badgePrioridad }}">{{ ucfirst($prioridad) }}</span></td>
                             <td>{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y') }}</td>
-                            <td><a class="link-ver-todos" href="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia) }}">Ver</a></td>
+                            <td><a class="link-ver-todos" href="{{ route('gestor.incidencias.show', ['id' => $incidencia->id_incidencia]) }}">Ver</a></td>
                         </tr>
                     @empty
                         <tr>
@@ -134,7 +134,7 @@
                     </div>
                     <div class="solicitud-meta">
                         <span class="solicitud-tiempo">{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->diffForHumans() }}</span>
-                        <a href="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia) }}" class="btn-revisar">Abrir →</a>
+                        <a href="{{ route('gestor.incidencias.show', ['id' => $incidencia->id_incidencia]) }}" class="btn-revisar">Abrir →</a>
                     </div>
                 </div>
             @empty
@@ -163,7 +163,7 @@
                     </div>
                     <div class="solicitud-meta">
                         <span class="solicitud-tiempo">{{ \Carbon\Carbon::parse($urgente->creado_incidencia)->diffForHumans() }}</span>
-                        <a href="{{ url('/gestor/incidencias/' . $urgente->id_incidencia) }}" class="btn-revisar">Abrir →</a>
+                        <a href="{{ route('gestor.incidencias.show', ['id' => $urgente->id_incidencia]) }}" class="btn-revisar">Abrir →</a>
                     </div>
                 </div>
             @empty
@@ -182,7 +182,7 @@
 
         <div class="lista-solicitudes">
             @forelse($propiedadesAsignadas as $propiedad)
-                <a class="solicitud-item solicitud-item-link" href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad) }}">
+                <a class="solicitud-item solicitud-item-link" href="{{ route('gestor.propiedades.show', ['id' => $propiedad->id_propiedad]) }}">
                     <div class="solicitud-avatar" style="background:#035498;">{{ strtoupper(substr($propiedad->titulo_propiedad, 0, 2)) }}</div>
                     <div class="solicitud-info">
                         <p class="solicitud-nombre">{{ $propiedad->titulo_propiedad }}</p>

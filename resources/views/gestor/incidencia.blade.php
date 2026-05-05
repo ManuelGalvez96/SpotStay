@@ -7,7 +7,7 @@
 
 @section('content')
 <div class="incidencia-shell">
-    <a href="{{ url('/gestor/dashboard') }}" class="volver-link">← Volver al dashboard</a>
+    <a href="{{ route('gestor.dashboard') }}" class="volver-link">← Volver al dashboard</a>
 
     @if(session('ok'))
         <div class="alerta ok" id="flash-ok" data-msg="{{ session('ok') }}"></div>
@@ -72,7 +72,7 @@
                 <h2>Acciones del gestor</h2>
 
                 @if($accionActual === 'presupuesto')
-                    <form method="POST" action="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia . '/presupuesto') }}" enctype="multipart/form-data" class="bloque-accion bloque-unico">
+                    <form method="POST" action="{{ route('gestor.incidencias.presupuesto', ['id' => $incidencia->id_incidencia]) }}" enctype="multipart/form-data" class="bloque-accion bloque-unico">
                         @csrf
                         <h3>Generar presupuesto de reparación</h3>
                         <p>Introduce el coste para enviarlo al arrendador. La incidencia pasará a esperando decisión.</p>

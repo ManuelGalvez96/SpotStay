@@ -2,6 +2,8 @@ var formularioSolicitud = null;
 var botonEnviarSolicitud = null;
 var campos = {};
 var tocados = {};
+var solicitudEnviando = false;
+var solicitudEnviada = false;
 
 window.onload = function () {
 	iniciarValidacionSolicitudArrendador();
@@ -46,13 +48,19 @@ function iniciarValidacionSolicitudArrendador() {
 	formularioSolicitud.onsubmit = function (evento) {
 		evento.preventDefault();
 
+		if (solicitudEnviando || solicitudEnviada) {
+			return;
+		}
+
 		if (!validarFormulario(true)) {
 			return;
 		}
 
 		// preparar envio por fetch
+		solicitudEnviando = true;
 		botonEnviarSolicitud.disabled = true;
 		botonEnviarSolicitud.classList.add('btn-login-desabilitado');
+		var textoOriginalBoton = botonEnviarSolicitud.innerText;
 
 		var tokenMeta = document.getElementsByName('csrf-token');
 		var csrf = '';
@@ -85,6 +93,7 @@ function iniciarValidacionSolicitudArrendador() {
 		.then(function (data) {
 			if (!data) return;
 			if (data.success) {
+				solicitudEnviada = true;
 				if (typeof mostrarAlertaExito === 'function') {
 					mostrarAlertaExito('Solicitud enviada', data.message || 'Solicitud enviada correctamente');
 				} else {
@@ -93,6 +102,9 @@ function iniciarValidacionSolicitudArrendador() {
 				formularioSolicitud.reset();
 				// resetear estados locales
 				for (var k in tocados) { if (tocados.hasOwnProperty(k)) tocados[k] = false; }
+				botonEnviarSolicitud.innerText = 'Solicitud enviada';
+				botonEnviarSolicitud.disabled = true;
+				botonEnviarSolicitud.classList.add('btn-login-desabilitado');
 				actualizarEstadoBoton(false);
 			} else {
 				if (typeof mostrarAlertaError === 'function') {
@@ -100,6 +112,8 @@ function iniciarValidacionSolicitudArrendador() {
 				} else {
 					alert(data.message || 'No se pudo enviar la solicitud');
 				}
+				botonEnviarSolicitud.innerText = textoOriginalBoton;
+				solicitudEnviando = false;
 			}
 		})
 		.catch(function (err) {
@@ -108,10 +122,14 @@ function iniciarValidacionSolicitudArrendador() {
 			} else {
 				alert('Error de red al enviar la solicitud');
 			}
+			botonEnviarSolicitud.innerText = textoOriginalBoton;
+			solicitudEnviando = false;
 		})
 		.finally(function () {
-			botonEnviarSolicitud.disabled = false;
-			botonEnviarSolicitud.classList.remove('btn-login-desabilitado');
+			if (!solicitudEnviada) {
+				botonEnviarSolicitud.disabled = false;
+				botonEnviarSolicitud.classList.remove('btn-login-desabilitado');
+			}
 		});
 	};
 

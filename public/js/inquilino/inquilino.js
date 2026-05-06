@@ -63,7 +63,11 @@ function inicializarPagosInquilino() {
     const botonesPagar = document.querySelectorAll('.btn-pago');
     
     botonesPagar.forEach(botonPagar => {
+        let pagoEnCurso = false;
+
         botonPagar.onclick = () => {
+            if (pagoEnCurso) return;
+
             const formulario = botonPagar.closest('form');
             if (!formulario) return;
 
@@ -88,12 +92,14 @@ function inicializarPagosInquilino() {
                 cancelButtonColor: '#6B7280'
             }).then((resultado) => {
                 if (resultado.isConfirmed) {
+                    pagoEnCurso = true;
                     const textoOriginal = botonPagar.innerText;
                     botonPagar.disabled = true;
                     botonPagar.innerText = 'Procesando...';
 
                     const rutaEnvio = formulario.getAttribute('action');
                     const fichaToken = document.querySelector('input[name="_token"]')?.value;
+                    const datosFormulario = new FormData(formulario);
 
                     fetch(rutaEnvio, {
                         method: 'POST',
@@ -101,7 +107,8 @@ function inicializarPagosInquilino() {
                             'X-CSRF-TOKEN': fichaToken,
                             'X-Requested-With': 'XMLHttpRequest',
                             'Accept': 'application/json'
-                        }
+                        },
+                        body: datosFormulario
                     })
                     .then(respuesta => respuesta.json())
                     .then(datos => {
@@ -123,6 +130,7 @@ function inicializarPagosInquilino() {
                                 customClass: { icon: 'oso-icon' },
                                 confirmButtonColor: '#d9534f'
                             });
+                            pagoEnCurso = false;
                             botonPagar.disabled = false;
                             botonPagar.innerText = textoOriginal;
                         }
@@ -136,6 +144,7 @@ function inicializarPagosInquilino() {
                             customClass: { icon: 'oso-icon' },
                             confirmButtonColor: '#d9534f'
                         });
+                        pagoEnCurso = false;
                         botonPagar.disabled = false;
                         botonPagar.innerText = textoOriginal;
                     });

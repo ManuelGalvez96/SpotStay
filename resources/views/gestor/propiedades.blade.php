@@ -64,7 +64,7 @@
         <span>Filtros de propiedades</span>
     </div>
 
-    <form method="GET" action="{{ url('/gestor/propiedades') }}" class="filtros-propiedades" id="propiedadesFiltrosForm">
+    <form method="GET" action="{{ route('gestor.propiedades') }}" class="filtros-propiedades" id="propiedadesFiltrosForm">
         <input type="text" name="q" value="{{ $q }}" placeholder="Buscar por título, dirección o arrendador">
 
         <select name="estado">
@@ -181,9 +181,9 @@
                         <td>{{ $propiedad->total_alquileres_activos }}</td>
                         <td>
                             <div class="acciones-rapidas">
-                                <a href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad) }}" class="link-ver-todos">Detalle</a>
-                                <a href="{{ url('/gestor/incidencias?propiedad_id=' . $propiedad->id_propiedad) }}" class="link-secundario">Incidencias</a>
-                                <a href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad . '#alquileres-activos') }}" class="link-secundario">Alquileres</a>
+                                <a href="{{ route('gestor.propiedades.show', ['id' => $propiedad->id_propiedad]) }}" class="link-ver-todos">Detalle</a>
+                                <a href="{{ route('gestor.incidencias', ['propiedad_id' => $propiedad->id_propiedad]) }}" class="link-secundario">Incidencias</a>
+                                <a href="{{ route('gestor.propiedades.show', ['id' => $propiedad->id_propiedad]) }}#alquileres-activos" class="link-secundario">Alquileres</a>
                             </div>
                         </td>
                     </tr>
@@ -228,7 +228,7 @@
                         <span class="pagos-punto"></span>
                         {{ $textoPagos }}
                     </span>
-                    <a href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad) }}" class="btn-revisar">Detalle →</a>
+                    <a href="{{ route('gestor.propiedades.show', ['id' => $propiedad->id_propiedad]) }}" class="btn-revisar">Detalle →</a>
                 </div>
             </div>
         @empty

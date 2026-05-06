@@ -2,6 +2,12 @@
  * Scripts para el panel de Miembro de SpotStay
  */
 
+/* =========================================================
+   SECCIÓN 1: MENÚ DE USUARIO (DROPDOWN)
+   Controla la aparición y desaparición del submenú al
+   hacer clic en el perfil.
+   ========================================================= */
+
 // Inicialización directa (los scripts se cargan al final del body en el layout)
 var botonPerfil = document.getElementById('boton-perfil');
 var submenu = document.getElementById('submenu-perfil');
@@ -23,6 +29,12 @@ if (botonPerfil && submenu) {
         e.stopPropagation();
     };
 }
+
+/* =========================================================
+   SECCIÓN 2: FILTROS DE PROPIEDADES (LISTADO)
+   Gestiona la búsqueda y filtrado de propiedades en la
+   página de inicio del miembro.
+   ========================================================= */
 
 inicializarMapaDetalle();
 cargarFiltrosInicio();
@@ -182,6 +194,11 @@ function cargarFiltrosInicio() {
     }
 }
 
+/* =========================================================
+   SECCIÓN 3: UTILIDADES DE FORMATO
+   Funciones auxiliares para precio y seguridad HTML.
+   ========================================================= */
+
 function formatearPrecio(valor) {
     if (valor === null || valor === undefined || valor === '') {
         return 'Sin precio';
@@ -207,6 +224,12 @@ function escaparHtml(texto) {
         return mapaCaracteres[caracter];
     });
 }
+
+/* =========================================================
+   SECCIÓN 4: MAPA DE DETALLE DE PROPIEDAD
+   Inicializa el mapa pequeño que se muestra en la ficha
+   individual de cada propiedad.
+   ========================================================= */
 
 function inicializarMapaDetalle() {
     var mapaDetalle = document.getElementById('mapa-detalle');

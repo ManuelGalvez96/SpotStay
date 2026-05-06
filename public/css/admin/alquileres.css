@@ -9,7 +9,7 @@
 
 .hero-admin {
     position: relative;
-    padding: 36px 40px;
+    padding: 32px 32px;
     background: #035498;
     color: white;
     border-radius: 0 0 20px 20px;
@@ -69,29 +69,33 @@
 }
 
 .content-wrapper .kpi-grid-pequeno {
-    margin-top: 24px;
+    margin-top: 16px;
 }
 
 /* Base de tabla/paginacion alineada al resto del admin */
 .card-admin {
     background: white;
     border: 1px solid #E5E7EB;
-    border-radius: 12px;
+    border-radius: 14px;
     overflow: hidden;
+    margin-top: 16px;
 }
 
 .tabla-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 20px;
-    border-bottom: 1px solid #E5E7EB;
-    gap: 16px;
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+    background: linear-gradient(90deg, #035498, #1AA068);
+    font-size: 13px;
+    color: white;
+    gap: 24px;
 }
 
 .tabla-header > span {
     font-size: 13px;
-    color: #6B7280;
+    color: #ffffff;
     font-weight: 500;
 }
 
@@ -146,6 +150,54 @@
     background: #035498;
     color: white;
     border-color: #035498;
+}
+
+/* ── Paginación Bootstrap global (estilo propiedades) ── */
+.pagination {
+    margin-left: auto;
+    gap: 4px;
+}
+
+.page-item {
+    margin: 0;
+}
+
+.page-link {
+    border: 1px solid #E5E7EB;
+    color: #6B7280;
+    background: white;
+    border-radius: 6px;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.page-link:hover:not(.disabled .page-link) {
+    color: #035498;
+    border-color: #035498;
+    background: #EEF4FF;
+}
+
+.page-item.active .page-link {
+    background: #035498;
+    border-color: #035498;
+    color: white;
+    font-weight: 600;
+}
+
+.page-item.disabled .page-link {
+    background: #F9FAFB;
+    color: #D1D5DB;
+    border-color: #F3F4F6;
+    cursor: not-allowed;
 }
 
 .tabla-footer {
@@ -213,16 +265,41 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
-    margin-bottom: 24px;
+    margin-top: 16px;
+    margin-bottom: 0;
 }
 
 .kpi-card {
-    background: white;
+    background: linear-gradient(135deg, #035498, #1AA068);
     border-radius: 12px;
-    padding: 16px;
-    border-left: 4px solid;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    transition: all 0.15s;
+    padding: 0 20px;
+    border-left: none;
+    box-shadow: 0 1px 3px rgba(3, 84, 152, 0.12);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 80px;
+    transition: box-shadow 0.2s ease;
+}
+
+.kpi-card:hover {
+    box-shadow: 0 4px 14px rgba(3, 84, 152, 0.18);
+}
+
+.kpi-mini-rojo {
+    border-left-color: none;
+}
+
+.kpi-mini-naranja {
+    border-left-color: none;
+}
+
+.kpi-mini-verde {
+    border-left-color: none;
+}
+
+.kpi-mini-azul {
+    border-left-color: none;
 }
 
 .kpi-card:hover {
@@ -230,14 +307,20 @@
 }
 
 .kpi-mini {
-    background: white;
+    background: linear-gradient(135deg, #035498, #1AA068);
     border-radius: 12px;
-    padding: 16px;
-    border-left: 4px solid #667eea;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    padding: 0 20px;
+    box-shadow: 0 1px 3px rgba(3, 84, 152, 0.12);
     display: flex;
-    gap: 12px;
-    align-items: flex-start;
+    align-items: center;
+    gap: 16px;
+    height: 80px;
+    transition: box-shadow 0.2s ease;
+}
+
+.kpi-mini:hover {
+    box-shadow: 0 4px 14px rgba(3, 84, 152, 0.18);
 }
 
 .kpi-mini-rojo {
@@ -257,68 +340,72 @@
 }
 
 .kpi-mini-icono {
-    font-size: 28px;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
+    font-size: 18px;
     flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-icono.kpi-mini-verde {
-    background: #D1FAE5;
-    color: #1AA068;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-icono.kpi-mini-naranja {
-    background: #FEF3C7;
-    color: #D97706;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-icono.kpi-mini-rojo {
-    background: #FEE2E2;
-    color: #EF4444;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-icono.kpi-mini-azul {
-    background: #E8F0FB;
-    color: #035498;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
 }
 
 .kpi-mini-datos {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    flex: 1;
 }
 
 .kpi-mini-numero {
     font-size: 24px;
     font-weight: 700;
-    color: #111827;
+    color: #ffffff;
+    line-height: 1;
+    margin: 0;
 }
 
 .kpi-mini-numero-rojo {
-    color: #EF4444;
+    color: #ffffff;
 }
 
 .kpi-mini-numero-naranja {
-    color: #D97706;
+    color: #ffffff;
 }
 
 .kpi-mini-numero-verde {
-    color: #1AA068;
+    color: #ffffff;
 }
 
 .kpi-mini-numero-azul {
-    color: #035498;
+    color: #ffffff;
 }
 
 .kpi-mini-label {
     font-size: 12px;
-    color: #9CA3AF;
+    color: rgba(255, 255, 255, 0.82);
+    margin: 0;
+    margin-top: 2px;
 }
 
 .toolbar-admin {
@@ -326,9 +413,11 @@
     gap: 16px;
     align-items: center;
     margin: 24px 0;
-    background: white;
+    background: linear-gradient(90deg, #035498, #1AA068);
     padding: 16px 20px;
-    border-radius: 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 8px 24px rgba(3, 84, 152, 0.12);
     flex-wrap: wrap;
 }
 
@@ -344,6 +433,7 @@
     display: flex;
     gap: 12px;
     align-items: center;
+    color: rgba(255, 255, 255, 0.92);
 }
 
 .input-busqueda {
@@ -389,8 +479,8 @@
 
 .select-filtro:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
 }
 
 .btn-primario {
@@ -400,9 +490,9 @@
     padding: 8px 16px;
     border-radius: 8px;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -410,6 +500,7 @@
 
 .btn-primario:hover {
     background: #024080;
+    box-shadow: 0 4px 12px rgba(3, 84, 152, 0.3);
 }
 
 .toolbar-derecha a.btn-primario {
@@ -417,9 +508,9 @@
 }
 
 .btn-exportar {
-    border: 1px solid #035498;
-    color: #035498;
-    background: transparent;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
     padding: 8px 16px;
     border-radius: 8px;
     font-size: 13px;
@@ -433,8 +524,7 @@
 }
 
 .btn-exportar:hover {
-    background: #EEF4FF;
-    color: #024080;
+    background: rgba(255, 255, 255, 0.25);
 }
 
 .modal-overlay {
@@ -639,25 +729,27 @@
 }
 
 .tabla-admin thead {
-    background: #F9FAFB;
+    background: transparent;
 }
 
 .tabla-admin th {
-    padding: 12px 16px;
+    padding: 12px 20px;
     text-align: left;
     font-size: 11px;
-    font-weight: 600;
-    color: #6B7280;
+    font-weight: 500;
+    color: #9CA3AF;
     text-transform: uppercase;
-    letter-spacing: 0.4px;
-    border-bottom: 1px solid #E5E7EB;
+    letter-spacing: 0.8px;
+    border: none;
+    background: transparent;
 }
 
 .tabla-admin td {
-    padding: 14px 16px;
+    padding: 14px 20px;
     border-bottom: 1px solid #F3F4F6;
-    font-size: 13px;
+    font-size: 14px;
     color: #111827;
+    border: none;
     vertical-align: middle;
 }
 
@@ -1354,17 +1446,26 @@
     .toolbar-admin {
         flex-direction: column;
         align-items: stretch;
+        gap: 12px;
     }
 
     .toolbar-izquierda {
         flex-direction: column;
+        width: 100%;
     }
 
     .toolbar-derecha {
         flex-direction: column;
+        width: 100%;
     }
 
-    .toolbar-derecha button {
+    .toolbar-derecha button,
+    .toolbar-derecha a {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .input-busqueda input {
         width: 100%;
     }
 

@@ -1,3 +1,8 @@
+/* =========================================================
+   SECCIÓN 1: UTILIDADES Y MODALES
+   Funciones para CSRF, toasts y creación dinámica de modales.
+   ========================================================= */
+
 function obtenerTokenCsrf() {
   var etiquetaCsrf = document.querySelector('meta[name="csrf-token"]');
   return etiquetaCsrf ? etiquetaCsrf.getAttribute('content') : '';
@@ -59,6 +64,11 @@ function crearModal(titulo, contenido) {
   return { modal: modal, cuerpo: cuerpo, contenedor: contenedor };
 }
 
+/* =========================================================
+   SECCIÓN 2: ACTUALIZACIÓN DE UI (TABLA)
+   Modifica los botones y estado de la fila según el estado.
+   ========================================================= */
+
 function actualizarFila(id, estado) {
   var estadoNodo = document.getElementById('estado-' + id);
   var accionesNodo = document.querySelector('[data-acciones="' + id + '"]');
@@ -83,6 +93,11 @@ function actualizarFila(id, estado) {
     agregarEventosAcciones();
   }
 }
+
+/* =========================================================
+   SECCIÓN 3: VER DETALLES (MODAL)
+   Obtiene los datos de la solicitud y los muestra en un modal.
+   ========================================================= */
 
 function verSolicitud(id, arrendadorId) {
   fetch('/arrendador/solicitudes/' + id + '/ver?arrendador_id=' + encodeURIComponent(arrendadorId || ''), {
@@ -124,6 +139,11 @@ function verSolicitud(id, arrendadorId) {
       mostrarToast(error.message || 'Error al obtener los datos.');
     });
 }
+
+/* =========================================================
+   SECCIÓN 4: EDITAR SOLICITUD (MODAL)
+   Carga el formulario de edición en un modal.
+   ========================================================= */
 
 function editarSolicitud(id, arrendadorId) {
   fetch('/arrendador/solicitudes/' + id + '/ver?arrendador_id=' + encodeURIComponent(arrendadorId || ''), {
@@ -194,6 +214,11 @@ function editarSolicitud(id, arrendadorId) {
       mostrarToast(error.message || 'Error al obtener los datos.');
     });
 }
+
+/* =========================================================
+   SECCIÓN 5: GUARDAR Y ELIMINAR (API)
+   Funciones asíncronas para actualizar o borrar solicitudes.
+   ========================================================= */
 
 function guardarEdicion(id, arrendadorId, modal) {
   var formulario = document.getElementById('formulario-editar-' + id);
@@ -271,6 +296,11 @@ function eliminarSolicitud(id, arrendadorId) {
       mostrarToast(error.message || 'Error al eliminar la solicitud.');
     });
 }
+
+/* =========================================================
+   SECCIÓN 6: EVENT LISTERS (ACCIÓN)
+   Asigna los clics a los botones de la tabla (Ver, Editar, Eliminar).
+   ========================================================= */
 
 function agregarEventosAcciones() {
   document.querySelectorAll('[data-ver]').forEach(function (boton) {

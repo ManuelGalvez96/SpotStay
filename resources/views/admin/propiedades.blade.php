@@ -53,6 +53,7 @@
         </select>
     </div>
     <div class="toolbar-derecha">
+        {{-- 
         <button id="btnExportar" class="btn-exportar">
             <i class="bi bi-download"></i>
             <span>Exportar</span>
@@ -61,6 +62,7 @@
             <i class="bi bi-map"></i>
             <span>Ver en el mapa</span>
         </button>
+        --}}
         <a href="/admin/propiedades/nueva" id="btnAniadirPropiedad" class="btn-primario">
             <i class="bi bi-plus"></i>
             <span>Añadir propiedad</span>

@@ -1,3 +1,9 @@
+/* =========================================================
+   SECCIÓN 1: INICIALIZACIÓN DEL MAPA (REGISTRO)
+   Configura el mapa interactivo con un marcador arrastrable
+   para seleccionar la ubicación de la propiedad.
+   ========================================================= */
+
 window.onload = function () {
     var mapContainer = document.getElementById('mapa-registro');
     if (!mapContainer || typeof L === 'undefined') {

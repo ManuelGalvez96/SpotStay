@@ -1,3 +1,8 @@
+/* =========================================================
+   SECCIÓN 1: VARIABLES Y ESTILOS BASE
+   Configuración del tema y reset para el panel del arrendador.
+   ========================================================= */
+
 :root {
   --background: #f7f8fa;
   --foreground: #0f1b2d;
@@ -89,6 +94,11 @@ body::before {
   z-index: 0;
 }
 
+/* =========================================================
+   SECCIÓN 2: LAYOUT PRINCIPAL
+   Estructura del dashboard: sidebar fija y área de contenido.
+   ========================================================= */
+
 /* Layout */
 .dashboard-wrapper {
   display: block;
@@ -138,6 +148,11 @@ body::before {
   letter-spacing: -0.02em;
 }
 
+/* =========================================================
+   SECCIÓN 3: NAVEGACIÓN LATERAL
+   Estilos del menú de navegación del sidebar.
+   ========================================================= */
+
 /* Navigation */
 .sidebar-nav {
   display: flex;
@@ -178,6 +193,11 @@ body::before {
 .nav-icon {
   font-size: 20px;
 }
+
+/* =========================================================
+   SECCIÓN 4: BARRA SUPERIOR (TOP BAR)
+   Buscador, notificaciones y menú de usuario.
+   ========================================================= */
 
 /* Top Bar */
 .top-bar {
@@ -244,6 +264,11 @@ body::before {
   cursor: pointer;
   box-shadow: inset 0 0 0 1px rgba(18, 59, 122, 0.08);
 }
+
+/* =========================================================
+   SECCIÓN 5: TARJETAS Y CONTENIDO (CARDS)
+   Grid principal y diseño de las tarjetas informativas.
+   ========================================================= */
 
 /* Content Grid */
 .dashboard-header {
@@ -352,6 +377,11 @@ body::before {
   margin-top: 16px;
 }
 
+/* =========================================================
+   SECCIÓN 6: BOTONES
+   Variantes de botones (primario, secundario, outline).
+   ========================================================= */
+
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -414,6 +444,11 @@ body::before {
   padding: 0;
   border-radius: 50%;
 }
+
+/* =========================================================
+   SECCIÓN 7: SECCIONES Y TABLAS
+   Contenedores de contenido y estilos para tablas de datos.
+   ========================================================= */
 
 /* Section Layout */
 .section {
@@ -500,6 +535,11 @@ body::before {
   color: var(--destructive-foreground);
 }
 
+/* =========================================================
+   SECCIÓN 8: FORMULARIOS Y ESTADÍSTICAS
+   Estilos para inputs, labels y cajas de stats.
+   ========================================================= */
+
 /* Forms */
 .form-group {
   display: flex;
@@ -563,6 +603,11 @@ body::before {
   font-size: 14px;
   color: var(--muted-foreground);
 }
+
+/* =========================================================
+   SECCIÓN 9: CHAT, MODALES Y UTILIDADES
+   Mensajes, ventanas modales y clases de utilidad (flex, spacing).
+   ========================================================= */
 
 /* Chat & Messages */
 .message-list {

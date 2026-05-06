@@ -1,3 +1,8 @@
+/* =========================================================
+   SECCIÓN 1: VARIABLES GLOBALES (TEMA)
+   Define la paleta de colores, sombras y radios de borde
+   para mantener consistencia en toda la zona de miembro.
+   ========================================================= */
 :root {
 	--fondo: #f3f6fa;
 	--fondo-suave: #f4f7fb;
@@ -63,6 +68,12 @@
 
 
 
+/* =========================================================
+   SECCIÓN 2: RESET Y ESTILOS BASE
+   Normalización de márgenes, padding y box-sizing para
+   asegurar consistencia entre navegadores.
+   ========================================================= */
+
 /* Reset basico para un comportamiento consistente */
 * {
 	box-sizing: border-box;
@@ -88,6 +99,12 @@ body.pagina-miembro {
 	color: var(--texto);
 	min-height: 100vh;
 }
+
+/* =========================================================
+   SECCIÓN 3: ENCABEZADOS Y NAVEGACIÓN SUPERIOR
+   Estilos para la barra superior fija, logotipos y menú
+   que aparece en todas las vistas del miembro.
+   ========================================================= */
 
 /* ===== ENCABEZADOS ===== */
 .encabezado-mapa,
@@ -140,6 +157,12 @@ body.pagina-miembro {
 	font-weight: 500;
 	color: var(--texto-suave);
 }
+
+/* =========================================================
+   SECCIÓN 4: COMPONENTES REUTILIZABLES (FILTROS Y FORMULARIOS)
+   Clases genéricas para inputs, botones y grupos de filtros
+   que se usan tanto en el mapa como en el listado de propiedades.
+   ========================================================= */
 
 /* ===== FORMULARIOS / FILTROS (REUTILIZADO) ===== */
 .grupo-filtro {
@@ -199,6 +222,12 @@ body.pagina-miembro {
 .boton-aplicar:hover {
 	background: var(--primario-oscuro);
 }
+
+/* =========================================================
+   SECCIÓN 5: PAGINA MAPA (LAYOUT Y MARCADORES)
+   Estilos para el panel lateral de filtros y el contenedor
+   del mapa interactivo.
+   ========================================================= */
 
 /* ===== PAGINA MAPA ===== */
 /* calc() se mantiene porque resta un header fijo y es facil de entender */
@@ -352,7 +381,13 @@ body.pagina-miembro {
 	font-weight: 600;
 }
 
+/* =========================================================
+   SECCIÓN 6: PAGINA INICIO MIEMBRO (DASHBOARD)
+   Estilos para la vista principal: tarjetas, grid y perfil.
+   ========================================================= */
+
 /* ===== PAGINA INICIO MIEMBRO ===== */
+/* Incluye: Sidebar de filtros, Grid de tarjetas, Header de usuario */
 .acciones-miembro {
 	display: flex;
 	align-items: center;
@@ -573,7 +608,7 @@ body.pagina-miembro {
 	font-weight: 700;
 }
 
-.contador-propiedades {
+	.contador-propiedades {
 	font-size: 13px;
 	color: var(--texto-suave);
 	background: #eef3f8;
@@ -581,6 +616,8 @@ body.pagina-miembro {
 	border-radius: 999px;
 }
 
+/* --- TARJETAS DE PROPIEDAD (GRID) --- */
+/* Estilos para cada tarjeta individual en el listado */
 .grid-propiedades {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -658,7 +695,13 @@ body.pagina-miembro {
 	text-align: center;
 }
 
-/* ===== PAGINA DETALLE ===== */
+/* =========================================================
+   SECCIÓN 7: PAGINA DETALLE DE PROPIEDAD
+   Estilos para la vista individual: collage, info y contacto.
+   ========================================================= */
+
+/* ===== PAGINA DETALLE DE PROPIEDAD ===== */
+/* Incluye: Collage de imágenes, resumen de características y contacto */
 .contenido-detalle {
 	gap: 18px;
 }
@@ -953,6 +996,11 @@ body.pagina-miembro {
 	color: var(--texto);
 }
 
+/* =========================================================
+   SECCIÓN 8: RESPONSIVE (MEDIA QUERIES)
+   Ajustes de diseño para tablets y móviles.
+   ========================================================= */
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1100px) {
 	.contenedor-listado {
@@ -1038,6 +1086,11 @@ body.pagina-miembro {
 	}
 }
 
+/* =========================================================
+   SECCIÓN 9: NAVEGACIÓN HORIZONTAL (TABS)
+   Barra de menú secundaria sticky debajo del header.
+   ========================================================= */
+
 /* --- NAVEGACIÓN HORIZONTAL --- */
 .navegacion-horizontal {
 	background: #ffffff;
@@ -1121,6 +1174,11 @@ body.pagina-miembro {
 		font-size: 13px;
 	}
 }
+
+/* =========================================================
+   SECCIÓN 10: DROPDOWN PERFIL
+   Menú desplegable del usuario con opciones y cerrar sesión.
+   ========================================================= */
 
 /* --- DROPDOWN PERFIL --- */
 .perfil-miembro {
@@ -1212,6 +1270,11 @@ body.pagina-miembro {
     pointer-events: none !important;
     filter: grayscale(0.5);
 }
+
+/* =========================================================
+   SECCIÓN 11: PAGINA CHAT (MENSAJES)
+   Diseño de la interfaz de mensajería (lista y panel).
+   ========================================================= */
 
 /* ===== PAGINA CHAT ===== */
 .mensajes-layout {
@@ -1339,6 +1402,11 @@ body.pagina-miembro {
 		min-height: 0;
 	}
 }
+
+/* =========================================================
+   SECCIÓN 12: FORMULARIOS DE SOLICITUD (ARRENDADOR)
+   Estilos para el formulario de registro de propietarios.
+   ========================================================= */
 
 /* ===== FORMULARIOS DE SOLICITUD ===== */
 .solicitud-seccion {

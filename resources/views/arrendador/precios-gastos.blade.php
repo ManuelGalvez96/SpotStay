@@ -60,7 +60,6 @@
                             <div class="campo-gastos">
                                 <label>Gastos</label>
                                 <textarea name="gastos_propiedad" rows="2" placeholder='Ej: {"agua":30,"luz":45} o texto libre'>{{ old('gastos_propiedad', $propiedad->gastos_propiedad) }}</textarea>
-                                <small class="muted">Puedes usar JSON o texto simple.</small>
                             </div>
                             <div class="acciones-formulario">
                                 <div class="resumen-mensual" data-resumen-mensual>

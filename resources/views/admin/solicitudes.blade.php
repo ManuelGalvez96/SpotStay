@@ -9,6 +9,10 @@
 
 @section('content')
 
+@php
+    $colores = ['#B8CCE4','#A8D5BF','#F9E4A0','#FFD5CC','#D7EAF9','#EDE7F6','#D5F5E3','#FAD7D7'];
+@endphp
+
 <div class="hero-admin">
     <div class="hero-content">
         <h1>Gestión de solicitudes</h1>
@@ -131,7 +135,6 @@
                             @php
                                 $partes = explode(' ', $solicitud->nombre_usuario);
                                 $iniciales = strtoupper(substr($partes[0],0,1)) . strtoupper(substr($partes[1]??'',0,1));
-                                $colores = ['#B8CCE4','#A8D5BF','#F9E4A0','#FFD5CC','#D7EAF9','#EDE7F6','#D5F5E3','#FAD7D7'];
                                 $color = $colores[$solicitud->id_solicitud_arrendador % 8];
                                 $fecha = \Carbon\Carbon::parse($solicitud->creado_solicitud_arrendador)->format('d/m/Y');
                             @endphp

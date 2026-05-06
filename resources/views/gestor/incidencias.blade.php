@@ -24,7 +24,7 @@
             <span>Filtros</span>
         </div>
 
-        <form method="GET" action="{{ url('/gestor/incidencias') }}" class="form-filtros-admin" id="incidenciasFiltrosForm">
+        <form method="GET" action="{{ route('gestor.incidencias') }}" class="form-filtros-admin" id="incidenciasFiltrosForm">
             @if(($propiedadId ?? 0) > 0)
                 <input type="hidden" name="propiedad_id" value="{{ $propiedadId }}">
             @endif
@@ -73,7 +73,7 @@
         <div class="card-franja"></div>
         <div class="card-header-admin card-header-gradient">
             <span>Listado de incidencias</span>
-            <a href="{{ url('/gestor/dashboard') }}" class="link-ver-todos">Volver al dashboard →</a>
+            <a href="{{ route('gestor.dashboard') }}" class="link-ver-todos">Volver al dashboard →</a>
         </div>
 
         <!-- Vista desktop: tabla -->
@@ -112,7 +112,7 @@
                             <td><span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span></td>
                             <td><span class="badge-prioridad badge-prioridad-{{ $badgePrioridad }}">{{ ucfirst($prioridad) }}</span></td>
                             <td>{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y') }}</td>
-                            <td><a class="link-ver-todos" href="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia) }}">Ver</a></td>
+                            <td><a class="link-ver-todos" href="{{ route('gestor.incidencias.show', ['id' => $incidencia->id_incidencia]) }}">Ver</a></td>
                         </tr>
                     @empty
                         <tr>
@@ -147,7 +147,7 @@
                     </div>
                     <div class="solicitud-meta">
                         <span class="solicitud-tiempo">{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->diffForHumans() }}</span>
-                        <a href="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia) }}" class="btn-revisar">Abrir →</a>
+                        <a href="{{ route('gestor.incidencias.show', ['id' => $incidencia->id_incidencia]) }}" class="btn-revisar">Abrir →</a>
                     </div>
                 </div>
             @empty

@@ -13,7 +13,7 @@
         <p>{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }} · CP {{ $propiedad->codigo_postal_propiedad }}</p>
     </div>
     <div class="hero-actions">
-        <a href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad) }}" class="btn-volver-propiedades">← Volver al detalle</a>
+        <a href="{{ route('gestor.propiedades.show', ['id' => $propiedad->id_propiedad]) }}" class="btn-volver-propiedades">← Volver al detalle</a>
     </div>
     <div class="hero-deco hero-deco-1"></div>
     <div class="hero-deco hero-deco-2"></div>
@@ -67,7 +67,7 @@
 
         <!-- Resumen visual mensual eliminado por petición del usuario -->
 
-        <form method="POST" action="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad . '/gastos') }}" class="form-gasto">
+        <form method="POST" action="{{ route('gestor.propiedades.gastos.store', ['id' => $propiedad->id_propiedad]) }}" class="form-gasto">
             @csrf
             <div class="fila-form-gasto">
                 <label>
@@ -178,7 +178,7 @@
                                             ({{ ucfirst($detalle->estado_detalle) }})
                                         </span>
                                         @if($detalle->estado_detalle !== 'pagado')
-                                            <form method="POST" action="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad . '/gastos/cuotas/' . $cuota->id_gasto_cuota . '/pagos/' . $detalle->id_gasto_cuota_detalle) }}">
+                                            <form method="POST" action="{{ route('gestor.propiedades.gastos.pago', ['id' => $propiedad->id_propiedad, 'cuotaId' => $cuota->id_gasto_cuota, 'detalleId' => $detalle->id_gasto_cuota_detalle]) }}">
                                                 @csrf
                                                 <button type="submit" class="link-ver-todos">Marcar pagado</button>
                                             </form>

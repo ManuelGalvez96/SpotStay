@@ -13,7 +13,7 @@
         <p>{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }} · CP {{ $propiedad->codigo_postal_propiedad }}</p>
     </div>
     <div class="hero-actions">
-        <a href="{{ url('/gestor/propiedades') }}" class="btn-volver-propiedades">← Volver a propiedades</a>
+        <a href="{{ route('gestor.propiedades') }}" class="btn-volver-propiedades">← Volver a propiedades</a>
     </div>
     <div class="hero-deco hero-deco-1"></div>
     <div class="hero-deco hero-deco-2"></div>
@@ -23,7 +23,7 @@
     <div class="card-franja"></div>
     <div class="card-header-admin card-header-gradient card-header-acciones">
         <span>Pagos principales del mes</span>
-        <a href="{{ url('/gestor/propiedades/' . $propiedad->id_propiedad . '/gastos') }}" class="link-ver-todos">Gestionar gastos</a>
+        <a href="{{ route('gestor.propiedades.gastos', ['id' => $propiedad->id_propiedad]) }}" class="link-ver-todos">Gestionar gastos</a>
     </div>
 
     @if(!$gastosHabilitados)
@@ -129,7 +129,7 @@
                         <td>{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</td>
                         <td>{{ ucfirst($incidencia->prioridad_incidencia) }}</td>
                         <td>{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y') }}</td>
-                        <td><a href="{{ url('/gestor/incidencias/' . $incidencia->id_incidencia) }}" class="link-ver-todos">Abrir</a></td>
+                        <td><a href="{{ route('gestor.incidencias.show', ['id' => $incidencia->id_incidencia]) }}" class="link-ver-todos">Abrir</a></td>
                     </tr>
                 @empty
                     <tr>

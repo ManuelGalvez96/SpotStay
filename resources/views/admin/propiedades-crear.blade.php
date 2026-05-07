@@ -71,7 +71,7 @@
             </div>
             <span class="card-header-sub-crear">{{ $modoEdicion ? 'Edición' : 'Alta manual' }}</span>
         </div>
-        <form action="{{ $modoEdicion ? '/admin/propiedades/' . $propiedadEditando->id_propiedad . '/editar' : '/admin/propiedades/crear' }}" method="POST" class="form-grid">
+        <form action="{{ $modoEdicion ? '/admin/propiedades/' . $propiedadEditando->id_propiedad . '/editar' : '/admin/propiedades/crear' }}" method="POST" class="form-grid" id="formCrearPropiedad">
             @csrf
 
             <div class="campo-full">
@@ -228,4 +228,8 @@
         </form>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+    <script src="{{ asset('js/admin/propiedades-crear.js') }}"></script>
 @endsection

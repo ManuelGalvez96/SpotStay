@@ -263,7 +263,123 @@ function iniciarValidacionImagenes() {
   };
 }
 
+function abrirModalPropiedad(propiedadId, arrendadorId) {
+  var modal = document.getElementById('modal-propiedad');
+  var modalBody = document.getElementById('modal-body');
+
+  if (!modal || !modalBody) {
+    return;
+  }
+
+  modal.style.display = 'flex';
+  modalBody.innerHTML = '<div class="spinner">Cargando...</div>';
+
+  fetch('/arrendador/propiedades/' + propiedadId + '?arrendador_id=' + arrendadorId)
+    .then(function (respuesta) {
+      return respuesta.json();
+    })
+    .then(function (datos) {
+      if (datos.propiedad) {
+        modalBody.innerHTML = construirContenidoModal(datos);
+      } else {
+        modalBody.innerHTML = '<p class="error">No se pudo cargar la propiedad.</p>';
+      }
+    })
+    .catch(function (error) {
+      console.error(error);
+      modalBody.innerHTML = '<p class="error">Error al cargar los datos.</p>';
+    });
+}
+
+function cerrarModalPropiedad() {
+  var modal = document.getElementById('modal-propiedad');
+
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+function construirContenidoModal(datos) {
+  var propiedad = datos.propiedad;
+  var alquiler = datos.alquiler_activo;
+  var fotos = datos.fotos || [];
+  var htmlFotos = '';
+  var htmlMiniaturas = '';
+  var htmlAlquiler = '';
+  var claseEstado = 'badge-' + propiedad.estado_propiedad;
+  var textoEstado = propiedad.estado_propiedad.charAt(0).toUpperCase() + propiedad.estado_propiedad.slice(1);
+
+  if (fotos.length > 0) {
+    htmlFotos = '<img src="/storage/' + fotos[0].ruta_foto + '" alt="' + propiedad.titulo_propiedad + '" style="width: 100%; height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;" />';
+  } else {
+    htmlFotos = '<div style="width: 100%; height: 300px; background: #e0e0e0; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; color: #999;">Sin imágenes</div>';
+  }
+
+  if (fotos.length > 1) {
+    htmlMiniaturas = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 8px; margin-bottom: 20px;">';
+    fotos.forEach(function (foto) {
+      htmlMiniaturas += '<img src="/storage/' + foto.ruta_foto + '" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer;" onclick="cambiarFotoModal(this.src)" />';
+    });
+    htmlMiniaturas += '</div>';
+  }
+
+  if (alquiler) {
+    htmlAlquiler = '<div style="background: #f0f7ff; padding: 15px; border-radius: 8px; border-left: 4px solid #0066cc; margin-top: 20px;">' +
+      '<h3 style="margin-bottom: 10px; color: #0066cc; font-size: 14px; text-transform: uppercase;">Alquiler Activo</h3>' +
+      '<p><strong>Inquilino:</strong> ' + alquiler.nombre_inquilino + '</p>' +
+      '<p><strong>Email:</strong> ' + alquiler.email_inquilino + '</p>' +
+      '<p><strong>Inicio:</strong> ' + new Date(alquiler.fecha_inicio_alquiler).toLocaleDateString('es-ES') + '</p>' +
+      '<p><strong>Precio:</strong> ' + (alquiler.precio_alquiler ? (parseFloat(alquiler.precio_alquiler).toFixed(2) + ' €') : 'N/A') + '</p>' +
+    '</div>';
+  }
+
+  return '' +
+    htmlFotos +
+    htmlMiniaturas +
+    '<h3 style="margin-bottom: 10px;">' + propiedad.titulo_propiedad + '</h3>' +
+    '<p style="color: #666; margin-bottom: 15px; font-size: 14px;">' + propiedad.direccion_propiedad + ', ' + propiedad.ciudad_propiedad + ' · ' + propiedad.codigo_postal_propiedad + '</p>' +
+    '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">' +
+      '<div>' +
+        '<p style="color: #999; font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Estado</p>' +
+        '<span class="badge ' + claseEstado + '">' + textoEstado + '</span>' +
+      '</div>' +
+      '<div>' +
+        '<p style="color: #999; font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Precio</p>' +
+        '<p style="font-weight: 500; font-size: 16px;">' + parseFloat(propiedad.precio_propiedad).toFixed(2).replace('.', ',') + ' €/mes</p>' +
+      '</div>' +
+    '</div>' +
+    (propiedad.descripcion_propiedad ? (
+      '<div style="margin-bottom: 20px;">' +
+        '<p style="color: #999; font-size: 12px; text-transform: uppercase; margin-bottom: 8px;">Descripción</p>' +
+        '<p style="font-size: 14px; line-height: 1.6; color: #555;">' + propiedad.descripcion_propiedad + '</p>' +
+      '</div>'
+    ) : '') +
+    htmlAlquiler;
+}
+
+function cambiarFotoModal(src) {
+  var modal = document.getElementById('modal-body');
+  var fotos = modal ? modal.querySelectorAll('img') : [];
+
+  fotos.forEach(function (foto) {
+    if (foto.style.width === '60px') {
+      foto.style.border = foto.src === src ? '2px solid #0066cc' : 'none';
+    }
+  });
+
+  var fotoPrincipal = modal ? modal.querySelector('img[style*="height: 300px"]') : null;
+  if (fotoPrincipal) {
+    fotoPrincipal.src = src;
+  }
+}
+
 
 document.querySelectorAll('form[data-ajax-form="true"]').forEach(enviarFormularioConFetch);
 document.querySelectorAll('form[data-ajax-state-form="true"]').forEach(enviarFormularioConFetch);
 iniciarValidacionImagenes();
+
+document.onkeydown = function (evento) {
+  if (evento.key === 'Escape') {
+    cerrarModalPropiedad();
+  }
+};

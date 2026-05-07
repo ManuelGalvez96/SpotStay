@@ -130,6 +130,9 @@ function iniciarMapa() {
 		};
 	}
 
+			ejecutarBusqueda();
+
+
 	if (botonBorrar) {
 		// Limpia los campos y vuelve a cargar el mapa.
 		botonBorrar.onclick = function (evento) {

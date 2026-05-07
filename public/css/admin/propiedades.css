@@ -443,6 +443,200 @@
     overflow-y: auto;
 }
 
+#modalPropiedad .modal-content {
+    border: 0;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
+}
+
+#modalPropiedad .modal-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid #E5E7EB;
+    background: linear-gradient(135deg, #F8FBFF 0%, #EEF4FF 100%);
+    align-items: flex-start;
+    gap: 14px;
+}
+
+#modalPropiedad .modal-title {
+    font-size: 19px;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 8px 0;
+}
+
+#modalPropiedad #modalBadgeEstado {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+#modalPropiedad .btn-close {
+    box-shadow: none;
+}
+
+#modalPropiedad .modal-body {
+    background: #F7FAFC;
+}
+
+#modalPropiedad .modal-imagen-propiedad {
+    min-height: 180px;
+    display: flex;
+    align-items: end;
+    position: relative;
+    background: linear-gradient(135deg, #7C9FC2 0%, #B8CCE4 45%, #DDE9F5 100%) !important;
+}
+
+#modalPropiedad .modal-imagen-propiedad::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.02) 0%, rgba(15, 23, 42, 0.28) 100%);
+}
+
+#modalPropiedad .modal-imagen-texto {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    padding: 20px 24px;
+}
+
+#modalPropiedad .modal-imagen-texto span {
+    display: inline-block;
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.2;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+#modalPropiedad .modal-cuerpo {
+    padding: 24px;
+    background: #F7FAFC;
+}
+
+#modalPropiedad .seccion-label {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #EAF2FB;
+    color: #035498;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.7px;
+    margin: 0 0 14px 0;
+}
+
+#modalPropiedad .modal-grid-2,
+#modalPropiedad .modal-grid-3 {
+    gap: 12px;
+    margin: 0;
+}
+
+#modalPropiedad .dato-item {
+    padding: 14px 16px;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    background: #FFFFFF;
+    min-height: 72px;
+}
+
+#modalPropiedad .dato-label {
+    color: #6B7280;
+}
+
+#modalPropiedad .dato-valor {
+    color: #111827;
+    font-size: 14px;
+}
+
+#modalPropiedad .modal-separador {
+    height: 1px;
+    background: linear-gradient(90deg, rgba(226, 232, 240, 0) 0%, #D7E3F1 50%, rgba(226, 232, 240, 0) 100%);
+    margin: 22px 0;
+}
+
+#modalPropiedad .persona-fila,
+#modalPropiedad .contrato-card,
+#modalPropiedad .incidencia-item,
+#modalPropiedad #listaInquilinos .inquilino-item {
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+#modalPropiedad .persona-fila {
+    align-items: center;
+    gap: 14px;
+}
+
+#modalPropiedad .contrato-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+#modalPropiedad .contrato-acciones {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#modalPropiedad .link-accion {
+    display: inline-block;
+    margin-top: 10px;
+    color: #035498;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+#modalPropiedad .link-accion:hover {
+    text-decoration: underline;
+}
+
+#modalPropiedad .servicios-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#modalPropiedad .tag-servicio {
+    background: #FFFFFF;
+    border: 1px solid #D7E3F1;
+    color: #035498;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+#modalPropiedad .modal-footer {
+    padding: 16px 24px 22px;
+    border-top: 1px solid #E5E7EB;
+    background: #FFFFFF;
+}
+
+#modalPropiedad #btnDesactivarPropiedad,
+#modalPropiedad #btnEditarPropiedad {
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-weight: 700;
+}
+
+#modalPropiedad #btnDesactivarPropiedad {
+    border-color: #D1D5DB;
+}
+
 .modal-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;

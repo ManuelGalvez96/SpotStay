@@ -626,14 +626,20 @@ var actualizarPaginacion = function(paginaActiva, totalPaginasNuevas) {
 };
 
 /* ── Botón añadir propiedad ── */
-document.getElementById('btnAniadirPropiedad').onclick = function() {
-    window.location.href = '/admin/propiedades/nueva';
-};
+var btnAniadirPropiedad = document.getElementById('btnAniadirPropiedad');
+if (btnAniadirPropiedad) {
+    btnAniadirPropiedad.onclick = function() {
+        window.location.href = '/admin/propiedades/nueva';
+    };
+}
 
 /* ── Botón exportar ── */
-document.getElementById('btnExportar').onclick = function() {
-    window.location.href = '/admin/propiedades/exportar';
-};
+var btnExportarPropiedades = document.getElementById('btnExportar');
+if (btnExportarPropiedades) {
+    btnExportarPropiedades.onclick = function() {
+        window.location.href = '/admin/propiedades/exportar';
+    };
+}
 
 /* ── Función editarPropiedad (placeholder) ── */
 var editarPropiedad = function(id) {

@@ -22,12 +22,18 @@ class MensajeController extends Controller
 
         [$columnaRemitente, $columnaCuerpo] = $this->obtenerColumnasMensaje();
 
+        // Evitar duplicados al unir múltiples participantes: seleccionamos un único "otro" participante
+        // por conversación mediante un subquery (MIN sobre id_usuario_fk) y nos unimos a ese resultado.
+        $subOtro = DB::table('tbl_conversacion_usuario')
+            ->select('id_conversacion_fk', DB::raw('MIN(id_usuario_fk) as id_inquilino'))
+            ->where('id_usuario_fk', '!=', $arrendadorId)
+            ->groupBy('id_conversacion_fk');
+
         $conversaciones = DB::table('tbl_conversacion_usuario as cu_arr')
-            ->join('tbl_conversacion_usuario as cu_otro', function ($union) use ($arrendadorId) {
-                $union->on('cu_otro.id_conversacion_fk', '=', 'cu_arr.id_conversacion_fk')
-                    ->where('cu_otro.id_usuario_fk', '!=', $arrendadorId);
+            ->joinSub($subOtro, 'otro', function ($join) {
+                $join->on('otro.id_conversacion_fk', '=', 'cu_arr.id_conversacion_fk');
             })
-            ->join('tbl_usuario as u', 'u.id_usuario', '=', 'cu_otro.id_usuario_fk')
+            ->join('tbl_usuario as u', 'u.id_usuario', '=', 'otro.id_inquilino')
             ->leftJoin('tbl_mensaje as m', 'm.id_conversacion_fk', '=', 'cu_arr.id_conversacion_fk')
             ->where('cu_arr.id_usuario_fk', $arrendadorId)
             ->groupBy(

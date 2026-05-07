@@ -1,4 +1,4 @@
-﻿/* =========================================================
+/* =========================================================
    SECCION 1: CONFIGURACION E INICIALIZACION
    Captura los campos del formulario y registra los
    validadores para cada uno.
@@ -11,48 +11,77 @@ var tocados = {};
 var solicitudEnviando = false;
 var solicitudEnviada = false;
 
-window.onload = function () {
-	iniciarValidacionSolicitudArrendador();
-};
+window.addEventListener('pageshow', function () {
+    iniciarAplicacionSolicitudArrendador();
+});
+
+iniciarAplicacionSolicitudArrendador();
 
 function iniciarValidacionSolicitudArrendador() {
-	formularioSolicitud = document.getElementById("formulario-solicitud-arrendador");
-	botonEnviarSolicitud = document.getElementById("boton-enviar-solicitud");
+    // --- REFERENCIAS DOM ---
+    const formulario = document.getElementById("formulario-solicitud-arrendador");
+    const botonEnviar = document.getElementById("boton-enviar-solicitud");
 
-	if (!formularioSolicitud || !botonEnviarSolicitud) {
-		return;
-	}
+    // Elementos de error
+    const errorTelefono = document.getElementById("error-telefono-solicitud");
+    const errorFechaNacimiento = document.getElementById("error-fecha-nacimiento-solicitud");
+    const errorTipoDocumento = document.getElementById("error-tipo-documento-solicitud");
+    const errorNumeroDocumento = document.getElementById("error-numero-documento-solicitud");
+    const errorIban = document.getElementById("error-iban-solicitud");
+    const errorTitular = document.getElementById("error-titular-cuenta-solicitud");
+    const errorNif = document.getElementById("error-nif-solicitud");
+    const errorDireccion = document.getElementById("error-direccion-fiscal-solicitud");
+    const errorTipoArrendador = document.getElementById("error-tipo-arrendador-solicitud");
+    const errorNumPropiedades = document.getElementById("error-num-propiedades-previstas-solicitud");
+    const errorDescripcion = document.getElementById("error-descripcion-solicitud");
+    const errorAceptaTerminos = document.getElementById("error-acepta-terminos-solicitud");
+    const errorAceptaVeracidad = document.getElementById("error-acepta-veracidad-solicitud");
 
-	campos.telefono = document.getElementById("telefono-solicitud");
-	campos.fechaNacimiento = document.getElementById("fecha-nacimiento-solicitud");
-	campos.tipoDocumento = document.getElementById("tipo-documento-solicitud");
-	campos.numeroDocumento = document.getElementById("numero-documento-solicitud");
-	campos.iban = document.getElementById("iban-solicitud");
-	campos.titular = document.getElementById("titular-cuenta-solicitud");
-	campos.nif = document.getElementById("nif-solicitud");
-	campos.direccion = document.getElementById("direccion-fiscal-solicitud");
-	campos.tipoArrendador = document.getElementById("tipo-arrendador-solicitud");
-	campos.numPropiedades = document.getElementById("num-propiedades-previstas-solicitud");
-	campos.descripcion = document.getElementById("descripcion-solicitud");
-	campos.aceptaTerminos = document.getElementById("acepta-terminos-solicitud");
-	campos.aceptaVeracidad = document.getElementById("acepta-veracidad-solicitud");
+    // Inputs
+    const entradaTelefono = document.getElementById("telefono-solicitud");
+    const entradaFechaNacimiento = document.getElementById("fecha-nacimiento-solicitud");
+    const entradaTipoDocumento = document.getElementById("tipo-documento-solicitud");
+    const entradaNumeroDocumento = document.getElementById("numero-documento-solicitud");
+    const entradaIban = document.getElementById("iban-solicitud");
+    const entradaTitular = document.getElementById("titular-cuenta-solicitud");
+    const entradaNif = document.getElementById("nif-solicitud");
+    const entradaDireccion = document.getElementById("direccion-fiscal-solicitud");
+    const entradaTipoArrendador = document.getElementById("tipo-arrendador-solicitud");
+    const entradaNumPropiedades = document.getElementById("num-propiedades-previstas-solicitud");
+    const entradaDescripcion = document.getElementById("descripcion-solicitud");
+    const entradaAceptaTerminos = document.getElementById("acepta-terminos-solicitud");
+    const entradaAceptaVeracidad = document.getElementById("acepta-veracidad-solicitud");
 
-	registrarCampo("telefono", validarTelefono);
-	registrarCampo("fechaNacimiento", validarFechaNacimiento);
-	registrarCampo("tipoDocumento", validarSelectObligatorio);
-	registrarCampo("numeroDocumento", validarTextoObligatorio);
-	registrarCampo("iban", validarIban);
-	registrarCampo("titular", validarTextoObligatorio);
-	registrarCampo("nif", validarNif);
-	registrarCampo("direccion", validarTextoObligatorio);
-	registrarCampo("tipoArrendador", validarSelectObligatorio);
-	registrarCampo("numPropiedades", validarNumeroPropiedades);
-	registrarCampo("descripcion", validarDescripcion);
-	registrarCampo("aceptaTerminos", validarCheckboxObligatorio);
-	registrarCampo("aceptaVeracidad", validarCheckboxObligatorio);
+    if (!formulario || !botonEnviar) return;
 
-	formularioSolicitud.onsubmit = function (evento) {
-		evento.preventDefault();
+    const camposObligatorios = [
+        errorTelefono,
+        errorFechaNacimiento,
+        errorTipoDocumento,
+        errorNumeroDocumento,
+        errorIban,
+        errorTitular,
+        errorNif,
+        errorDireccion,
+        errorTipoArrendador,
+        errorNumPropiedades,
+        errorDescripcion,
+        errorAceptaTerminos,
+        errorAceptaVeracidad,
+        entradaTelefono,
+        entradaFechaNacimiento,
+        entradaTipoDocumento,
+        entradaNumeroDocumento,
+        entradaIban,
+        entradaTitular,
+        entradaNif,
+        entradaDireccion,
+        entradaTipoArrendador,
+        entradaNumPropiedades,
+        entradaDescripcion,
+        entradaAceptaTerminos,
+        entradaAceptaVeracidad
+    ];
 
 		if (solicitudEnviando || solicitudEnviada) {
 			return;
@@ -76,7 +105,9 @@ function iniciarValidacionSolicitudArrendador() {
 			csrf = formularioSolicitud.elements["_token"].value || "";
 		}
 
-		var fd = new FormData(formularioSolicitud);
+        const regexTel = /^\+\d{1,4} \d{6,11}$/;
+        const regexIban = /^[A-Z]{2}\d{2}\s?[\d\s]{10,30}$/i;
+        const regexNif = /^[A-Z0-9]\d{7}[A-Z0-9]$/i;
 
 		fetch(formularioSolicitud.action, {
 			method: "POST",

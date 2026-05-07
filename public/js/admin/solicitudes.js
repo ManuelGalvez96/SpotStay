@@ -501,6 +501,7 @@ var rellenarModal = function(datos) {
     var colores = ['#B8CCE4', '#A8D5BF', '#F9E4A0', '#FFD5CC', '#D7EAF9', '#EDE7F6', '#D5F5E3', '#FAD7D7'];
     var color = colores[datos.id_solicitud_arrendador % 8];
 
+    /* Header del solicitante */
     document.getElementById('modalAvatar').style.background = color;
     document.getElementById('modalAvatar').textContent = iniciales.toUpperCase();
     document.getElementById('modalNombre').textContent = datos.nombre_usuario;
@@ -523,34 +524,88 @@ var rellenarModal = function(datos) {
         }
     }
 
-    var datosPropiedad = {
-        direccion: datos.direccion_fiscal_solicitud || '—',
-        tipo: datos.tipo_arrendador_solicitud || '—',
-        precio_estimado: 'No disponible',
-        habitaciones: 'No disponible',
-        banos: 'No disponible',
-        tamano: 'No disponible'
-    };
-    var gridElement = document.getElementById('modalDatosPropiedad');
-    if (gridElement) {
-        gridElement.innerHTML = '';
-
-        var propiedades = [
-            { label: 'Dirección', valor: datosPropiedad.direccion || '—' },
-            { label: 'Tipo', valor: datosPropiedad.tipo || '—' },
-            { label: 'Precio', valor: '$' + (datosPropiedad.precio_estimado || '0') + '/mes' },
-            { label: 'Habitaciones', valor: datosPropiedad.habitaciones || '—' },
-            { label: 'Baños', valor: datosPropiedad.banos || '—' },
-            { label: 'Tamaño', valor: (datosPropiedad.tamano || '0') + ' m²' }
-        ];
-
-        var k;
-        for (k = 0; k < propiedades.length; k++) {
-            var div = document.createElement('div');
-            div.className = 'col-md-6';
-            div.innerHTML = '<small class="text-muted d-block">' + propiedades[k].label + '</small><p class="fw-500">' + propiedades[k].valor + '</p>';
-            gridElement.appendChild(div);
+    /* Llenar todos los campos del formulario */
+    
+    /* Datos personales */
+    var elementoTelefono = document.getElementById('modalTelefono');
+    if (elementoTelefono) {
+        elementoTelefono.textContent = datos.telefono_solicitud || '—';
+    }
+    
+    var elementoFechaNacimiento = document.getElementById('modalFechaNacimiento');
+    if (elementoFechaNacimiento) {
+        var fechaNac = datos.fecha_nacimiento_solicitud || '—';
+        if (fechaNac !== '—') {
+            fechaNac = new Date(fechaNac).toLocaleDateString('es-ES');
         }
+        elementoFechaNacimiento.textContent = fechaNac;
+    }
+    
+    var elementoTipoDocumento = document.getElementById('modalTipoDocumento');
+    if (elementoTipoDocumento) {
+        elementoTipoDocumento.textContent = datos.tipo_documento_solicitud || '—';
+    }
+    
+    var elementoNumeroDocumento = document.getElementById('modalNumeroDocumento');
+    if (elementoNumeroDocumento) {
+        elementoNumeroDocumento.textContent = datos.numero_documento_solicitud || '—';
+    }
+    
+    /* Datos bancarios */
+    var elementoIban = document.getElementById('modalIban');
+    if (elementoIban) {
+        elementoIban.textContent = datos.iban_solicitud || '—';
+    }
+    
+    var elementoTitularCuenta = document.getElementById('modalTitularCuenta');
+    if (elementoTitularCuenta) {
+        elementoTitularCuenta.textContent = datos.titular_cuenta_solicitud || '—';
+    }
+    
+    var elementoNif = document.getElementById('modalNif');
+    if (elementoNif) {
+        elementoNif.textContent = datos.nif_solicitud || '—';
+    }
+    
+    /* Información como arrendador */
+    var elementoDireccionFiscal = document.getElementById('modalDireccionFiscal');
+    if (elementoDireccionFiscal) {
+        elementoDireccionFiscal.textContent = datos.direccion_fiscal_solicitud || '—';
+    }
+    
+    var elementoTipoArrendador = document.getElementById('modalTipoArrendador');
+    if (elementoTipoArrendador) {
+        elementoTipoArrendador.textContent = datos.tipo_arrendador_solicitud || '—';
+    }
+    
+    var elementoNumPropiedades = document.getElementById('modalNumPropiedades');
+    if (elementoNumPropiedades) {
+        elementoNumPropiedades.textContent = datos.num_propiedades_previstas_solicitud || '—';
+    }
+    
+    var elementoEsPropietario = document.getElementById('modalEsPropietario');
+    if (elementoEsPropietario) {
+        var esProp = datos.es_propietario_solicitud ? 'Sí' : 'No';
+        elementoEsPropietario.textContent = esProp;
+    }
+    
+    /* Descripción */
+    var elementoDescripcion = document.getElementById('modalDescripcion');
+    if (elementoDescripcion) {
+        elementoDescripcion.textContent = datos.descripcion_solicitud || '—';
+    }
+    
+    /* Aceptaciones */
+    var elementoAceptaTerminos = document.getElementById('modalAceptaTerminos');
+    if (elementoAceptaTerminos) {
+        var aceptaTerm = datos.acepta_terminos_solicitud ? 'Sí' : 'No';
+        elementoAceptaTerminos.textContent = aceptaTerm;
+    }
+    
+    var elementoAceptaVeracidad = document.getElementById('modalAceptaVeracidad');
+    if (elementoAceptaVeracidad) {
+        var aceptaVer = datos.acepta_veracidad_solicitud ? 'Sí' : 'No';
+        elementoAceptaVeracidad.textContent = aceptaVer;
     }
 };
 

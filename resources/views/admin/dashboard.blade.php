@@ -255,11 +255,81 @@
                 
                 <hr class="modal-separator-dash">
                 
-                <!-- Propiedad solicitada -->
-                <h6 class="modal-seccion-titulo-dash">Propiedad Solicitada</h6>
+                <!-- Datos personales -->
+                <h6 class="modal-seccion-titulo-dash">Datos personales</h6>
                 <div class="modal-seccion-dash">
-                    <label class="modal-label-dash">Dirección</label>
-                    <p id="modalDireccionSolicitudDash" class="modal-data-dash">—</p>
+                    <label class="modal-label-dash">Teléfono</label>
+                    <p id="modalTelefonoSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Fecha de nacimiento</label>
+                    <p id="modalFechaNacimientoSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Tipo de documento</label>
+                    <p id="modalTipoDocumentoSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Número de documento</label>
+                    <p id="modalNumeroDocumentoSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">NIF</label>
+                    <p id="modalNifSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                
+                <hr class="modal-separator-dash">
+                
+                <!-- Datos bancarios y fiscales -->
+                <h6 class="modal-seccion-titulo-dash">Datos bancarios y fiscales</h6>
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">IBAN</label>
+                    <p id="modalIbanSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Titular de la cuenta</label>
+                    <p id="modalTitularCuentaSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Dirección fiscal</label>
+                    <p id="modalDireccionFiscalSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Tipo de arrendador</label>
+                    <p id="modalTipoArrendadorSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Número de propiedades previstas</label>
+                    <p id="modalNumPropiedadesSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Es propietario</label>
+                    <p id="modalEsPropietarioSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                
+                <hr class="modal-separator-dash">
+                
+                <!-- Declaraciones y descripción -->
+                <h6 class="modal-seccion-titulo-dash">Declaraciones y observaciones</h6>
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Acepta términos</label>
+                    <p id="modalAceptaTerminosSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Acepta veracidad</label>
+                    <p id="modalAceptaVeracidadSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Descripción</label>
+                    <p id="modalDescripcionSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Fecha de aceptación</label>
+                    <p id="modalFechaAceptacionSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Estado</label>
+                    <p id="modalEstadoSolicitudDash" class="modal-data-dash">—</p>
                 </div>
                 
                 <hr class="modal-separator-dash">
@@ -271,8 +341,8 @@
             
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-danger">Rechazar</button>
-                <button type="button" class="btn btn-primary">Aprobar</button>
+                <button type="button" class="btn btn-danger" id="btnRechazarSolicitudDash">Rechazar</button>
+                <button type="button" class="btn btn-primary" id="btnAprobarSolicitudDash">Aprobar</button>
             </div>
         </div>
     </div>

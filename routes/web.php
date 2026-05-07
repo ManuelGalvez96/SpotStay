@@ -194,6 +194,7 @@ Route::middleware(['role:miembro,inquilino,propietario'])->group(function () {
     Route::get('/inquilino/propiedad/{id}', [InquilinoController::class, 'verPropiedad'])->name('inquilino.ver_propiedad');
     Route::get('/inquilino/incidencia/{id}', [InquilinoController::class, 'verIncidencia'])->name('inquilino.ver_incidencia');
     Route::get('/inquilino/propiedad/{id}/incidencias', [InquilinoController::class, 'getIncidencias'])->name('inquilino.get_incidencias');
+    Route::get('/inquilino/incidencias/estados', [InquilinoController::class, 'obtenerEstadosIncidencias'])->name('inquilino.get_estados_incidencias');
     Route::get('/inquilino/incidencia/{id}/detalle', [InquilinoController::class, 'getDetalleIncidencia'])->name('inquilino.get_detalle_incidencia');
     Route::post('/inquilino/cuotas/{cuotaId}/pagar', [InquilinoController::class, 'pagarCuotaAlquiler'])->name('inquilino.pagar_cuota');
     Route::post('/inquilino/propiedad/{id}/incidencia', [InquilinoController::class, 'reportarIncidencia'])->name('inquilino.reportar_incidencia');

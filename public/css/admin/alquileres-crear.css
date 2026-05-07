@@ -24,14 +24,28 @@
     color: #64748b;
 }
 
+.toolbar-admin.crear-toolbar .crear-hint strong {
+    color: white;
+}
+
+.toolbar-admin.crear-toolbar .crear-hint span {
+    color: rgba(255, 255, 255, 0.75);
+}
+
 .card-crear {
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
 }
 
 .card-header-crear {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    background: linear-gradient(90deg, #035498, #1AA068);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 16px 20px;
 }
 
 .card-header-title-crear {
@@ -43,24 +57,25 @@
 .card-header-title-crear h2 {
     margin: 0;
     font-size: 16px;
-    color: #0f172a;
+    color: white;
+    font-weight: 700;
 }
 
 .card-header-sub-crear {
     font-size: 12px;
-    color: #64748b;
+    color: rgba(255, 255, 255, 0.75);
 }
 
 .form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
-    padding: 18px;
+    padding: 24px;
 }
 
 .form-grid label {
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     font-size: 12px;
     font-weight: 600;
     color: #334155;
@@ -75,7 +90,15 @@
     padding: 10px 12px;
     font-size: 14px;
     color: #0f172a;
-    background: #fff;
+    background: #fafbfc;
+    transition: all 0.2s ease;
+}
+
+.form-grid input:hover,
+.form-grid select:hover,
+.form-grid textarea:hover {
+    background: #f3f4f6;
+    border-color: #cbd5e1;
 }
 
 .form-grid input:focus,
@@ -83,6 +106,7 @@
 .form-grid textarea:focus {
     outline: none;
     border-color: #0ea5e9;
+    background: white;
     box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.12);
 }
 
@@ -109,8 +133,11 @@
 .acciones-form {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 8px;
+    gap: 12px;
+    margin-top: 0;
+    border-top: 1px solid #eef2f7;
+    padding: 16px 24px;
+    background: #fafbfc;
 }
 
 @media (max-width: 900px) {

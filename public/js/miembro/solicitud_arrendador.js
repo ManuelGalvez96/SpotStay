@@ -7,6 +7,10 @@ function iniciarAplicacionSolicitudArrendador() {
     iniciarValidacionSolicitudArrendador();
 }
 
+window.addEventListener('pageshow', function () {
+    iniciarAplicacionSolicitudArrendador();
+});
+
 iniciarAplicacionSolicitudArrendador();
 
 function iniciarValidacionSolicitudArrendador() {
@@ -45,6 +49,40 @@ function iniciarValidacionSolicitudArrendador() {
     const entradaAceptaVeracidad = document.getElementById("acepta-veracidad-solicitud");
 
     if (!formulario || !botonEnviar) return;
+
+    const camposObligatorios = [
+        errorTelefono,
+        errorFechaNacimiento,
+        errorTipoDocumento,
+        errorNumeroDocumento,
+        errorIban,
+        errorTitular,
+        errorNif,
+        errorDireccion,
+        errorTipoArrendador,
+        errorNumPropiedades,
+        errorDescripcion,
+        errorAceptaTerminos,
+        errorAceptaVeracidad,
+        entradaTelefono,
+        entradaFechaNacimiento,
+        entradaTipoDocumento,
+        entradaNumeroDocumento,
+        entradaIban,
+        entradaTitular,
+        entradaNif,
+        entradaDireccion,
+        entradaTipoArrendador,
+        entradaNumPropiedades,
+        entradaDescripcion,
+        entradaAceptaTerminos,
+        entradaAceptaVeracidad
+    ];
+
+    if (camposObligatorios.some(function (campo) { return !campo; })) {
+        console.error('No se pudo inicializar la validación de solicitud arrendador: faltan elementos del formulario.');
+        return;
+    }
 
     // --- FUNCIONES DE VALIDACIÓN ---
 
@@ -291,7 +329,7 @@ function iniciarValidacionSolicitudArrendador() {
 
     // --- ENVÍO DEL FORMULARIO ---
 
-    formulario.onsubmit = (evento) => {
+    formulario.addEventListener('submit', function (evento) {
         evento.preventDefault();
 
         comprobarTelefono();
@@ -330,39 +368,24 @@ function iniciarValidacionSolicitudArrendador() {
             body: fd
         })
         .then(function (response) {
+            var ct = response.headers.get("content-type") || "";
+
             if (!response.ok) {
-                if (response.status === 422) {
+                if (ct.indexOf("application/json") !== -1) {
                     return response.json().then(function (errData) {
-                        actualizarErroresVacios();
-                        var mapaErrores = {
-                            telefono_solicitud: errorTelefono,
-                            fecha_nacimiento_solicitud: errorFechaNacimiento,
-                            tipo_documento_solicitud: errorTipoDocumento,
-                            numero_documento_solicitud: errorNumeroDocumento,
-                            iban_solicitud: errorIban,
-                            titular_cuenta_solicitud: errorTitular,
-                            nif_solicitud: errorNif,
-                            direccion_fiscal_solicitud: errorDireccion,
-                            tipo_arrendador_solicitud: errorTipoArrendador,
-                            num_propiedades_previstas_solicitud: errorNumPropiedades,
-                            descripcion_solicitud: errorDescripcion,
-                            acepta_terminos_solicitud: errorAceptaTerminos,
-                            acepta_veracidad_solicitud: errorAceptaVeracidad,
-                        };
-                        for (var campo in errData.errors) {
-                            if (errData.errors.hasOwnProperty(campo) && mapaErrores[campo]) {
-                                mapaErrores[campo].innerText = errData.errors[campo][0];
-                            }
-                        }
-                        throw new Error("Errores de validacion del servidor");
+                        return Promise.reject({ status: response.status, datos: errData });
                     });
                 }
-                throw new Error("Error del servidor");
+
+                return response.text().then(function (texto) {
+                    return Promise.reject({ status: response.status, datos: { message: texto || "Error del servidor" } });
+                });
             }
-            var ct = response.headers.get("content-type") || "";
+
             if (ct.indexOf("application/json") !== -1) {
                 return response.json();
             }
+
             window.location.reload();
         })
         .then(function (data) {
@@ -384,18 +407,52 @@ function iniciarValidacionSolicitudArrendador() {
                 }
             }
         })
-        .catch(function () {
+        .catch(function (error) {
+            var mensaje = "No se pudo enviar la solicitud. Revisa los campos.";
+
+            if (error && error.datos) {
+                if (error.datos.message) {
+                    mensaje = error.datos.message;
+                }
+
+                if (error.datos.errors) {
+                    actualizarErroresVacios();
+
+                    var mapaErrores = {
+                        telefono_solicitud: errorTelefono,
+                        fecha_nacimiento_solicitud: errorFechaNacimiento,
+                        tipo_documento_solicitud: errorTipoDocumento,
+                        numero_documento_solicitud: errorNumeroDocumento,
+                        iban_solicitud: errorIban,
+                        titular_cuenta_solicitud: errorTitular,
+                        nif_solicitud: errorNif,
+                        direccion_fiscal_solicitud: errorDireccion,
+                        tipo_arrendador_solicitud: errorTipoArrendador,
+                        num_propiedades_previstas_solicitud: errorNumPropiedades,
+                        descripcion_solicitud: errorDescripcion,
+                        acepta_terminos_solicitud: errorAceptaTerminos,
+                        acepta_veracidad_solicitud: errorAceptaVeracidad,
+                    };
+
+                    for (var campo in error.datos.errors) {
+                        if (error.datos.errors.hasOwnProperty(campo) && mapaErrores[campo]) {
+                            mapaErrores[campo].innerText = error.datos.errors[campo][0];
+                        }
+                    }
+                }
+            }
+
             if (typeof mostrarAlertaError === "function") {
-                mostrarAlertaError("Error", "No se pudo enviar la solicitud. Revisa los campos.");
+                mostrarAlertaError("Error", mensaje);
             } else {
-                alert("No se pudo enviar la solicitud. Revisa los campos.");
+                alert(mensaje);
             }
         })
         .finally(function () {
             botonEnviar.disabled = false;
             botonEnviar.classList.remove("btn-login-desabilitado");
         });
-    };
+    });
 
     function actualizarErroresVacios() {
         errorTelefono.innerText = "";

@@ -32,6 +32,10 @@ class PropiedadController extends Controller
             abort(404);
         }
 
+        if (isset($propiedad->estado_propiedad) && $propiedad->estado_propiedad === 'alquilada') {
+            abort(403, 'No se puede editar una propiedad alquilada.');
+        }
+
         return view('admin.propiedades-crear', [
             'propiedadEditando' => $propiedad,
         ]);
@@ -48,8 +52,15 @@ class PropiedadController extends Controller
             'ciudad' => 'required|string|max:100',
             'codigo_postal' => 'required|string|max:10',
             'precio' => 'required|numeric|min:0',
+            'tipo' => 'nullable|string|in:piso,casa,estudio,chalet',
+            'habitaciones' => 'nullable|string|in:1,2,3,4,4+',
+            'metros' => 'nullable|integer|min:1',
+            'banos' => 'nullable|string|in:1,2,3,3+',
             'estado' => 'required|in:publicada,alquilada,borrador,inactiva',
             'descripcion' => 'nullable|string',
+            'extras' => 'nullable|array',
+            'extras.*' => 'string|in:amueblado,piscina,terraza,garaje,ascensor,aire_acondicionado,calefaccion,trastero',
+            'adicional' => 'nullable|string|max:255',
             'arrendador_email' => 'required|email',
         ]);
 
@@ -88,6 +99,19 @@ class PropiedadController extends Controller
             'ciudad_propiedad' => $datos['ciudad'],
             'codigo_postal_propiedad' => $datos['codigo_postal'],
             'descripcion_propiedad' => $datos['descripcion'] ?: null,
+            'tipo_propiedad' => $datos['tipo'] ?: null,
+            'habitaciones_propiedad' => $datos['habitaciones'] ?: null,
+            'metros_cuadrados_propiedad' => $datos['metros'] ?: null,
+            'banos_propiedad' => $datos['banos'] ?: null,
+            'amueblado_propiedad' => in_array('amueblado', $datos['extras'] ?? []) ? 1 : 0,
+            'piscina_propiedad' => in_array('piscina', $datos['extras'] ?? []) ? 1 : 0,
+            'terraza_propiedad' => in_array('terraza', $datos['extras'] ?? []) ? 1 : 0,
+            'garaje_propiedad' => in_array('garaje', $datos['extras'] ?? []) ? 1 : 0,
+            'ascensor_propiedad' => in_array('ascensor', $datos['extras'] ?? []) ? 1 : 0,
+            'aire_acondicionado_propiedad' => in_array('aire_acondicionado', $datos['extras'] ?? []) ? 1 : 0,
+            'calefaccion_propiedad' => in_array('calefaccion', $datos['extras'] ?? []) ? 1 : 0,
+            'trastero_propiedad' => in_array('trastero', $datos['extras'] ?? []) ? 1 : 0,
+            'adicional_propiedad' => $datos['adicional'] ?: null,
             $precioColumna => $datos['precio'],
             'estado_propiedad' => $datos['estado'],
             'creado_propiedad' => $ahora,
@@ -133,8 +157,15 @@ class PropiedadController extends Controller
             'ciudad' => 'required|string|max:100',
             'codigo_postal' => 'required|string|max:10',
             'precio' => 'required|numeric|min:0',
+            'tipo' => 'nullable|string|in:piso,casa,estudio,chalet',
+            'habitaciones' => 'nullable|string|in:1,2,3,4,4+',
+            'metros' => 'nullable|integer|min:1',
+            'banos' => 'nullable|string|in:1,2,3,3+',
             'estado' => 'required|in:publicada,alquilada,borrador,inactiva',
             'descripcion' => 'nullable|string',
+            'extras' => 'nullable|array',
+            'extras.*' => 'string|in:amueblado,piscina,terraza,garaje,ascensor,aire_acondicionado,calefaccion,trastero',
+            'adicional' => 'nullable|string|max:255',
             'arrendador_email' => 'required|email',
         ]);
 
@@ -173,6 +204,19 @@ class PropiedadController extends Controller
                 'ciudad_propiedad' => $datos['ciudad'],
                 'codigo_postal_propiedad' => $datos['codigo_postal'],
                 'descripcion_propiedad' => $datos['descripcion'] ?: null,
+                'tipo_propiedad' => $datos['tipo'] ?: null,
+                'habitaciones_propiedad' => $datos['habitaciones'] ?: null,
+                'metros_cuadrados_propiedad' => $datos['metros'] ?: null,
+                'banos_propiedad' => $datos['banos'] ?: null,
+                'amueblado_propiedad' => in_array('amueblado', $datos['extras'] ?? []) ? 1 : 0,
+                'piscina_propiedad' => in_array('piscina', $datos['extras'] ?? []) ? 1 : 0,
+                'terraza_propiedad' => in_array('terraza', $datos['extras'] ?? []) ? 1 : 0,
+                'garaje_propiedad' => in_array('garaje', $datos['extras'] ?? []) ? 1 : 0,
+                'ascensor_propiedad' => in_array('ascensor', $datos['extras'] ?? []) ? 1 : 0,
+                'aire_acondicionado_propiedad' => in_array('aire_acondicionado', $datos['extras'] ?? []) ? 1 : 0,
+                'calefaccion_propiedad' => in_array('calefaccion', $datos['extras'] ?? []) ? 1 : 0,
+                'trastero_propiedad' => in_array('trastero', $datos['extras'] ?? []) ? 1 : 0,
+                'adicional_propiedad' => $datos['adicional'] ?: null,
                 $precioColumna => $datos['precio'],
                 'estado_propiedad' => $datos['estado'],
                 'actualizado_propiedad' => Carbon::now(),
@@ -377,6 +421,45 @@ class PropiedadController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function publicar($id)
+    {
+        $propiedad = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->select('id_propiedad', 'estado_propiedad')
+            ->first();
+
+        if (!$propiedad) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Propiedad no encontrada.'
+            ], 404);
+        }
+
+        if ($propiedad->estado_propiedad === 'alquilada') {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede publicar una propiedad alquilada.'
+            ], 422);
+        }
+
+        if ($propiedad->estado_propiedad !== 'borrador') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Solo se pueden publicar propiedades en estado borrador.'
+            ], 422);
+        }
+
+        DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->update([
+                'estado_propiedad' => 'publicada',
+                'aprobada_propiedad' => Schema::hasColumn('tbl_propiedad', 'aprobada_propiedad') ? Carbon::now() : null,
+                'actualizado_propiedad' => Carbon::now()
+            ]);
+
+        return response()->json(['success' => true]);
+    }
+
     public function eliminar(Request $request, $id)
     {
         $propiedad = DB::table('tbl_propiedad')
@@ -389,6 +472,13 @@ class PropiedadController extends Controller
                 'success' => false,
                 'message' => 'Propiedad no encontrada.'
             ], 404);
+        }
+
+        if (isset($propiedad->estado_propiedad) && $propiedad->estado_propiedad === 'alquilada') {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede eliminar una propiedad alquilada.'
+            ], 422);
         }
 
         DB::beginTransaction();

@@ -77,6 +77,7 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/propiedades/{id}', [PropiedadController::class, 'show']);
     Route::delete('/admin/propiedades/{id}', [PropiedadController::class, 'eliminar']);
     Route::post('/admin/propiedades/{id}/desactivar', [PropiedadController::class, 'desactivar']);
+    Route::post('/admin/propiedades/{id}/publicar', [PropiedadController::class, 'publicar']);
     Route::get('/admin/propiedades/{id}/descargar-pdf', [PropiedadController::class, 'descargarPdf']);
     Route::get('/admin/propiedades/exportar', [PropiedadController::class, 'exportar']);
 

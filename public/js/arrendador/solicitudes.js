@@ -1,3 +1,8 @@
+/* =========================================================
+   SECCIÓN 1: UTILIDADES Y MODALES
+   Funciones para CSRF, toasts y creación dinámica de modales.
+   ========================================================= */
+
 function obtenerTokenCsrf() {
   var etiquetaCsrf = document.querySelector('meta[name="csrf-token"]');
   return etiquetaCsrf ? etiquetaCsrf.getAttribute('content') : '';
@@ -59,6 +64,11 @@ function crearModal(titulo, contenido) {
   return { modal: modal, cuerpo: cuerpo, contenedor: contenedor };
 }
 
+/* =========================================================
+   SECCIÓN 2: ACTUALIZACIÓN DE UI (TABLA)
+   Modifica los botones y estado de la fila según el estado.
+   ========================================================= */
+
 function actualizarFila(id, estado) {
   var estadoNodo = document.getElementById('estado-' + id);
   var accionesNodo = document.querySelector('[data-acciones="' + id + '"]');
@@ -83,6 +93,11 @@ function actualizarFila(id, estado) {
     agregarEventosAcciones();
   }
 }
+
+/* =========================================================
+   SECCIÓN 3: VER DETALLES (MODAL)
+   Obtiene los datos de la solicitud y los muestra en un modal.
+   ========================================================= */
 
 function verSolicitud(id, arrendadorId) {
   fetch('/arrendador/solicitudes/' + id + '/ver?arrendador_id=' + encodeURIComponent(arrendadorId || ''), {
@@ -124,6 +139,11 @@ function verSolicitud(id, arrendadorId) {
       mostrarToast(error.message || 'Error al obtener los datos.');
     });
 }
+
+/* =========================================================
+   SECCIÓN 4: EDITAR SOLICITUD (MODAL)
+   Carga el formulario de edición en un modal.
+   ========================================================= */
 
 function editarSolicitud(id, arrendadorId) {
   fetch('/arrendador/solicitudes/' + id + '/ver?arrendador_id=' + encodeURIComponent(arrendadorId || ''), {
@@ -195,6 +215,11 @@ function editarSolicitud(id, arrendadorId) {
     });
 }
 
+/* =========================================================
+   SECCIÓN 5: GUARDAR Y ELIMINAR (API)
+   Funciones asíncronas para actualizar o borrar solicitudes.
+   ========================================================= */
+
 function guardarEdicion(id, arrendadorId, modal) {
   var formulario = document.getElementById('formulario-editar-' + id);
   if (!formulario) return;
@@ -231,46 +256,63 @@ function guardarEdicion(id, arrendadorId, modal) {
 }
 
 function eliminarSolicitud(id, arrendadorId) {
-  if (!confirm('¿Estás seguro de que deseas eliminar esta solicitud? Esta acción no se puede deshacer.')) {
-    return;
-  }
+  Swal.fire({
+    title: '¿Eliminar solicitud?',
+    text: 'Esta acción no se puede deshacer.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d32f2f',
+    cancelButtonColor: '#757575',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar'
+  }).then(function (result) {
+    if (!result.isConfirmed) {
+      return;
+    }
 
-  fetch('/arrendador/solicitudes/' + id + '/eliminar', {
-    method: 'POST',
-    headers: {
-      'X-CSRF-TOKEN': obtenerTokenCsrf(),
-      'X-Requested-With': 'XMLHttpRequest',
-      'Accept': 'application/json'
-    },
-    body: new URLSearchParams({ arrendador_id: arrendadorId || '' }),
-    credentials: 'same-origin'
-  })
-    .then(function (respuesta) {
-      return respuesta.json().then(function (datosRespuesta) {
-        return { ok: respuesta.ok, datosRespuesta: datosRespuesta };
+    fetch('/arrendador/solicitudes/' + id + '/eliminar', {
+      method: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': obtenerTokenCsrf(),
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json'
+      },
+      body: new URLSearchParams({ arrendador_id: arrendadorId || '' }),
+      credentials: 'same-origin'
+    })
+      .then(function (respuesta) {
+        return respuesta.json().then(function (datosRespuesta) {
+          return { ok: respuesta.ok, datosRespuesta: datosRespuesta };
+        });
+      })
+      .then(function (resultado) {
+        if (!resultado.ok || !resultado.datosRespuesta.success) {
+          console.error('Error response:', resultado);
+          throw new Error(resultado.datosRespuesta.message || 'No se pudo eliminar la solicitud.');
+        }
+
+        var fila = document.getElementById('fila-' + id);
+        if (fila) {
+          fila.style.opacity = '0';
+          setTimeout(function () {
+            if (fila.parentNode) {
+              fila.parentNode.removeChild(fila);
+            }
+          }, 200);
+        }
+
+        mostrarToast('Solicitud eliminada correctamente.');
+      })
+      .catch(function (error) {
+        mostrarToast(error.message || 'Error al eliminar la solicitud.');
       });
-    })
-    .then(function (resultado) {
-      if (!resultado.ok || !resultado.datosRespuesta.success) {
-        throw new Error(resultado.datosRespuesta.message || 'No se pudo eliminar la solicitud.');
-      }
-
-      var fila = document.getElementById('fila-' + id);
-      if (fila) {
-        fila.style.opacity = '0';
-        setTimeout(function () {
-          if (fila.parentNode) {
-            fila.parentNode.removeChild(fila);
-          }
-        }, 200);
-      }
-
-      mostrarToast('Solicitud eliminada correctamente.');
-    })
-    .catch(function (error) {
-      mostrarToast(error.message || 'Error al eliminar la solicitud.');
-    });
+  });
 }
+
+/* =========================================================
+   SECCIÓN 6: EVENT LISTERS (ACCIÓN)
+   Asigna los clics a los botones de la tabla (Ver, Editar, Eliminar).
+   ========================================================= */
 
 function agregarEventosAcciones() {
   document.querySelectorAll('[data-ver]').forEach(function (boton) {

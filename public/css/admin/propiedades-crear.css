@@ -24,6 +24,14 @@
     color: #6b7280;
 }
 
+.toolbar-admin.crear-toolbar .crear-hint strong {
+    color: white;
+}
+
+.toolbar-admin.crear-toolbar .crear-hint span {
+    color: rgba(255, 255, 255, 0.75);
+}
+
 .crear-kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     margin-bottom: 16px;
@@ -32,6 +40,8 @@
 .card-crear {
     border-radius: 12px;
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
 }
 
 .card-crear .card-header-admin {
@@ -44,6 +54,8 @@
     justify-content: space-between;
     gap: 12px;
     padding: 16px 20px;
+    background: linear-gradient(90deg, #035498, #1AA068);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .card-header-title-crear {
@@ -56,8 +68,8 @@
     width: 28px;
     height: 28px;
     border-radius: 8px;
-    background: #e8f0fb;
-    color: #035498;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -69,14 +81,14 @@
     font-size: 16px;
     line-height: 1.2;
     font-weight: 700;
-    color: #111827;
+    color: white;
 }
 
 .card-header-sub-crear {
     font-size: 11px;
     letter-spacing: 0.6px;
     text-transform: uppercase;
-    color: #6b7280;
+    color: rgba(255, 255, 255, 0.75);
     font-weight: 600;
 }
 
@@ -87,7 +99,8 @@
 .form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+    gap: 16px;
+    padding: 24px;
 }
 
 .campo-full {
@@ -99,19 +112,27 @@
     font-size: 13px;
     font-weight: 600;
     color: #334155;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .form-grid input,
 .form-grid select,
 .form-grid textarea {
     width: 100%;
-    border: 1px solid #cbd5e1;
+    border: 1px solid #d1d5db;
     border-radius: 10px;
     padding: 10px 12px;
     font-size: 14px;
     color: #0f172a;
-    background: #fff;
+    background: #fafbfc;
+    transition: all 0.2s ease;
+}
+
+.form-grid input:hover,
+.form-grid select:hover,
+.form-grid textarea:hover {
+    background: #f3f4f6;
+    border-color: #cbd5e1;
 }
 
 .form-grid input:focus,
@@ -119,16 +140,18 @@
 .form-grid textarea:focus {
     outline: none;
     border-color: #035498;
+    background: white;
     box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.15);
 }
 
 .acciones-form {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 10px;
+    gap: 12px;
+    margin-top: 0;
     border-top: 1px solid #eef2f7;
-    padding-top: 14px;
+    padding: 16px 24px;
+    background: #fafbfc;
 }
 
 .error-lista {

@@ -2,6 +2,7 @@
 @section('titulo', 'Propiedades — SpotStay')
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/admin/propiedades.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/responsive-tablas.css') }}">
 @endsection
 
 @section('content')
@@ -52,6 +53,7 @@
         </select>
     </div>
     <div class="toolbar-derecha">
+        {{-- 
         <button id="btnExportar" class="btn-exportar">
             <i class="bi bi-download"></i>
             <span>Exportar</span>
@@ -60,6 +62,7 @@
             <i class="bi bi-map"></i>
             <span>Ver en el mapa</span>
         </button>
+        --}}
         <a href="/admin/propiedades/nueva" id="btnAniadirPropiedad" class="btn-primario">
             <i class="bi bi-plus"></i>
             <span>Añadir propiedad</span>
@@ -125,17 +128,17 @@
         <thead>
             <tr>
                 <th>PROPIEDAD</th>
-                <th>ARRENDADOR</th>
+                <th class="col-mobile-hide">ARRENDADOR</th>
                 <th>ESTADO</th>
-                <th>PRECIO</th>
-                <th>INQUILINOS</th>
+                <th class="col-mobile-hide">PRECIO</th>
+                <th class="col-tablet-hide">INQUILINOS</th>
                 <th>ACCIONES</th>
             </tr>
         </thead>
         <tbody id="tbodyPropiedades">
             <!-- Fila 1 -->
             <tr data-id="1">
-                <td>
+                <td data-label="PROPIEDAD">
                     <div class="propiedad-celda">
                         <div class="thumb-propiedad" style="background: #B8CCE4;"></div>
                         <div>
@@ -144,16 +147,16 @@
                         </div>
                     </div>
                 </td>
-                <td>
+                <td data-label="ARRENDADOR" class="col-mobile-hide">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <div class="avatar-tabla" style="background: #B8CCE4; width: 28px; height: 28px;">CG</div>
                         <span style="font-size: 13px;">Carlos García</span>
                     </div>
                 </td>
-                <td><span class="badge-estado badge-alquilada">Alquilada</span></td>
-                <td><span class="precio-propiedad">$1.200/mes</span></td>
-                <td>2 / 3</td>
-                <td>
+                <td data-label="ESTADO"><span class="badge-estado badge-alquilada">Alquilada</span></td>
+                <td data-label="PRECIO" class="col-mobile-hide"><span class="precio-propiedad">$1.200/mes</span></td>
+                <td data-label="INQUILINOS" class="col-tablet-hide">2 / 3</td>
+                <td data-label="ACCIONES">
                     <div class="acciones-tabla">
                         <button class="btn-accion btn-ver" data-id="1" title="Ver detalle">
                             <i class="bi bi-eye"></i>

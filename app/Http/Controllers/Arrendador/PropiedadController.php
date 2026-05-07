@@ -149,10 +149,19 @@ class PropiedadController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
 
+            \Log::error('Error al guardar propiedad del arrendador', [
+                'arrendador_id' => $arrendadorId,
+                'propiedad_id' => $propiedadId,
+                'error' => $exception->getMessage(),
+                'archivo' => $exception->getFile(),
+                'linea' => $exception->getLine(),
+            ]);
+
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No se pudo guardar la propiedad en este momento.',
+                    'debug' => config('app.debug') ? $exception->getMessage() : null,
                 ], 500);
             }
 
@@ -249,9 +258,16 @@ class PropiedadController extends Controller
             ->select('a.*', 'inquilino.nombre_usuario as nombre_inquilino', 'inquilino.email_usuario as email_inquilino')
             ->first();
 
+        $fotos = DB::table('tbl_fotos')
+            ->where('id_propiedad_fk', $id)
+            ->orderBy('es_principal_foto', 'desc')
+            ->orderBy('orden')
+            ->get();
+
         return response()->json([
             'propiedad' => $propiedad,
             'alquiler_activo' => $alquilerActivo,
+            'fotos' => $fotos,
         ]);
     }
 
@@ -320,8 +336,15 @@ class PropiedadController extends Controller
 
     private function obtenerIdArrendador(Request $request): int
     {
-        $arrendadorId = (int) $request->query('arrendador_id', 0);
+        // Intentar obtener del input del formulario primero (para POST con edición)
+        $arrendadorId = (int) $request->input('arrendador_id', 0);
 
+        // Si no está en el input, intentar del query string
+        if ($arrendadorId <= 0) {
+            $arrendadorId = (int) $request->query('arrendador_id', 0);
+        }
+
+        // Si sigue sin haber valor, obtener el primer arrendador activo con propiedades
         if ($arrendadorId > 0) {
             return $arrendadorId;
         }
@@ -388,16 +411,18 @@ class PropiedadController extends Controller
     {
         $direccionLimpia = trim($direccion);
 
+        // Si la tabla tiene columna direccion_propiedad directa, usarla
         if (Schema::hasColumn('tbl_propiedad', 'direccion_propiedad')) {
             return ['direccion_propiedad' => $direccionLimpia];
         }
 
+        // Si no, mapear a calle_propiedad y numero_propiedad
         $partes = preg_split('/\s+/', $direccionLimpia);
         $numero = '';
 
         if (!empty($partes)) {
             $ultimo = end($partes);
-            if (preg_match('/\d/', (string) $ultimo)) {
+            if (preg_match('/^\d+$/', (string) $ultimo)) {
                 $numero = (string) $ultimo;
                 array_pop($partes);
             }
@@ -409,12 +434,10 @@ class PropiedadController extends Controller
         }
 
         $datos = [];
-        if (Schema::hasColumn('tbl_propiedad', 'calle_propiedad')) {
-            $datos['calle_propiedad'] = $calle;
-        }
-        if (Schema::hasColumn('tbl_propiedad', 'numero_propiedad')) {
-            $datos['numero_propiedad'] = $numero !== '' ? $numero : null;
-        }
+        
+        // Asegurar que siempre se incluyen estos campos
+        $datos['calle_propiedad'] = $calle;
+        $datos['numero_propiedad'] = $numero !== '' ? $numero : 'S/N';
 
         return $datos;
     }

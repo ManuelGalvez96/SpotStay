@@ -127,7 +127,7 @@
                     </div>
                 </div>
 
-                {{-- <!-- Card: Chat con Inquilinos -->
+                <!-- Card: Chat con Inquilinos -->
                 <div class="card">
                     <div class="card-header">
                         <div class="card-icon">💬</div>
@@ -141,7 +141,7 @@
                     <div class="card-footer">
                         <a class="btn btn-outline btn-sm" href="{{ route('arrendador.mensajes', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Abrir Mensajes</a>
                     </div>
-                </div> --}}
+                </div>
 
                 <!-- Card: Descargar Contratos -->
                 <div class="card">
@@ -172,6 +172,21 @@
                     </p>
                     <div class="card-footer">
                         <a class="btn btn-outline btn-sm" href="{{ route('arrendador.gestor', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Configurar Gestor</a>
+                    </div>
+                </div>
+                <!-- Card: Incidencias esperando acción -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">⚙️</div>
+                        <div>
+                            <div class="card-title">Incidencias</div>
+                        </div>
+                    </div>
+                    <p class="card-description">
+                        Decide sobre las incidencias que requieren tu atención.
+                    </p>
+                    <div class="card-footer">
+                        <a class="btn btn-outline btn-sm" href="{{ route('arrendador.incidencias', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Gestionar Incidencias</a>
                     </div>
                 </div>
             </div>
@@ -227,33 +242,6 @@
                 </div>
             </section>
 
-            <!-- Section: Mensajes Recientes -->
-            <section class="section">
-                <div class="section-header">
-                    <h2 class="section-title">Mensajes Recientes</h2>
-                    <div class="section-actions">
-                        <button class="btn btn-outline btn-sm">Ver Todos</button>
-                    </div>
-                </div>
-                
-                <div class="message-list">
-                    @forelse ($mensajesRecientes as $mensaje)
-                        <div class="message-item">
-                            <div class="message-tenant">{{ $mensaje->nombre_usuario }}</div>
-                            <div class="message-text">{{ $mensaje->cuerpo_mensaje }}</div>
-                            <div class="message-time">
-                                {{ $mensaje->creado_mensaje ? \Carbon\Carbon::parse($mensaje->creado_mensaje)->diffForHumans() : 'Reciente' }}
-                            </div>
-                        </div>
-                    @empty
-                        <div class="message-item">
-                            <div class="message-tenant">Sin mensajes</div>
-                            <div class="message-text">Todavía no hay mensajes recientes con inquilinos.</div>
-                            <div class="message-time">-</div>
-                        </div>
-                    @endforelse
-                </div>
-            </section>
 
             <!-- Section: Propiedades Activas -->
             <section class="section">

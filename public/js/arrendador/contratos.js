@@ -1,3 +1,8 @@
+/* =========================================================
+   SECCIÓN 1: UTILIDADES (TOKEN, TOAST)
+   Funciones básicas para CSRF y notificaciones visuales.
+   ========================================================= */
+
 function obtenerTokenCsrf() {
   var etiquetaCsrf = document.querySelector('meta[name="csrf-token"]');
   return etiquetaCsrf ? etiquetaCsrf.getAttribute('content') : '';
@@ -25,6 +30,11 @@ function mostrarToast(texto) {
   }, 1800);
 }
 
+/* =========================================================
+   SECCIÓN 2: ACTUALIZACIÓN DE UI (DOM)
+   Modifica la fila de la tabla tras firmar un contrato.
+   ========================================================= */
+
 function actualizarFilaContrato(idContrato, estado) {
   var nodoEstado = document.getElementById('estado-' + idContrato);
   var nodoFirmaArrendador = document.getElementById('firma-arrendador-' + idContrato);
@@ -50,6 +60,11 @@ function actualizarFilaContrato(idContrato, estado) {
     nodoAcciones.innerHTML = '<span class="muted">Sin acciones</span>';
   }
 }
+
+/* =========================================================
+   SECCIÓN 3: FIRMA DE CONTRATO (API)
+   Envía la petición para firmar y actualiza el resultado.
+   ========================================================= */
 
 function firmarContratoArrendador(idContrato, arrendadorId) {
   var ruta = '/arrendador/contratos/' + idContrato + '/firmar-arrendador';

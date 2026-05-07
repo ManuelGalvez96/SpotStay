@@ -89,8 +89,13 @@ class HomeController extends Controller
 
         $propiedades = $query->orderByDesc('id_propiedad')->get();
 
-        // Respuesta para AJAX
-        if ($request->ajax()) {
+        // Respuesta para AJAX (verifica múltiples formas de detectar la petición)
+        $esAjax = $request->ajax()
+            || $request->wantsJson()
+            || $request->header('Accept') === 'application/json'
+            || $request->query('ajax') === '1';
+
+        if ($esAjax) {
             return response()->json([
                 'success' => true,
                 'message' => 'Listado cargado correctamente.',

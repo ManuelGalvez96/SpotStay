@@ -4,6 +4,7 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/admin/alquileres.css') }}">
+<link rel="stylesheet" href="{{ asset('css/admin/responsive-tablas.css') }}">
 @endsection
 
 @section('content')
@@ -102,10 +103,12 @@
         </select>
     </div>
     <div class="toolbar-derecha">
+        {{-- 
         <button id="btnExportarAlq" class="btn-exportar">
             <i class="bi bi-download"></i>
             <span>Exportar</span>
         </button>
+        --}}
         <a href="/admin/alquileres/nuevo" id="btnNuevoAlquiler" class="btn-primario">
             <i class="bi bi-plus"></i>
             <span>Nuevo alquiler</span>
@@ -132,9 +135,9 @@
             <tr>
                 <th>PROPIEDAD</th>
                 <th>INQUILINO</th>
-                <th>ARRENDADOR</th>
-                <th>INICIO</th>
-                <th>FIN</th>
+                <th class="col-mobile-hide">ARRENDADOR</th>
+                <th class="col-tablet-hide">INICIO</th>
+                <th class="col-tablet-hide">FIN</th>
                 <th>ESTADO</th>
                 <th>ACCIONES</th>
             </tr>
@@ -154,7 +157,7 @@
                 @endphp
                 <tr data-id="{{ $alquiler->id_alquiler }}" class="{{ $filaInactiva }}">
 
-                    <td>
+                    <td data-label="PROPIEDAD">
                         <div class="propiedad-celda">
                             <div class="thumb-propiedad" style="background:{{ $colorProp }}"></div>
                             <div>
@@ -164,25 +167,25 @@
                         </div>
                     </td>
 
-                    <td>
+                    <td data-label="INQUILINO">
                         <div class="usuario-celda-mini">
                             <div class="avatar-tabla avatar-sm" style="background:{{ $colorInq }}">{{ $inicialesInq }}</div>
                             <span class="nombre-mini">{{ $alquiler->nombre_inquilino }}</span>
                         </div>
                     </td>
 
-                    <td>
+                    <td data-label="ARRENDADOR" class="col-mobile-hide">
                         <div class="usuario-celda-mini">
                             <div class="avatar-tabla avatar-sm" style="background:{{ $colorArr }}">{{ $inicialesArr }}</div>
                             <span class="nombre-mini">{{ $alquiler->nombre_arrendador }}</span>
                         </div>
                     </td>
 
-                    <td>
+                    <td data-label="INICIO" class="col-tablet-hide">
                         <span class="texto-fecha">{{ \Carbon\Carbon::parse($alquiler->fecha_inicio_alquiler)->format('d M Y') }}</span>
                     </td>
 
-                    <td>
+                    <td data-label="FIN" class="col-tablet-hide">
                         <span class="texto-fecha">
                             @if($alquiler->fecha_fin_alquiler)
                                 {{ \Carbon\Carbon::parse($alquiler->fecha_fin_alquiler)->format('d M Y') }}
@@ -192,11 +195,11 @@
                         </span>
                     </td>
 
-                    <td>
+                    <td data-label="ESTADO">
                         <span class="badge-estado badge-estado-{{ $alquiler->estado_alquiler }}">{{ ucfirst($alquiler->estado_alquiler) }}</span>
                     </td>
 
-                    <td>
+                    <td data-label="ACCIONES">
                         <div class="acciones-tabla">
                             <button class="btn-accion btn-ver-alq" data-id="{{ $alquiler->id_alquiler }}" title="Ver detalle">
                                 <i class="bi bi-eye"></i>

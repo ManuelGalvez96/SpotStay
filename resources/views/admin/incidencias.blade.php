@@ -24,7 +24,7 @@
             <i class="bi bi-exclamation-triangle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ $totalAbiertas }}</span>
+            <span class="kpi-mini-numero kpi-mini-numero-rojo" id="kpiAbiertasIncidencias">{{ $totalAbiertas }}</span>
             <span class="kpi-mini-label">Abiertas</span>
         </div>
     </div>
@@ -34,7 +34,7 @@
             <i class="bi bi-tools"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-naranja">{{ $totalEnProceso }}</span>
+            <span class="kpi-mini-numero kpi-mini-numero-naranja" id="kpiEnProcesoIncidencias">{{ $totalEnProceso }}</span>
             <span class="kpi-mini-label">En proceso</span>
         </div>
     </div>
@@ -44,7 +44,7 @@
             <i class="bi bi-check-circle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ $totalResueltas }}</span>
+            <span class="kpi-mini-numero" id="kpiResueltasIncidencias">{{ $totalResueltas }}</span>
             <span class="kpi-mini-label">Resueltas este mes</span>
         </div>
     </div>
@@ -55,7 +55,7 @@
         </div>
         <div class="kpi-mini-datos">
             <div class="kpi-urgente-fila">
-                <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ $urgentes }}</span>
+                <span class="kpi-mini-numero kpi-mini-numero-rojo" id="kpiUrgentesIncidencias">{{ $urgentes }}</span>
                 <span class="badge-pulsante"></span>
             </div>
             <span class="kpi-mini-label">Urgentes</span>
@@ -102,10 +102,13 @@
                 <i class="bi bi-list-ul"></i>
             </button>
         </div>
+        {{-- Botón comentado: Nueva incidencia oculto --}}
+        {{--
         <button id="btnNuevaIncidencia" class="btn-primario">
             <i class="bi bi-plus"></i>
             <span>Nueva incidencia</span>
         </button>
+        --}}
     </div>
 </div>
 
@@ -283,11 +286,11 @@
         <thead>
             <tr>
                 <th>TÍTULO</th>
-                <th>PROPIEDAD</th>
-                <th>CATEGORÍA</th>
+                <th class="col-tablet-hide">PROPIEDAD</th>
+                <th class="col-mobile-hide">CATEGORÍA</th>
                 <th>PRIORIDAD</th>
                 <th>ESTADO</th>
-                <th>REPORTADA POR</th>
+                <th class="col-tablet-hide">REPORTADA POR</th>
                 <th>ACCIONES</th>
             </tr>
         </thead>
@@ -343,46 +346,14 @@
                     </div>
                 </div>
 
-                <hr>
-
-                <span class="seccion-label">ASIGNAR GESTOR</span>
-                <div class="d-flex gap-2 mb-3">
-                    <select id="selectGestorModal" class="form-select form-select-sm">
-                        <option value="">Sin asignar</option>
-                        @foreach($gestores as $gestor)
-                            <option value="{{ $gestor->id_usuario }}">{{ $gestor->nombre_usuario }}</option>
-                        @endforeach
-                    </select>
-                    <button id="btnAsignar" class="btn btn-sm btn-primary">Asignar</button>
-                </div>
-
-                <hr>
-
-                <span class="seccion-label">CAMBIAR ESTADO</span>
-                <div class="d-flex gap-2 mb-3 flex-wrap">
-                    <button class="btn btn-sm btn-outline-secondary btn-estado" data-estado="abierta">Abierta</button>
-                    <button class="btn btn-sm btn-outline-secondary btn-estado" data-estado="en_proceso">En proceso</button>
-                    <button class="btn btn-sm btn-outline-secondary btn-estado" data-estado="resuelta">Resuelta</button>
-                    <button class="btn btn-sm btn-outline-secondary btn-estado" data-estado="cerrada">Cerrada</button>
-                </div>
-
-                <hr>
-
                 <span class="seccion-label">HISTORIAL DE CAMBIOS</span>
                 <div id="timelineHistorial" class="mb-3"></div>
-
-                <hr>
-
-                <span class="seccion-label">NOTAS INTERNAS</span>
-                <textarea id="modalNotasInc" class="form-control" rows="3" placeholder="Añade notas sobre esta incidencia..."></textarea>
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="btnCerrarInc">Marcar como cerrada</button>
                 <button type="button" class="btn btn-outline-secondary" id="btnContactarInquilino">
                     <i class="bi bi-chat"></i> Contactar
                 </button>
-                <button type="button" class="btn btn-primary" id="btnGuardarCambios">Guardar cambios</button>
             </div>
         </div>
     </div>

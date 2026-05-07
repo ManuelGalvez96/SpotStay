@@ -1,3 +1,9 @@
+/* =========================================================
+   SECCIÓN 1: ICONOS SVG (OSO SWEETALERT)
+   Genera dinámicamente el SVG del oso para las alertas
+   personalizadas de éxito y error.
+   ========================================================= */
+
 var crearOsoExito = function() {
     return `
     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 120px; height: 120px;">
@@ -48,6 +54,12 @@ var crearOsoError = function() {
     </svg>
     `;
 };
+
+/* =========================================================
+   SECCIÓN 2: FUNCIONES DE ALERTA (SWEETALERT2)
+   Envolturas para mostrar las notificaciones de éxito o
+   error usando los iconos SVG generados.
+   ========================================================= */
 
 var mostrarAlertaExito = function(titulo, mensaje) {
     if (typeof Swal === 'undefined') {

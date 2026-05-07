@@ -1,0 +1,328 @@
+/* ============================================================
+   RESPONSIVE TABLES - SpotStay Admin
+   Optimizar tablas para mobile sin scroll horizontal
+   ============================================================ */
+
+/* Media query para tablets y superiores (768px) */
+@media (min-width: 768px) {
+    /* Por defecto, mostrar todas las columnas en tablet+ */
+    .tabla-responsive-mobile {
+        display: none !important;
+    }
+}
+
+/* Media query para móviles (menos de 768px) */
+@media (max-width: 767px) {
+    .tabla-admin {
+        width: 100%;
+        font-size: 13px;
+    }
+
+    .tabla-admin thead {
+        display: none;
+    }
+
+    .tabla-admin tbody tr {
+        display: block;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 12px;
+        background: #fff;
+    }
+
+    .tabla-admin tbody td {
+        display: block;
+        text-align: right;
+        padding: 10px 0;
+        border: none;
+        position: relative;
+        padding-left: 40%;
+        white-space: normal;
+        word-break: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .tabla-admin tbody td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 12px;
+        font-weight: 600;
+        width: 35%;
+        text-align: left;
+        color: #666;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .tabla-admin tbody td:first-child {
+        padding-top: 0;
+    }
+
+    .tabla-admin tbody td:last-child {
+        text-align: center;
+        padding-left: 0;
+    }
+
+    .tabla-admin tbody td:last-child::before {
+        display: none;
+    }
+
+    .tabla-admin .usuario-celda,
+    .tabla-admin .propiedad-celda,
+    .tabla-admin .solicitud-celda {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .tabla-admin .usuario-nombre,
+    .tabla-admin .usuario-email {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .tabla-admin .badge-rol,
+    .tabla-admin .badge-estado,
+    .tabla-admin .badge-plan {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+
+    .acciones-tabla {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-accion {
+        padding: 6px 8px;
+        font-size: 12px;
+        min-width: auto;
+    }
+
+    .btn-accion i {
+        font-size: 14px;
+    }
+
+    .toggle-switch {
+        transform: scale(0.85);
+        transform-origin: center;
+    }
+
+    .pagination {
+        gap: 4px;
+    }
+
+    .page-link {
+        padding: 6px 8px;
+        font-size: 12px;
+        min-width: auto;
+    }
+
+    .tabla-header-info {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .tabla-header {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+
+    #paginas {
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+/* Media query para tablets pequeños (480px - 767px) */
+@media (max-width: 480px) {
+    
+    .tabla-admin tbody td {
+        padding-left: 45%;
+    }
+    
+    .tabla-admin tbody td::before {
+        width: 40%;
+    }
+    
+    .tabla-admin {
+        font-size: 12px;
+    }
+    
+    .btn-accion {
+        padding: 4px 6px;
+    }
+    
+    .btn-accion i {
+        font-size: 12px;
+    }
+}
+
+/* ============================================================
+   OCULTACIÓN DE COLUMNAS POR BREAKPOINT
+   ============================================================ */
+
+/* Tablets y superiores (768px+) - mostrar todas las columnas */
+@media (min-width: 768px) {
+    .col-mobile-hide {
+        display: table-cell !important;
+    }
+    
+    .col-tablet-hide {
+        display: table-cell !important;
+    }
+    
+    .col-desktop-hide {
+        display: none !important;
+    }
+}
+
+/* Tablets (768px - 1023px) - ocultar algunas columnas */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .col-tablet-hide {
+        display: none !important;
+    }
+}
+
+/* Móviles (menos de 768px) - mostrar solo lo crítico */
+@media (max-width: 767px) {
+    .col-mobile-hide {
+        display: none !important;
+    }
+    
+    .col-tablet-hide {
+        display: none !important;
+    }
+}
+
+/* Pantallas muy pequeñas (menos de 480px) */
+@media (max-width: 480px) {
+    .col-mobile-hide {
+        display: none !important;
+    }
+}
+
+/* ============================================================
+   OPTIMIZACIONES ADICIONALES
+   ============================================================ */
+
+/* Reducir espacios en pantallas móviles */
+@media (max-width: 767px) {
+    .toolbar-admin {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .toolbar-izquierda,
+    .toolbar-derecha {
+        width: 100%;
+    }
+    
+    .input-busqueda,
+    .select-filtro,
+    .btn-primario {
+        width: 100%;
+    }
+    
+    .toolbar-izquierda {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+/* Tablas más legibles en móviles */
+@media (max-width: 767px) {
+    .tabla-admin tbody tr {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .tabla-admin tbody tr:active {
+        background: #f9f9f9;
+    }
+}
+
+/* Mejorar acciones en móviles */
+@media (max-width: 767px) {
+    .acciones-tabla {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #f0f0f0;
+    }
+}
+
+/* ============================================================
+   SUSCRIPCIONES - DIVS EN LUGAR DE TABLAS HTML
+   ============================================================ */
+
+@media (max-width: 767px) {
+    
+    /* Header de suscripciones en mobile */
+    .suscripciones-tabla .tabla-header {
+        display: none !important;
+    }
+    
+    /* Filas de suscripciones como bloques */
+    .suscripciones-tabla .tabla-row {
+        display: block !important;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 12px;
+        background: #fff;
+    }
+    
+    .suscripciones-tabla .tabla-row > div {
+        display: block !important;
+        text-align: right;
+        padding: 10px 0;
+        position: relative;
+        padding-left: 40%;
+    }
+    
+    .suscripciones-tabla .tabla-row > div::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 12px;
+        font-weight: 600;
+        width: 35%;
+        text-align: left;
+        color: #666;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .suscripciones-tabla .tabla-row > div:first-child {
+        padding-top: 0;
+    }
+    
+    .suscripciones-tabla .tabla-row > div:last-child {
+        text-align: center;
+        padding-left: 0;
+    }
+    
+    .suscripciones-tabla .tabla-row > div:last-child::before {
+        display: none;
+    }
+    
+    /* Estilos para el usuario en suscripciones */
+    .suscripciones-tabla .tabla-row .usuario-celda {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+}
+
+/* Tablets - mostrar algunas columnas de suscripciones */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .suscripciones-tabla .tabla-row > div.col-tablet-hide {
+        display: none !important;
+    }
+}

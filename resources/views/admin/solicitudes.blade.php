@@ -4,9 +4,14 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/admin/solicitudes.css') }}">
+<link rel="stylesheet" href="{{ asset('css/admin/responsive-tablas.css') }}">
 @endsection
 
 @section('content')
+
+@php
+    $colores = ['#B8CCE4','#A8D5BF','#F9E4A0','#FFD5CC','#D7EAF9','#EDE7F6','#D5F5E3','#FAD7D7'];
+@endphp
 
 <div class="hero-admin">
     <div class="hero-content">
@@ -24,7 +29,7 @@
             <i class="bi bi-clock"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-naranja">{{ $solicitudesPendientes->total() }}</span>
+            <span class="kpi-mini-numero kpi-mini-numero-naranja" id="kpiPendientesSolicitudes">{{ $solicitudesPendientes->total() }}</span>
             <span class="kpi-mini-label">Pendientes este mes</span>
         </div>
     </div>
@@ -34,7 +39,7 @@
             <i class="bi bi-check-circle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ $aprobadas }}</span>
+            <span class="kpi-mini-numero" id="kpiAprobadasSolicitudes">{{ $aprobadas }}</span>
             <span class="kpi-mini-label">Aprobadas este mes</span>
         </div>
     </div>
@@ -44,7 +49,7 @@
             <i class="bi bi-x-circle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ $rechazadas }}</span>
+            <span class="kpi-mini-numero kpi-mini-numero-rojo" id="kpiRechazadasSolicitudes">{{ $rechazadas }}</span>
             <span class="kpi-mini-label">Rechazadas este mes</span>
         </div>
     </div>
@@ -54,7 +59,7 @@
             <i class="bi bi-inbox"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ $totalSolicitudes }}</span>
+            <span class="kpi-mini-numero" id="kpiTotalSolicitudes">{{ $totalSolicitudes }}</span>
             <span class="kpi-mini-label">Total solicitudes</span>
         </div>
     </div>
@@ -98,7 +103,19 @@
         <div class="card-admin">
             <div class="card-header-admin">
                 <span>Solicitudes</span>
-                <span class="badge-contador">{{ $solicitudesPendientes->total() }}</span>
+            </div>
+
+            <div class="tabla-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="tabla-header-info">
+                    <span class="tabla-header-titulo">Solicitudes</span>
+                    <span id="contadorResultados" class="info-paginacion">Mostrando 0-0 de 0 solicitudes</span>
+                </div>
+
+                <nav aria-label="Paginación de solicitudes">
+                    <ul class="pagination pagination-sm mb-0" id="paginacionSolicitudes">
+                        <!-- Generado por JavaScript -->
+                    </ul>
+                </nav>
             </div>
 
             <div class="tabla-contenedor">
@@ -106,9 +123,9 @@
                     <thead>
                         <tr>
                             <th>SOLICITANTE</th>
-                            <th>CIUDAD</th>
-                            <th>PROPIEDAD</th>
-                            <th>FECHA</th>
+                            <th class="col-tablet-hide">CIUDAD</th>
+                            <th class="col-mobile-hide">PROPIEDAD</th>
+                            <th class="col-tablet-hide">FECHA</th>
                             <th>ESTADO</th>
                             <th>ACCIONES</th>
                         </tr>
@@ -118,12 +135,11 @@
                             @php
                                 $partes = explode(' ', $solicitud->nombre_usuario);
                                 $iniciales = strtoupper(substr($partes[0],0,1)) . strtoupper(substr($partes[1]??'',0,1));
-                                $colores = ['#B8CCE4','#A8D5BF','#F9E4A0','#FFD5CC','#D7EAF9','#EDE7F6','#D5F5E3','#FAD7D7'];
                                 $color = $colores[$solicitud->id_solicitud_arrendador % 8];
                                 $fecha = \Carbon\Carbon::parse($solicitud->creado_solicitud_arrendador)->format('d/m/Y');
                             @endphp
                             <tr class="fila-solicitud" data-id="{{ $solicitud->id_solicitud_arrendador }}">
-                                <td>
+                                <td data-label="SOLICITANTE">
                                     <div class="usuario-celda">
                                         <div class="avatar-tabla" style="background:{{ $color }}">{{ $iniciales }}</div>
                                         <div class="usuario-info-tabla">
@@ -132,13 +148,13 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>{{ $solicitud->direccion_fiscal_solicitud ?? '—' }}</td>
-                                <td>{{ $solicitud->tipo_arrendador_solicitud ?? '—' }}</td>
-                                <td>{{ $fecha }}</td>
-                                <td>
+                                <td data-label="CIUDAD" class="col-tablet-hide">{{ $solicitud->direccion_fiscal_solicitud ?? '—' }}</td>
+                                <td data-label="PROPIEDAD" class="col-mobile-hide">{{ $solicitud->tipo_arrendador_solicitud ?? '—' }}</td>
+                                <td data-label="FECHA" class="col-tablet-hide">{{ $fecha }}</td>
+                                <td data-label="ESTADO">
                                     <span class="badge-estado badge-pendiente">Pendiente</span>
                                 </td>
-                                <td>
+                                <td data-label="ACCIONES">
                                     <div class="acciones-tabla">
                                         <button class="btn-icono btn-ver-sol" data-id="{{ $solicitud->id_solicitud_arrendador }}" title="Ver detalles">
                                             <i class="bi bi-eye"></i>
@@ -160,15 +176,6 @@
                     </tbody>
                 </table>
             </div>
-
-            <div class="tabla-footer d-flex flex-wrap justify-content-between align-items-center gap-3">
-                <span class="info-paginacion">Mostrando 0-0 de 0 solicitudes</span>
-                <nav aria-label="Paginación de solicitudes">
-                    <ul class="pagination pagination-sm mb-0" id="paginacionSolicitudes">
-                        <!-- Generado por JavaScript -->
-                    </ul>
-                </nav>
-            </div>
         </div>
     </div>
 
@@ -177,7 +184,7 @@
         <div class="card-admin card-estadisticas">
             <div class="card-header-admin">
                 <span>Aprobadas este mes</span>
-                <span class="badge-contador-verde">{{ $aprobadas }}</span>
+                <span class="badge-contador-verde" id="badgeAprobadasDetalles">{{ $aprobadas }}</span>
             </div>
             <div class="historial-lista">
                 @forelse($ultimasAprobadas as $aprobada)
@@ -203,7 +210,7 @@
         <div class="card-admin card-estadisticas">
             <div class="card-header-admin">
                 <span>Rechazadas este mes</span>
-                <span class="badge-contador-rojo">{{ $rechazadas }}</span>
+                <span class="badge-contador-rojo" id="badgeRechazadasDetalles">{{ $rechazadas }}</span>
             </div>
             <div class="historial-lista">
                 @forelse($ultimasRechazadas as $rechazada)
@@ -223,24 +230,6 @@
                 @empty
                     <div class="sin-items">No hay solicitudes rechazadas aún</div>
                 @endforelse
-            </div>
-        </div>
-
-        <div class="card-admin card-tiempo-medio">
-            <div class="tiempo-medio-centro">
-                <span class="tiempo-medio-numero">{{ $tiempoMedio }}</span>
-                <span class="tiempo-medio-unit">horas</span>
-                <span class="tiempo-medio-label">tiempo medio de aprobación</span>
-            </div>
-            <div class="tiempo-medio-stats">
-                <div class="stat-item">
-                    <span class="stat-numero">{{ $solicitudesPendientes->total() }}</span>
-                    <span class="stat-label">Pendientes este mes</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-numero">{{ $totalSolicitudes }}</span>
-                    <span class="stat-label">Total</span>
-                </div>
             </div>
         </div>
 
@@ -270,12 +259,89 @@
                 
                 <hr class="modal-separator">
                 
-                <!-- Propiedad solicitada -->
-                <h6 class="modal-seccion-titulo">Propiedad Solicitada</h6>
-                <div class="modal-seccion" id="modalDatosPropiedad">
-                    <div>
-                        <label class="form-label">Dirección</label>
-                        <p class="modal-data">—</p>
+                <!-- Datos personales -->
+                <h6 class="modal-seccion-titulo">Datos Personales</h6>
+                <div class="modal-seccion row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Teléfono</label>
+                        <p class="modal-data" id="modalTelefono">—</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Fecha de Nacimiento</label>
+                        <p class="modal-data" id="modalFechaNacimiento">—</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo de Documento</label>
+                        <p class="modal-data" id="modalTipoDocumento">—</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Número de Documento</label>
+                        <p class="modal-data" id="modalNumeroDocumento">—</p>
+                    </div>
+                </div>
+                
+                <hr class="modal-separator">
+                
+                <!-- Datos bancarios -->
+                <h6 class="modal-seccion-titulo">Datos Bancarios</h6>
+                <div class="modal-seccion row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">IBAN</label>
+                        <p class="modal-data" id="modalIban">—</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Titular de la Cuenta</label>
+                        <p class="modal-data" id="modalTitularCuenta">—</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">NIF</label>
+                        <p class="modal-data" id="modalNif">—</p>
+                    </div>
+                </div>
+                
+                <hr class="modal-separator">
+                
+                <!-- Información del arrendador -->
+                <h6 class="modal-seccion-titulo">Información como Arrendador</h6>
+                <div class="modal-seccion row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Dirección Fiscal</label>
+                        <p class="modal-data" id="modalDireccionFiscal">—</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo de Arrendador</label>
+                        <p class="modal-data" id="modalTipoArrendador">—</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Número de Propiedades Previstas</label>
+                        <p class="modal-data" id="modalNumPropiedades">—</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Es Propietario</label>
+                        <p class="modal-data" id="modalEsPropietario">—</p>
+                    </div>
+                </div>
+                
+                <hr class="modal-separator">
+                
+                <!-- Descripción -->
+                <h6 class="modal-seccion-titulo">Descripción de la Solicitud</h6>
+                <div class="modal-seccion">
+                    <p class="modal-data" id="modalDescripcion">—</p>
+                </div>
+                
+                <hr class="modal-separator">
+                
+                <!-- Aceptaciones -->
+                <h6 class="modal-seccion-titulo">Aceptaciones</h6>
+                <div class="modal-seccion row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Acepta Términos y Condiciones</label>
+                        <p class="modal-data" id="modalAceptaTerminos">—</p>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Declara Veracidad de Datos</label>
+                        <p class="modal-data" id="modalAceptaVeracidad">—</p>
                     </div>
                 </div>
                 

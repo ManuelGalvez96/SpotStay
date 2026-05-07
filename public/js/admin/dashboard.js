@@ -6,6 +6,7 @@
 /* ── Variables globales ── */
 var csrfToken = null;
 var modalSolicitud = null;
+var solicitudActualId = null;
 
 /* ── window.onload ── */
 window.onload = function() {
@@ -23,6 +24,7 @@ window.onload = function() {
     asignarEventoBuscadorSolicitudes();
     asignarEventosBotonesSolicitudes();
     asignarEventosNavIconos();
+    asignarEventosModalSolicitudes();
 };
 
 /* ================================================
@@ -360,6 +362,8 @@ function asignarEventosBotonesSolicitudes() {
    Abre modal con datos de la solicitud
    ================================================ */
 function abrirModalSolicitud(id) {
+    solicitudActualId = id;
+
     fetch('/admin/solicitudes/' + id)
         .then(function(response) {
             return response.json();
@@ -381,10 +385,34 @@ function abrirModalSolicitud(id) {
    Rellena el modal con datos de solicitud
    ================================================ */
 function rellenarModalSolicitud(datos) {
-    var partes = datos.nombre_usuario.split(' ');
+    var partes = (datos.nombre_usuario || '').split(' ');
     var iniciales = (partes[0] ? partes[0].charAt(0) : '') + (partes[1] ? partes[1].charAt(0) : '');
     var colores = ['#B8CCE4', '#A8D5BF', '#F9E4A0', '#FFD5CC', '#D7EAF9', '#EDE7F6', '#D5F5E3', '#FAD7D7'];
     var color = colores[datos.id_solicitud_arrendador % 8];
+    
+    function establecerTexto(id, valor) {
+        var elemento = document.getElementById(id);
+        if (elemento) {
+            elemento.textContent = valor || '—';
+        }
+    }
+
+    function formatearBooleano(valor) {
+        return valor ? 'Sí' : 'No';
+    }
+
+    function formatearFecha(valor) {
+        if (!valor) {
+            return '—';
+        }
+
+        var fecha = new Date(valor);
+        if (isNaN(fecha.getTime())) {
+            return valor;
+        }
+
+        return fecha.toLocaleDateString('es-ES');
+    }
     
     // Rellenar datos básicos
     var avatarEl = document.getElementById('modalAvatarSolicitudDash');
@@ -394,21 +422,31 @@ function rellenarModalSolicitud(datos) {
     }
     
     var nombreEl = document.getElementById('modalNombreSolicitudDash');
-    if (nombreEl) nombreEl.textContent = datos.nombre_usuario;
+    if (nombreEl) nombreEl.textContent = datos.nombre_usuario || '—';
     
     var emailEl = document.getElementById('modalEmailSolicitudDash');
-    if (emailEl) emailEl.textContent = datos.email_usuario;
+    if (emailEl) emailEl.textContent = datos.email_usuario || '—';
     
     var ciudadEl = document.getElementById('modalCiudadSolicitudDash');
     if (ciudadEl) {
         ciudadEl.innerHTML = '<i class="bi bi-geo-alt"></i> ' + (datos.direccion_fiscal_solicitud || 'No disponible');
     }
     
-    // Rellenar datos de propiedad
-    var direccionEl = document.getElementById('modalDireccionSolicitudDash');
-    if (direccionEl) {
-        direccionEl.textContent = datos.tipo_arrendador_solicitud || '—';
-    }
+    establecerTexto('modalTelefonoSolicitudDash', datos.telefono_solicitud);
+    establecerTexto('modalFechaNacimientoSolicitudDash', formatearFecha(datos.fecha_nacimiento_solicitud));
+    establecerTexto('modalTipoDocumentoSolicitudDash', datos.tipo_documento_solicitud);
+    establecerTexto('modalNumeroDocumentoSolicitudDash', datos.numero_documento_solicitud);
+    establecerTexto('modalNifSolicitudDash', datos.nif_solicitud);
+    establecerTexto('modalIbanSolicitudDash', datos.iban_solicitud);
+    establecerTexto('modalTitularCuentaSolicitudDash', datos.titular_cuenta_solicitud);
+    establecerTexto('modalDireccionFiscalSolicitudDash', datos.direccion_fiscal_solicitud);
+    establecerTexto('modalTipoArrendadorSolicitudDash', datos.tipo_arrendador_solicitud);
+    establecerTexto('modalNumPropiedadesSolicitudDash', datos.num_propiedades_previstas_solicitud !== null && datos.num_propiedades_previstas_solicitud !== undefined ? String(datos.num_propiedades_previstas_solicitud) : '—');
+    establecerTexto('modalEsPropietarioSolicitudDash', formatearBooleano(datos.es_propietario_solicitud));
+    establecerTexto('modalAceptaTerminosSolicitudDash', formatearBooleano(datos.acepta_terminos_solicitud));
+    establecerTexto('modalAceptaVeracidadSolicitudDash', formatearBooleano(datos.acepta_veracidad_solicitud));
+    establecerTexto('modalDescripcionSolicitudDash', datos.descripcion_solicitud || '—');
+    establecerTexto('modalFechaAceptacionSolicitudDash', formatearFecha(datos.fecha_aceptacion_solicitud));
     
     // Actualizar estado
     var badgeEl = document.getElementById('modalBadgeEstadoSolicitudDash');
@@ -426,7 +464,108 @@ function rellenarModalSolicitud(datos) {
         }
     }
     
+    establecerTexto('modalEstadoSolicitudDash', (datos.estado_solicitud_arrendador || 'pendiente').charAt(0).toUpperCase() + (datos.estado_solicitud_arrendador || 'pendiente').slice(1));
+    
     // Limpiar notas
     var notasEl = document.getElementById('modalNotasSolicitudDash');
     if (notasEl) notasEl.value = '';
+}
+
+/* ================================================
+   FUNCIÓN: asignarEventosModalSolicitudes
+   Asigna eventos a los botones del modal de solicitudes
+   ================================================ */
+function asignarEventosModalSolicitudes() {
+    var botonAprobar = document.getElementById('btnAprobarSolicitudDash');
+    var botonRechazar = document.getElementById('btnRechazarSolicitudDash');
+
+    if (botonAprobar) {
+        botonAprobar.onclick = function (event) {
+            event.preventDefault();
+            aprobarSolicitudModal();
+        };
+    }
+
+    if (botonRechazar) {
+        botonRechazar.onclick = function (event) {
+            event.preventDefault();
+            rechazarSolicitudModal();
+        };
+    }
+}
+
+/* ================================================
+   FUNCIÓN: aprobarSolicitudModal
+   Aprueba la solicitud seleccionada en el modal
+   ================================================ */
+function aprobarSolicitudModal() {
+    if (!solicitudActualId) {
+        console.error('No hay una solicitud seleccionada.');
+        return;
+    }
+
+    fetch('/admin/solicitudes/' + solicitudActualId + '/aprobar', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        }
+    })
+    .then(function (response) {
+        return response.json();
+    })
+    .then(function (data) {
+        if (data.success) {
+            if (modalSolicitud) {
+                modalSolicitud.hide();
+            }
+
+            window.location.reload();
+        } else {
+            console.error('Error al aprobar solicitud:', data.error || data.message || 'Respuesta inválida');
+        }
+    })
+    .catch(function (error) {
+        console.error('Error en fetch al aprobar solicitud:', error);
+    });
+}
+
+/* ================================================
+   FUNCIÓN: rechazarSolicitudModal
+   Rechaza la solicitud seleccionada en el modal
+   ================================================ */
+function rechazarSolicitudModal() {
+    if (!solicitudActualId) {
+        console.error('No hay una solicitud seleccionada.');
+        return;
+    }
+
+    var notasEl = document.getElementById('modalNotasSolicitudDash');
+    var notas = notasEl ? notasEl.value.trim() : '';
+
+    fetch('/admin/solicitudes/' + solicitudActualId + '/rechazar', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: JSON.stringify({ notas: notas })
+    })
+    .then(function (response) {
+        return response.json();
+    })
+    .then(function (data) {
+        if (data.success) {
+            if (modalSolicitud) {
+                modalSolicitud.hide();
+            }
+
+            window.location.reload();
+        } else {
+            console.error('Error al rechazar solicitud:', data.error || data.message || 'Respuesta inválida');
+        }
+    })
+    .catch(function (error) {
+        console.error('Error en fetch al rechazar solicitud:', error);
+    });
 }

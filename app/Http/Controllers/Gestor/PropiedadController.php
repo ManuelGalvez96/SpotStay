@@ -12,6 +12,25 @@ use Illuminate\Validation\ValidationException;
 
 class PropiedadController extends Controller
 {
+    /**
+     * Muestra el listado de propiedades asignadas al gestor autenticado.
+     *
+     * Construye una consulta principal con subconsultas (leftJoinSub) para
+     * obtener contadores de alquileres activos, incidencias abiertas/críticas
+     * y estados de pagos (pendiente, atrasado, pagado) por propiedad.
+     *
+     * Aplica filtros opcionales:
+     *   - q: búsqueda libre por título, dirección o nombre del arrendador
+     *   - estado: filtra por estado de la propiedad (publicada, alquilada, inactiva)
+     *   - ciudad: filtra por ciudad (LIKE)
+     *   - operativo: filtros especiales (criticas, sin_alquiler, estables)
+     *   - sort/dir: columna y dirección de ordenación (con lista blanca)
+     *
+     * Calcula KPIs independientes con consultas directas:
+     * total asignadas, publicadas, alquiladas, con críticas y sin alquiler.
+     *
+     * Retorna la vista 'gestor.propiedades' con paginación (10 por página).
+     */
     public function index(Request $request)
     {
         $gestor = Auth::user();
@@ -205,6 +224,18 @@ class PropiedadController extends Controller
         ));
     }
 
+    /**
+     * Muestra el detalle completo de una propiedad asignada al gestor.
+     *
+     * Consulta la propiedad con datos del arrendador y del gestor.
+     * Obtiene también:
+     *   - Alquileres activos vinculados a la propiedad
+     *   - Últimas 10 incidencias ordenadas por fecha
+     *   - Totales de incidencias por estado (abierta, en_proceso, resuelta)
+     *   - Datos de gastos: resumen, cuotas, pagos principales
+     *
+     * Retorna la vista 'gestor.propiedad' con toda la información consolidada.
+     */
     public function show(int $id)
     {
         $gestor = Auth::user();
@@ -282,6 +313,16 @@ class PropiedadController extends Controller
         ));
     }
 
+    /**
+     * Vista dedicada a la gestión de gastos de una propiedad.
+     *
+     * Reutiliza obtenerDatosGastosPropiedad para cargar:
+     *   - Gastos gestionables creados por este gestor
+     *   - Resumen mensual de emitidos vs pagados (últimos 6 meses)
+     *   - Cuotas y sus detalles desglosados por inquilino
+     *
+     * Retorna la vista 'gestor.propiedad-gastos' con todos los datos.
+     */
     public function gastos(int $id)
     {
         $gestor = Auth::user();
@@ -320,6 +361,19 @@ class PropiedadController extends Controller
         ]);
     }
 
+    /**
+     * Crea un nuevo gasto (recibo) para una propiedad y genera sus cuotas.
+     *
+     * Valida los datos de entrada: categoría, concepto, importe estimado y fechas.
+     * Verifica que existan alquileres activos para repartir el coste.
+     *
+     * En una transacción:
+     *   1. Inserta el registro en tbl_gasto (periodicidad mensual, pagador: inquilino)
+     *   2. Crea una cuota mensual para el mes de inicio con vencimiento a 1 mes
+     *   3. Genera los detalles de cuota dividiendo el importe entre los inquilinos activos
+     *
+     * Retorna al formulario con mensaje de éxito.
+     */
     public function storeGasto(Request $request, int $id)
     {
         $gestor = Auth::user();
@@ -413,6 +467,16 @@ class PropiedadController extends Controller
         return redirect()->back()->with('success', 'Recibo añadido correctamente y cuotas generadas.');
     }
 
+    /**
+     * Marca un detalle de cuota de gasto como pagado.
+     *
+     * Verifica que el detalle pertenezca a la propiedad del gestor autenticado.
+     * Si el estado actual no es 'pagado', lo marca como tal con la fecha de pago.
+     * Luego actualiza el estado de la cuota padre (pendiente, parcial, pagado, atrasado)
+     * según el estado de todos sus detalles.
+     *
+     * Retorna al formulario con mensaje de éxito.
+     */
     public function marcarPagoGasto(Request $request, int $id, int $cuotaId, int $detalleId)
     {
         $gestor = Auth::user();
@@ -457,6 +521,17 @@ class PropiedadController extends Controller
         return redirect()->back()->with('success', 'Pago registrado correctamente.');
     }
 
+    /**
+     * Actualiza un gasto existente: modifica datos del recibo y regenera sus cuotas.
+     *
+     * Valida los nuevos datos (categoría, concepto, importe, fecha inicio).
+     * En transacción:
+     *   1. Actualiza los campos de tbl_gasto con los nuevos valores
+     *   2. Elimina todas las cuotas y detalles existentes de este gasto
+     *   3. Crea una nueva cuota mensual con los datos actualizados
+     *
+     * Retorna al formulario con mensaje de éxito.
+     */
     public function updateGasto(Request $request, int $id, int $gastoId)
     {
         $gestor = Auth::user();
@@ -548,6 +623,17 @@ class PropiedadController extends Controller
         return redirect()->back()->with('success', 'Recibo actualizado correctamente.');
     }
 
+    /**
+     * Elimina un gasto y todas sus cuotas y detalles asociados.
+     *
+     * Verifica que el gasto pertenezca a la propiedad del gestor.
+     * En transacción:
+     *   1. Elimina todos los detalles de cuota (tbl_gasto_cuota_detalle)
+     *   2. Elimina todas las cuotas (tbl_gasto_cuota)
+     *   3. Elimina el registro del gasto (tbl_gasto)
+     *
+     * Retorna al formulario con mensaje de éxito.
+     */
     public function destroyGasto(Request $request, int $id, int $gastoId)
     {
         $gestor = Auth::user();
@@ -596,6 +682,10 @@ class PropiedadController extends Controller
         return redirect()->back()->with('success', 'Recibo eliminado correctamente.');
     }
 
+    /**
+     * Obtiene una propiedad solo si está asignada al gestor indicado.
+     * Se usa como validación de acceso en las acciones CRUD de gastos.
+     */
     private function getPropiedadDelGestor(int $propiedadId, int $gestorId): ?object
     {
         return DB::table('tbl_propiedad')
@@ -604,6 +694,10 @@ class PropiedadController extends Controller
             ->first();
     }
 
+    /**
+     * Obtiene los alquileres activos de una propiedad.
+     * Retorna solo id_alquiler e id_inquilino_fk ordenados por ID.
+     */
     private function getAlquileresActivos(int $propiedadId)
     {
         return DB::table('tbl_alquiler')
@@ -614,6 +708,17 @@ class PropiedadController extends Controller
             ->get();
     }
 
+    /**
+     * Genera automáticamente las cuotas mensuales pendientes de todos los gastos
+     * activos de una propiedad, desde su fecha de inicio hasta el mes actual.
+     *
+     * Para cada gasto:
+     *   1. Calcula el rango de meses entre fecha_inicio y fecha_fin (tope: hoy)
+     *   2. Para cada mes, verifica si ya existe una cuota
+     *   3. Si no existe, la crea con crearCuotaMensualConDetalles
+     *
+     * Se ejecuta antes de cargar datos de gastos para asegurar consistencia.
+     */
     private function ensureCuotasMensualesGeneradas(int $propiedadId, int $gestorId): void
     {
         $hoy = Carbon::today()->startOfMonth();
@@ -663,6 +768,19 @@ class PropiedadController extends Controller
         }
     }
 
+    /**
+     * Crea una cuota mensual (tbl_gasto_cuota) y sus detalles por inquilino.
+     *
+     * Calcula el vencimiento: usa vencimientoFijo si se proporciona,
+     * o sino el dia_vencimiento del mes (ajustado al último día si es mayor).
+     *
+     * Si pagador_gasto es 'arrendador', crea un solo detalle con el importe total.
+     * Si es 'inquilino', divide el importe equitativamente entre los alquileres activos:
+     *   - Calcula base = floor(importe / total) para evitar redondeos que sumen de más
+     *   - El último inquilino recibe el remanente (importe - acumulado)
+     *
+     * Todos los detalles se crean con estado 'pendiente'.
+     */
     private function crearCuotaMensualConDetalles(
         int $gastoId,
         Carbon $mes,
@@ -736,6 +854,17 @@ class PropiedadController extends Controller
         }
     }
 
+    /**
+     * Actualiza el estado de una cuota según el estado de sus detalles.
+     *
+     * Lógica de estados:
+     *   - 'pagado': todos los detalles están pagados
+     *   - 'parcial': al menos un detalle pagado pero no todos
+     *   - 'atrasado': ningún detalle pagado y el vencimiento ya pasó
+     *   - 'pendiente': estado por defecto
+     *
+     * Si la cuota se marca como pagada, registra la fecha actual en pagado_cuota.
+     */
     private function actualizarEstadoCuota(int $cuotaId): void
     {
         $detalles = DB::table('tbl_gasto_cuota_detalle')
@@ -767,6 +896,11 @@ class PropiedadController extends Controller
             ]);
     }
 
+    /**
+     * Normaliza un concepto de texto a una categoría reconocida.
+     * Busca palabras clave en el texto (alquiler, luz, agua, gas, etc.)
+     * y retorna la categoría correspondiente, o null si no coincide.
+     */
     private function normalizarConceptoPrincipal(string $concepto): ?string
     {
         $texto = strtolower(trim($concepto));
@@ -797,6 +931,10 @@ class PropiedadController extends Controller
         return null;
     }
 
+    /**
+     * Valida que una categoría de gasto sea una de las permitidas.
+     * Retorna la categoría normalizada o null si no es válida.
+     */
     private function normalizarCategoriaGasto(string $categoria): ?string
     {
         $texto = strtolower(trim($categoria));
@@ -806,6 +944,23 @@ class PropiedadController extends Controller
             : null;
     }
 
+    /**
+     * Obtiene y consolida todos los datos de gastos para una propiedad.
+     *
+     * Primero normaliza pagadores a 'inquilino' y genera cuotas pendientes.
+     *
+     * Calcula:
+     *   - resumenGastos: totales del mes, pendientes, atrasados, pagados
+     *   - pagosPrincipales: estado de cada categoría (alquiler, luz, agua, gas, etc.)
+     *     con importe acumulado, estado y fecha del último pago
+     *   - cuotasGasto: últimas 24 cuotas con datos del gasto padre
+     *   - cuotasDetallePorId: detalles agrupados por cuota
+     *   - gastosGestionables: gastos creados por este gestor (últimos 24)
+     *   - resumenMensualGastos: emitidos vs pagados de los últimos 6 meses
+     *     con porcentajes para renderizado de barras CSS
+     *
+     * Si las tablas de gastos no existen, retorna estructura vacía con gastosHabilitados=false.
+     */
     private function obtenerDatosGastosPropiedad(object $propiedad, int $gestorId): array
     {
         $gastosHabilitados = Schema::hasTable('tbl_gasto')
@@ -1134,6 +1289,17 @@ class PropiedadController extends Controller
         ];
     }
 
+    /**
+     * Normaliza todos los gastos de la propiedad para que el pagador sea 'inquilino'.
+     *
+     * Si existían gastos con pagador distinto (ej. 'arrendador'):
+     *   1. Actualiza pagador_gasto a 'inquilino' en tbl_gasto
+     *   2. Busca detalles de cuota donde el pagador era el gestor
+     *   3. Elimina esos detalles y los redistribuye entre los inquilinos activos
+     *   4. Resetea el estado de la cuota a 'pendiente'
+     *
+     * Cada operación de redistribución se ejecuta en su propia transacción.
+     */
     private function normalizarPagadoresSoloInquilinos(int $propiedadId, int $gestorId): void
     {
         DB::table('tbl_gasto')

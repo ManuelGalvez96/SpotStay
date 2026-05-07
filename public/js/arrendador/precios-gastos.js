@@ -1,3 +1,8 @@
+/* =========================================================
+   SECCIÓN 1: UTILIDADES (TOKEN, TOAST, FORMATO)
+   Funciones auxiliares para obtener el CSRF y mostrar feedback.
+   ========================================================= */
+
 function obtenerTokenCsrf() {
   var etiquetaCsrf = document.querySelector('meta[name="csrf-token"]');
   return etiquetaCsrf ? etiquetaCsrf.getAttribute('content') : '';
@@ -22,6 +27,12 @@ function formatearImporte(valor) {
   var numero = Number(valor || 0);
   return numero.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' EUR';
 }
+
+/* =========================================================
+   SECCIÓN 2: PARSER DE GASTOS (LÓGICA COMPLEJA)
+   Interpreta el campo de gastos (JSON, array o número) para
+   calcular el total automáticamente.
+   ========================================================= */
 
 function parsearGastos(texto) {
   var limpio = (texto || '').trim();
@@ -65,6 +76,11 @@ function parsearGastos(texto) {
   }
 }
 
+/* =========================================================
+   SECCIÓN 3: ACTUALIZACIÓN EN TIEMPO REAL
+   Recalcula el total mensual al escribir precio o gastos.
+   ========================================================= */
+
 function actualizarResumenFormulario(formulario) {
   var precio = formulario.querySelector('input[name="precio_propiedad"]');
   var gastos = formulario.querySelector('textarea[name="gastos_propiedad"]');
@@ -88,6 +104,11 @@ function actualizarResumenFormulario(formulario) {
   total.textContent = formatearImporte(precioSeguro + resultadoGastos.total);
   estado.textContent = resultadoGastos.descripcion;
 }
+
+/* =========================================================
+   SECCIÓN 4: ENVÍO ASÍNCRONO (FETCH)
+   Guarda los cambios sin recargar la página.
+   ========================================================= */
 
 function enviarFormularioConFetch(formulario) {
   var precio = formulario.querySelector('input[name="precio_propiedad"]');

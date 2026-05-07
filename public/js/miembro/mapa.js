@@ -1,3 +1,9 @@
+/* =========================================================
+   SECCIÓN 1: INICIALIZACIÓN DEL MAPA
+   Crea la instancia de Leaflet, añade las capas base y
+   configura los controles.
+   ========================================================= */
+
 var mapa;
 var capaMarcadores;
 var capaPoligonos;
@@ -29,6 +35,12 @@ function iniciarMapa() {
 
 	capaMarcadores = L.layerGroup().addTo(mapa);
 	capaPoligonos = L.layerGroup().addTo(mapa);
+
+	/* =========================================================
+	   SECCIÓN 2: FILTROS Y PETICIÓN A LA API (BUSCADOR)
+	   Recoge los valores del formulario, añade los límites
+	   visibles del mapa (Bounds) y llama al backend.
+	   ========================================================= */
 
 	var ids = [
 		'ciudad-propiedad',
@@ -118,6 +130,9 @@ function iniciarMapa() {
 		};
 	}
 
+			ejecutarBusqueda();
+
+
 	if (botonBorrar) {
 		// Limpia los campos y vuelve a cargar el mapa.
 		botonBorrar.onclick = function (evento) {
@@ -138,7 +153,11 @@ function iniciarMapa() {
 		};
 	}
 
-	ejecutarBusqueda();
+	/* =========================================================
+	   SECCIÓN 3: RENDERIZADO DE MARCADORES
+	   Limpia los marcadores antiguos y pinta los nuevos
+	   recibidos del servidor.
+	   ========================================================= */
 }
 
 function renderizarMarcadores(propiedades) {
@@ -167,6 +186,12 @@ function renderizarMarcadores(propiedades) {
 		marcador.addTo(capaMarcadores);
 	}
 }
+
+/* =========================================================
+   SECCIÓN 4: CONSTRUCCIÓN DE POPUPS Y DIRECCIONES
+   Genera el HTML interno de las burbujas de información
+   y compone la dirección legible a partir de las columnas.
+   ========================================================= */
 
 function construirPopupPropiedad(propiedad) {
 	var titulo = propiedad.titulo_propiedad || "Propiedad";
@@ -202,6 +227,12 @@ function construirDireccion(propiedad) {
 
 	return partes.join(", ");
 }
+
+/* =========================================================
+   SECCIÓN 5: ICONOS DE PRECIO Y UTILIDADES
+   Crea los marcadores visuales con el precio y funciones
+   auxiliares de formato y seguridad (XSS).
+   ========================================================= */
 
 function crearIconoPrecio(textoPrecio) {
 	return L.divIcon({

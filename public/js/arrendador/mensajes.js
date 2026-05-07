@@ -1,3 +1,8 @@
+/* =========================================================
+   SECCIÓN 1: UTILIDADES Y HELPERS
+   Funciones para obtener datos, formatear fechas y marcar UI.
+   ========================================================= */
+
 function obtenerArrendadorId() {
   var contenedor = document.querySelector('[data-arrendador-id]');
   return contenedor ? contenedor.getAttribute('data-arrendador-id') : '';
@@ -31,6 +36,11 @@ function formatearFecha(valor) {
   return fecha.toLocaleString('es-ES');
 }
 
+/* =========================================================
+   SECCIÓN 2: RENDERIZADO DE MENSAJES
+   Genera el HTML de las burbujas de chat.
+   ========================================================= */
+
 function renderizarMensajes(mensajes, arrendadorId) {
   var lista = document.getElementById('listaMensajes');
   if (!lista) {
@@ -56,6 +66,11 @@ function renderizarMensajes(mensajes, arrendadorId) {
   lista.scrollTop = lista.scrollHeight;
 }
 
+/* =========================================================
+   SECCIÓN 3: CARGA DE CONVERSACIÓN (FETCH)
+   Obtiene los datos del hilo y actualiza la interfaz.
+   ========================================================= */
+
 function cargarConversacion(idConversacion) {
   var arrendadorId = obtenerArrendadorId();
   var ruta = '/arrendador/mensajes/' + idConversacion + '?arrendador_id=' + encodeURIComponent(arrendadorId);
@@ -69,13 +84,22 @@ function cargarConversacion(idConversacion) {
     credentials: 'same-origin'
   })
     .then(function (respuesta) {
-      return respuesta.json().then(function (datosRespuesta) {
-        return { ok: respuesta.ok, datosRespuesta: datosRespuesta };
+      return respuesta.text().then(function (texto) {
+        var datos = null;
+        try {
+          datos = JSON.parse(texto);
+        } catch (e) {
+          // respuesta no es JSON (p.ej. HTML de error o redirección)
+        }
+
+        return { ok: respuesta.ok, status: respuesta.status, datosRespuesta: datos, rawText: texto };
       });
     })
     .then(function (resultado) {
-      if (!resultado.ok || !resultado.datosRespuesta.success) {
-        throw new Error(resultado.datosRespuesta.message || 'No se pudo cargar la conversación.');
+      if (!resultado.ok || !resultado.datosRespuesta || !resultado.datosRespuesta.success) {
+        var mensaje = (resultado.datosRespuesta && resultado.datosRespuesta.message) ? resultado.datosRespuesta.message : 'No se pudo cargar la conversación.';
+        var extra = '\nStatus: ' + resultado.status + '\nRespuesta corta: ' + (resultado.rawText ? resultado.rawText.substr(0, 300) : '');
+        throw new Error(mensaje + extra);
       }
 
       var conversacion = resultado.datosRespuesta.conversacion;
@@ -102,10 +126,16 @@ function cargarConversacion(idConversacion) {
       renderizarMensajes(conversacion.mensajes, arrendadorId);
       marcarConversacionActiva(conversacion.id_conversacion);
     })
-    .catch(function () {
-      alert('No se pudo cargar la conversación.');
+    .catch(function (err) {
+      console.error('Error cargarConversacion:', err);
+      alert(err && err.message ? err.message : 'No se pudo cargar la conversación.');
     });
 }
+
+/* =========================================================
+   SECCIÓN 4: ENVÍO DE MENSAJES
+   Intercepta el formulario y envía el texto al servidor.
+   ========================================================= */
 
 function enviarMensajeConFetch(evento) {
   evento.preventDefault();
@@ -123,7 +153,7 @@ function enviarMensajeConFetch(evento) {
     return;
   }
 
-  var ruta = '/arrendador/mensajes/' + inputId.value + '/enviar?arrendador_id=' + encodeURIComponent(arrendadorId);
+  var ruta = '/arrendador/mensajes/' + inputId.value + '?arrendador_id=' + encodeURIComponent(arrendadorId);
 
   fetch(ruta, {
     method: 'POST',
@@ -137,20 +167,30 @@ function enviarMensajeConFetch(evento) {
     body: JSON.stringify({ texto: texto })
   })
     .then(function (respuesta) {
-      return respuesta.json().then(function (datosRespuesta) {
-        return { ok: respuesta.ok, datosRespuesta: datosRespuesta };
+      return respuesta.text().then(function (texto) {
+        var datos = null;
+        try {
+          datos = JSON.parse(texto);
+        } catch (e) {
+          // no JSON
+        }
+
+        return { ok: respuesta.ok, status: respuesta.status, datosRespuesta: datos, rawText: texto };
       });
     })
     .then(function (resultado) {
-      if (!resultado.ok || !resultado.datosRespuesta.success) {
-        throw new Error(resultado.datosRespuesta.message || 'No se pudo enviar el mensaje.');
+      if (!resultado.ok || !resultado.datosRespuesta || !resultado.datosRespuesta.success) {
+        var mensaje = (resultado.datosRespuesta && resultado.datosRespuesta.message) ? resultado.datosRespuesta.message : 'No se pudo enviar el mensaje.';
+        var extra = '\nStatus: ' + resultado.status + '\nRespuesta corta: ' + (resultado.rawText ? resultado.rawText.substr(0, 300) : '');
+        throw new Error(mensaje + extra);
       }
 
       textarea.value = '';
       cargarConversacion(inputId.value);
     })
-    .catch(function () {
-      alert('No se pudo enviar el mensaje.');
+    .catch(function (err) {
+      console.error('Error enviarMensajeConFetch:', err);
+      alert(err && err.message ? err.message : 'No se pudo enviar el mensaje.');
     });
 }
 

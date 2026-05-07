@@ -28,7 +28,7 @@ class SolicitudController extends Controller
               'tbl_usuario.telefono_usuario'
             )
             ->orderBy('tbl_solicitud_arrendador.creado_solicitud_arrendador','desc')
-            ->paginate(10);
+            ->paginate(7);
 
         $aprobadas = DB::table('tbl_solicitud_arrendador')
             ->where('estado_solicitud_arrendador','aprobada')
@@ -179,12 +179,15 @@ class SolicitudController extends Controller
             'tipo_documento_solicitud' => $solicitud->tipo_documento_solicitud,
             'numero_documento_solicitud' => $solicitud->numero_documento_solicitud,
             'iban_solicitud' => $solicitud->iban_solicitud,
+            'titular_cuenta_solicitud' => $solicitud->titular_cuenta_solicitud,
             'nif_solicitud' => $solicitud->nif_solicitud,
             'direccion_fiscal_solicitud' => $solicitud->direccion_fiscal_solicitud,
             'tipo_arrendador_solicitud' => $solicitud->tipo_arrendador_solicitud,
             'descripcion_solicitud' => $solicitud->descripcion_solicitud,
             'num_propiedades_previstas_solicitud' => $solicitud->num_propiedades_previstas_solicitud,
             'es_propietario_solicitud' => $solicitud->es_propietario_solicitud,
+            'acepta_terminos_solicitud' => $solicitud->acepta_terminos_solicitud,
+            'acepta_veracidad_solicitud' => $solicitud->acepta_veracidad_solicitud,
             'estado_solicitud_arrendador' => $solicitud->estado_solicitud_arrendador,
             'notas_solicitud_arrendador' => $solicitud->notas_solicitud_arrendador,
             'creado_solicitud_arrendador' => $solicitud->creado_solicitud_arrendador,
@@ -236,7 +239,7 @@ class SolicitudController extends Controller
 
         $solicitudesPaginadas = $query
             ->orderBy('creado_solicitud_arrendador', 'desc')
-            ->paginate(6);
+            ->paginate(7);
 
         /* Transformar datos para incluir campos individuales normalizados */
         $items = $solicitudesPaginadas->items();
@@ -264,6 +267,73 @@ class SolicitudController extends Controller
             'per_page' => $solicitudesPaginadas->perPage(),
             'from' => $solicitudesPaginadas->firstItem(),
             'to' => $solicitudesPaginadas->lastItem()
+        ]);
+    }
+
+    /* ─────────────────────────────────────
+       FUNCIÓN: Obtener estadísticas KPI actualizadas
+       Llamado por JS cuando se filtra
+    ───────────────────────────────────────── */
+    public function getKpisStatistics(Request $request)
+    {
+        $rango = $request->rango ?? 'mes';
+        
+        /* Consulta base para filtros temporales */
+        $queryBase = DB::table('tbl_solicitud_arrendador');
+        
+        switch ($rango) {
+            case 'all':
+                break;
+            case 'mes':
+                $queryBase->whereMonth('actualizado_solicitud_arrendador', Carbon::now()->month)
+                          ->whereYear('actualizado_solicitud_arrendador', Carbon::now()->year);
+                break;
+            case '3meses':
+                $fechaHace3Meses = Carbon::now()->subMonths(3);
+                $queryBase->where('actualizado_solicitud_arrendador', '>=', $fechaHace3Meses);
+                break;
+            case 'anio':
+                $queryBase->whereYear('actualizado_solicitud_arrendador', Carbon::now()->year);
+                break;
+        }
+
+        $totalSolicitudes = (clone $queryBase)->count();
+        $solicitudesPendientes = (clone $queryBase)->where('estado_solicitud_arrendador', 'pendiente')->count();
+        $aprobadas = (clone $queryBase)->where('estado_solicitud_arrendador', 'aprobada')->count();
+        $rechazadas = (clone $queryBase)->where('estado_solicitud_arrendador', 'rechazada')->count();
+
+        return response()->json([
+            'total' => $totalSolicitudes,
+            'pendientes' => $solicitudesPendientes,
+            'aprobadas' => $aprobadas,
+            'rechazadas' => $rechazadas
+        ]);
+    }
+
+    public function getKpisSolicitudes()
+    {
+        $totalSolicitudes = DB::table('tbl_solicitud_arrendador')->count();
+        $solicitudesPendientes = DB::table('tbl_solicitud_arrendador')
+            ->where('estado_solicitud_arrendador', 'pendiente')
+            ->whereMonth('actualizado_solicitud_arrendador', Carbon::now()->month)
+            ->whereYear('actualizado_solicitud_arrendador', Carbon::now()->year)
+            ->count();
+        $aprobadas = DB::table('tbl_solicitud_arrendador')
+            ->where('estado_solicitud_arrendador', 'aprobada')
+            ->whereMonth('actualizado_solicitud_arrendador', Carbon::now()->month)
+            ->whereYear('actualizado_solicitud_arrendador', Carbon::now()->year)
+            ->count();
+        $rechazadas = DB::table('tbl_solicitud_arrendador')
+            ->where('estado_solicitud_arrendador', 'rechazada')
+            ->whereMonth('actualizado_solicitud_arrendador', Carbon::now()->month)
+            ->whereYear('actualizado_solicitud_arrendador', Carbon::now()->year)
+            ->count();
+
+        return response()->json([
+            'total' => $totalSolicitudes,
+            'pendientes' => $solicitudesPendientes,
+            'aprobadas' => $aprobadas,
+            'rechazadas' => $rechazadas
         ]);
     }
 }

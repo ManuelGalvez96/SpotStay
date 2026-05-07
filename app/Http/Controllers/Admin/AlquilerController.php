@@ -375,6 +375,9 @@ class AlquilerController extends Controller
 
             $this->generarCuotasAlAprobar($alquiler);
             
+            // Registrar pago automático de la primera cuota
+            $this->registrarPagoPrimeraCuota($alquiler);
+            
             // Generar contrato con PDF
             $this->generarContratoConPDF($alquiler);
 
@@ -689,6 +692,54 @@ class AlquilerController extends Controller
 
             $cursor->addMonth();
         }
+    }
+
+    private function registrarPagoPrimeraCuota(object $alquiler): void
+    {
+        if (!Schema::hasTable('tbl_alquiler_cuota')) {
+            return;
+        }
+
+        // Obtener la primera cuota (más antigua)
+        $primeraCuota = AlquilerCuota::where('id_alquiler_fk', (int) $alquiler->id_alquiler)
+            ->orderBy('mes_cuota', 'asc')
+            ->first();
+
+        if (!$primeraCuota) {
+            return;
+        }
+
+        // Obtener el precio de la propiedad
+        $propiedad = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $alquiler->id_propiedad_fk)
+            ->select('precio_propiedad')
+            ->first();
+
+        $importeBase = round((float) ($propiedad->precio_propiedad ?? 0), 2);
+        if ($importeBase <= 0) {
+            return;
+        }
+
+        // Registrar pago de la primera cuota con estado 'pagado'
+        Pago::create([
+            'id_pagador_fk' => $alquiler->id_inquilino_fk,
+            'id_alquiler_fk' => $alquiler->id_alquiler,
+            'id_alquiler_cuota_fk' => $primeraCuota->id_alquiler_cuota,
+            'tipo_pago' => 'alquiler',
+            'concepto_pago' => 'Cuota alquiler ' . Carbon::parse((string) $primeraCuota->mes_cuota)->format('m/Y'),
+            'importe_pago' => $importeBase,
+            'estado_pago' => 'pagado',
+            'referencia_pago' => 'ALQ-' . $primeraCuota->id_alquiler_cuota . '-' . now()->format('YmdHis'),
+            'fecha_confirmacion_pago' => now(),
+            'creado_pago' => now(),
+            'actualizado_pago' => now(),
+        ]);
+
+        // Actualizar el estado de la cuota a 'pagado'
+        $primeraCuota->update([
+            'estado' => 'pagado',
+            'pagado_en' => now(),
+        ]);
     }
 
     private function generarContratoConPDF(object $alquiler): void

@@ -1,5 +1,5 @@
-/* =========================================================
-   SECCIÓN 1: CONFIGURACIÓN E INICIALIZACIÓN
+﻿/* =========================================================
+   SECCION 1: CONFIGURACION E INICIALIZACION
    Captura los campos del formulario y registra los
    validadores para cada uno.
    ========================================================= */
@@ -62,95 +62,97 @@ function iniciarValidacionSolicitudArrendador() {
 			return;
 		}
 
-		// preparar envio por fetch
 		solicitudEnviando = true;
 		botonEnviarSolicitud.disabled = true;
-		botonEnviarSolicitud.classList.add('btn-login-desabilitado');
+		botonEnviarSolicitud.classList.add("btn-login-desabilitado");
 		var textoOriginalBoton = botonEnviarSolicitud.innerText;
 
-		var tokenMeta = document.getElementsByName('csrf-token');
-		var csrf = '';
+		var tokenMeta = document.getElementsByName("csrf-token");
+		var csrf = "";
 		if (tokenMeta && tokenMeta.length > 0) {
-			csrf = tokenMeta[0].content || tokenMeta[0].getAttribute('content') || '';
+			csrf = tokenMeta[0].content || tokenMeta[0].getAttribute("content") || "";
 		}
-		// fallback: obtener token del campo oculto _token del formulario
-		if (!csrf && formularioSolicitud && formularioSolicitud.elements && formularioSolicitud.elements['_token']) {
-			csrf = formularioSolicitud.elements['_token'].value || '';
+		if (!csrf && formularioSolicitud && formularioSolicitud.elements && formularioSolicitud.elements["_token"]) {
+			csrf = formularioSolicitud.elements["_token"].value || "";
 		}
 
 		var fd = new FormData(formularioSolicitud);
 
 		fetch(formularioSolicitud.action, {
-			method: 'POST',
+			method: "POST",
 			headers: {
-				'X-CSRF-TOKEN': csrf,
-				'Accept': 'application/json'
+				"X-CSRF-TOKEN": csrf,
+				"Accept": "application/json"
 			},
 			body: fd
 		})
-		.then(function (response) {
-			var ct = response.headers.get('content-type') || '';
-			if (ct.indexOf('application/json') !== -1) {
-				return response.json();
-			}
-			// si no es JSON recargar página
-			window.location.reload();
-		})
-		.then(function (data) {
-			if (!data) return;
-			if (data.success) {
-				solicitudEnviada = true;
-				if (typeof mostrarAlertaExito === 'function') {
-					mostrarAlertaExito('Solicitud enviada', data.message || 'Solicitud enviada correctamente');
-				} else {
-					alert(data.message || 'Solicitud enviada correctamente');
+			.then(function (response) {
+				var ct = response.headers.get("content-type") || "";
+				if (ct.indexOf("application/json") !== -1) {
+					return response.json();
 				}
-				formularioSolicitud.reset();
-				// resetear estados locales
-				for (var k in tocados) { if (tocados.hasOwnProperty(k)) tocados[k] = false; }
-				botonEnviarSolicitud.innerText = 'Solicitud enviada';
-				botonEnviarSolicitud.disabled = true;
-				botonEnviarSolicitud.classList.add('btn-login-desabilitado');
-				actualizarEstadoBoton(false);
-			} else {
-				if (typeof mostrarAlertaError === 'function') {
-					mostrarAlertaError('Error', data.message || 'No se pudo enviar la solicitud');
+				window.location.reload();
+			})
+			.then(function (data) {
+				if (!data) {
+					return;
+				}
+
+				if (data.success) {
+					solicitudEnviada = true;
+					if (typeof mostrarAlertaExito === "function") {
+						mostrarAlertaExito("Solicitud enviada", data.message || "Solicitud enviada correctamente");
+					} else {
+						alert(data.message || "Solicitud enviada correctamente");
+					}
+
+					formularioSolicitud.reset();
+					for (var k in tocados) {
+						if (tocados.hasOwnProperty(k)) {
+							tocados[k] = false;
+						}
+					}
+					botonEnviarSolicitud.innerText = "Solicitud enviada";
+					botonEnviarSolicitud.disabled = true;
+					botonEnviarSolicitud.classList.add("btn-login-desabilitado");
+					actualizarEstadoBoton(false);
 				} else {
-					alert(data.message || 'No se pudo enviar la solicitud');
+					if (typeof mostrarAlertaError === "function") {
+						mostrarAlertaError("Error", data.message || "No se pudo enviar la solicitud");
+					} else {
+						alert(data.message || "No se pudo enviar la solicitud");
+					}
+					botonEnviarSolicitud.innerText = textoOriginalBoton;
+					solicitudEnviando = false;
+				}
+			})
+			.catch(function () {
+				if (typeof mostrarAlertaError === "function") {
+					mostrarAlertaError("Error", "Error de red al enviar la solicitud");
+				} else {
+					alert("Error de red al enviar la solicitud");
 				}
 				botonEnviarSolicitud.innerText = textoOriginalBoton;
 				solicitudEnviando = false;
-			}
-		})
-		.catch(function (err) {
-			if (typeof mostrarAlertaError === 'function') {
-				mostrarAlertaError('Error', 'Error de red al enviar la solicitud');
-			} else {
-				alert('Error de red al enviar la solicitud');
-			}
-			botonEnviarSolicitud.innerText = textoOriginalBoton;
-			solicitudEnviando = false;
-		})
-		.finally(function () {
-			if (!solicitudEnviada) {
-				botonEnviarSolicitud.disabled = false;
-				botonEnviarSolicitud.classList.remove('btn-login-desabilitado');
-			}
-		});
+			})
+			.finally(function () {
+				if (!solicitudEnviada) {
+					actualizarEstadoBoton(validarFormulario(false));
+				}
+			});
 	};
 
 	actualizarEstadoBoton(validarFormulario(false));
 }
 
 /* =========================================================
-   SECCIÓN 2: REGISTRO DE EVENTOS Y VALIDACIÓN
+   SECCION 2: REGISTRO DE EVENTOS Y VALIDACION
    Asocia eventos (blur, input, change) a cada campo para
-   validar en tiempo real y controlar el estado del botón.
+   validar en tiempo real y controlar el estado del boton.
    ========================================================= */
 
 function registrarCampo(clave, validador) {
 	var campo = campos[clave];
-
 	if (!campo) {
 		return;
 	}
@@ -165,7 +167,6 @@ function registrarCampo(clave, validador) {
 		if (tocados[clave]) {
 			validarCampo(clave, validador, true);
 		}
-
 		actualizarEstadoBoton(validarFormulario(false));
 	};
 
@@ -197,12 +198,32 @@ function validarFormulario(mostrarErrores) {
 function validarCampo(clave, validador, mostrarErrores) {
 	var campo = campos[clave];
 	if (!campo) {
-	return 1;
+		return 1;
+	}
+
+	var mensajeError = validador(campo);
+	var idError = obtenerIdErrorPorClave(clave);
+	var esValido = mensajeError === "";
+
+	if (mostrarErrores) {
+		if (esValido) {
+			limpiarError(idError);
+		} else {
+			mostrarError(idError, mensajeError);
+		}
+	}
+
+	if (mostrarErrores || tocados[clave]) {
+		marcarCampo(campo, esValido);
+	} else {
+		limpiarMarcaCampo(campo);
+	}
+	return esValido ? 0 : 1;
 }
 
 /* =========================================================
-   SECCIÓN 3: VALIDADORES ESPECÍFICOS
-   Funciones que contienen la lógica (Regex/Date) para
+   SECCION 3: VALIDADORES ESPECIFICOS
+   Funciones que contienen la logica (Regex/Date) para
    validar cada tipo de dato (IBAN, NIF, etc.).
    ========================================================= */
 
@@ -211,20 +232,130 @@ function validarTelefono(campo) {
 	var regex = /^\+\d{1,4} \d{6,11}$/;
 
 	if (valor === "") {
-		return 1;
+		return "El telefono es obligatorio.";
 	}
-
 	if (!regex.test(valor)) {
-		return 1;
+		return "Formato invalido. Ejemplo: +34 600123456";
+	}
+	return "";
+}
+
+function validarFechaNacimiento(campo) {
+	var valor = String(campo.value || "").trim();
+	if (valor === "") {
+		return "La fecha de nacimiento es obligatoria.";
 	}
 
-	return 0;
+	var fecha = new Date(valor + "T00:00:00");
+	if (isNaN(fecha.getTime())) {
+		return "La fecha de nacimiento no es valida.";
+	}
+
+	var hoy = new Date();
+	var edad = hoy.getFullYear() - fecha.getFullYear();
+	var diferenciaMes = hoy.getMonth() - fecha.getMonth();
+	if (diferenciaMes < 0 || (diferenciaMes === 0 && hoy.getDate() < fecha.getDate())) {
+		edad = edad - 1;
+	}
+
+	if (edad < 18) {
+		return "Debes ser mayor de edad para enviar la solicitud.";
+	}
+	return "";
+}
+
+function validarSelectObligatorio(campo) {
+	var valor = String(campo.value || "").trim();
+	if (valor === "") {
+		return "Este campo es obligatorio.";
+	}
+	return "";
+}
+
+function validarTextoObligatorio(campo) {
+	var valor = String(campo.value || "").trim();
+	if (valor === "") {
+		return "Este campo es obligatorio.";
+	}
+	return "";
+}
+
+function validarIban(campo) {
+	var valor = String(campo.value || "").toUpperCase().replace(/\s+/g, "").trim();
+	if (valor === "") {
+		return "El IBAN es obligatorio.";
+	}
+	if (!/^ES\d{22}$/.test(valor)) {
+		return "El IBAN debe tener formato ES seguido de 22 digitos.";
+	}
+	return "";
+}
+
+function validarNif(campo) {
+	var valor = String(campo.value || "").toUpperCase().trim();
+	if (valor === "") {
+		return "El NIF es obligatorio.";
+	}
+	if (!/^(\d{8}[A-Z]|[XYZ]\d{7}[A-Z])$/.test(valor)) {
+		return "El NIF/NIE no tiene un formato valido.";
+	}
+	return "";
+}
+
+function validarNumeroPropiedades(campo) {
+	var valor = String(campo.value || "").trim();
+	if (valor === "") {
+		return "El numero de propiedades es obligatorio.";
+	}
+	var numero = Number(valor);
+	if (isNaN(numero) || numero <= 0 || numero % 1 !== 0) {
+		return "Debes indicar un numero entero mayor que 0.";
+	}
+	return "";
+}
+
+function validarDescripcion(campo) {
+	var valor = String(campo.value || "").trim();
+	if (valor === "") {
+		return "La descripcion es obligatoria.";
+	}
+	if (valor.length < 15) {
+		return "La descripcion debe tener al menos 15 caracteres.";
+	}
+	return "";
+}
+
+function validarCheckboxObligatorio(campo) {
+	if (!campo.checked) {
+		return "Debes aceptar este campo para continuar.";
+	}
+	return "";
+}
+
+function obtenerIdErrorPorClave(clave) {
+	var mapaErrores = {
+		telefono: "error-telefono-solicitud",
+		fechaNacimiento: "error-fecha-nacimiento-solicitud",
+		tipoDocumento: "error-tipo-documento-solicitud",
+		numeroDocumento: "error-numero-documento-solicitud",
+		iban: "error-iban-solicitud",
+		titular: "error-titular-cuenta-solicitud",
+		nif: "error-nif-solicitud",
+		direccion: "error-direccion-fiscal-solicitud",
+		tipoArrendador: "error-tipo-arrendador-solicitud",
+		numPropiedades: "error-num-propiedades-previstas-solicitud",
+		descripcion: "error-descripcion-solicitud",
+		aceptaTerminos: "error-acepta-terminos-solicitud",
+		aceptaVeracidad: "error-acepta-veracidad-solicitud"
+	};
+
+	return mapaErrores[clave] || "";
 }
 
 /* =========================================================
-   SECCIÓN 4: HELPERS DE UI
+   SECCION 4: HELPERS DE UI
    Funciones para mostrar errores visuales y habilitar
-   el botón de envío cuando todo es válido.
+   el boton de envio cuando todo es valido.
    ========================================================= */
 
 function mostrarError(idError, mensaje) {
@@ -232,7 +363,6 @@ function mostrarError(idError, mensaje) {
 	if (!error) {
 		return;
 	}
-
 	error.textContent = mensaje;
 }
 
@@ -241,7 +371,6 @@ function limpiarError(idError) {
 	if (!error) {
 		return;
 	}
-
 	error.textContent = "";
 }
 
@@ -249,17 +378,23 @@ function marcarCampo(campo, esValido) {
 	if (!campo || !campo.classList) {
 		return;
 	}
-
 	if (esValido) {
 		campo.classList.remove("solicitud-campo-error");
 		return;
 	}
-
 	campo.classList.add("solicitud-campo-error");
 }
 
+function limpiarMarcaCampo(campo) {
+	if (!campo || !campo.classList) {
+		return;
+	}
+
+	campo.classList.remove("solicitud-campo-error");
+}
+
 function actualizarEstadoBoton(habilitar) {
-	if (!botonEnviarSolicitud) {
+	if (!botonEnviarSolicitud || solicitudEnviada) {
 		return;
 	}
 

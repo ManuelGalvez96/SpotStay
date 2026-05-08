@@ -29,7 +29,7 @@ use App\Http\Controllers\Arrendador\IncidenciaController as ArrendadorIncidencia
 use App\Http\Controllers\Gestor\DashboardController as GestorDashboardController;
 use App\Http\Controllers\Gestor\IncidenciaController as GestorIncidenciaController;
 use App\Http\Controllers\Gestor\PropiedadController as GestorPropiedadController;
-use App\Http\Controllers\Miembro\ConfiguracionCobrosController;
+use App\Http\Controllers\Arrendador\ConfiguracionCobrosController;
 
 // Rutas Públicas
 Route::get('/', function () {
@@ -196,8 +196,8 @@ Route::middleware(['auth', 'role:miembro,inquilino,arrendador'])->group(function
     Route::post('/miembro/suscripcion/checkout', [App\Http\Controllers\Miembro\MiembroSuscripcionController::class, 'checkout'])->name('miembro.suscripcion.checkout');
     Route::get('/miembro/suscripcion/success', [App\Http\Controllers\Miembro\MiembroSuscripcionController::class, 'success'])->name('miembro.suscripcion.success');
 
-    Route::get('/miembro/configurar-stripe', [ConfiguracionCobrosController::class, 'index'])->name('miembro.stripe.configurar');
-    Route::post('/miembro/guardar-iban', [ConfiguracionCobrosController::class, 'store'])->name('miembro.guardar-iban');
+    Route::get('/arrendador/configurar-stripe', [ConfiguracionCobrosController::class, 'index'])->name('arrendador.stripe.configurar');
+    Route::post('/arrendador/guardar-iban', [ConfiguracionCobrosController::class, 'store'])->name('arrendador.guardar-iban');
 });
 
 Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->group(function () {
@@ -224,5 +224,6 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
     Route::get('/inquilino/alquiler/{id}/estado-contrato', [InquilinoController::class, 'obtenerEstadoContrato'])->name('inquilino.estado_contrato');
     Route::get('/inquilino/alquiler/{id}/historial-suministros', [InquilinoController::class, 'obtenerHistorialSuministros'])->name('inquilino.historial_suministros');
     Route::get('/inquilino/alquiler/{id}/historial-alquiler', [InquilinoController::class, 'obtenerHistorialAlquiler'])->name('inquilino.historial_alquiler');
+    Route::get('/inquilino/pago/success', [InquilinoController::class, 'stripeSuccess'])->name('inquilino.pago.success');
     Route::get('/miembro/mapa/propiedades', [MapaController::class, 'propiedades'])->name('miembro.mapa.propiedades');
 });

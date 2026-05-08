@@ -112,16 +112,9 @@ function inicializarPagosInquilino() {
                     })
                     .then(respuesta => respuesta.json())
                     .then(datos => {
-                        if (datos.success) {
-                            Swal.fire({
-                                title: '¡Pago realizado!',
-                                text: 'Tu cuota ha sido abonada correctamente. ¡Muchas gracias!',
-                                iconHtml: crearOsoExito(),
-                                customClass: { icon: 'oso-icon' },
-                                confirmButtonColor: '#035498'
-                            }).then(() => {
-                                window.location.reload();
-                            });
+                        if (datos.success && datos.url) {
+                            // REDIRECCIÓN A STRIPE
+                            window.location.href = datos.url;
                         } else {
                             Swal.fire({
                                 title: 'Error en el pago',
@@ -177,12 +170,81 @@ function cargarDetalleIncidencia(idIncidencia) {
                 <div class="row mb-3">
                     <div class="col-md-6"><strong>Fecha:</strong> ${datos.fecha || '-'}</div>
                     <div class="col-md-6"><strong>Estado:</strong> ${datos.estado || '-'}</div>
-                </div>`;
+                </div>
+                ${datos.presupuesto ? `
+                    <div class="tarjeta-presupuesto mt-3 p-3 bg-light rounded border">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1"><i class="bi bi-wallet2"></i> Presupuesto de Reparación</h6>
+                                <p class="mb-0 text-muted small">Importe total a abonar</p>
+                            </div>
+                            <div class="text-end">
+                                <span class="fs-4 fw-bold text-primary">${parseFloat(datos.presupuesto).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+                            </div>
+                        </div>
+                        ${datos.estado_workflow === 'esperando_pago' ? `
+                            <button class="btn btn-primary w-100 mt-3 btn-pagar-incidencia" onclick="pagarPresupuestoStripe(${datos.id})">
+                                <i class="bi bi-credit-card"></i> Pagar Reparación Ahora
+                            </button>
+                        ` : (datos.estado_workflow === 'pagado' ? `
+                            <div class="alert alert-success mb-0 mt-3 py-2 text-center">
+                                <i class="bi bi-check-circle"></i> Pago completado
+                            </div>
+                        ` : '')}
+                    </div>
+                ` : ''}`;
         })
         .catch(error => {
             console.error('Error:', error);
             cuerpoModal.innerHTML = '<div class="alert alert-danger">Error al cargar los detalles.</div>';
         });
+}
+
+/**
+ * Redirige al pago de un presupuesto de incidencia vía Stripe
+ */
+function pagarPresupuestoStripe(idIncidencia) {
+    const boton = document.querySelector('.btn-pagar-incidencia');
+    if (boton) {
+        boton.disabled = true;
+        boton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Redirigiendo a Stripe...';
+    }
+
+    const token = document.querySelector('input[name="_token"]')?.value;
+
+    fetch(`../incidencia/${idIncidencia}/pagar-presupuesto`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': token,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(r => r.json())
+    .then(datos => {
+        if (datos.success && datos.url) {
+            window.location.href = datos.url;
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: datos.message || 'No se pudo iniciar el pago.',
+                iconHtml: crearOsoError(),
+                customClass: { icon: 'oso-icon' },
+                confirmButtonColor: '#d33'
+            });
+            if (boton) {
+                boton.disabled = false;
+                boton.innerHTML = '<i class="bi bi-credit-card"></i> Pagar Reparación Ahora';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (boton) {
+            boton.disabled = false;
+            boton.innerHTML = '<i class="bi bi-credit-card"></i> Pagar Reparación Ahora';
+        }
+    });
 }
 
 /**
@@ -230,8 +292,41 @@ function cerrarIncidencia(idIncidencia) {
     });
 }
 
+/**
+ * Comprueba si hay mensajes de éxito o error inyectados desde Laravel (Session)
+ * y muestra el SweetAlert correspondiente con la mascota.
+ */
+function comprobarAlertasSesion() {
+    const contenedor = document.querySelector('.contenedor-ver-propiedad');
+    if (!contenedor) return;
+
+    const exito = contenedor.getAttribute('data-mensaje-exito');
+    const error = contenedor.getAttribute('data-mensaje-error');
+
+    if (exito && exito.trim() !== "") {
+        Swal.fire({
+            title: '¡Operación con éxito!',
+            text: exito,
+            iconHtml: crearOsoExito(),
+            customClass: { icon: 'oso-icon' },
+            confirmButtonColor: '#035498'
+        });
+    }
+
+    if (error && error.trim() !== "") {
+        Swal.fire({
+            title: 'Ups...',
+            text: error,
+            iconHtml: crearOsoError(),
+            customClass: { icon: 'oso-icon' },
+            confirmButtonColor: '#d33'
+        });
+    }
+}
+
 // Inicialización directa (los scripts se cargan al final del body en el layout)
 inicializarPagosInquilino();
+comprobarAlertasSesion();
 
 // Si existen temporizadores en la página
 if (typeof iniciarTemporizadorAlquileres === 'function') {

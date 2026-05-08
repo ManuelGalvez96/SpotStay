@@ -9,7 +9,8 @@
     --corp-green: #1AA068;
 }
 
-body, html {
+body,
+html {
     height: 100vh;
     margin: 0;
     background-color: var(--bg-color);
@@ -63,15 +64,16 @@ body, html {
     background-position: bottom;
     background-repeat: no-repeat;
     background-size: cover;
-    z-index: -1;
+    z-index: 0;
     opacity: 0.5;
     pointer-events: none;
 }
 
 .checkout-container {
-    width: 95%;
-    max-width: 550px;
+    width: 100%;
+    max-width: 800px;
     position: relative;
+    z-index: 10;
     background: transparent;
     display: flex;
     flex-direction: column;
@@ -80,13 +82,20 @@ body, html {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Yeti Compacto */
 .yeti-wrapper {
-    width: 140px; /* Aumentado de 120px */
+    width: 140px;
     margin-bottom: -10px;
     display: block;
     position: relative;
@@ -143,11 +152,13 @@ body, html {
 
 .card-header-gradient {
     background: linear-gradient(135deg, var(--corp-blue) 0%, #023a6b 100%);
-    padding: 20px 25px; /* Aumentado */
+    padding: 20px 25px;
+    /* Aumentado */
 }
 
 .card-header-gradient h2 {
-    font-size: 1.6rem; /* Aumentado */
+    font-size: 1.6rem;
+    /* Aumentado */
 }
 
 .card-header-gradient p {
@@ -155,12 +166,14 @@ body, html {
 }
 
 .card-body {
-    padding: 20px 30px 25px !important; /* Más aireado */
+    padding: 20px 30px 25px !important;
+    /* Más aireado */
 }
 
 .card-footer {
-    background: #151515; 
-    padding: 15px; /* Reducido */
+    background: #151515;
+    padding: 15px;
+    /* Reducido */
     border-top: 1px solid #252525;
 }
 
@@ -173,7 +186,8 @@ body, html {
 }
 
 .amount {
-    font-size: 2.5rem; /* Reducido de 3rem */
+    font-size: 2.5rem;
+    /* Reducido de 3rem */
     font-weight: 800;
     display: block;
     line-height: 1;

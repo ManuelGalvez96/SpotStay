@@ -7,7 +7,9 @@
 @endsection
 
 @section('content')
-<div class="contenedor-ver-propiedad">
+<div class="contenedor-ver-propiedad" 
+     data-mensaje-exito="{{ session('success') }}" 
+     data-mensaje-error="{{ session('error') }}">
     <!-- Botón Volver -->
     <div class="navegacion-superior">
         <a href="{{ route('gestionar_propiedades') }}" class="btn-volver">

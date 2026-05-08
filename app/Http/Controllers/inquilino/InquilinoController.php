@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
+use Stripe\Stripe;
+use Stripe\Checkout\Session as StripeSession;
 
 class InquilinoController extends Controller
 {
@@ -593,6 +595,8 @@ class InquilinoController extends Controller
             'categoria' => ucfirst(str_replace('_', ' ', $incidencia->categoria_incidencia ?? 'N/A')),
             'prioridad' => ucfirst($incidencia->prioridad_incidencia ?? 'N/A'),
             'estado' => ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia ?? 'N/A')),
+            'estado_workflow' => $incidencia->estado_workflow,
+            'presupuesto' => $incidencia->presupuesto_incidencia,
             'fecha' => Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y H:i')
         ]);
     }
@@ -624,142 +628,281 @@ class InquilinoController extends Controller
         }
 
         $userId = (int) ($usuario->id_usuario ?? 0);
-        $tipoPago = request()->query('tipo'); // 'alquiler' o 'gasto'
+        $tipoPago = request()->query('tipo', 'alquiler'); // 'alquiler' o 'gasto'
 
         try {
-            DB::beginTransaction();
+            // Buscamos la cuota para obtener el importe y datos
+            $cuota = AlquilerCuota::findOrFail($cuotaId);
+            $idAlquiler = $cuota->id_alquiler_fk;
 
-            // Buscamos la cuota de referencia para saber de qué alquiler hablamos
-            $cuotaReferencia = AlquilerCuota::find($cuotaId);
+            // Buscamos al arrendador y la propiedad para el pago (Stripe Connect)
+            $alquiler = DB::table('tbl_alquiler')
+                ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
+                ->join('tbl_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
+                ->where('tbl_alquiler.id_alquiler', $idAlquiler)
+                ->select('tbl_usuario.stripe_account_id', 'tbl_usuario.nombre_usuario', 'tbl_propiedad.id_propiedad', 'tbl_propiedad.calle_propiedad')
+                ->first();
 
-            // Si es un pago de gasto y no viene cuotaId (o es 0), buscamos el alquiler activo
-            $idAlquiler = $cuotaReferencia ? $cuotaReferencia->id_alquiler_fk : null;
-
-            if (!$idAlquiler) {
-                $idAlquiler = DB::table('tbl_alquiler')
-                    ->where('id_inquilino_fk', $userId)
-                    ->where('estado_alquiler', 'activo')
-                    ->value('id_alquiler');
+            if (!$alquiler || empty($alquiler->stripe_account_id)) {
+                return response()->json(['success' => false, 'message' => 'El arrendador no ha configurado su cuenta de cobros todavía.'], 400);
             }
 
-            if (!$idAlquiler) {
-                throw new \Exception('No se pudo identificar el alquiler asociado.');
-            }
+            Stripe::setApiKey(config('services.stripe.secret'));
 
-            $ahora = now();
+            $concepto = ($tipoPago === 'alquiler') ? 'Alquiler ' . Carbon::parse($cuota->mes_cuota)->format('m/Y') : 'Gastos/Suministros';
+            $nombreProducto = "SpotStay: " . $concepto . " (" . $alquiler->calle_propiedad . ")";
+            $descripcionProducto = "Pago destinado a: " . $alquiler->nombre_usuario;
 
-            // Contamos inquilinos activos de la propiedad para dividir
-            $alquilerActivo = DB::table('tbl_alquiler')->where('id_alquiler', $idAlquiler)->first();
+            $importe = ($tipoPago === 'alquiler') ? $cuota->importe_base : request()->query('monto', 0);
+            
             $numInquilinos = DB::table('tbl_alquiler')
-                ->where('id_propiedad_fk', $alquilerActivo->id_propiedad_fk)
+                ->where('id_propiedad_fk', $alquiler->id_propiedad)
                 ->where('estado_alquiler', 'activo')
-                ->count();
-            $numInquilinos = $numInquilinos > 0 ? $numInquilinos : 1;
+                ->count() ?: 1;
 
-            // 1. Procesar Alquiler
-            if (!$tipoPago || $tipoPago === 'alquiler') {
-                // Buscamos SOLO la cuota específica que se ha solicitado pagar
-                $cuotasAPagar = AlquilerCuota::where('id_alquiler_fk', $idAlquiler)
-                    ->where('id_alquiler_cuota', $cuotaId)
-                    ->whereIn('estado', ['pendiente', 'atrasado'])
-                    ->get();
-
-                foreach ($cuotasAPagar as $cuota) {
-                    $importeDividido = (float) $cuota->importe_base;
-
-                    // DIVISIÓN: Si el importe base es el total del piso, dividimos.
-                    if ($numInquilinos > 1) {
-                        $importeDividido = $importeDividido / $numInquilinos;
-                    }
-
-                    Pago::create([
-                        'id_pagador_fk' => $userId,
-                        'id_alquiler_fk' => $idAlquiler,
-                        'id_alquiler_cuota_fk' => $cuota->id_alquiler_cuota,
-                        'tipo_pago' => 'alquiler',
-                        'concepto_pago' => 'Cuota alquiler ' . Carbon::parse((string) $cuota->mes_cuota)->format('m/Y'),
-                        'importe_pago' => $importeDividido,
-                        'estado_pago' => 'pagado',
-                        'referencia_pago' => 'ALQ-' . $cuota->id_alquiler_cuota . '-' . $ahora->format('YmdHis'),
-                        'fecha_confirmacion_pago' => $ahora,
-                        'creado_pago' => $ahora,
-                        'actualizado_pago' => $ahora,
-                    ]);
-
-                    $cuota->update([
-                        'estado' => 'pagado',
-                        'pagado_en' => $ahora,
-                    ]);
-                }
+            if ($numInquilinos > 1) {
+                $importe = $importe / $numInquilinos;
             }
 
-            // 2. Procesar Gastos
-            if (!$tipoPago || $tipoPago === 'gasto') {
-                if (Schema::hasTable('tbl_gasto_cuota_detalle')) {
-                    $gastosAPagar = DB::table('tbl_gasto_cuota_detalle')
-                        ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
-                        ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
-                        ->where('tbl_gasto_cuota_detalle.id_alquiler_fk', $idAlquiler)
-                        ->where('tbl_gasto_cuota_detalle.id_pagador_fk', $userId)
-                        ->whereIn('tbl_gasto_cuota_detalle.estado_detalle', ['pendiente', 'atrasado'])
-                        ->select('tbl_gasto_cuota_detalle.*', 'tbl_gasto.concepto_gasto', 'tbl_gasto.categoria_gasto')
-                        ->get();
+            $sessionData = [
+                'payment_method_types' => ['card'],
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => 'eur',
+                        'product_data' => [
+                            'name' => $nombreProducto,
+                            'description' => $descripcionProducto,
+                        ],
+                        'unit_amount' => (int)($importe * 100),
+                    ],
+                    'quantity' => 1,
+                ]],
+                'mode' => 'payment',
+                'success_url' => route('inquilino.pago.success') . '?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => route('gestionar_propiedades'),
+                'customer_email' => $usuario->email_usuario,
+                'metadata' => [
+                    'tipo_pago' => $tipoPago,
+                    'id_referencia' => $cuotaId,
+                    'id_alquiler' => $idAlquiler,
+                    'id_usuario' => $userId
+                ]
+            ];
 
-                    foreach ($gastosAPagar as $gasto) {
-                        $importeGastoDividido = (float) $gasto->importe_detalle;
-
-                        $conceptoFinal = ucfirst($gasto->categoria_gasto);
-                        if (!empty($gasto->concepto_gasto)) {
-                            $conceptoFinal .= " (" . $gasto->concepto_gasto . ")";
-                        }
-
-                        Pago::create([
-                            'id_pagador_fk' => $userId,
-                            'id_alquiler_fk' => $idAlquiler,
-                            'id_gasto_cuota_detalle_fk' => $gasto->id_gasto_cuota_detalle,
-                            'tipo_pago' => 'gasto',
-                            'concepto_pago' => $conceptoFinal,
-                            'importe_pago' => $importeGastoDividido,
-                            'estado_pago' => 'pagado',
-                            'referencia_pago' => 'GST-' . $gasto->id_gasto_cuota_detalle . '-' . $ahora->format('YmdHis'),
-                            'fecha_confirmacion_pago' => $ahora,
-                            'creado_pago' => $ahora,
-                            'actualizado_pago' => $ahora,
-                        ]);
-
-                        DB::table('tbl_gasto_cuota_detalle')
-                            ->where('id_gasto_cuota_detalle', $gasto->id_gasto_cuota_detalle)
-                            ->update([
-                                'estado_detalle' => 'pagado',
-                                'actualizado_detalle' => $ahora
-                            ]);
-
-                        // Cierre de cuota principal si todos han pagado
-                        $pendientes = DB::table('tbl_gasto_cuota_detalle')
-                            ->where('id_gasto_cuota_fk', $gasto->id_gasto_cuota_fk)
-                            ->where('estado_detalle', '<>', 'pagado')
-                            ->count();
-
-                        if ($pendientes === 0) {
-                            DB::table('tbl_gasto_cuota')
-                                ->where('id_gasto_cuota', $gasto->id_gasto_cuota_fk)
-                                ->update(['estado_cuota' => 'pagado', 'actualizado_cuota' => $ahora]);
-                        } else {
-                            DB::table('tbl_gasto_cuota')
-                                ->where('id_gasto_cuota', $gasto->id_gasto_cuota_fk)
-                                ->update(['estado_cuota' => 'parcial', 'actualizado_cuota' => $ahora]);
-                        }
-                    }
-                }
+            // Si el arrendador tiene cuenta real de Stripe, activamos la transferencia y el "on behalf of"
+            if (!str_contains($alquiler->stripe_account_id, 'acct_manual')) {
+                $sessionData['payment_intent_data'] = [
+                    'transfer_data' => [
+                        'destination' => $alquiler->stripe_account_id,
+                    ],
+                    'on_behalf_of' => $alquiler->stripe_account_id,
+                ];
             }
 
-            DB::commit();
-            return response()->json(['success' => true, 'message' => 'Pagos procesados correctamente.']);
+            $session = StripeSession::create($sessionData);
+
+            return response()->json(['success' => true, 'url' => $session->url]);
+
         } catch (\Exception $e) {
-            DB::rollBack();
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
+
+    /**
+     * Inicia el pago de un presupuesto de incidencia vía Stripe.
+     */
+    public function pagarPresupuestoIncidencia($id)
+    {
+        $usuario = Auth::user();
+        $incidencia = DB::table('tbl_incidencia')
+            ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_incidencia.id_propiedad_fk')
+            ->join('tbl_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
+            ->where('id_incidencia', $id)
+            ->select('tbl_incidencia.*', 'tbl_usuario.stripe_account_id', 'tbl_usuario.nombre_usuario', 'tbl_propiedad.calle_propiedad', 'tbl_propiedad.id_propiedad')
+            ->first();
+
+        if (!$incidencia || !$incidencia->presupuesto_incidencia) {
+            return response()->json(['success' => false, 'message' => 'No hay un presupuesto aprobado para esta incidencia.'], 404);
+        }
+
+        // Buscar el alquiler activo para esta propiedad para vincular el pago
+        $idAlquiler = DB::table('tbl_alquiler')
+            ->where('id_propiedad_fk', $incidencia->id_propiedad)
+            ->where('estado_alquiler', 'activo')
+            ->value('id_alquiler');
+
+        if (empty($incidencia->stripe_account_id)) {
+            return response()->json(['success' => false, 'message' => 'El arrendador no puede recibir cobros todavía.'], 400);
+        }
+
+        try {
+            Stripe::setApiKey(config('services.stripe.secret'));
+
+            $nombreProducto = "Reparación: " . $incidencia->titulo_incidencia . " (" . $incidencia->calle_propiedad . ")";
+            $descripcionProducto = "Pago de incidencia a nombre de: " . $incidencia->nombre_usuario;
+
+            $sessionData = [
+                'payment_method_types' => ['card'],
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => 'eur',
+                        'product_data' => [
+                            'name' => $nombreProducto,
+                            'description' => $descripcionProducto,
+                        ],
+                        'unit_amount' => (int)($incidencia->presupuesto_incidencia * 100),
+                    ],
+                    'quantity' => 1,
+                ]],
+                'mode' => 'payment',
+                'success_url' => route('inquilino.pago.success') . '?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => route('inquilino.ver_incidencia', $id),
+                'customer_email' => $usuario->email_usuario,
+                'metadata' => [
+                    'tipo_pago' => 'incidencia',
+                    'id_referencia' => $id,
+                    'id_usuario' => $usuario->id_usuario,
+                    'id_alquiler' => $idAlquiler
+                ]
+            ];
+
+            if (!str_contains($incidencia->stripe_account_id, 'acct_manual')) {
+                $sessionData['payment_intent_data'] = [
+                    'transfer_data' => [
+                        'destination' => $incidencia->stripe_account_id,
+                    ],
+                    'on_behalf_of' => $incidencia->stripe_account_id,
+                ];
+            }
+
+            $session = StripeSession::create($sessionData);
+
+            return response()->json(['success' => true, 'url' => $session->url]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Callback de éxito de Stripe para pagos de inquilinos.
+     */
+    public function stripeSuccess(Request $request)
+    {
+        $sessionId = $request->get('session_id');
+        if (!$sessionId) return redirect()->route('gestionar_propiedades');
+
+        Stripe::setApiKey(config('services.stripe.secret'));
+        $session = StripeSession::retrieve($sessionId);
+        
+        $meta = $session->metadata;
+        $ahora = now();
+
+        DB::beginTransaction();
+        try {
+            if ($meta->tipo_pago === 'alquiler') {
+                $cuota = AlquilerCuota::find($meta->id_referencia);
+                if ($cuota) {
+                    $cuota->update(['estado' => 'pagado', 'pagado_en' => $ahora]);
+                    
+                    Pago::create([
+                        'id_pagador_fk' => $meta->id_usuario,
+                        'id_alquiler_fk' => $meta->id_alquiler,
+                        'id_alquiler_cuota_fk' => $cuota->id_alquiler_cuota,
+                        'tipo_pago' => 'alquiler',
+                        'concepto_pago' => 'Cuota alquiler ' . Carbon::parse($cuota->mes_cuota)->format('m/Y'),
+                        'importe_pago' => $session->amount_total / 100,
+                        'estado_pago' => 'pagado',
+                        'referencia_pago' => $session->payment_intent,
+                        'fecha_confirmacion_pago' => $ahora,
+                        'creado_pago' => $ahora,
+                        'actualizado_pago' => $ahora
+                    ]);
+                }
+            } elseif ($meta->tipo_pago === 'gasto') {
+                // Lógica similar para suministros...
+                // (Para simplificar, asumo que el id_referencia es el id_alquiler_cuota asociado)
+                $this->procesarPagoGastos($meta->id_alquiler, $meta->id_usuario, $session);
+            } elseif ($meta->tipo_pago === 'incidencia') {
+                DB::table('tbl_incidencia')->where('id_incidencia', $meta->id_referencia)->update([
+                    'estado_workflow' => 'pagado',
+                    'actualizado_incidencia' => $ahora
+                ]);
+                
+                // Registrar el pago de la incidencia
+                Pago::create([
+                    'id_pagador_fk' => $meta->id_usuario,
+                    'id_alquiler_fk' => $meta->id_alquiler, // Ahora incluimos el alquiler
+                    'tipo_pago' => 'incidencia',
+                    'concepto_pago' => 'Pago reparación incidencia #' . $meta->id_referencia,
+                    'importe_pago' => $session->amount_total / 100,
+                    'estado_pago' => 'pagado',
+                    'referencia_pago' => $session->payment_intent,
+                    'fecha_confirmacion_pago' => $ahora,
+                    'creado_pago' => $ahora,
+                    'actualizado_pago' => $ahora
+                ]);
+            }
+
+            DB::commit();
+            
+            // Obtenemos el ID de la propiedad para redirigir al detalle específico
+            $idPropiedad = DB::table('tbl_alquiler')->where('id_alquiler', $meta->id_alquiler)->value('id_propiedad_fk');
+
+            if ($idPropiedad) {
+                return redirect()->route('inquilino.ver_propiedad', $idPropiedad)->with('success', '¡Pago procesado con éxito!');
+            }
+
+            return redirect()->route('gestionar_propiedades')->with('success', '¡Pago procesado con éxito!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('gestionar_propiedades')->with('error', 'Error al procesar el pago: ' . $e->getMessage());
+        }
+    }
+
+    private function procesarPagoGastos($idAlquiler, $idUsuario, $session)
+    {
+        $ahora = now();
+        $gastos = DB::table('tbl_gasto_cuota_detalle')
+            ->where('id_alquiler_fk', $idAlquiler)
+            ->where('id_pagador_fk', $idUsuario)
+            ->whereIn('estado_detalle', ['pendiente', 'atrasado'])
+            ->get();
+
+        foreach ($gastos as $gasto) {
+            DB::table('tbl_gasto_cuota_detalle')->where('id_gasto_cuota_detalle', $gasto->id_gasto_cuota_detalle)->update([
+                'estado_detalle' => 'pagado',
+                'actualizado_detalle' => $ahora
+            ]);
+
+            Pago::create([
+                'id_pagador_fk' => $idUsuario,
+                'id_alquiler_fk' => $idAlquiler,
+                'id_gasto_cuota_detalle_fk' => $gasto->id_gasto_cuota_detalle,
+                'tipo_pago' => 'gasto',
+                'importe_pago' => $gasto->importe_detalle,
+                'estado_pago' => 'pagado',
+                'referencia_pago' => $session->payment_intent,
+                'fecha_confirmacion_pago' => $ahora,
+                'creado_pago' => $ahora,
+                'actualizado_pago' => $ahora
+            ]);
+        }
+    }
+
+    public function decidirPagoIncidencia(Request $request, $id)
+    {
+        // Lógica para que el inquilino decida quién paga (si tiene permiso)
+        $request->validate(['responsable' => 'required|in:inquilino,propietario']);
+        
+        DB::table('tbl_incidencia')->where('id_incidencia', $id)->update([
+            'responsable_pago' => $request->responsable,
+            'estado_workflow' => ($request->responsable === 'inquilino') ? 'esperando_pago' : 'esperando_aprobacion_propietario',
+            'actualizado_incidencia' => now()
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
 
     private function actualizarCuotasAtrasadas(int $userId): void
     {

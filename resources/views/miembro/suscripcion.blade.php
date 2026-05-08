@@ -19,7 +19,7 @@
 
     <div class="checkout-container">
         
-        <div class="yeti-wrapper">
+        <div class="yeti-wrapper" style="width: 200px;">
             <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                 <circle class="yeti-part" cx="62" cy="52" r="14" />
                 <circle class="yeti-part" cx="138" cy="52" r="14" />

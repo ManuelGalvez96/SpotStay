@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Miembro;
+namespace App\Http\Controllers\Arrendador;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -17,7 +17,7 @@ class ConfiguracionCobrosController extends Controller
 
         // Si ya tiene cuenta de Stripe o IBAN, y no viene forzado, podríamos dejarle pasar,
         // pero permitimos que entre para editar si lo desea.
-        return view('miembro.configurar_iban', compact('usuario'));
+        return view('arrendador.configurar_iban', compact('usuario'));
     }
 
     /**

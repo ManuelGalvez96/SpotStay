@@ -38,10 +38,10 @@ class EnsureArrendadorIsActive
 
             // PASO 2: Verificar Cuenta de Cobros / IBAN (Solo para Arrendadores)
             if ($user->roles()->where('slug_rol', 'arrendador')->exists() && !$user->stripe_account_id) {
-                if (!$request->is('miembro/configurar-stripe*') && 
+                if (!$request->is('arrendador/configurar-stripe*') && 
                     !$request->is('miembro/suscripcion*') && 
-                    !$request->is('miembro/guardar-iban*')) {
-                    return redirect()->route('miembro.stripe.configurar')
+                    !$request->is('arrendador/guardar-iban*')) {
+                    return redirect()->route('arrendador.stripe.configurar')
                         ->with('info', '¡Suscripción activa! Ahora configura tus datos bancarios para recibir pagos.');
                 }
             }

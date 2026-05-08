@@ -14,6 +14,10 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_usuario')->autoIncrement()->primary();
             $table->string('nombre_usuario', 100);
             $table->string('email_usuario', 150)->unique();
+            $table->string('stripe_id')->nullable()->index();
+            $table->string('stripe_account_id')->nullable()->index();
+            $table->string('stripe_subscription_id')->nullable();
+            $table->string('stripe_status')->nullable();
             $table->string('contrasena_usuario');
             $table->string('telefono_usuario', 20)->nullable();
             $table->string('avatar_usuario')->nullable();

@@ -129,13 +129,6 @@
                             <span class="badge badge-{{ $propiedad->estado_propiedad }}">{{ ucfirst($propiedad->estado_propiedad) }}</span>
                             <a class="mini-link" href="{{ route('arrendador.propiedades', ['arrendador_id' => $arrendadorId, 'editar' => $propiedad->id_propiedad]) }}">Editar</a>
                             <button class="mini-link" type="button" onclick="abrirModalPropiedad({{ $propiedad->id_propiedad }}, {{ $arrendadorId }})">Ver</button>
-                            <form method="POST" action="{{ route('arrendador.propiedades.estado', $propiedad->id_propiedad) }}" data-ajax-state-form="true">
-                                @csrf
-                                <input type="hidden" name="arrendador_id" value="{{ $arrendadorId }}" />
-                                <button class="mini-button" type="submit" data-state-button="true">
-                                    {{ $propiedad->estado_propiedad === 'publicada' ? 'Inactivar' : 'Publicar' }}
-                                </button>
-                            </form>
                         </div>
                     </article>
                 @empty

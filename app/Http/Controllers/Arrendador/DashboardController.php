@@ -23,6 +23,12 @@ class DashboardController extends Controller
         $solicitudesPendientes = 0;
         $ultimasSolicitudes = collect();
         $propiedadesActivasDetalle = collect();
+        $ingresosTotales = 0;
+        $propiedadesPorEstado = [];
+        $pagosPendientes = 0;
+        $incidenciasPendientes = 0;
+        $tasaOcupacion = 0;
+        $totalPropiedades = 0;
 
         if ($arrendadorId !== null) {
             $arrendador = DB::table('tbl_usuario')
@@ -54,6 +60,45 @@ class DashboardController extends Controller
                 ->where('a.estado_alquiler', 'activo')
                 ->whereBetween(DB::raw('DATE(COALESCE(a.aprobado_alquiler, a.creado_alquiler))'), [$inicioMes, $finMes])
                 ->sum("p.{$columnaPrecio}");
+
+            // Ingresos totales de alquileres activos
+            $ingresosTotales = DB::table('tbl_alquiler as a')
+                ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'a.id_propiedad_fk')
+                ->where('p.id_arrendador_fk', $arrendadorId)
+                ->where('a.estado_alquiler', 'activo')
+                ->sum("p.{$columnaPrecio}");
+
+            // Desglose de propiedades por estado
+            $propiedadesPorEstado = DB::table('tbl_propiedad')
+                ->where('id_arrendador_fk', $arrendadorId)
+                ->select('estado_propiedad', DB::raw('COUNT(*) as cantidad'))
+                ->groupBy('estado_propiedad')
+                ->get()
+                ->keyBy('estado_propiedad');
+
+            // Total de propiedades
+            $totalPropiedades = DB::table('tbl_propiedad')
+                ->where('id_arrendador_fk', $arrendadorId)
+                ->count();
+
+            // Tasa de ocupación (propiedades alquiladas / total de propiedades)
+            $propiedadesAlquiladas = $propiedadesPorEstado->get('alquilada')?->cantidad ?? 0;
+            $tasaOcupacion = $totalPropiedades > 0 ? round(($propiedadesAlquiladas / $totalPropiedades) * 100, 2) : 0;
+
+            // Pagos pendientes del arrendador
+            $pagosPendientes = DB::table('tbl_pago as pa')
+                ->join('tbl_alquiler as a', 'a.id_alquiler', '=', 'pa.id_alquiler_fk')
+                ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'a.id_propiedad_fk')
+                ->where('p.id_arrendador_fk', $arrendadorId)
+                ->where('pa.estado_pago', 'pendiente')
+                ->sum('pa.importe_pago');
+
+            // Incidencias pendientes
+            $incidenciasPendientes = DB::table('tbl_incidencia as i')
+                ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'i.id_propiedad_fk')
+                ->where('p.id_arrendador_fk', $arrendadorId)
+                ->where('i.estado_incidencia', 'abierta')
+                ->count();
 
             $solicitudesPendientes = DB::table('tbl_alquiler as a')
                 ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'a.id_propiedad_fk')
@@ -110,6 +155,12 @@ class DashboardController extends Controller
             'solicitudesPendientes' => $solicitudesPendientes,
             'ultimasSolicitudes' => $ultimasSolicitudes,
             'propiedadesActivasDetalle' => $propiedadesActivasDetalle,
+            'ingresosTotales' => $ingresosTotales,
+            'propiedadesPorEstado' => $propiedadesPorEstado,
+            'pagosPendientes' => $pagosPendientes,
+            'incidenciasPendientes' => $incidenciasPendientes,
+            'tasaOcupacion' => $tasaOcupacion,
+            'totalPropiedades' => $totalPropiedades,
         ]);
     }
 

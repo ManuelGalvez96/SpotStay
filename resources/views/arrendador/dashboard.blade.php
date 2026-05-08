@@ -15,6 +15,7 @@
     
     <!-- Styles -->
     <link rel="stylesheet" href="{{ asset('css/arrendador/dashboard.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/arrendador/dashboard-resumen.css') }}" />
 </head>
 <body>
     <div class="dashboard-wrapper">
@@ -43,23 +44,66 @@
             
             <!-- Stats Grid -->
             <div class="stats-grid">
-                <div class="stat-box">
+                <div class="stat-box" data-tipo="propiedades-activas">
                     <div class="stat-value">{{ number_format($propiedadesActivas, 0, ',', '.') }}</div>
                     <div class="stat-label">Propiedades Activas</div>
                 </div>
-                <div class="stat-box">
+                <div class="stat-box" data-tipo="inquilinos-activos">
                     <div class="stat-value">{{ number_format($inquilinosActivos, 0, ',', '.') }}</div>
                     <div class="stat-label">Inquilinos Activos</div>
                 </div>
-                <div class="stat-box">
+                <div class="stat-box" data-tipo="ingresos-mes">
                     <div class="stat-value">{{ number_format($ingresosEsteMes, 2, ',', '.') }} €</div>
                     <div class="stat-label">Ingresos Este Mes</div>
                 </div>
-                <div class="stat-box">
+                <div class="stat-box" data-tipo="solicitudes-pendientes">
                     <div class="stat-value">{{ number_format($solicitudesPendientes, 0, ',', '.') }}</div>
                     <div class="stat-label">Solicitudes Pendientes</div>
                 </div>
             </div>
+
+            <!-- Extended Stats Grid (Resumen adicional) -->
+            <div class="stats-grid">
+                <div class="stat-box" data-tipo="ingresos-totales">
+                    <div class="stat-value">{{ number_format($ingresosTotales, 2, ',', '.') }} €</div>
+                    <div class="stat-label">Ingresos Totales</div>
+                </div>
+                <div class="stat-box" data-tipo="total-propiedades">
+                    <div class="stat-value">{{ $totalPropiedades }}</div>
+                    <div class="stat-label">Total de Propiedades</div>
+                </div>
+                <div class="stat-box" data-tipo="tasa-ocupacion">
+                    <div class="stat-value">{{ $tasaOcupacion }}%</div>
+                    <div class="stat-label">Tasa de Ocupación</div>
+                </div>
+                <div class="stat-box" data-tipo="pagos-pendientes">
+                    <div class="stat-value">{{ number_format($pagosPendientes, 2, ',', '.') }} €</div>
+                    <div class="stat-label">Pagos Pendientes</div>
+                </div>
+                @if ($incidenciasPendientes > 0)
+                <div class="stat-box" data-tipo="incidencias-abiertas">
+                    <div class="stat-value">{{ $incidenciasPendientes }}</div>
+                    <div class="stat-label">Incidencias Abiertas</div>
+                </div>
+                @endif
+            </div>
+
+            <!-- Resumen de Propiedades por Estado -->
+            @if (count($propiedadesPorEstado) > 0)
+            <section class="section" style="margin-top: 20px;">
+                <div class="section-header">
+                    <h3 class="section-title">Desglose de Propiedades</h3>
+                </div>
+                <div class="property-status-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                    @foreach ($propiedadesPorEstado as $estado => $data)
+                    <div class="status-card" data-estado="{{ $estado }}" data-cantidad="{{ $data->cantidad }}" style="padding: 15px; border-radius: 8px; background: #f5f5f5; text-align: center; border-left: 4px solid #007bff;">
+                        <div class="status-count" style="font-size: 24px; font-weight: bold; margin-bottom: 5px;">{{ $data->cantidad }}</div>
+                        <div class="status-label" style="font-size: 12px; text-transform: capitalize; color: #666;">{{ ucfirst($estado) }}</div>
+                    </div>
+                    @endforeach
+                </div>
+            </section>
+            @endif
 
             <!-- Main Grid -->
             <div class="dashboard-grid">
@@ -296,5 +340,6 @@
     </div>
 
     <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+    <script src="{{ asset('js/arrendador/dashboard-resumen.js') }}"></script>
 </body>
 </html>

@@ -305,6 +305,12 @@ var actualizarTabla = function(datos) {
                 estadoLabel = 'Pendiente';
             }
 
+            /* Determinar badge de pago */
+            var pagoStatus = solicitud.stripe_status === 'active' ? 'Pagado' : 'Pendiente';
+            var pagoBadgeStyle = solicitud.stripe_status === 'active' 
+                ? 'background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid #2ecc71;' 
+                : 'background: rgba(243, 156, 18, 0.1); color: #f39c12; border: 1px solid #f39c12;';
+
             var fila = document.createElement('tr');
             fila.className = 'fila-solicitud';
             fila.setAttribute('data-id', solicitud.id_solicitud_arrendador);
@@ -319,6 +325,7 @@ var actualizarTabla = function(datos) {
                 '<td>' + (solicitud.tipo_arrendador_solicitud || '—') + '</td>' +
                 '<td>' + fecha + '</td>' +
                 '<td><span class="badge ' + badgeCss + '">' + estadoLabel + '</span></td>' +
+                '<td><span class="badge-estado" style="' + pagoBadgeStyle + '">' + pagoStatus + '</span></td>' +
                 '<td><div class="acciones-tabla">' +
                 '<button class="btn-icono btn-ver-sol" data-id="' + solicitud.id_solicitud_arrendador + '" title="Ver detalles"><i class="bi bi-eye"></i></button>' +
                 '<button class="btn-icono btn-aprobar-sol" data-id="' + solicitud.id_solicitud_arrendador + '" title="Aprobar"><i class="bi bi-check-circle"></i></button>' +

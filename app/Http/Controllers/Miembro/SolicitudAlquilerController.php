@@ -29,6 +29,8 @@ class SolicitudAlquilerController extends Controller
         DB::beginTransaction();
 
         try {
+            $ahora = Carbon::now();
+
             $idRolInquilino = DB::table('tbl_rol')
                 ->where('slug_rol', 'inquilino')
                 ->value('id_rol');
@@ -62,16 +64,29 @@ class SolicitudAlquilerController extends Controller
                 return redirect()->back()->with('error', 'Esta propiedad ya tiene un alquiler activo o pendiente.');
             }
 
-            DB::table('tbl_alquiler')->insert([
+            $alquilerId = DB::table('tbl_alquiler')->insertGetId([
                 'id_propiedad_fk' => $id,
                 'id_inquilino_fk' => $usuario->id_usuario,
                 'fecha_inicio_alquiler' => Carbon::today()->toDateString(),
                 'fecha_fin_alquiler' => null,
                 'precio_alquiler' => $propiedad->precio_propiedad,
                 'estado_alquiler' => 'activo',
-                'aprobado_alquiler' => Carbon::now(),
-                'creado_alquiler' => Carbon::now(),
-                'actualizado_alquiler' => Carbon::now(),
+                'aprobado_alquiler' => $ahora,
+                'creado_alquiler' => $ahora,
+                'actualizado_alquiler' => $ahora,
+            ]);
+
+            DB::table('tbl_pago')->insert([
+                'id_alquiler_fk' => $alquilerId,
+                'id_pagador_fk' => $usuario->id_usuario,
+                'tipo_pago' => 'alquiler',
+                'concepto_pago' => 'Pago inicial alquiler',
+                'importe_pago' => $propiedad->precio_propiedad,
+                'estado_pago' => 'pagado',
+                'referencia_pago' => 'PI-' . $alquilerId . '-' . $ahora->format('YmdHis'),
+                'fecha_confirmacion_pago' => $ahora,
+                'creado_pago' => $ahora,
+                'actualizado_pago' => $ahora,
             ]);
 
             DB::table('tbl_propiedad')

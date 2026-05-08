@@ -127,6 +127,7 @@
                             <th class="col-mobile-hide">PROPIEDAD</th>
                             <th class="col-tablet-hide">FECHA</th>
                             <th>ESTADO</th>
+                            <th>PAGO</th>
                             <th>ACCIONES</th>
                         </tr>
                     </thead>
@@ -153,6 +154,13 @@
                                 <td data-label="FECHA" class="col-tablet-hide">{{ $fecha }}</td>
                                 <td data-label="ESTADO">
                                     <span class="badge-estado badge-pendiente">Pendiente</span>
+                                </td>
+                                <td data-label="PAGO">
+                                    @if($solicitud->stripe_status === 'active')
+                                        <span class="badge-estado badge-activo" style="background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid #2ecc71;">Pagado</span>
+                                    @else
+                                        <span class="badge-estado badge-pendiente" style="background: rgba(243, 156, 18, 0.1); color: #f39c12; border: 1px solid #f39c12;">Pendiente</span>
+                                    @endif
                                 </td>
                                 <td data-label="ACCIONES">
                                     <div class="acciones-tabla">

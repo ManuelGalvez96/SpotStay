@@ -36,24 +36,101 @@
 
             {{-- Alertas Globales de Laravel --}}
             @if(session('status'))
-                <div class="alert alert-success">
-                    {{ session('status') }}
-                </div>
+            <div class="alert alert-success">
+                {{ session('status') }}
+            </div>
             @endif
 
             @if($errors->any())
-                <div class="alert alert-error">
-                    <ul>
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
+            <div class="alert alert-error">
+                <ul>
+                    @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
             @endif
 
             <form action="{{ route('register') }}" method="POST">
                 @csrf
                 <div class="grid-container">
+
+                    <div class="contenedor-entrada full-width">
+                        <label for="rol-usuario">Rol</label>
+                        <div class="input-wrapper">
+                            <select name="rol" id="rol-usuario">
+                                <option value="miembro" selected>Miembro</option>
+                                <option value="arrendador">Arrendador</option>
+                            </select>
+                        </div>
+                        <span id="error-rol" class="error-mensaje"></span>
+                    </div>
+
+                    <!-- SECCIÓN DINÁMICA DE PLANES -->
+                    <div id="seccion-planes" class="full-width seccion-dinamica" style="display: none;">
+                        <label>Selecciona tu Plan Mensual</label>
+                        <div class="grid-planes">
+                            @foreach($planes as $plan)
+                            <div class="card-plan-wrapper" data-rol="{{ $plan->rol_destino }}" style="display: none;">
+                                <input type="radio" name="plan_id" value="{{ $plan->id_plan }}" id="plan-{{ $plan->id_plan }}" style="display: none;">
+                                <label class="card-plan" for="plan-{{ $plan->id_plan }}">
+                                    <b>{{ $plan->nombre_plan }}</b>
+                                    <span class="precio">{{ $plan->precio_plan }}€</span>
+                                    <p>{{ $plan->descripcion_plan }}</p>
+                                </label>
+                            </div>
+                            @endforeach
+                        </div>
+                        <span id="error-plan" class="error-mensaje"></span>
+                    </div>
+
+                    <!-- SECCIÓN DINÁMICA DE ARRENDADOR -->
+                    <div id="seccion-arrendador" class="full-width seccion-dinamica" style="display: none;">
+                        <div class="grid-arrendador">
+                            <div class="contenedor-entrada">
+                                <label>Tipo de Documento</label>
+                                <div class="input-wrapper">
+                                    <select name="tipo_documento" id="tipo-documento-arrendador">
+                                        <option value="dni" selected>DNI</option>
+                                        <option value="nie">NIE</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="contenedor-entrada">
+                                <label id="label-documento">Número de Documento</label>
+                                <div class="input-wrapper">
+                                    <input type="text" name="dni" id="dni-arrendador" placeholder="DNI" value="{{ old('dni') }}">
+                                </div>
+                                <span id="error-dni" class="error-mensaje"></span>
+                            </div>
+                            <div class="contenedor-entrada">
+                                <label>Fecha de Nacimiento</label>
+                                <div class="input-wrapper">
+                                    <input type="date" name="fecha_nacimiento" id="fecha-nacimiento-arrendador" value="{{ old('fecha_nacimiento') }}">
+                                </div>
+                                <span id="error-fecha-nacimiento" class="error-mensaje"></span>
+                            </div>
+                            <div class="contenedor-entrada">
+                                <label>Tipo de Arrendador</label>
+                                <div class="input-wrapper">
+                                    <select name="tipo_arrendador" id="tipo-arrendador">
+                                        <option value="particular">Particular</option>
+                                        <option value="empresa">Empresa</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Campo NIF (Solo para empresas) -->
+                            <div id="contenedor-nif" class="contenedor-entrada full-width" style="display: none;">
+                                <label>NIF de la Empresa</label>
+                                <div class="input-wrapper">
+                                    <input type="text" name="nif" id="nif-empresa" placeholder="NIF (Ej: A12345678)" value="{{ old('nif') }}">
+                                </div>
+                                <span id="error-nif" class="error-mensaje"></span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="contenedor-entrada full-width">
                         <div class="input-wrapper">
                             <input type="text" id="nombre-usuario" name="nombre" placeholder="Nombre Completo" value="{{ old('nombre') }}">

@@ -27,10 +27,6 @@ function iniciarValidacionSolicitudArrendador() {
     const errorFechaNacimiento = document.getElementById("error-fecha-nacimiento-solicitud");
     const errorTipoDocumento = document.getElementById("error-tipo-documento-solicitud");
     const errorNumeroDocumento = document.getElementById("error-numero-documento-solicitud");
-    const errorIban = document.getElementById("error-iban-solicitud");
-    const errorTitular = document.getElementById("error-titular-cuenta-solicitud");
-    const errorNif = document.getElementById("error-nif-solicitud");
-    const errorDireccion = document.getElementById("error-direccion-fiscal-solicitud");
     const errorTipoArrendador = document.getElementById("error-tipo-arrendador-solicitud");
     const errorNumPropiedades = document.getElementById("error-num-propiedades-previstas-solicitud");
     const errorDescripcion = document.getElementById("error-descripcion-solicitud");
@@ -42,10 +38,6 @@ function iniciarValidacionSolicitudArrendador() {
     const entradaFechaNacimiento = document.getElementById("fecha-nacimiento-solicitud");
     const entradaTipoDocumento = document.getElementById("tipo-documento-solicitud");
     const entradaNumeroDocumento = document.getElementById("numero-documento-solicitud");
-    const entradaIban = document.getElementById("iban-solicitud");
-    const entradaTitular = document.getElementById("titular-cuenta-solicitud");
-    const entradaNif = document.getElementById("nif-solicitud");
-    const entradaDireccion = document.getElementById("direccion-fiscal-solicitud");
     const entradaTipoArrendador = document.getElementById("tipo-arrendador-solicitud");
     const entradaNumPropiedades = document.getElementById("num-propiedades-previstas-solicitud");
     const entradaDescripcion = document.getElementById("descripcion-solicitud");
@@ -59,10 +51,6 @@ function iniciarValidacionSolicitudArrendador() {
         errorFechaNacimiento,
         errorTipoDocumento,
         errorNumeroDocumento,
-        errorIban,
-        errorTitular,
-        errorNif,
-        errorDireccion,
         errorTipoArrendador,
         errorNumPropiedades,
         errorDescripcion,
@@ -72,10 +60,6 @@ function iniciarValidacionSolicitudArrendador() {
         entradaFechaNacimiento,
         entradaTipoDocumento,
         entradaNumeroDocumento,
-        entradaIban,
-        entradaTitular,
-        entradaNif,
-        entradaDireccion,
         entradaTipoArrendador,
         entradaNumPropiedades,
         entradaDescripcion,
@@ -106,8 +90,6 @@ function iniciarValidacionSolicitudArrendador() {
 		}
 
         const regexTel = /^\+\d{1,4} \d{6,11}$/;
-        const regexIban = /^[A-Z]{2}\d{2}\s?[\d\s]{10,30}$/i;
-        const regexNif = /^[A-Z0-9]\d{7}[A-Z0-9]$/i;
 
 		fetch(formularioSolicitud.action, {
 			method: "POST",
@@ -214,10 +196,6 @@ function validarFormulario(mostrarErrores) {
 	errores += validarCampo("fechaNacimiento", validarFechaNacimiento, mostrarErrores);
 	errores += validarCampo("tipoDocumento", validarSelectObligatorio, mostrarErrores);
 	errores += validarCampo("numeroDocumento", validarTextoObligatorio, mostrarErrores);
-	errores += validarCampo("iban", validarIban, mostrarErrores);
-	errores += validarCampo("titular", validarTextoObligatorio, mostrarErrores);
-	errores += validarCampo("nif", validarNif, mostrarErrores);
-	errores += validarCampo("direccion", validarTextoObligatorio, mostrarErrores);
 	errores += validarCampo("tipoArrendador", validarSelectObligatorio, mostrarErrores);
 	errores += validarCampo("numPropiedades", validarNumeroPropiedades, mostrarErrores);
 	errores += validarCampo("descripcion", validarDescripcion, mostrarErrores);
@@ -311,27 +289,7 @@ function validarTextoObligatorio(campo) {
 	return "";
 }
 
-function validarIban(campo) {
-	var valor = String(campo.value || "").toUpperCase().replace(/\s+/g, "").trim();
-	if (valor === "") {
-		return "El IBAN es obligatorio.";
-	}
-	if (!/^ES\d{22}$/.test(valor)) {
-		return "El IBAN debe tener formato ES seguido de 22 digitos.";
-	}
-	return "";
-}
 
-function validarNif(campo) {
-	var valor = String(campo.value || "").toUpperCase().trim();
-	if (valor === "") {
-		return "El NIF es obligatorio.";
-	}
-	if (!/^(\d{8}[A-Z]|[XYZ]\d{7}[A-Z])$/.test(valor)) {
-		return "El NIF/NIE no tiene un formato valido.";
-	}
-	return "";
-}
 
 function validarNumeroPropiedades(campo) {
 	var valor = String(campo.value || "").trim();
@@ -369,10 +327,6 @@ function obtenerIdErrorPorClave(clave) {
 		fechaNacimiento: "error-fecha-nacimiento-solicitud",
 		tipoDocumento: "error-tipo-documento-solicitud",
 		numeroDocumento: "error-numero-documento-solicitud",
-		iban: "error-iban-solicitud",
-		titular: "error-titular-cuenta-solicitud",
-		nif: "error-nif-solicitud",
-		direccion: "error-direccion-fiscal-solicitud",
 		tipoArrendador: "error-tipo-arrendador-solicitud",
 		numPropiedades: "error-num-propiedades-previstas-solicitud",
 		descripcion: "error-descripcion-solicitud",

@@ -191,6 +191,7 @@ body.pagina-miembro {
 	border-radius: var(--radio);
 	border: 1px solid var(--borde);
 	background: var(--fondo-panel);
+	font: inherit;
 	font-size: 14px;
 	color: var(--texto);
 	outline: none;
@@ -336,6 +337,11 @@ body.pagina-miembro {
 }
 
 /* Popup grande de propiedad para el mapa */
+.popup-propiedad-contenedor .leaflet-popup-content-wrapper,
+.popup-propiedad-contenedor .leaflet-popup-content {
+	overflow: visible;
+}
+
 .popup-propiedad-contenedor .leaflet-popup-content {
 	margin: 12px 14px;
 }
@@ -343,6 +349,29 @@ body.pagina-miembro {
 .popup-propiedad {
 	min-width: 250px;
 	max-width: 320px;
+	position: relative;
+	padding-top: 40px;
+	overflow: visible;
+}
+
+.popup-propiedad-oso {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	transform: translate(-50%, -65%);
+	width: 96px;
+	height: 96px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+	z-index: 3;
+}
+
+.popup-propiedad-oso .oso-popup-svg {
+	width: 90px;
+	height: 90px;
+	display: block;
 }
 
 .popup-propiedad-titulo {
@@ -376,7 +405,7 @@ body.pagina-miembro {
 	border-radius: 999px;
 	text-decoration: none;
 	background: var(--primario);
-	color: #ffffff;
+	color: #ffffff !important;
 	font-size: 13px;
 	font-weight: 600;
 }
@@ -800,7 +829,7 @@ body.pagina-miembro {
 	padding: 14px 12px;
 	text-align: center;
 	border-right: 1px solid var(--borde);
-	background: var(--fondo-suave);
+	background: ffffff;
 }
 
 .detalle-resumen-item:last-child {

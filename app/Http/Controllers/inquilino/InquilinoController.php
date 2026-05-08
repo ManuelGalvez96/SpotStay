@@ -588,6 +588,8 @@ class InquilinoController extends Controller
             return response()->json(['error' => 'Incidencia no encontrada'], 404);
         }
 
+        $estadoWorkflow = $incidencia->estado_incidencia ?? 'abierta';
+
         return response()->json([
             'id' => $incidencia->id_incidencia,
             'titulo' => $incidencia->titulo_incidencia,
@@ -595,8 +597,9 @@ class InquilinoController extends Controller
             'categoria' => ucfirst(str_replace('_', ' ', $incidencia->categoria_incidencia ?? 'N/A')),
             'prioridad' => ucfirst($incidencia->prioridad_incidencia ?? 'N/A'),
             'estado' => ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia ?? 'N/A')),
-            'estado_workflow' => $incidencia->estado_workflow,
-            'presupuesto' => $incidencia->presupuesto_incidencia,
+            'estado_workflow' => $estadoWorkflow,
+            'estado_incidencia' => $estadoWorkflow,
+            'presupuesto' => $incidencia->presupuesto_importe_incidencia,
             'fecha' => Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y H:i')
         ]);
     }

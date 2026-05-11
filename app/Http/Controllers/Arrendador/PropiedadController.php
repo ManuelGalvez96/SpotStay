@@ -284,7 +284,24 @@ class PropiedadController extends Controller
     private function consultarPropiedades(int $arrendadorId, string $columnaPrecio)
     {
         return DB::table('tbl_propiedad as p')
-            ->leftJoin(DB::raw('(SELECT id_propiedad_fk, COUNT(*) as total_inquilinos FROM tbl_alquiler WHERE estado_alquiler = "activo" GROUP BY id_propiedad_fk) as alq'), 'alq.id_propiedad_fk', '=', 'p.id_propiedad')
+        //Obtener inquilinos
+            ->leftJoin(DB::raw('(SELECT id_propiedad_fk, COUNT(*) as total_inquilinos FROM tbl_alquiler GROUP BY id_propiedad_fk) as alq'), 'alq.id_propiedad_fk', '=', 'p.id_propiedad')
+        //Obtener nombre del gestor 
+            ->leftJoin('tbl_usuario as g', 'g.id_usuario', '=', 'p.id_gestor_fk')
+        //Obtener total de incidencias
+            ->leftJoin(DB::raw('(SELECT id_propiedad_fk, COUNT(*) as total_incidencias FROM tbl_incidencia GROUP BY id_propiedad_fk) as inc'), 'inc.id_propiedad_fk', '=', 'p.id_propiedad')
+        //Obtener cuotas de alquiler atrasadas y pendientes
+            ->leftJoin(DB::raw('(
+                SELECT
+                    a.id_propiedad_fk,
+                    SUM(CASE WHEN ac.estado = "atrasado" THEN 1 ELSE 0 END) as cuotas_atrasadas,
+                    SUM(CASE WHEN ac.estado = "pendiente" THEN 1 ELSE 0 END) as cuotas_pendientes
+                FROM tbl_alquiler_cuota ac
+                JOIN tbl_alquiler a
+                    ON a.id_alquiler = ac.id_alquiler_fk
+                GROUP BY a.id_propiedad_fk
+            ) as cuotas'), 'cuotas.id_propiedad_fk', '=', 'p.id_propiedad')
+        //QUEDA AÑADIR GASTOS ATRASADOS Y PENDIENTES
             ->where('p.id_arrendador_fk', $arrendadorId)
             ->select(
                 'p.id_propiedad',
@@ -295,7 +312,11 @@ class PropiedadController extends Controller
                 'p.estado_propiedad',
                 DB::raw("p.{$columnaPrecio} as precio_propiedad"),
                 'alq.total_inquilinos',
-                'p.creado_propiedad'
+                'p.creado_propiedad',
+                'g.nombre_usuario as nombre_gestor',
+                'inc.total_incidencias',
+                'cuotas.cuotas_atrasadas',
+                'cuotas.cuotas_pendientes'
             )
             ->orderByDesc('p.creado_propiedad');
     }

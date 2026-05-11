@@ -63,27 +63,11 @@
                             <td class="text-center">
                                 {{ $propiedad->total_incidencias ?? 'Sin incidencias' }}
                             </td>
-                            @php
-                                //Cálculo de las cuotas
-                                $atrasadas = $propiedad->cuotas_atrasadas ?? 0;
-                                $pendientes = $propiedad->cuotas_pendientes ?? 0;
-
-                                if($atrasadas > 0) {
-                                    $estado = 'atrasado';
-                                    $label = 'Atrasado';
-                                } elseif($pendientes > 0) {
-                                    $estado = 'pendiente';
-                                    $label = 'Pendiente';
-                                } else {
-                                    $estado = 'al-dia';
-                                    $label = 'Al día';
-                                }
-                            @endphp
                             <td class="text-center">
-                                <span class="badge badge-{{ $estado }}">{{ $label}}</span>
+                                <span class="badge badge-{{ $propiedad->estado_pagos ?? 'al-dia' }}">{{ $propiedad->estado_pagos_label ?? 'Al día' }}</span>
                             </td>
                             <td>
-                                {{ $propiedad->nombre_gestor ?? 'Sin gestor' }}
+                                {{ $propiedad->gestor_nombre ?? 'Sin gestor' }}
                             </td>
                             <td>
                                 <div class="table-actions">

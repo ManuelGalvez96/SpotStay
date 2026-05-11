@@ -146,7 +146,7 @@ function iniciarValidacionImagenes() {
     listaPrevia.innerHTML = '';
     
     if (archivosAcumulados.length > 0) {
-      contenedorPrevia.style.display = 'block';
+      contenedorPrevia.hidden = false;
 
       archivosAcumulados.forEach(function (archivoObj, indice) {
         var lector = new FileReader();
@@ -234,7 +234,7 @@ function iniciarValidacionImagenes() {
         lector.readAsDataURL(archivoObj.archivo);
       });
     } else {
-      contenedorPrevia.style.display = 'none';
+      contenedorPrevia.hidden = true;
     }
   }
 
@@ -295,7 +295,7 @@ function cerrarModalPropiedad() {
   var modal = document.getElementById('modal-propiedad');
 
   if (modal) {
-    modal.style.display = 'none';
+    modal.hidden = true;
   }
 }
 
@@ -337,19 +337,19 @@ function abrirModalFormulario(arrendadorId) {
     // Ocultar vista previa de imágenes
     var contenedorPrevia = document.getElementById('contenedor-previa-imagenes');
     if (contenedorPrevia) {
-      contenedorPrevia.style.display = 'none';
+      contenedorPrevia.hidden = true;
     }
   }
 
   document.getElementById('modal-formulario-titulo').textContent = 'Nueva propiedad';
-  modal.style.display = 'flex';
+  modal.hidden = false;
 }
 
 function cerrarModalFormulario() {
   var modal = document.getElementById('modal-formulario');
 
   if (modal) {
-    modal.style.display = 'none';
+    modal.hidden = true;
   }
 }
 

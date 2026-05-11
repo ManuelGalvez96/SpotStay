@@ -353,6 +353,29 @@ function cerrarModalFormulario() {
   }
 }
 
+// Gestor modal handlers
+function abrirModalGestor(propiedadId, gestorNombre) {
+  var modal = document.getElementById('modal-gestor-config');
+  if (!modal) return;
+
+  // Rellenar contenido
+  var titulo = modal.querySelector('.modal-header h2');
+  var cuerpo = modal.querySelector('.modal-body');
+  if (titulo) titulo.textContent = 'Configuración del gestor';
+  if (cuerpo) {
+    cuerpo.innerHTML = '<p><strong>Propiedad ID:</strong> ' + (propiedadId || '') + '</p>' +
+                      '<p><strong>Gestor:</strong> ' + (gestorNombre || 'Sin gestor') + '</p>' +
+                      '<p>Puedes aquí añadir opciones de configuración del gestor.</p>';
+  }
+
+  modal.hidden = false;
+}
+
+function cerrarModalGestor() {
+  var modal = document.getElementById('modal-gestor-config');
+  if (modal) modal.hidden = true;
+}
+
 function construirContenidoModal(datos) {
   var propiedad = datos.propiedad;
   var alquiler = datos.alquiler_activo;

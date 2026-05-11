@@ -38,9 +38,6 @@
 
             <table class="properties-table">
                 <thead>
-                    <tr>
-                        <th>Propiedad</th>
-                        <th>Estado</th>
                         <th>Incidencias</th>
                         <th>Pagos</th>
                         <th>Gestor</th>
@@ -84,6 +81,9 @@
                             </td>
                             <td>
                                 {{ $propiedad->nombre_gestor ?? 'Sin gestor' }}
+                                <button type="button" class="btn-gear" aria-label="Configurar gestor" data-propiedad-id="{{ $propiedad->id_propiedad }}" data-gestor-nombre="{{ $propiedad->gestor_nombre ?? '' }}" onclick="abrirModalGestor(this.dataset.propiedadId, this.dataset.gestorNombre)">
+                                    <i class="bi bi-gear"></i>
+                                </button>
                             </td>
                             <td>
                                 <div class="table-actions">
@@ -118,6 +118,19 @@
             </div>
             <div class="modal-body" id="modal-body">
                 <div class="spinner">Cargando...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-gestor-config" class="modal" hidden>
+        <div class="modal-backdrop" onclick="cerrarModalGestor()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Configuración del gestor</h2>
+                <button class="modal-close" type="button" onclick="cerrarModalGestor()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p>Cargando...</p>
             </div>
         </div>
     </div>

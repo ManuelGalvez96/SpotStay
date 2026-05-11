@@ -50,7 +50,7 @@
                     <td><span class="estado">{{ ucfirst($propiedad->estado_propiedad) }}</span></td>
                     <td>
                         <strong data-nombre-gestor>{{ $propiedad->nombre_gestor ?: 'Sin gestor' }}</strong>
-                        <div class="muted">{{ $propiedad->email_gestor ?: 'Sin email' }}</div>
+                        <div class="muted" data-email-gestor>{{ $propiedad->email_gestor ?: 'Sin email' }}</div>
                     </td>
                     <td>
                         <form
@@ -60,14 +60,18 @@
                             method="POST"
                         >
                             @csrf
-                            <select name="id_gestor_fk" required>
+                            <select name="id_gestor_fk">
+                                <option value="" @selected(empty($propiedad->id_gestor_fk))>Sin gestor asignado</option>
                                 @foreach ($gestoresDisponibles as $gestor)
                                     <option value="{{ $gestor->id_usuario }}" @selected((int) $propiedad->id_gestor_fk === (int) $gestor->id_usuario)>
                                         {{ $gestor->nombre_usuario }}{{ $gestor->email_usuario ? ' - ' . $gestor->email_usuario : '' }}
                                     </option>
                                 @endforeach
                             </select>
-                            <button type="submit" class="btn-guardar"><span class="texto-boton">Guardar</span></button>
+                            <div class="acciones-gestor">
+                                <button type="submit" class="btn-guardar"><span class="texto-boton">Guardar</span></button>
+                                <button type="button" class="btn-desasignar" data-desasignar-gestor="true">Desasignar</button>
+                            </div>
                         </form>
                     </td>
                 </tr>

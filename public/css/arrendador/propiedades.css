@@ -77,9 +77,10 @@ body {
 }
 .form-grid textarea { resize: vertical; min-height: 110px; }
 .btn-primary {
-  border: none; border-radius: 14px; background: linear-gradient(135deg, var(--primary) 0%, #19498d 100%);
-  color: var(--primary-foreground); padding: 12px 16px; font-weight: 700; cursor: pointer;
+  border: none; border-radius: 8px; background: #035498;
+  color: #fff; padding: 8px 12px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.15s ease;
 }
+.btn-primary:hover { background: #024080; }
 .property-list { display: flex; flex-direction: column; gap: 12px; }
 .property-card {
   border: 1px solid var(--border); border-radius: 18px; padding: 16px; display: flex; justify-content: space-between; gap: 16px;
@@ -89,10 +90,10 @@ body {
 .property-meta { margin: 0 0 4px; color: var(--muted-foreground); font-size: 14px; }
 .property-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
 .badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 700; }
-.badge-publicada { background: #eaf6f3; color: #05603a; }
-.badge-alquilada { background: #e8f1ff; color: #1d4ed8; }
-.badge-borrador { background: #f4f4f5; color: #52525b; }
-.badge-inactiva { background: #fff1f0; color: #b42318; }
+.badge-publicada { background: #e0f2fe; color: #0369a1; }
+.badge-alquilada { background: #d1fae5; color: #065f46; }
+.badge-borrador { background: #f3f4f6; color: #374151; }
+.badge-inactiva { background: #fee2e2; color: #991b1b; }
 .mini-link, .mini-button {
   border: 1px solid var(--border); border-radius: 999px; padding: 7px 12px; background: #fff; font-size: 13px; cursor: pointer;
 }
@@ -188,7 +189,11 @@ body {
 }
 
 .btn-primary {
-  background: #1d4ed8;
+  background: #035498;
+}
+
+.btn-primary:hover {
+  background: #024080;
 }
 
 .btn-volver,

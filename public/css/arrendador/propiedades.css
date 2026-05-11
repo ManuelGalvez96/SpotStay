@@ -177,6 +177,16 @@ body {
   text-align: center;
 }
 
+.table-cell-center {
+  text-align: center !important;
+}
+
+.table-cell-center .badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .table-actions {
   display: flex;
   gap: 8px;

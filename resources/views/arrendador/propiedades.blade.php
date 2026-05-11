@@ -38,6 +38,8 @@
 
             <table class="properties-table">
                 <thead>
+                        <th>Propiedades</th>
+                        <th>Estado</th>
                         <th>Incidencias</th>
                         <th>Pagos</th>
                         <th>Gestor</th>
@@ -57,7 +59,7 @@
                             <td>
                                 <span class="badge badge-{{ $propiedad->estado_propiedad }}">{{ ucfirst($propiedad->estado_propiedad) }}</span>
                             </td>
-                            <td class="text-center">
+                            <td>
                                 {{ $propiedad->total_incidencias ?? 'Sin incidencias' }}
                             </td>
                             @php
@@ -76,7 +78,7 @@
                                     $label = 'Al día';
                                 }
                             @endphp
-                            <td class="text-center">
+                            <td>
                                 <span class="badge badge-{{ $estado }}">{{ $label}}</span>
                             </td>
                             <td>

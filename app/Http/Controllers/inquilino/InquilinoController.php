@@ -444,7 +444,7 @@ class InquilinoController extends Controller
 
         $hoy = Carbon::now();
         $fechaFin = !empty($alquiler->fecha_fin_alquiler) ? Carbon::parse($alquiler->fecha_fin_alquiler)->endOfDay() : null;
-        
+
         $datos = [
             'es_indefinido' => empty($fechaFin),
             'expirado' => false,
@@ -458,7 +458,7 @@ class InquilinoController extends Controller
             if ($datos['expirado']) {
                 $datos['dias_exceso'] = (int) $fechaFin->diffInDays($hoy);
                 $datos['semana_excedida'] = $datos['dias_exceso'] >= 7;
-                
+
                 if ($datos['semana_excedida']) {
                     $datos['mensaje'] = "⚠️ Alerta: Has superado el plazo de una semana tras el fin de contrato.";
                 } else {
@@ -643,7 +643,7 @@ class InquilinoController extends Controller
                 ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
                 ->join('tbl_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
                 ->where('tbl_alquiler.id_alquiler', $idAlquiler)
-                ->select('tbl_usuario.stripe_account_id', 'tbl_usuario.nombre_usuario', 'tbl_propiedad.id_propiedad', 'tbl_propiedad.calle_propiedad')
+                ->select('tbl_usuario.stripe_account_id', 'tbl_usuario.nombre_usuario', 'tbl_propiedad.id_propiedad', 'tbl_propiedad.calle_propiedad', 'tbl_alquiler.fecha_inicio_alquiler')
                 ->first();
 
             if (!$alquiler || empty($alquiler->stripe_account_id)) {
@@ -656,8 +656,18 @@ class InquilinoController extends Controller
             $nombreProducto = "SpotStay: " . $concepto . " (" . $alquiler->calle_propiedad . ")";
             $descripcionProducto = "Pago destinado a: " . $alquiler->nombre_usuario;
 
-            $importe = ($tipoPago === 'alquiler') ? $cuota->importe_base : request()->query('monto', 0);
-            
+            // Lógica de Importe: Si es alquiler, verificamos si hay deuda total acumulada
+            if ($tipoPago === 'alquiler') {
+                $resumen = $this->obtenerResumenPagoAlquiler($idAlquiler, $alquiler->fecha_inicio_alquiler);
+                $importe = $resumen['total_deuda'] > 0 ? $resumen['total_deuda'] : $cuota->importe_base;
+                if ($resumen['num_pagos_atrasados'] > 0) {
+                    $nombreProducto = "SpotStay: Liquidación de Deuda (" . $alquiler->calle_propiedad . ")";
+                    $descripcionProducto = "Pago de " . ($resumen['num_pagos_atrasados'] + 1) . " cuotas acumuladas.";
+                }
+            } else {
+                $importe = request()->query('monto', 0);
+            }
+
             $numInquilinos = DB::table('tbl_alquiler')
                 ->where('id_propiedad_fk', $alquiler->id_propiedad)
                 ->where('estado_alquiler', 'activo')
@@ -688,7 +698,8 @@ class InquilinoController extends Controller
                     'tipo_pago' => $tipoPago,
                     'id_referencia' => $cuotaId,
                     'id_alquiler' => $idAlquiler,
-                    'id_usuario' => $userId
+                    'id_usuario' => $userId,
+                    'pago_total' => ($tipoPago === 'alquiler' && isset($resumen) && $resumen['num_pagos_atrasados'] > 0) ? '1' : '0'
                 ]
             ];
 
@@ -705,7 +716,6 @@ class InquilinoController extends Controller
             $session = StripeSession::create($sessionData);
 
             return response()->json(['success' => true, 'url' => $session->url]);
-
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
@@ -796,31 +806,40 @@ class InquilinoController extends Controller
 
         Stripe::setApiKey(config('services.stripe.secret'));
         $session = StripeSession::retrieve($sessionId);
-        
+
         $meta = $session->metadata;
         $ahora = now();
 
         DB::beginTransaction();
         try {
             if ($meta->tipo_pago === 'alquiler') {
-                $cuota = AlquilerCuota::find($meta->id_referencia);
-                if ($cuota) {
-                    $cuota->update(['estado' => 'pagado', 'pagado_en' => $ahora]);
-                    
-                    Pago::create([
-                        'id_pagador_fk' => $meta->id_usuario,
-                        'id_alquiler_fk' => $meta->id_alquiler,
-                        'id_alquiler_cuota_fk' => $cuota->id_alquiler_cuota,
-                        'tipo_pago' => 'alquiler',
-                        'concepto_pago' => 'Cuota alquiler ' . Carbon::parse($cuota->mes_cuota)->format('m/Y'),
-                        'importe_pago' => $session->amount_total / 100,
-                        'estado_pago' => 'pagado',
-                        'referencia_pago' => $session->payment_intent,
-                        'fecha_confirmacion_pago' => $ahora,
-                        'creado_pago' => $ahora,
-                        'actualizado_pago' => $ahora
-                    ]);
+                if (($meta->pago_total ?? '0') === '1') {
+                    // Si es pago de deuda total, liquidamos todas las cuotas hasta el mes vigente
+                    $resumen = $this->obtenerResumenPagoAlquiler($meta->id_alquiler);
+                    AlquilerCuota::where('id_alquiler_fk', $meta->id_alquiler)
+                        ->whereIn('estado', ['pendiente', 'atrasado'])
+                        ->whereDate('mes_cuota', '<=', now()->startOfMonth())
+                        ->update(['estado' => 'pagado', 'pagado_en' => $ahora]);
+                } else {
+                    $cuota = AlquilerCuota::find($meta->id_referencia);
+                    if ($cuota) {
+                        $cuota->update(['estado' => 'pagado', 'pagado_en' => $ahora]);
+                    }
                 }
+
+                Pago::create([
+                    'id_pagador_fk' => $meta->id_usuario,
+                    'id_alquiler_fk' => $meta->id_alquiler,
+                    'id_alquiler_cuota_fk' => $meta->id_referencia,
+                    'tipo_pago' => 'alquiler',
+                    'concepto_pago' => (($meta->pago_total ?? '0') === '1') ? 'Liquidación de deuda acumulada' : 'Cuota alquiler',
+                    'importe_pago' => $session->amount_total / 100,
+                    'estado_pago' => 'pagado',
+                    'referencia_pago' => $session->payment_intent,
+                    'fecha_confirmacion_pago' => $ahora,
+                    'creado_pago' => $ahora,
+                    'actualizado_pago' => $ahora
+                ]);
             } elseif ($meta->tipo_pago === 'gasto') {
                 // Lógica similar para suministros...
                 // (Para simplificar, asumo que el id_referencia es el id_alquiler_cuota asociado)
@@ -830,7 +849,7 @@ class InquilinoController extends Controller
                     'estado_workflow' => 'pagado',
                     'actualizado_incidencia' => $ahora
                 ]);
-                
+
                 // Registrar el pago de la incidencia
                 Pago::create([
                     'id_pagador_fk' => $meta->id_usuario,
@@ -847,7 +866,7 @@ class InquilinoController extends Controller
             }
 
             DB::commit();
-            
+
             // Obtenemos el ID de la propiedad para redirigir al detalle específico
             $idPropiedad = DB::table('tbl_alquiler')->where('id_alquiler', $meta->id_alquiler)->value('id_propiedad_fk');
 
@@ -896,7 +915,7 @@ class InquilinoController extends Controller
     {
         // Lógica para que el inquilino decida quién paga (si tiene permiso)
         $request->validate(['responsable' => 'required|in:inquilino,propietario']);
-        
+
         DB::table('tbl_incidencia')->where('id_incidencia', $id)->update([
             'responsable_pago' => $request->responsable,
             'estado_workflow' => ($request->responsable === 'inquilino') ? 'esperando_pago' : 'esperando_aprobacion_propietario',
@@ -1032,6 +1051,11 @@ class InquilinoController extends Controller
         $totalDeuda = (float) $cuotasPendientes->filter(function (AlquilerCuota $c) use ($mesVigente) {
             return Carbon::parse((string) $c->mes_cuota)->format('Y-m') <= $mesVigente->format('Y-m');
         })->sum('importe_base');
+
+        // Ajuste de estado: si hay atrasados, el estado es 'atrasado'
+        if ($numPagosAtrasados > 0) {
+            $estadoPagoActual = 'atrasado';
+        }
 
         return [
             'estado_pago_actual' => $estadoPagoActual,

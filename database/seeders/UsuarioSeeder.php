@@ -80,7 +80,7 @@ class UsuarioSeeder extends Seeder
             // Generar datos ficticios para nuevos campos
             $dni = str_pad(rand(10000000, 99999999), 8, '0', STR_PAD_LEFT) . strtoupper(chr(rand(65, 90)));
             $fechaNacimiento = \Carbon\Carbon::now()->subYears(rand(25, 65))->format('Y-m-d');
-            $iban = 'ES' . str_pad(rand(0, 9999999999999999), 16, '0', STR_PAD_LEFT);
+            $iban = $data['rol'] === 'arrendador' ? 'ES' . str_pad(rand(0, 9999999999999999), 16, '0', STR_PAD_LEFT) : null;
             $es_admin = in_array($data['email'], ['agarcia@spotstay.com', 'alopez@spotstay.com', 'amartinez@spotstay.com']);
             
             $usuario = Usuario::firstOrCreate(

@@ -7,9 +7,9 @@
 @endsection
 
 @section('content')
-<div class="contenedor-ver-propiedad" 
-     data-mensaje-exito="{{ session('success') }}" 
-     data-mensaje-error="{{ session('error') }}">
+<div class="contenedor-ver-propiedad"
+    data-mensaje-exito="{{ session('success') }}"
+    data-mensaje-error="{{ session('error') }}">
     <!-- Botón Volver -->
     <div class="navegacion-superior">
         <a href="{{ route('gestionar_propiedades') }}" class="btn-volver">
@@ -123,14 +123,19 @@
                     <i class="bi bi-calendar-check"></i>
                 </div>
                 <div class="card-body">
-                    @if ($diasRestantesMes === 0 && $estadoPagoActual === 'pendiente')
+                    @if ($estadoPagoActual === 'atrasado')
+                    {{-- ESTADO ATRASADO (Indefinido) --}}
+                    <span class="label pago-requerido">⚠️ DEUDA PENDIENTE</span>
+                    <span class="valor-kpi pago-requerido">{{ number_format($totalDeuda, 2, ',', '.') }}€</span>
+                    <p class="nota pago-requerido">Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso acumulado.</p>
+                    <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId ?? 0) }}?tipo=alquiler" class="form-pago-cuota" data-monto="{{ number_format($totalDeuda, 2, ',', '.') }}€">
+                        @csrf
+                        <button type="button" id="boton-pagar" class="btn-accion btn-pago bg-pago-requerido">Pagar Deuda Total</button>
+                    </form>
+                    @elseif ($diasRestantesMes === 0 && $estadoPagoActual === 'pendiente')
                     <span class="label pago-requerido">¡PAGO REQUERIDO!</span>
                     <span class="valor-kpi pago-requerido">HOY</span>
-                    @if ($numPagosAtrasados > 0)
-                    <p class="nota pago-requerido"><strong>¡Paga ya!</strong> Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso más este mes (Cuota: <strong>{{ number_format($montoCuotaActual, 2, ',', '.') }}€</strong>).</p>
-                    @else
-                    <p class="nota pago-requerido"><strong>¡Paga ya!</strong> El plazo de este mes vence hoy.</p>
-                    @endif
+                    <p class="nota pago-requerido"><strong>¡Paga ya!</strong> El plazo de este mes vence hoy (Cuota: <strong>{{ number_format($montoCuotaActual, 2, ',', '.') }}€</strong>).</p>
                     <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId ?? 0) }}?tipo=alquiler" class="form-pago-cuota" data-monto="{{ number_format($montoCuotaActual, 2, ',', '.') }}€">
                         @csrf
                         <button type="button" id="boton-pagar" class="btn-accion btn-pago bg-pago-requerido" {{ empty($cuotaPendienteId) ? 'disabled' : '' }}>Pagar Cuota Ahora</button>
@@ -143,11 +148,7 @@
                     @else
                     <span class="label">PRÓXIMO PAGO EN</span>
                     <span class="valor-kpi">{{ $diasRestantesMes }} días</span>
-                    @if ($numPagosAtrasados > 0)
-                    <p class="nota pago-aviso">⚠️ Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso.<br> El pago pendiente es de <strong>{{ number_format($montoCuotaActual, 2, ',', '.') }}€</strong>.</p>
-                    @else
                     <p class="nota pago-aviso">Vence a final de mes.</p>
-                    @endif
                     <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId ?? 0) }}?tipo=alquiler" class="form-pago-cuota" data-monto="{{ number_format($montoCuotaActual, 2, ',', '.') }}€">
                         @csrf
                         <button type="button" id="boton-pagar" class="btn-accion btn-pago" {{ empty($cuotaPendienteId) ? 'disabled' : '' }}>Pagar Ahora</button>
@@ -165,14 +166,21 @@
                     <i class="bi bi-calendar-check"></i>
                 </div>
                 <div class="card-body">
-                    @if ($diasParaPago === 0 && $estadoPagoActual === 'pendiente')
+                    @if ($estadoPagoActual === 'atrasado')
+                    {{-- ESTADO ATRASADO --}}
+                    <span class="label pago-requerido">⚠️ DEUDA PENDIENTE</span>
+                    <span class="valor-kpi pago-requerido">{{ number_format($totalDeuda, 2, ',', '.') }}€</span>
+                    <span class="valor-kpi pago-requerido">{{ $numPagosAtrasados }} meses</span>
+                    <p class="nota pago-requerido">Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso.<br>El total incluye las cuotas atrasadas y el mes actual.</p>
+                    <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId ?? 0) }}?tipo=alquiler" class="form-pago-cuota" data-monto="{{ number_format($totalDeuda, 2, ',', '.') }}€">
+                        @csrf
+                        <button type="button" id="boton-pagar" class="btn-accion btn-pago bg-pago-requerido">Pagar Deuda Total</button>
+                    </form>
+                    @elseif ($diasParaPago === 0 && $estadoPagoActual === 'pendiente')
+                    {{-- ESTADO HOY (Sin atrasos previos) --}}
                     <span class="label pago-requerido">¡PAGO REQUERIDO!</span>
                     <span class="valor-kpi pago-requerido">HOY</span>
-                    @if ($numPagosAtrasados > 0)
-                    <p class="nota pago-requerido"><strong>¡Paga ya!</strong> Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso más este mes (Cuota: <strong>{{ number_format($montoCuotaActual, 2, ',', '.') }}€</strong>).</p>
-                    @else
-                    <p class="nota pago-requerido"><strong>¡Paga ya!</strong> El plazo vence hoy.</p>
-                    @endif
+                    <p class="nota pago-requerido"><strong>¡Paga ya!</strong> El plazo vence hoy (Cuota: <strong>{{ number_format($montoCuotaActual, 2, ',', '.') }}€</strong>).</p>
                     <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId ?? 0) }}?tipo=alquiler" class="form-pago-cuota" data-monto="{{ number_format($montoCuotaActual, 2, ',', '.') }}€">
                         @csrf
                         <button type="button" id="boton-pagar" class="btn-accion btn-pago bg-pago-requerido" {{ empty($cuotaPendienteId) ? 'disabled' : '' }}>Pagar Cuota Ahora</button>
@@ -185,11 +193,7 @@
                     @else
                     <span class="label">PRÓXIMO PAGO EN</span>
                     <span class="valor-kpi">{{ $diasParaPago }} días</span>
-                    @if ($numPagosAtrasados > 0)
-                    <p class="nota pago-aviso">⚠️ Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso. Se acumulará un total de <strong>{{ number_format($totalDeuda, 2, ',', '.') }}€</strong>.</p>
-                    @else
                     <p class="nota">Vence el {{ \Carbon\Carbon::parse($fechaProximoPago)->format('d/m/Y') }}</p>
-                    @endif
 
                     @if (!empty($cuotaPendienteId))
                     <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId) }}?tipo=alquiler" class="form-pago-cuota" data-monto="{{ number_format($montoCuotaActual, 2, ',', '.') }}€">

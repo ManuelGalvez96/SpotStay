@@ -168,6 +168,74 @@
     border: none;
 }
 
+/* ── Estilos para checkboxes de extras ── */
+.extras-fieldset {
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    padding: 16px;
+    margin: 0;
+    background: #fafbfc;
+}
+
+.extras-fieldset legend {
+    padding: 0 8px;
+    color: #334155;
+}
+
+.extras-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 14px;
+    color: #374151;
+    font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #035498;
+    margin: 0;
+}
+
+.checkbox-label span {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox-label:hover {
+    color: #035498;
+}
+
+/* ── Estilos para extras en modal ── */
+.extra-activado {
+    padding: 8px 12px;
+    background: #D5F5E3;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #22863a;
+    font-weight: 500;
+}
+
+.extra-desactivado {
+    padding: 8px 12px;
+    background: #FADEDE;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #c71c1c;
+    font-weight: 500;
+}
+
 @media (max-width: 768px) {
     .form-grid {
         grid-template-columns: 1fr;
@@ -180,5 +248,9 @@
     .card-header-crear {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .extras-grid {
+        grid-template-columns: 1fr;
     }
 }

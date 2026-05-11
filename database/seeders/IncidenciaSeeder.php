@@ -45,8 +45,8 @@ class IncidenciaSeeder extends Seeder
             ['titulo' => 'Suelo mojado constantemente', 'descripcion' => 'El suelo del baño está siempre mojado', 'categoria' => 'fontaneria', 'prioridad' => 'media'],
         ];
 
-        $estados = ['abierta', 'en_proceso', 'resuelta'];
-        $prioridades = ['baja', 'media', 'alta'];
+        $estados = ['abierta', 'esperando_decision', 'esperando_pago', 'solucionada', 'resuelta'];
+        $prioridades = ['baja', 'media', 'alta', 'urgente'];
         $incidenciaCounter = 0;
 
         foreach ($propiedades as $propiedad) {
@@ -84,7 +84,7 @@ class IncidenciaSeeder extends Seeder
                         'id_reporta_fk' => $reportador->id_usuario,
                         'id_asignado_fk' => $asignado->id_usuario,
                         'creado_incidencia' => $fechaCreacion,
-                        'actualizado_incidencia' => $estado === 'resuelta' ? $fechaCreacion->copy()->addDays(rand(1, 10)) : now(),
+                        'actualizado_incidencia' => in_array($estado, ['solucionada', 'resuelta']) ? $fechaCreacion->copy()->addDays(rand(1, 10)) : now(),
                     ]
                 );
 

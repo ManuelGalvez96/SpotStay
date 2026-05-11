@@ -72,21 +72,30 @@ var asignarEventosFiltros = function() {
     var selectPrecio = document.getElementById('selectPrecio');
     var buscadorPropiedades = document.getElementById('buscadorPropiedades');
 
-    selectEstado.onchange = function() {
-        filtrarPropiedades(1);
-    };
+    if (!selectEstado) {
+        console.error('selectEstado no encontrado');
+        return;
+    }
 
-    selectCiudad.onchange = function() {
+    selectEstado.addEventListener('change', function(e) {
+        console.log('Cambio en estado:', this.value);
         filtrarPropiedades(1);
-    };
+    });
 
-    selectPrecio.onchange = function() {
+    selectCiudad.addEventListener('change', function(e) {
+        console.log('Cambio en ciudad:', this.value);
         filtrarPropiedades(1);
-    };
+    });
 
-    buscadorPropiedades.oninput = function() {
+    selectPrecio.addEventListener('change', function(e) {
+        console.log('Cambio en precio:', this.value);
         filtrarPropiedades(1);
-    };
+    });
+
+    buscadorPropiedades.addEventListener('input', function(e) {
+        console.log('Cambio en búsqueda:', this.value);
+        filtrarPropiedades(1);
+    });
 };
 
 /* ── Filtrar propiedades ── */
@@ -97,6 +106,14 @@ var filtrarPropiedades = function(pagina) {
     var busqueda = document.getElementById('buscadorPropiedades').value.toLowerCase();
     var paginaObjetivo = pagina || 1;
 
+    console.log('Filtrando con parámetros:', {
+        estado: estado,
+        ciudad: ciudad,
+        precio: precio,
+        busqueda: busqueda,
+        pagina: paginaObjetivo
+    });
+
     var params = new URLSearchParams({
         estado: estado,
         ciudad: ciudad,
@@ -106,6 +123,7 @@ var filtrarPropiedades = function(pagina) {
     });
 
     var url = '/admin/propiedades/filtrar?' + params.toString();
+    console.log('URL de filtrado:', url);
 
     fetch(url, {
         headers: {
@@ -168,7 +186,7 @@ var actualizarTabla = function(data) {
         var primeraLineaDireccion = direccion.indexOf(',') >= 0 ? direccion.split(',')[0] : (direccion || 'Sin direccion');
         var iniciales = arrendadorNombre.split(' ').map(function(n) { return n[0] || ''; }).join('').substring(0, 2).toUpperCase();
         
-        var fila = '<tr data-id="' + prop.id + '">' +
+        var fila = '<tr data-id="' + prop.id + '" data-estado="' + estado + '">' +
             '<td>' +
                 '<div class="propiedad-celda">' +
                     '<div class="thumb-propiedad" style="background: ' + color + ';"></div>' +
@@ -242,6 +260,9 @@ var asignarEventosTabla = function() {
             confirmarEliminar(id);
         };
     }
+
+    // Procesar botones según estado (mostrar publicar en borrador, ocultar editar/eliminar en alquilada)
+    procesarBotonesSegunEstado();
 };
 
 /* ── Abrir modal ── */
@@ -271,30 +292,46 @@ var abrirModal = function(id) {
             document.getElementById('dataDireccion').textContent = propiedad.direccion_propiedad;
 
             // Datos adicionales (si no existen, mostrar "N/A")
-            document.getElementById('dataHabitaciones').textContent = '-';
-            document.getElementById('dataBanos').textContent = '-';
-            document.getElementById('dataTamano').textContent = '-';
-            document.getElementById('dataPlanta').textContent = '-';
+            document.getElementById('dataTipo').textContent = propiedad.tipo_propiedad || '-';
+            document.getElementById('dataHabitaciones').textContent = propiedad.habitaciones_propiedad || '-';
+            document.getElementById('dataBanos').textContent = propiedad.banos_propiedad || '-';
+            document.getElementById('dataTamano').textContent = propiedad.metros_cuadrados_propiedad ? propiedad.metros_cuadrados_propiedad + ' m²' : '-';
+            document.getElementById('dataPlanta').textContent = propiedad.piso_propiedad || '-';
+            document.getElementById('dataPuerta').textContent = propiedad.puerta_propiedad || '-';
             document.getElementById('dataPublicada').textContent = new Date(propiedad.creado_propiedad).toLocaleDateString('es-ES');
             document.getElementById('dataActualizacion').textContent = new Date(propiedad.actualizado_propiedad).toLocaleDateString('es-ES');
             document.getElementById('dataVisitas').textContent = '-';
             document.getElementById('dataFavoritos').textContent = '-';
 
-            // Gastos
-            var gastos = propiedad.gastos_propiedad ? JSON.parse(propiedad.gastos_propiedad) : {};
-            var agua = gastos.agua || 0;
-            var luz = gastos.luz || 0;
-            var gas = gastos.gas || 0;
-            var comunidad = gastos.comunidad || 0;
-            
-            document.getElementById('dataAlquiler').textContent = '$' + parseFloat(propiedad.precio_propiedad).toFixed(2);
-            document.getElementById('dataFianza').textContent = '$' + (parseFloat(propiedad.precio_propiedad) * 2).toFixed(2);
-            document.getElementById('dataAgua').textContent = '$' + agua;
-            document.getElementById('dataElectricidad').textContent = '$' + luz;
-            document.getElementById('dataGas').textContent = '$' + gas;
-            document.getElementById('dataComunidad').textContent = '$' + comunidad;
-            var totalGastos = parseFloat(propiedad.precio_propiedad) + agua + luz + gas + comunidad;
-            document.getElementById('dataTotalEstimado').textContent = 'Total estimado: $' + totalGastos.toFixed(2);
+            // Extras
+            var extras = [
+                { key: 'amueblado_propiedad', label: 'Amueblado' },
+                { key: 'piscina_propiedad', label: 'Piscina' },
+                { key: 'terraza_propiedad', label: 'Terraza' },
+                { key: 'garaje_propiedad', label: 'Garaje' },
+                { key: 'ascensor_propiedad', label: 'Ascensor' },
+                { key: 'aire_acondicionado_propiedad', label: 'Aire acondicionado' },
+                { key: 'calefaccion_propiedad', label: 'Calefacción' },
+                { key: 'trastero_propiedad', label: 'Trastero' }
+            ];
+
+            var extrasHTML = '<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">';
+            for (var k = 0; k < extras.length; k++) {
+                var extra = extras[k];
+                var tiene = propiedad[extra.key] ? '✓' : '✗';
+                var clase = propiedad[extra.key] ? 'extra-activado' : 'extra-desactivado';
+                extrasHTML += '<div class="' + clase + '"><strong>' + tiene + '</strong> ' + extra.label + '</div>';
+            }
+            if (propiedad.adicional_propiedad) {
+                extrasHTML += '<div style="grid-column: 1 / -1; padding: 8px 12px; background: #f0f0f0; border-radius: 6px;"><strong>Otros:</strong> ' + propiedad.adicional_propiedad + '</div>';
+            }
+            extrasHTML += '</div>';
+            var extrasModalEl = document.getElementById('extrasModal');
+            if (extrasModalEl) {
+                extrasModalEl.innerHTML = extrasHTML;
+            }
+
+            // Nota: Secciones de PRECIOS Y GASTOS eliminadas del modal
 
             // Arrendador
             var avatarArrendador = document.getElementById('avatarArrendador');
@@ -498,6 +535,136 @@ var desactivarPropiedad = function(id) {
             window.mostrarAlertaAdminError('Error', 'No se pudo desactivar la propiedad.');
         } else {
             alert('No se pudo desactivar la propiedad.');
+        }
+    });
+};
+
+/* ── Procesar botones según estado de propiedad ── */
+var procesarBotonesSegunEstado = function() {
+    var filas = document.querySelectorAll('#tbodyPropiedades tr');
+    
+    for (var i = 0; i < filas.length; i++) {
+        var fila = filas[i];
+        var estado = fila.getAttribute('data-estado') || '';
+        var accionesDiv = fila.querySelector('.acciones-tabla');
+        
+        if (!accionesDiv) continue;
+        
+        var btnEditar = accionesDiv.querySelector('.btn-editar');
+        var btnEliminar = accionesDiv.querySelector('.btn-eliminar');
+        var btnPublicar = accionesDiv.querySelector('.btn-publicar');
+        
+        // Si estado es alquilada: eliminar botones editar y eliminar
+        if (estado.toLowerCase() === 'alquilada') {
+            if (btnEditar) btnEditar.remove();
+            if (btnEliminar) btnEliminar.remove();
+        }
+        
+        // Si estado es borrador: crear botón publicar
+        if (estado.toLowerCase() === 'borrador') {
+            if (!btnPublicar) {  // Evitar duplicados
+                var propiedadId = parseInt(fila.getAttribute('data-id'));
+                var btnPublicarHTML = '<button class="btn-accion btn-publicar" data-id="' + propiedadId + '" title="Publicar propiedad">' +
+                    '<i class="bi bi-cloud-upload"></i>' +
+                    '</button>';
+                
+                // Insertar antes del botón editar (si existe) o antes de eliminar
+                if (btnEditar) {
+                    btnEditar.insertAdjacentHTML('beforebegin', btnPublicarHTML);
+                } else if (btnEliminar) {
+                    btnEliminar.insertAdjacentHTML('beforebegin', btnPublicarHTML);
+                } else {
+                    accionesDiv.insertAdjacentHTML('beforeend', btnPublicarHTML);
+                }
+            }
+        }
+    }
+    
+    // Asignar eventos a botones publicar recién creados
+    var botonesPublicar = document.querySelectorAll('.btn-publicar');
+    for (var j = 0; j < botonesPublicar.length; j++) {
+        botonesPublicar[j].onclick = function(e) {
+            e.preventDefault();
+            var id = parseInt(this.getAttribute('data-id'));
+            publicarPropiedad(id);
+        };
+    }
+};
+
+/* ── Publicar propiedad ── */
+var publicarPropiedad = function(id) {
+    var url = '/admin/propiedades/' + id + '/publicar';
+    var formData = new FormData();
+    formData.append('_token', csrfToken);
+
+    fetch(url, {
+        method: 'POST',
+        body: formData
+    })
+    .then(function(response) {
+        return response.text().then(function(texto) {
+            var data = null;
+            try {
+                data = JSON.parse(texto);
+            } catch (e) {
+                data = null;
+            }
+
+            return {
+                ok: response.ok,
+                status: response.status,
+                data: data
+            };
+        });
+    })
+    .then(function(resultado) {
+        if (resultado.ok && resultado.data && resultado.data.success) {
+            // Actualizar fila en tabla
+            var row = document.querySelector('tr[data-id="' + id + '"]');
+            if (row) {
+                // Cambiar data-estado
+                row.setAttribute('data-estado', 'publicada');
+                
+                // Actualizar badge
+                var badgeTabla = row.querySelector('.badge-estado');
+                if (badgeTabla) {
+                    badgeTabla.className = 'badge-estado badge-publicada';
+                    badgeTabla.textContent = 'Publicada';
+                }
+                
+                // Eliminar botón publicar
+                var accionesDiv = row.querySelector('.acciones-tabla');
+                if (accionesDiv) {
+                    var btnPublicar = accionesDiv.querySelector('.btn-publicar');
+                    if (btnPublicar) {
+                        btnPublicar.remove();
+                    }
+                }
+            }
+
+            // Mostrar alerta de éxito
+            if (window.mostrarAlertaAdminExito) {
+                window.mostrarAlertaAdminExito('Propiedad publicada', 'La propiedad está ahora disponible para alquiler.');
+            }
+            return;
+        }
+
+        var mensajeError = (resultado.data && resultado.data.message)
+            ? resultado.data.message
+            : 'La propiedad no se pudo publicar (' + resultado.status + ')';
+
+        if (window.mostrarAlertaAdminError) {
+            window.mostrarAlertaAdminError('Error al publicar', mensajeError);
+        } else {
+            alert('Error: ' + mensajeError);
+        }
+    })
+    .catch(function(error) {
+        console.error('Error:', error);
+        if (window.mostrarAlertaAdminError) {
+            window.mostrarAlertaAdminError('Error', 'No se pudo publicar la propiedad.');
+        } else {
+            alert('Error: No se pudo publicar la propiedad.');
         }
     });
 };

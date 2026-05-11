@@ -61,7 +61,7 @@ class IncidenciaController extends Controller
             });
         }
 
-        if (in_array($estado, ['abierta', 'en_proceso', 'esperando_decision', 'esperando_pago', 'resuelta', 'cerrada'], true)) {
+        if (in_array($estado, ['abierta', 'esperando_decision', 'esperando_pago', 'solucionada', 'resuelta'], true)) {
             $query->where('tbl_incidencia.estado_incidencia', $estado);
         }
 
@@ -144,16 +144,14 @@ class IncidenciaController extends Controller
         $esGestorAsignado = (int) ($incidencia->id_asignado_fk ?? 0) === $this->obtenerIdGestor();
 
         $accionActual = 'sin_accion';
-        if (in_array($incidencia->estado_incidencia, ['abierta', 'en_proceso'], true)) {
+        if (in_array($incidencia->estado_incidencia, ['abierta', 'esperando_decision'], true)) {
             $accionActual = $esGestorAsignado ? 'presupuesto' : 'sin_permiso_asignado';
-        } elseif ($incidencia->estado_incidencia === 'esperando_decision') {
-            $accionActual = 'esperando_decision';
         } elseif ($incidencia->estado_incidencia === 'esperando_pago') {
             $accionActual = 'esperando_pago';
+        } elseif ($incidencia->estado_incidencia === 'solucionada') {
+            $accionActual = 'solucionada';
         } elseif ($incidencia->estado_incidencia === 'resuelta') {
             $accionActual = 'resuelta';
-        } elseif ($incidencia->estado_incidencia === 'cerrada') {
-            $accionActual = 'cerrada';
         }
 
         return view('gestor.incidencia', compact(
@@ -169,7 +167,7 @@ class IncidenciaController extends Controller
     {
         return $this->actualizarEstado(
             $id,
-            'en_proceso',
+            'esperando_decision',
             'Gestor inicia la gestión de la incidencia.',
             null,
             true
@@ -179,7 +177,7 @@ class IncidenciaController extends Controller
     public function cambiarEstado(Request $request, int $id): RedirectResponse
     {
         $request->validate([
-            'estado' => 'required|in:abierta,en_proceso,esperando,resuelta',
+            'estado' => 'required|in:abierta,esperando_decision,esperando_pago,solucionada,resuelta',
             'comentario' => 'nullable|string|max:1000',
         ]);
 
@@ -192,9 +190,10 @@ class IncidenciaController extends Controller
         }
 
         $transiciones = [
-            'abierta' => ['en_proceso'],
-            'en_proceso' => ['esperando', 'resuelta'],
-            'esperando' => ['en_proceso'],
+            'abierta' => ['esperando_decision', 'esperando_pago'],
+            'esperando_decision' => ['esperando_pago', 'abierta'],
+            'esperando_pago' => ['solucionada', 'abierta'],
+            'solucionada' => ['resuelta'],
             'resuelta' => [],
         ];
 

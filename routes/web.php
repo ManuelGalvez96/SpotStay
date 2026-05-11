@@ -16,6 +16,8 @@ use App\Http\Controllers\Admin\SolicitudController;
 use App\Http\Controllers\Admin\IncidenciaController;
 use App\Http\Controllers\Admin\AlquilerController;
 use App\Http\Controllers\Admin\SuscripcionController;
+use App\Http\Controllers\Admin\CodigoGestorController;
+use App\Http\Controllers\Admin\CodigoPropiedadController;
 use App\Http\Controllers\inquilino\InquilinoController;
 use App\Http\Controllers\Arrendador\DashboardController as ArrendadorDashboardController;
 use App\Http\Controllers\Arrendador\PropiedadController as ArrendadorPropiedadController;
@@ -96,6 +98,22 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/incidencias/{id}', [IncidenciaController::class, 'show']);
     Route::post('/admin/incidencias/{id}/estado', [IncidenciaController::class, 'cambiarEstado']);
     Route::post('/admin/incidencias/{id}/asignar', [IncidenciaController::class, 'asignar']);
+
+    // Códigos de Gestor
+    Route::get('/admin/codigos-gestores', [CodigoGestorController::class, 'index']);
+    Route::post('/admin/codigos-gestores/generar', [CodigoGestorController::class, 'generar']);
+    Route::post('/admin/codigos-gestores/cancelar', [CodigoGestorController::class, 'cancelar']);
+    Route::post('/admin/codigos-gestores/validar', [CodigoGestorController::class, 'validar']);
+    Route::get('/admin/codigos-gestores/{id}', [CodigoGestorController::class, 'show']);
+
+    // Códigos de Propiedad
+    Route::get('/admin/codigos-propiedades', [CodigoPropiedadController::class, 'index']);
+    Route::post('/admin/codigos-propiedades/generar', [CodigoPropiedadController::class, 'generar']);
+    Route::post('/admin/codigos-propiedades/cancelar', [CodigoPropiedadController::class, 'cancelar']);
+    Route::post('/admin/codigos-propiedades/validar', [CodigoPropiedadController::class, 'validar']);
+    Route::post('/admin/codigos-propiedades/registrar-uso', [CodigoPropiedadController::class, 'registrarUso']);
+    Route::get('/admin/codigos-propiedades/{id}', [CodigoPropiedadController::class, 'show']);
+    Route::get('/admin/codigos-propiedades/propiedad/{idPropiedad}', [CodigoPropiedadController::class, 'obtenerCodigosDePropiedad']);
 
     // Alquileres
     Route::get('/admin/alquileres', [AlquilerController::class, 'index']);

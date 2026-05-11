@@ -72,21 +72,30 @@ var asignarEventosFiltros = function() {
     var selectPrecio = document.getElementById('selectPrecio');
     var buscadorPropiedades = document.getElementById('buscadorPropiedades');
 
-    selectEstado.onchange = function() {
-        filtrarPropiedades(1);
-    };
+    if (!selectEstado) {
+        console.error('selectEstado no encontrado');
+        return;
+    }
 
-    selectCiudad.onchange = function() {
+    selectEstado.addEventListener('change', function(e) {
+        console.log('Cambio en estado:', this.value);
         filtrarPropiedades(1);
-    };
+    });
 
-    selectPrecio.onchange = function() {
+    selectCiudad.addEventListener('change', function(e) {
+        console.log('Cambio en ciudad:', this.value);
         filtrarPropiedades(1);
-    };
+    });
 
-    buscadorPropiedades.oninput = function() {
+    selectPrecio.addEventListener('change', function(e) {
+        console.log('Cambio en precio:', this.value);
         filtrarPropiedades(1);
-    };
+    });
+
+    buscadorPropiedades.addEventListener('input', function(e) {
+        console.log('Cambio en búsqueda:', this.value);
+        filtrarPropiedades(1);
+    });
 };
 
 /* ── Filtrar propiedades ── */
@@ -97,6 +106,14 @@ var filtrarPropiedades = function(pagina) {
     var busqueda = document.getElementById('buscadorPropiedades').value.toLowerCase();
     var paginaObjetivo = pagina || 1;
 
+    console.log('Filtrando con parámetros:', {
+        estado: estado,
+        ciudad: ciudad,
+        precio: precio,
+        busqueda: busqueda,
+        pagina: paginaObjetivo
+    });
+
     var params = new URLSearchParams({
         estado: estado,
         ciudad: ciudad,
@@ -106,6 +123,7 @@ var filtrarPropiedades = function(pagina) {
     });
 
     var url = '/admin/propiedades/filtrar?' + params.toString();
+    console.log('URL de filtrado:', url);
 
     fetch(url, {
         headers: {

@@ -293,7 +293,7 @@ class PropiedadController extends Controller
             );
 
         if ($request->input('estado')) {
-            $query->where('estado_propiedad', $request->input('estado'));
+            $query->whereRaw('LOWER(estado_propiedad) = ?', [strtolower($request->input('estado'))]);
         }
 
         if ($request->input('ciudad')) {

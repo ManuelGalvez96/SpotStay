@@ -299,6 +299,60 @@ function cerrarModalPropiedad() {
   }
 }
 
+function abrirModalFormulario(arrendadorId) {
+  var modal = document.getElementById('modal-formulario');
+  
+  if (!modal) {
+    return;
+  }
+
+  // Limpiar el formulario
+  var formulario = modal.querySelector('form');
+  if (formulario) {
+    formulario.reset();
+    document.getElementById('form-id-propiedad').value = '';
+    document.getElementById('form-titulo').value = '';
+    document.getElementById('form-tipo').value = '';
+    document.getElementById('form-estado').value = 'borrador';
+    document.getElementById('form-calle').value = '';
+    document.getElementById('form-numero').value = '';
+    document.getElementById('form-piso').value = '';
+    document.getElementById('form-puerta').value = '';
+    document.getElementById('form-codigo-postal').value = '';
+    document.getElementById('form-ciudad').value = '';
+    document.getElementById('form-habitaciones').value = '';
+    document.getElementById('form-banos').value = '';
+    document.getElementById('form-metros').value = '';
+    document.getElementById('form-ascensor').checked = false;
+    document.getElementById('form-amueblado').checked = false;
+    document.getElementById('form-precio').value = '';
+    document.getElementById('form-descripcion').value = '';
+    document.getElementById('btn-submit-formulario').textContent = 'Crear propiedad';
+    
+    // Limpiar archivos acumulados
+    if (formulario._archivosAcumulados) {
+      formulario._archivosAcumulados = [];
+    }
+    
+    // Ocultar vista previa de imágenes
+    var contenedorPrevia = document.getElementById('contenedor-previa-imagenes');
+    if (contenedorPrevia) {
+      contenedorPrevia.style.display = 'none';
+    }
+  }
+
+  document.getElementById('modal-formulario-titulo').textContent = 'Nueva propiedad';
+  modal.style.display = 'flex';
+}
+
+function cerrarModalFormulario() {
+  var modal = document.getElementById('modal-formulario');
+
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
 function construirContenidoModal(datos) {
   var propiedad = datos.propiedad;
   var alquiler = datos.alquiler_activo;
@@ -381,5 +435,6 @@ iniciarValidacionImagenes();
 document.onkeydown = function (evento) {
   if (evento.key === 'Escape') {
     cerrarModalPropiedad();
+    cerrarModalFormulario();
   }
 };

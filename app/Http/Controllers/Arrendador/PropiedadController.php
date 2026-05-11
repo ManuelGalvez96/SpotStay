@@ -46,14 +46,21 @@ class PropiedadController extends Controller
 
         $datos = $request->validate([
             'titulo_propiedad' => ['required', 'string', 'max:150'],
-            'direccion_propiedad' => ['required', 'string', 'max:255'],
+            'tipo_propiedad' => ['required', 'in:piso,casa,estudio,habitacion'],
+            'estado_propiedad' => ['required', 'in:borrador,publicada'],
+            'calle_propiedad' => ['required', 'string', 'max:150'],
+            'numero_propiedad' => ['required', 'string', 'max:20'],
+            'piso_propiedad' => ['nullable', 'string', 'max:20'],
+            'puerta_propiedad' => ['nullable', 'string', 'max:20'],
             'ciudad_propiedad' => ['required', 'string', 'max:100'],
             'codigo_postal_propiedad' => ['required', 'string', 'max:10'],
-            'latitud_propiedad' => ['nullable', 'numeric'],
-            'longitud_propiedad' => ['nullable', 'numeric'],
-            'descripcion_propiedad' => ['nullable', 'string'],
+            'habitaciones_propiedad' => ['nullable', 'string', 'max:20'],
+            'banos_propiedad' => ['nullable', 'integer', 'min:0'],
+            'metros_cuadrados_propiedad' => ['nullable', 'integer', 'min:0'],
+            'ascensor_propiedad' => ['nullable', 'boolean'],
+            'amueblado_propiedad' => ['nullable', 'boolean'],
             'precio_propiedad' => ['required', 'numeric', 'min:0'],
-            'estado_propiedad' => ['required', 'in:borrador,publicada,inactiva,alquilada'],
+            'descripcion_propiedad' => ['nullable', 'string'],
             'imagenes_propiedad' => ['nullable', 'array', 'max:10'],
             'imagenes_propiedad.*' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
@@ -62,20 +69,23 @@ class PropiedadController extends Controller
             'id_arrendador_fk' => $arrendadorId,
             'id_gestor_fk' => $arrendadorId,
             'titulo_propiedad' => $datos['titulo_propiedad'],
+            'tipo_propiedad' => $datos['tipo_propiedad'],
+            'estado_propiedad' => $datos['estado_propiedad'],
+            'calle_propiedad' => $datos['calle_propiedad'],
+            'numero_propiedad' => $datos['numero_propiedad'],
+            'piso_propiedad' => $datos['piso_propiedad'] ?? null,
+            'puerta_propiedad' => $datos['puerta_propiedad'] ?? null,
             'ciudad_propiedad' => $datos['ciudad_propiedad'],
             'codigo_postal_propiedad' => $datos['codigo_postal_propiedad'],
-            'latitud_propiedad' => $datos['latitud_propiedad'] ?? null,
-            'longitud_propiedad' => $datos['longitud_propiedad'] ?? null,
-            'descripcion_propiedad' => $datos['descripcion_propiedad'] ?? null,
+            'habitaciones_propiedad' => $datos['habitaciones_propiedad'] ?? null,
+            'banos_propiedad' => $datos['banos_propiedad'] ?? null,
+            'metros_cuadrados_propiedad' => $datos['metros_cuadrados_propiedad'] ?? null,
+            'ascensor_propiedad' => (bool) ($datos['ascensor_propiedad'] ?? false),
+            'amueblado_propiedad' => (bool) ($datos['amueblado_propiedad'] ?? false),
             $columnaPrecio => $datos['precio_propiedad'],
-            'estado_propiedad' => $datos['estado_propiedad'],
+            'descripcion_propiedad' => $datos['descripcion_propiedad'] ?? null,
             'actualizado_propiedad' => Carbon::now(),
         ];
-
-        $datosPropiedad = array_merge(
-            $datosPropiedad,
-            $this->mapearDireccionParaGuardar($datos['direccion_propiedad'])
-        );
 
         DB::beginTransaction();
 

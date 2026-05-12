@@ -481,4 +481,35 @@ class PropiedadController extends Controller
 
         return mb_strtoupper(mb_substr(trim($nombre), 0, 1));
     }
+
+    //MODAL CONFIGURACION GESTOR
+
+    //Ver permisos del gestor
+    public function getPermisosGestor($idPropiedad,$idGestor){
+        $permisos = DB::table('tbl_gestor_permiso')
+            ->where('id_gestor_fk', $idGestor)
+            ->where('id_propiedad_fk', $idPropiedad)
+            ->first();
+        return response()->json($permisos);
+    }
+
+    //Actualizar permisos del gestor
+    public function updatePermisosGestor(Request $request, $idPropiedad, $idGestor){
+        DB::table('tbl_gestor_permiso')
+            ->updateOrInsert(
+                [
+                    'id_gestor_fk' => $idGestor,
+                    'id_propiedad_fk' => $idPropiedad,
+                ],
+                [
+                    'incidencias' => (bool) $request->incidencias,
+                    'gastos' => (bool) $request->gastos,
+                    'chat' => (bool) $request->chat,
+                    'editar_propiedad' => (bool) $request->editar_propiedad,
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ]
+            );
+        return response()->json(['success' => true]);
+    }
 }

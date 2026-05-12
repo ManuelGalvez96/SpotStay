@@ -19,7 +19,7 @@ class PropiedadPermisosSeeder extends Seeder
             DB::table('tbl_propiedad_permisos')->updateOrInsert(
                 [
                     'id_propiedad_fk' => $propiedad->id_propiedad,
-                    'id_usuario_fk' => $propiedad->id_gestor_fk,
+                    'id_gestor_fk' => $propiedad->id_gestor_fk,
                 ],
                 [
                     'incidencias' => in_array($propiedad->estado_propiedad, ['publicada', 'alquilada'], true) || $index % 2 === 0,

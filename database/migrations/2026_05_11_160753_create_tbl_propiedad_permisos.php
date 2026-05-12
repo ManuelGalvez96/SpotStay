@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('tbl_propiedad_permisos', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_propiedad_fk');
-            $table->unsignedBigInteger('id_usuario_fk');
+            $table->unsignedBigInteger('id_gestor_fk');
 
             //Incidencias
             $table->boolean('incidencias')->default(false);
@@ -31,7 +31,7 @@ return new class extends Migration
                 ->on('tbl_propiedad')
                 ->onDelete('cascade');
 
-            $table->foreign('id_usuario_fk')
+            $table->foreign('id_gestor_fk')
                 ->references('id_usuario')
                 ->on('tbl_usuario')
                 ->onDelete('cascade');

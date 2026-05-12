@@ -111,6 +111,8 @@ function iniciarMapa() {
 	var formulario = document.getElementById('form-filtros-mapa');
 	var boton = document.getElementById('boton-aplicar-filtros');
 	var botonBorrar = document.getElementById('boton-borrar-filtros');
+	var botonToggleFiltros = document.getElementById('boton-toggle-filtros');
+	var textoToggleFiltros = document.getElementById('texto-boton-filtros');
 
 	if (formulario) {
 		// Evita recargar pagina y aplica filtros con fetch.
@@ -147,6 +149,22 @@ function iniciarMapa() {
 			}
 			
 			ejecutarBusqueda();
+		};
+	}
+
+	if (botonToggleFiltros) {
+		botonToggleFiltros.onclick = function () {
+			var ocultos = document.body.classList.toggle('filtros-ocultos');
+			var texto = ocultos ? 'Mostrar filtros' : 'Ocultar filtros';
+			if (textoToggleFiltros) {
+				textoToggleFiltros.textContent = texto;
+			}
+			botonToggleFiltros.setAttribute('aria-label', texto);
+			if (mapa) {
+				setTimeout(function () {
+					mapa.invalidateSize();
+				}, 120);
+			}
 		};
 	}
 	

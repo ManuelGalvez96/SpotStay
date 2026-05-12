@@ -258,6 +258,59 @@ body.pagina-miembro {
 	gap: 8px;
 }
 
+/* Permite que el desplegable se vea encima del mapa */
+body.pagina-mapa .encabezado-mapa { z-index: 2000; }
+body.pagina-mapa .submenu-perfil { z-index: 3000; }
+
+/* Filtros */
+body.pagina-mapa .panel-filtros-encabezado {
+	position: relative;
+	padding-right: 44px;
+}
+
+body.pagina-mapa .panel-filtros-encabezado .detalle-volver {
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
+body.pagina-mapa .boton-filtros-header {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	height: 40px;
+	padding: 0 14px;
+	border-radius: 999px;
+	border: 1px solid var(--borde);
+	background: #ffffff;
+	color: var(--texto);
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+body.pagina-mapa .boton-filtros-header i {
+	font-size: 16px;
+}
+
+body.pagina-mapa.filtros-ocultos .boton-filtros-header {
+	background: var(--primario);
+	color: #ffffff;
+	border-color: var(--primario);
+}
+
+body.pagina-mapa.filtros-ocultos .panel-filtros {
+	display: none;
+}
+
+body.pagina-mapa.filtros-ocultos .contenido-mapa {
+	height: calc(100vh - var(--alto-encabezado));
+}
+
+body.pagina-mapa.filtros-ocultos .contenedor-mapa {
+	min-height: calc(100vh - var(--alto-encabezado));
+}
+
 .titulo-filtros {
 	margin: 0;
 	font-size: 22px;
@@ -1059,10 +1112,12 @@ body.pagina-miembro {
 		border-right: none;
 		border-bottom: 1px solid var(--borde);
 		box-shadow: none;
+		max-height: 45vh;
+		overflow-y: auto;
 	}
 
 	.contenedor-mapa {
-		min-height: 60vh;
+		min-height: 45vh;
 	}
 }
 
@@ -1306,6 +1361,64 @@ body.pagina-miembro {
    ========================================================= */
 
 /* ===== PAGINA CHAT ===== */
+body.pagina-miembro.pagina-mensajes {
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+	width: 100%;
+}
+
+body.pagina-miembro.pagina-mensajes .contenido-miembro {
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+	width: 100%;
+	max-width: none;
+	padding: 24px 28px 20px;
+}
+
+body.pagina-miembro.pagina-mensajes .mensajes-layout {
+	height: 100%;
+	min-height: 0;
+}
+
+body.pagina-miembro.pagina-mensajes .mensajes-lista,
+body.pagina-miembro.pagina-mensajes .mensajes-panel {
+	height: 100%;
+	min-height: 0;
+}
+
+body.pagina-miembro.pagina-mensajes .mensajes-lista {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+body.pagina-miembro.pagina-mensajes .mensajes-panel {
+	display: grid;
+	grid-template-rows: auto 1fr auto;
+	gap: 14px;
+}
+
+body.pagina-miembro.pagina-mensajes .panel-filtros-miembro {
+	flex-direction: column;
+	flex-wrap: nowrap;
+}
+
+body.pagina-miembro.pagina-mensajes .mensajes-item {
+	width: 100%;
+	margin-bottom: 0;
+}
+
+body.pagina-miembro.pagina-mensajes .mensajes-mensajes {
+	min-height: 0;
+}
+
+body.pagina-miembro.pagina-mensajes .mensajes-formulario {
+	margin-top: 0;
+}
+
 .mensajes-layout {
 	display: grid;
 	grid-template-columns: 320px 1fr;
@@ -1421,14 +1534,35 @@ body.pagina-miembro {
 }
 
 @media (max-width: 980px) {
-	.mensajes-layout {
+	body.pagina-miembro.pagina-mensajes .mensajes-layout {
 		grid-template-columns: 1fr;
+		grid-template-rows: minmax(160px, 28vh) minmax(300px, 1fr);
 	}
 
-	.mensajes-lista,
-	.mensajes-panel {
-		height: auto;
+	body.pagina-miembro.pagina-mensajes .mensajes-lista,
+	body.pagina-miembro.pagina-mensajes .mensajes-panel {
+		height: 100%;
 		min-height: 0;
+	}
+}
+
+@media (max-width: 720px) {
+	body.pagina-miembro.pagina-mensajes .mensajes-layout {
+		grid-template-rows: minmax(140px, 24vh) minmax(320px, 1fr);
+	}
+
+	body.pagina-miembro.pagina-mensajes .mensajes-lista {
+		max-height: 26vh;
+	}
+}
+
+@media (max-width: 520px) {
+	body.pagina-miembro.pagina-mensajes .mensajes-layout {
+		grid-template-rows: minmax(120px, 22vh) minmax(340px, 1fr);
+	}
+
+	body.pagina-miembro.pagina-mensajes .mensajes-lista {
+		max-height: 24vh;
 	}
 }
 

@@ -14,8 +14,36 @@
 			<div class="contenedor-encabezado">
 				<div class="logo-spotstay">
 					<img src="/img/logo.png"/>
+					<button class="boton-filtros-header" id="boton-toggle-filtros" type="button" aria-label="Ocultar filtros">
+						<i class="bi bi-funnel" aria-hidden="true"></i>
+						<span id="texto-boton-filtros">Ocultar filtros</span>
+					</button>
 				</div>
-				<div class="texto-encabezado">Busqueda por mapa</div>
+				<div class="acciones-miembro">
+					<button class="boton-icono" type="button" aria-label="Notificaciones">
+						<i class="bi bi-bell" aria-hidden="true"></i>
+					</button>
+					<button class="boton-filtros-header" id="boton-toggle-filtros" type="button" aria-label="Ocultar filtros">
+						<i class="bi bi-funnel" aria-hidden="true"></i>
+						<span id="texto-boton-filtros">Ocultar filtros</span>
+					</button>
+					<div class="perfil-miembro" id="boton-perfil">
+						<span class="nombre-miembro">{{ $nombreUsuario }}</span>
+						@if ($tieneFoto)
+						<img class="foto-perfil" src="{{ $fotoUsuario }}" alt="Foto de perfil" />
+						@else
+						<div class="inicial-perfil" aria-hidden="true">{{ $inicialUsuario }}</div>
+						@endif
+
+						<div class="submenu-perfil" id="submenu-perfil">
+							<a href="#" class="item-submenu"><i class="bi bi-person"></i> Mi Perfil</a>
+							<a href="#" class="item-submenu"><i class="bi bi-gear"></i> Configuración</a>
+
+							<div class="separador-submenu"></div>
+							<a href="{{ route('logout') }}" class="item-submenu" style="color: red;"><i class="bi bi-box-arrow-right" style="color: red"></i> Cerrar Sesión</a>
+						</div>
+					</div>
+				</div>
 			</div>
 		</header>
 
@@ -23,10 +51,10 @@
 			<aside class="panel-filtros" id="panel-filtros">
 				<form id="form-filtros-mapa">
 				<div class="panel-filtros-encabezado">
+					<h2 class="titulo-filtros">Filtros de busqueda</h2>
 					<a class="detalle-volver" href="/miembro/inicio" aria-label="Volver">
 						<i class="bi bi-arrow-left" aria-hidden="true"></i>
 					</a>
-					<h2 class="titulo-filtros">Filtros de busqueda</h2>
 					<p class="descripcion-filtros">Ajusta los filtros y mueve el mapa para ver mas resultados.</p>
 				</div>
 

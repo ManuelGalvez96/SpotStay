@@ -12,7 +12,7 @@
     @yield('styles')
 </head>
 
-<body class="pagina-miembro">
+<body class="pagina-miembro @yield('body-class')">
 
     @include('miembro.partials.header')
     @include('miembro.partials.nav')

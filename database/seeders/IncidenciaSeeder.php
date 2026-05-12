@@ -65,6 +65,7 @@ class IncidenciaSeeder extends Seeder
                 })->first();
 
                 if (!$reportador) {
+                    $incidenciaCounter++;
                     continue;
                 }
 

@@ -35,8 +35,18 @@ class IncidenciaController extends Controller
             ->orderBy('tbl_incidencia.creado_incidencia','desc')
             ->get();
 
-        $enProceso = (clone $queryBase)
-            ->where('tbl_incidencia.estado_incidencia','en_proceso')
+        $esperandoDecision = (clone $queryBase)
+            ->where('tbl_incidencia.estado_incidencia','esperando_decision')
+            ->orderBy('tbl_incidencia.creado_incidencia','desc')
+            ->get();
+
+        $esperandoPago = (clone $queryBase)
+            ->where('tbl_incidencia.estado_incidencia','esperando_pago')
+            ->orderBy('tbl_incidencia.creado_incidencia','desc')
+            ->get();
+
+        $solucionadas = (clone $queryBase)
+            ->where('tbl_incidencia.estado_incidencia','solucionada')
             ->orderBy('tbl_incidencia.creado_incidencia','desc')
             ->get();
 
@@ -45,19 +55,15 @@ class IncidenciaController extends Controller
             ->orderBy('tbl_incidencia.creado_incidencia','desc')
             ->get();
 
-        $cerradas = (clone $queryBase)
-            ->where('tbl_incidencia.estado_incidencia','cerrada')
-            ->orderBy('tbl_incidencia.creado_incidencia','desc')
-            ->get();
-
         $totalAbiertas = $abiertas->count();
-        $totalEnProceso = $enProceso->count();
+        $totalEsperandoDecision = $esperandoDecision->count();
+        $totalEsperandoPago = $esperandoPago->count();
+        $totalSolucionadas = $solucionadas->count();
         $totalResueltas = $resueltas->count();
-        $totalCerradas = $cerradas->count();
 
         $urgentes = DB::table('tbl_incidencia')
             ->where('prioridad_incidencia','urgente')
-            ->whereIn('estado_incidencia',['abierta','en_proceso'])
+            ->whereIn('estado_incidencia',['abierta','esperando_decision','esperando_pago','solucionada'])
             ->count();
 
         $gestores = DB::table('tbl_usuario')
@@ -92,13 +98,15 @@ class IncidenciaController extends Controller
 
         return view('admin.incidencias', compact(
             'abiertas',
-            'enProceso',
+            'esperandoDecision',
+            'esperandoPago',
+            'solucionadas',
             'resueltas',
-            'cerradas',
             'totalAbiertas',
-            'totalEnProceso',
+            'totalEsperandoDecision',
+            'totalEsperandoPago',
+            'totalSolucionadas',
             'totalResueltas',
-            'totalCerradas',
             'urgentes',
             'gestores',
             'propiedades',
@@ -270,18 +278,23 @@ class IncidenciaController extends Controller
             ->orderBy('tbl_incidencia.creado_incidencia','desc')
             ->get();
 
-        $enProceso = (clone $queryBase)
-            ->where('tbl_incidencia.estado_incidencia','en_proceso')
+        $esperandoDecision = (clone $queryBase)
+            ->where('tbl_incidencia.estado_incidencia','esperando_decision')
+            ->orderBy('tbl_incidencia.creado_incidencia','desc')
+            ->get();
+
+        $esperandoPago = (clone $queryBase)
+            ->where('tbl_incidencia.estado_incidencia','esperando_pago')
+            ->orderBy('tbl_incidencia.creado_incidencia','desc')
+            ->get();
+
+        $solucionadas = (clone $queryBase)
+            ->where('tbl_incidencia.estado_incidencia','solucionada')
             ->orderBy('tbl_incidencia.creado_incidencia','desc')
             ->get();
 
         $resueltas = (clone $queryBase)
             ->where('tbl_incidencia.estado_incidencia','resuelta')
-            ->orderBy('tbl_incidencia.creado_incidencia','desc')
-            ->get();
-
-        $cerradas = (clone $queryBase)
-            ->where('tbl_incidencia.estado_incidencia','cerrada')
             ->orderBy('tbl_incidencia.creado_incidencia','desc')
             ->get();
 
@@ -291,13 +304,15 @@ class IncidenciaController extends Controller
 
         return response()->json([
             'abiertas' => $abiertas,
-            'enProceso' => $enProceso,
+            'esperandoDecision' => $esperandoDecision,
+            'esperandoPago' => $esperandoPago,
+            'solucionadas' => $solucionadas,
             'resueltas' => $resueltas,
-            'cerradas' => $cerradas,
             'totalAbiertas' => $abiertas->count(),
-            'totalEnProceso' => $enProceso->count(),
+            'totalEsperandoDecision' => $esperandoDecision->count(),
+            'totalEsperandoPago' => $esperandoPago->count(),
+            'totalSolucionadas' => $solucionadas->count(),
             'totalResueltas' => $resueltas->count(),
-            'totalCerradas' => $cerradas->count(),
             'tabla' => $allIncidencias->items(),
             'currentPage' => $allIncidencias->currentPage(),
             'totalPages' => $allIncidencias->lastPage(),

@@ -11,7 +11,7 @@ class HistorialIncidenciaSeeder extends Seeder
 {
     public function run(): void
     {
-        $estados = ['abierta', 'en_proceso', 'resuelta', 'cerrada'];
+        $estados = ['abierta', 'esperando_decision', 'esperando_pago', 'solucionada', 'resuelta'];
         
         $incidencias = Incidencia::all();
         $usuarios = Usuario::all();

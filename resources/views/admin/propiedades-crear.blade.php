@@ -71,7 +71,7 @@
             </div>
             <span class="card-header-sub-crear">{{ $modoEdicion ? 'Edición' : 'Alta manual' }}</span>
         </div>
-        <form action="{{ $modoEdicion ? '/admin/propiedades/' . $propiedadEditando->id_propiedad . '/editar' : '/admin/propiedades/crear' }}" method="POST" class="form-grid">
+        <form action="{{ $modoEdicion ? '/admin/propiedades/' . $propiedadEditando->id_propiedad . '/editar' : '/admin/propiedades/crear' }}" method="POST" class="form-grid" id="formCrearPropiedad">
             @csrf
 
             <div class="campo-full">
@@ -115,6 +115,45 @@
             </div>
 
             <div>
+                <label for="tipo">Tipo de propiedad</label>
+                <select id="tipo" name="tipo">
+                    <option value="">Seleccionar tipo...</option>
+                    <option value="piso" {{ old('tipo', $modoEdicion ? $propiedadEditando->tipo_propiedad : '') === 'piso' ? 'selected' : '' }}>Piso</option>
+                    <option value="casa" {{ old('tipo', $modoEdicion ? $propiedadEditando->tipo_propiedad : '') === 'casa' ? 'selected' : '' }}>Casa</option>
+                    <option value="estudio" {{ old('tipo', $modoEdicion ? $propiedadEditando->tipo_propiedad : '') === 'estudio' ? 'selected' : '' }}>Estudio</option>
+                    <option value="chalet" {{ old('tipo', $modoEdicion ? $propiedadEditando->tipo_propiedad : '') === 'chalet' ? 'selected' : '' }}>Chalet</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="habitaciones">Habitaciones</label>
+                <select id="habitaciones" name="habitaciones">
+                    <option value="">Seleccionar...</option>
+                    <option value="1" {{ old('habitaciones', $modoEdicion ? $propiedadEditando->habitaciones_propiedad : '') === '1' ? 'selected' : '' }}>1</option>
+                    <option value="2" {{ old('habitaciones', $modoEdicion ? $propiedadEditando->habitaciones_propiedad : '') === '2' ? 'selected' : '' }}>2</option>
+                    <option value="3" {{ old('habitaciones', $modoEdicion ? $propiedadEditando->habitaciones_propiedad : '') === '3' ? 'selected' : '' }}>3</option>
+                    <option value="4" {{ old('habitaciones', $modoEdicion ? $propiedadEditando->habitaciones_propiedad : '') === '4' ? 'selected' : '' }}>4</option>
+                    <option value="4+" {{ old('habitaciones', $modoEdicion ? $propiedadEditando->habitaciones_propiedad : '') === '4+' ? 'selected' : '' }}>4+</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="metros">Metros cuadrados</label>
+                <input id="metros" name="metros" type="number" min="1" value="{{ old('metros', $modoEdicion ? $propiedadEditando->metros_cuadrados_propiedad : '') }}">
+            </div>
+
+            <div>
+                <label for="banos">Baños</label>
+                <select id="banos" name="banos">
+                    <option value="">Seleccionar...</option>
+                    <option value="1" {{ old('banos', $modoEdicion ? $propiedadEditando->banos_propiedad : '') == '1' ? 'selected' : '' }}>1</option>
+                    <option value="2" {{ old('banos', $modoEdicion ? $propiedadEditando->banos_propiedad : '') == '2' ? 'selected' : '' }}>2</option>
+                    <option value="3" {{ old('banos', $modoEdicion ? $propiedadEditando->banos_propiedad : '') == '3' ? 'selected' : '' }}>3</option>
+                    <option value="3+" {{ old('banos', $modoEdicion ? $propiedadEditando->banos_propiedad : '') === '3+' ? 'selected' : '' }}>3+</option>
+                </select>
+            </div>
+
+            <div>
                 <label for="estado">Estado</label>
                 <select id="estado" name="estado" required>
                     <option value="publicada" {{ old('estado', $modoEdicion ? $propiedadEditando->estado_propiedad : 'publicada') === 'publicada' ? 'selected' : '' }}>Publicada</option>
@@ -134,6 +173,51 @@
                 <textarea id="descripcion" name="descripcion" rows="4">{{ old('descripcion', $modoEdicion ? $propiedadEditando->descripcion_propiedad : '') }}</textarea>
             </div>
 
+            <div class="campo-full">
+                <fieldset class="extras-fieldset">
+                    <legend><strong>Extras de la propiedad</strong></legend>
+                    <div class="extras-grid">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="extras[]" value="amueblado" {{ $modoEdicion && $propiedadEditando->amueblado_propiedad ? 'checked' : '' }}>
+                            <span>Amueblado</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="extras[]" value="piscina" {{ $modoEdicion && $propiedadEditando->piscina_propiedad ? 'checked' : '' }}>
+                            <span>Piscina</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="extras[]" value="terraza" {{ $modoEdicion && $propiedadEditando->terraza_propiedad ? 'checked' : '' }}>
+                            <span>Terraza</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="extras[]" value="garaje" {{ $modoEdicion && $propiedadEditando->garaje_propiedad ? 'checked' : '' }}>
+                            <span>Garaje</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="extras[]" value="ascensor" {{ $modoEdicion && $propiedadEditando->ascensor_propiedad ? 'checked' : '' }}>
+                            <span>Ascensor</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="extras[]" value="aire_acondicionado" {{ $modoEdicion && $propiedadEditando->aire_acondicionado_propiedad ? 'checked' : '' }}>
+                            <span>Aire acondicionado</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="extras[]" value="calefaccion" {{ $modoEdicion && $propiedadEditando->calefaccion_propiedad ? 'checked' : '' }}>
+                            <span>Calefacción</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="extras[]" value="trastero" {{ $modoEdicion && $propiedadEditando->trastero_propiedad ? 'checked' : '' }}>
+                            <span>Trastero</span>
+                        </label>
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="campo-full">
+                <label for="adicional">Otros extras (especificar)</label>
+                <textarea id="adicional" name="adicional" rows="2" placeholder="Ej: Jardín privado, Gimnasio, Entrada independiente...">{{ old('adicional', $modoEdicion ? $propiedadEditando->adicional_propiedad : '') }}</textarea>
+            </div>
+
             <div class="acciones-form campo-full">
                 <a href="/admin/propiedades" class="btn-exportar">Cancelar</a>
                 <button type="submit" class="btn-primario">
@@ -144,4 +228,8 @@
         </form>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+    <script src="{{ asset('js/admin/propiedades-crear.js') }}"></script>
 @endsection

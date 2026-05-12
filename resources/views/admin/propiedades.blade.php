@@ -522,6 +522,10 @@
                 <span class="dato-valor" id="dataPrecio" style="color: #035498; font-weight: 700;">$1.200/mes</span>
             </div>
             <div class="dato-item">
+                <span class="dato-label">Tipo</span>
+                <span class="dato-valor" id="dataTipo">-</span>
+            </div>
+            <div class="dato-item">
                 <span class="dato-label">Ciudad</span>
                 <span class="dato-valor" id="dataCiudad">Madrid</span>
             </div>
@@ -550,6 +554,10 @@
                 <span class="dato-valor" id="dataPlanta">2ª</span>
             </div>
             <div class="dato-item">
+                <span class="dato-label">Puerta</span>
+                <span class="dato-valor" id="dataPuerta">-</span>
+            </div>
+            <div class="dato-item">
                 <span class="dato-label">Publicada</span>
                 <span class="dato-valor" id="dataPublicada">15 ene 2025</span>
             </div>
@@ -569,36 +577,10 @@
 
         <div class="modal-separador"></div>
 
-        <!-- SECCIÓN 2: PRECIOS Y GASTOS -->
-        <span class="seccion-label">PRECIOS Y GASTOS</span>
-        <div class="modal-grid-2">
-            <div class="dato-item">
-                <span class="dato-label">Alquiler base</span>
-                <span class="dato-valor" id="dataAlquiler">$1.200/mes</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Fianza</span>
-                <span class="dato-valor" id="dataFianza">$2.400</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Agua</span>
-                <span class="dato-valor" id="dataAgua">$30/mes</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Electricidad</span>
-                <span class="dato-valor" id="dataElectricidad">$50/mes</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Gas</span>
-                <span class="dato-valor" id="dataGas">$25/mes</span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Comunidad</span>
-                <span class="dato-valor" id="dataComunidad">$40/mes</span>
-            </div>
-        </div>
-        <div class="total-estimado" id="dataTotalEstimado">
-            Total estimado: $1.345/mes
+        <!-- SECCIÓN EXTRAS -->
+        <span class="seccion-label">EXTRAS DE LA PROPIEDAD</span>
+        <div class="extras-modal" id="extrasModal">
+            <!-- Se rellenará dinámicamente con JavaScript -->
         </div>
 
         <div class="modal-separador"></div>
@@ -681,19 +663,6 @@
             </div>
         </div>
 
-                    <div class="modal-separador"></div>
-
-                    <!-- SECCIÓN 6: SERVICIOS -->
-                    <span class="seccion-label">SERVICIOS INCLUIDOS</span>
-                    <div class="servicios-tags">
-                        <span class="tag-servicio">Agua</span>
-                        <span class="tag-servicio">Electricidad</span>
-                        <span class="tag-servicio">Gas</span>
-                        <span class="tag-servicio">Comunidad</span>
-                        <span class="tag-servicio">Internet</span>
-                        <span class="tag-servicio">Parking</span>
-                        <span class="tag-servicio">Trastero</span>
-                    </div>
                 </div>
             </div>
 

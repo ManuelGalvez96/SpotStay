@@ -17,6 +17,16 @@
     <div class="hero-deco hero-deco-3"></div>
 </div>
 
+@if(session('error'))
+    <div class="mensaje-estado mensaje-error" data-flash-error="{{ session('error') }}">{{ session('error') }}</div>
+@endif
+
+@php
+    $tieneIncidencias = collect($permisosDashboard)->contains(fn($p) => $p->incidencias);
+    $tieneGastos = collect($permisosDashboard)->contains(fn($p) => $p->gastos);
+@endphp
+
+@if($tieneIncidencias)
 <div class="kpi-grid">
     <a class="kpi-card-link" href="{{ route('gestor.incidencias', ['estado' => 'abierta']) }}">
         <div class="kpi-card">
@@ -62,6 +72,7 @@
         </div>
     </a>
 </div>
+@endif
 
 <div class="central-grid">
     <div class="card-admin card-con-franja">
@@ -189,6 +200,13 @@
                         <p class="solicitud-ciudad">{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }}</p>
                     </div>
                     <div class="solicitud-meta">
+                        @if(!empty($permisosDashboard[$propiedad->id_propiedad] ?? null))
+                            @php $pPerm = $permisosDashboard[$propiedad->id_propiedad]; @endphp
+                            <span class="badge-estado {{ $pPerm->incidencias ? 'badge-activo' : 'badge-inactiva' }}" style="font-size:10px;">I</span>
+                            <span class="badge-estado {{ $pPerm->gastos ? 'badge-activo' : 'badge-inactiva' }}" style="font-size:10px;">G</span>
+                            <span class="badge-estado {{ $pPerm->chat ? 'badge-activo' : 'badge-inactiva' }}" style="font-size:10px;">C</span>
+                            <span class="badge-estado {{ $pPerm->editar_propiedad ? 'badge-activo' : 'badge-inactiva' }}" style="font-size:10px;">E</span>
+                        @endif
                         <span class="badge-estado badge-pendiente">{{ $propiedad->incidencias_activas }} activas</span>
                     </div>
                 </a>
@@ -220,4 +238,18 @@
         </div>
     </div>
 </div>
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const flashSuccess = document.querySelector('[data-flash-success]');
+    const flashError = document.querySelector('[data-flash-error]');
+    if (flashSuccess && flashSuccess.dataset.flashSuccess && window.swalSuccess) {
+        swalSuccess('Éxito', flashSuccess.dataset.flashSuccess);
+    }
+    if (flashError && flashError.dataset.flashError && window.swalError) {
+        swalError('Error', flashError.dataset.flashError);
+    }
+});
+</script>
+@endsection
 @endsection

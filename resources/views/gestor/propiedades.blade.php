@@ -86,6 +86,13 @@
     </form>
 </div>
 
+@if(session('error'))
+    <div class="mensaje-estado mensaje-error" data-flash-error="{{ session('error') }}">{{ session('error') }}</div>
+@endif
+@if(session('success'))
+    <div class="mensaje-estado mensaje-ok" data-flash-success="{{ session('success') }}">{{ session('success') }}</div>
+@endif
+
 <div class="card-admin tabla-propiedades-card card-con-franja" id="propiedadesTablaCard">
     <div class="card-franja"></div>
     <div class="card-header-admin card-header-gradient">
@@ -179,13 +186,17 @@
                         <td>{{ number_format((float) $propiedad->precio_propiedad, 2, ',', '.') }} EUR/mes</td>
                         <td>{{ $propiedad->total_incidencias_activas }}</td>
                         <td>{{ $propiedad->total_alquileres_activos }}</td>
-                        <td>
-                            <div class="acciones-rapidas">
-                                <a href="{{ route('gestor.propiedades.show', ['id' => $propiedad->id_propiedad]) }}" class="link-ver-todos">Detalle</a>
+                    <td>
+                        <div class="acciones-rapidas">
+                            <a href="{{ route('gestor.propiedades.show', ['id' => $propiedad->id_propiedad]) }}" class="link-ver-todos">Detalle</a>
+                            @if(!empty($permisosPropiedades[$propiedad->id_propiedad] ?? null) && $permisosPropiedades[$propiedad->id_propiedad]->incidencias)
                                 <a href="{{ route('gestor.incidencias', ['propiedad_id' => $propiedad->id_propiedad]) }}" class="link-secundario">Incidencias</a>
-                                <a href="{{ route('gestor.propiedades.show', ['id' => $propiedad->id_propiedad]) }}#alquileres-activos" class="link-secundario">Alquileres</a>
-                            </div>
-                        </td>
+                            @else
+                                <span class="link-secundario link-deshabilitado" title="Sin permiso de incidencias">Incidencias</span>
+                            @endif
+                            <a href="{{ route('gestor.propiedades.show', ['id' => $propiedad->id_propiedad]) }}#alquileres-activos" class="link-secundario">Alquileres</a>
+                        </div>
+                    </td>
                     </tr>
                 @empty
                     <tr>
@@ -229,6 +240,9 @@
                         {{ $textoPagos }}
                     </span>
                     <a href="{{ route('gestor.propiedades.show', ['id' => $propiedad->id_propiedad]) }}" class="btn-revisar">Detalle →</a>
+                    @if(!empty($permisosPropiedades[$propiedad->id_propiedad] ?? null) && $permisosPropiedades[$propiedad->id_propiedad]->incidencias)
+                        <a href="{{ route('gestor.incidencias', ['propiedad_id' => $propiedad->id_propiedad]) }}" class="link-secundario">Incidencias</a>
+                    @endif
                 </div>
             </div>
         @empty
@@ -258,4 +272,16 @@
 
 @section('scripts')
 <script src="{{ asset('js/gestor/propiedades-filtros.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const flashSuccess = document.querySelector('[data-flash-success]');
+    const flashError = document.querySelector('[data-flash-error]');
+    if (flashSuccess && flashSuccess.dataset.flashSuccess && window.swalSuccess) {
+        swalSuccess('Éxito', flashSuccess.dataset.flashSuccess);
+    }
+    if (flashError && flashError.dataset.flashError && window.swalError) {
+        swalError('Error', flashError.dataset.flashError);
+    }
+});
+</script>
 @endsection

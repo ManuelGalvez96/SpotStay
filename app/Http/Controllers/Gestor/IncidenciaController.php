@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 
 class IncidenciaController extends Controller
 {
+    use GestorPermisosTrait;
     public function index(Request $request)
     {
         $gestorId = $this->obtenerIdGestor();
@@ -36,6 +37,13 @@ class IncidenciaController extends Controller
                         $legacy->whereNull('tbl_incidencia.id_asignado_fk')
                             ->where('tbl_propiedad.id_gestor_fk', $gestorId);
                     });
+            })
+            ->whereExists(function ($query) use ($gestorId) {
+                $query->selectRaw(1)
+                    ->from('tbl_propiedad_permisos')
+                    ->whereColumn('tbl_propiedad_permisos.id_propiedad_fk', 'tbl_propiedad.id_propiedad')
+                    ->where('tbl_propiedad_permisos.id_gestor_fk', $gestorId)
+                    ->where('tbl_propiedad_permisos.incidencias', true);
             });
 
         $titulo = trim((string) $request->query('titulo', ''));
@@ -115,6 +123,12 @@ class IncidenciaController extends Controller
             abort(404);
         }
 
+        $permisos = $this->getPermisosPropiedad($gestorId, (int) $incidencia->id_propiedad);
+
+        if (!$permisos->incidencias) {
+            return redirect()->route('gestor.incidencias')->with('error', 'No tienes permiso para gestionar incidencias en la propiedad asociada.');
+        }
+
         $puedeVer = (int) ($incidencia->id_asignado_fk ?? 0) === $gestorId
             || (
                 is_null($incidencia->id_asignado_fk)
@@ -167,6 +181,11 @@ class IncidenciaController extends Controller
 
     public function iniciarGestion(int $id): RedirectResponse
     {
+        $incidencia = $this->checkPermisoIncidencia($id);
+        if (!$incidencia) {
+            return redirect()->back()->with('error', 'No tienes permiso para gestionar incidencias en la propiedad asociada.');
+        }
+
         return $this->actualizarEstado(
             $id,
             'en_proceso',
@@ -189,6 +208,11 @@ class IncidenciaController extends Controller
 
         if (!$incidencia) {
             return redirect()->back()->with('error', 'Incidencia no encontrada.');
+        }
+
+        $permisoIncidencia = $this->checkPermisoIncidencia($id);
+        if (!$permisoIncidencia) {
+            return redirect()->back()->with('error', 'No tienes permiso para gestionar incidencias en la propiedad asociada.');
         }
 
         $transiciones = [
@@ -217,6 +241,11 @@ class IncidenciaController extends Controller
             'comentario' => 'nullable|string|max:1000',
         ]);
 
+        $incidencia = $this->checkPermisoIncidencia($id);
+        if (!$incidencia) {
+            return redirect()->back()->with('error', 'No tienes permiso para gestionar incidencias en la propiedad asociada.');
+        }
+
         $razon = $request->esperando_de;
         $mensaje = $request->comentario ?: ('Incidencia en espera: pendiente de ' . $razon . '.');
 
@@ -235,6 +264,11 @@ class IncidenciaController extends Controller
 
         if (!$incidencia) {
             return redirect()->back()->with('error', 'Incidencia no encontrada.');
+        }
+
+        $permisoIncidencia = $this->checkPermisoIncidencia($id);
+        if (!$permisoIncidencia) {
+            return redirect()->back()->with('error', 'No tienes permiso para gestionar incidencias en la propiedad asociada.');
         }
 
         DB::table('tbl_historial_incidencia')->insert([
@@ -262,6 +296,11 @@ class IncidenciaController extends Controller
             'mensaje' => 'required|string|max:1000',
         ]);
 
+        $incidencia = $this->checkPermisoIncidencia($id);
+        if (!$incidencia) {
+            return redirect()->back()->with('error', 'No tienes permiso para gestionar incidencias en la propiedad asociada.');
+        }
+
         $comentario = 'Comunicación a ' . $request->destinatario . ': ' . $request->mensaje;
 
         DB::table('tbl_historial_incidencia')->insert([
@@ -288,6 +327,11 @@ class IncidenciaController extends Controller
             'archivo' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240',
             'descripcion' => 'nullable|string|max:150',
         ]);
+
+        $incidencia = $this->checkPermisoIncidencia($id);
+        if (!$incidencia) {
+            return redirect()->back()->with('error', 'No tienes permiso para gestionar incidencias en la propiedad asociada.');
+        }
 
         $archivo = $request->file('archivo');
         $nombreBase = $request->descripcion ?: ('Adjunto incidencia #' . $id);
@@ -332,6 +376,11 @@ class IncidenciaController extends Controller
 
         if (!$incidencia) {
             return redirect()->back()->with('error', 'Incidencia no encontrada.');
+        }
+
+        $permisoIncidencia = $this->checkPermisoIncidencia($id);
+        if (!$permisoIncidencia) {
+            return redirect()->back()->with('error', 'No tienes permiso para gestionar incidencias en la propiedad asociada.');
         }
 
         if (!in_array($incidencia->estado_incidencia, ['abierta', 'en_proceso'], true)) {
@@ -443,5 +492,27 @@ class IncidenciaController extends Controller
     {
         $usuario = Auth::user();
         return (int) ($usuario->id_usuario ?? 0);
+    }
+
+    private function checkPermisoIncidencia(int $id): ?object
+    {
+        $gestorId = $this->obtenerIdGestor();
+
+        $incidencia = DB::table('tbl_incidencia')
+            ->where('id_incidencia', $id)
+            ->select('id_incidencia', 'id_propiedad_fk', 'estado_incidencia')
+            ->first();
+
+        if (!$incidencia) {
+            return null;
+        }
+
+        $permisos = $this->getPermisosPropiedad($gestorId, (int) $incidencia->id_propiedad_fk);
+
+        if (!$permisos->incidencias) {
+            return null;
+        }
+
+        return $incidencia;
     }
 }

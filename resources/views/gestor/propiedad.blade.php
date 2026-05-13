@@ -7,10 +7,27 @@
 @endsection
 
 @section('content')
+@if(session('error'))
+    <div class="mensaje-estado mensaje-error" data-flash-error="{{ session('error') }}">{{ session('error') }}</div>
+@endif
+@if(session('success'))
+    <div class="mensaje-estado mensaje-ok" data-flash-success="{{ session('success') }}">{{ session('success') }}</div>
+@endif
+
 <div class="hero-admin">
     <div class="hero-content">
         <h1>{{ $propiedad->titulo_propiedad }}</h1>
         <p>{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }} · CP {{ $propiedad->codigo_postal_propiedad }}</p>
+        <div class="permisos-badges" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+            @if($permisos->gastos) <span class="badge-estado badge-activo" style="font-size:11px;">Gastos ✓</span>
+            @else <span class="badge-estado badge-inactiva" style="font-size:11px;">Gastos ✗</span> @endif
+            @if($permisos->incidencias) <span class="badge-estado badge-activo" style="font-size:11px;">Incidencias ✓</span>
+            @else <span class="badge-estado badge-inactiva" style="font-size:11px;">Incidencias ✗</span> @endif
+            @if($permisos->chat) <span class="badge-estado badge-activo" style="font-size:11px;">Chat ✓</span>
+            @else <span class="badge-estado badge-inactiva" style="font-size:11px;">Chat ✗</span> @endif
+            @if($permisos->editar_propiedad) <span class="badge-estado badge-activo" style="font-size:11px;">Editar ✓</span>
+            @else <span class="badge-estado badge-inactiva" style="font-size:11px;">Editar ✗</span> @endif
+        </div>
     </div>
     <div class="hero-actions">
         <a href="{{ route('gestor.propiedades') }}" class="btn-volver-propiedades">← Volver a propiedades</a>
@@ -19,6 +36,7 @@
     <div class="hero-deco hero-deco-2"></div>
 </div>
 
+@if($permisos->gastos)
 <div class="card-admin card-gastos" id="gastos-propiedad">
     <div class="card-franja"></div>
     <div class="card-header-admin card-header-gradient card-header-acciones">
@@ -50,6 +68,7 @@
             </div>
     @endif
 </div>
+@endif
 
 <div class="central-grid detalle-grid">
     <div class="card-admin card-con-franja">
@@ -104,6 +123,7 @@
         </table>
     </div>
 
+    @if($permisos->incidencias)
     <div class="card-admin card-con-franja">
         <div class="card-franja"></div>
         <div class="card-header-admin card-header-gradient"><span>Incidencias recientes</span></div>
@@ -139,6 +159,21 @@
             </tbody>
         </table>
     </div>
+    @endif
 </div>
 
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const flashSuccess = document.querySelector('[data-flash-success]');
+    const flashError = document.querySelector('[data-flash-error]');
+    if (flashSuccess && flashSuccess.dataset.flashSuccess && window.swalSuccess) {
+        swalSuccess('Éxito', flashSuccess.dataset.flashSuccess);
+    }
+    if (flashError && flashError.dataset.flashError && window.swalError) {
+        swalError('Error', flashError.dataset.flashError);
+    }
+});
+</script>
+@endsection
 @endsection

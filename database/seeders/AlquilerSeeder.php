@@ -27,33 +27,37 @@ class AlquilerSeeder extends Seeder
             return;
         }
 
-        $estados = ['pendiente', 'activo', 'finalizado', 'cancelado'];
+        $admin = $admins->isEmpty() ? null : $admins->random();
         $alquilerCounter = 0;
 
         foreach ($propiedades as $propiedad) {
-            // Cada propiedad alquilada puede tener 1-3 inquilinos (para compartidas)
-            $numInquilinos = rand(1, $propiedad->estado_propiedad === 'alquilada' ? 2 : 1);
+            $numInquilinos = rand(1, 2);
 
             for ($i = 0; $i < $numInquilinos; $i++) {
                 $inquilino = $inquilinos->get($alquilerCounter % $inquilinos->count());
-                $admin = $admins->isEmpty() ? null : $admins->random();
 
-                // Generar fechas coherentes
-                $estado = $estados[$alquilerCounter % count($estados)];
-                $fechaInicio = now()->subMonths(rand(1, 12))->subDays(rand(0, 27));
-                
-                if ($estado === 'finalizado') {
-                    $fechaFin = $fechaInicio->copy()->addMonths(rand(3, 6));
-                } elseif ($estado === 'cancelado') {
-                    $fechaFin = $fechaInicio->copy()->addMonths(rand(1, 3));
+                if ($i === 0) {
+                    $estado = 'activo';
+                    $mesesPasados = rand(1, 6);
+                    $fechaInicio = now()->subMonths($mesesPasados)->startOfMonth();
+                    $fechaFin = $fechaInicio->copy()->addMonths(rand(10, 18));
                 } else {
-                    // Contratos activos: duran entre 6 y 18 meses desde el inicio
-                    $fechaFin = $fechaInicio->copy()->addMonths(rand(6, 18));
+                    $estadosSecundarios = ['activo', 'finalizado', 'cancelado'];
+                    $estado = $estadosSecundarios[array_rand($estadosSecundarios)];
+                    $fechaInicio = now()->subMonths(rand(2, 12))->startOfMonth();
+
+                    if ($estado === 'finalizado') {
+                        $fechaFin = $fechaInicio->copy()->addMonths(rand(3, 6));
+                    } elseif ($estado === 'cancelado') {
+                        $fechaFin = $fechaInicio->copy()->addMonths(rand(1, 3));
+                    } else {
+                        $fechaFin = $fechaInicio->copy()->addMonths(rand(10, 18));
+                    }
                 }
 
                 $aprobado = $estado !== 'cancelado' ? $fechaInicio->copy()->subDays(rand(5, 15)) : null;
 
-                Alquiler::firstOrCreate(
+                Alquiler::updateOrCreate(
                     [
                         'id_propiedad_fk' => $propiedad->id_propiedad,
                         'id_inquilino_fk' => $inquilino->id_usuario,
@@ -81,7 +85,6 @@ class AlquilerSeeder extends Seeder
             }
         }
 
-        // Crear alquileres también para arrendadores que son inquilinos (alquilando de otros arrendadores)
         $arrendadoresQueAlquilan = Usuario::whereHas('roles', function ($q) {
             $q->where('slug_rol', 'arrendador');
         })->limit(5)->get();
@@ -89,22 +92,24 @@ class AlquilerSeeder extends Seeder
         $propiedadesDeOtros = Propiedad::whereNotIn('id_arrendador_fk', $arrendadoresQueAlquilan->pluck('id_usuario'))->get();
 
         foreach ($arrendadoresQueAlquilan as $arrendador) {
-            for ($i = 0; $i < rand(1, 3); $i++) {
+            for ($i = 0; $i < rand(1, 2); $i++) {
                 $propiedad = $propiedadesDeOtros->random();
-                $admin = $admins->isEmpty() ? null : $admins->random();
 
-                $estado = $estados[rand(0, count($estados) - 1)];
-                $fechaInicio = now()->subMonths(rand(1, 12))->subDays(rand(0, 27));
-                
+                $esActivo = $i === 0;
+                $estado = $esActivo ? 'activo' : (rand(0, 1) ? 'finalizado' : 'cancelado');
+                $fechaInicio = now()->subMonths(rand(1, 6))->startOfMonth();
+
                 if ($estado === 'finalizado') {
                     $fechaFin = $fechaInicio->copy()->addMonths(rand(3, 6));
+                } elseif ($estado === 'cancelado') {
+                    $fechaFin = $fechaInicio->copy()->addMonths(rand(1, 3));
                 } else {
-                    $fechaFin = $fechaInicio->copy()->addMonths(rand(6, 18));
+                    $fechaFin = $fechaInicio->copy()->addMonths(rand(10, 18));
                 }
 
                 $aprobado = $estado !== 'cancelado' ? $fechaInicio->copy()->subDays(rand(5, 15)) : null;
 
-                Alquiler::firstOrCreate(
+                Alquiler::updateOrCreate(
                     [
                         'id_propiedad_fk' => $propiedad->id_propiedad,
                         'id_inquilino_fk' => $arrendador->id_usuario,
@@ -130,31 +135,27 @@ class AlquilerSeeder extends Seeder
             }
         }
 
-        // Asegurar que Sergi Nebot comparta la misma propiedad con otro inquilino aleatorio
         $usuarioSnebot = Usuario::where('email_usuario', 'snebot@spotstay.com')->first();
 
         if ($usuarioSnebot) {
-            // Buscamos otro inquilino aleatorio que no sea Sergi
             $companeroAleatorio = Usuario::whereHas('roles', function ($q) {
                 $q->where('slug_rol', 'inquilino');
             })->where('id_usuario', '<>', $usuarioSnebot->id_usuario)
               ->inRandomOrder()
               ->first();
 
-            // Elegimos una propiedad que no sea de Sergi
             $propiedadCompartida = Propiedad::where('id_arrendador_fk', '<>', $usuarioSnebot->id_usuario)
                 ->inRandomOrder()
                 ->first();
 
             if ($propiedadCompartida) {
-                $fechaInicio = now()->subMonth()->day(1);
+                $fechaInicio = now()->subMonth()->startOfMonth();
                 $fechaFin = $fechaInicio->copy()->addYear();
-                $admin = $admins->isEmpty() ? null : $admins->random();
 
                 $inquilinosCompartidos = [$usuarioSnebot, $companeroAleatorio];
 
                 foreach ($inquilinosCompartidos as $inquilino) {
-                    $alquiler = Alquiler::updateOrCreate(
+                    Alquiler::updateOrCreate(
                         [
                             'id_propiedad_fk' => $propiedadCompartida->id_propiedad,
                             'id_inquilino_fk' => $inquilino->id_usuario,
@@ -170,12 +171,15 @@ class AlquilerSeeder extends Seeder
                         ]
                     );
 
+                    $alquiler = Alquiler::where('id_propiedad_fk', $propiedadCompartida->id_propiedad)
+                        ->where('id_inquilino_fk', $inquilino->id_usuario)
+                        ->first();
+
                     if ($alquiler) {
                         $this->generarCuotas($alquiler);
                     }
                 }
-                
-                // Marcar la propiedad como alquilada
+
                 $propiedadCompartida->update(['estado_propiedad' => 'alquilada']);
             }
         }
@@ -196,14 +200,11 @@ class AlquilerSeeder extends Seeder
             return;
         }
 
-        // Día del mes en que vence el pago (fecha de inicio del alquiler)
         $diaVencimiento = Carbon::parse((string) $alquiler->fecha_inicio_alquiler)->day;
 
-        // Mes inicial del período (mes anterior a la fecha de inicio si el día es > 23)
         $inicio = Carbon::parse((string) $alquiler->fecha_inicio_alquiler);
         $mesCuotaInicial = $inicio->copy()->startOfMonth();
 
-        // Mes límite
         $limite = $alquiler->fecha_fin_alquiler
             ? Carbon::parse((string) $alquiler->fecha_fin_alquiler)->startOfMonth()
             : $mesCuotaInicial->copy()->addMonths(11);
@@ -216,11 +217,9 @@ class AlquilerSeeder extends Seeder
         $ahora = Carbon::now();
 
         while ($cursor->lessThanOrEqualTo($limite)) {
-            // El vencimiento es exactamente 1 mes después del inicio del período
             $fechaVencimiento = $cursor->copy()->addMonth()->day($diaVencimiento)->toDateString();
             $fechaVencimientoParsed = Carbon::parse($fechaVencimiento)->startOfDay();
 
-            // Estado: pagado si el vencimiento fue hace más de 0 días
             $estado = 'pendiente';
             $pagadoEn = null;
 

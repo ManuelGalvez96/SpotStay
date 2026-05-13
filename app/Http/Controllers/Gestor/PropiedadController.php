@@ -12,6 +12,7 @@ use Illuminate\Validation\ValidationException;
 
 class PropiedadController extends Controller
 {
+    use GestorPermisosTrait;
     /**
      * Muestra el listado de propiedades asignadas al gestor autenticado.
      *
@@ -208,6 +209,11 @@ class PropiedadController extends Controller
             })
             ->count();
 
+        $permisosPropiedades = [];
+        foreach ($propiedades as $p) {
+            $permisosPropiedades[$p->id_propiedad] = $this->getPermisosPropiedad($gestorId, (int) $p->id_propiedad);
+        }
+
         return view('gestor.propiedades', compact(
             'propiedades',
             'totalAsignadas',
@@ -215,6 +221,7 @@ class PropiedadController extends Controller
             'totalAlquiladas',
             'totalConCriticas',
             'totalSinAlquiler',
+            'permisosPropiedades',
             'q',
             'estado',
             'ciudad',
@@ -300,6 +307,8 @@ class PropiedadController extends Controller
             'resueltas' => DB::table('tbl_incidencia')->where('id_propiedad_fk', $id)->where('estado_incidencia', 'resuelta')->count(),
         ];
 
+        $permisos = $this->getPermisosPropiedad($gestorId, $id);
+
         return view('gestor.propiedad', compact(
             'propiedad',
             'alquileresActivos',
@@ -309,7 +318,8 @@ class PropiedadController extends Controller
             'resumenGastos',
             'pagosPrincipales',
             'cuotasGasto',
-            'cuotasDetallePorId'
+            'cuotasDetallePorId',
+            'permisos'
         ));
     }
 
@@ -345,6 +355,12 @@ class PropiedadController extends Controller
 
         if (!$propiedad) {
             abort(404);
+        }
+
+        $permisos = $this->getPermisosPropiedad($gestorId, $id);
+
+        if (!$permisos->gastos) {
+            return $this->redirigirSinPermiso('gastos');
         }
 
         $gastosData = $this->obtenerDatosGastosPropiedad($propiedad, $gestorId);
@@ -386,6 +402,11 @@ class PropiedadController extends Controller
         $propiedad = $this->getPropiedadDelGestor($id, $gestorId);
         if (!$propiedad) {
             abort(404);
+        }
+
+        $permisos = $this->getPermisosPropiedad($gestorId, $id);
+        if (!$permisos->gastos) {
+            return $this->redirigirSinPermiso('gastos');
         }
 
         $validated = $request->validate([
@@ -491,6 +512,11 @@ class PropiedadController extends Controller
             abort(404);
         }
 
+        $permisos = $this->getPermisosPropiedad($gestorId, $id);
+        if (!$permisos->gastos) {
+            return $this->redirigirSinPermiso('gastos');
+        }
+
         DB::transaction(function () use ($id, $cuotaId, $detalleId) {
             $detalle = DB::table('tbl_gasto_cuota_detalle')
                 ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
@@ -544,6 +570,11 @@ class PropiedadController extends Controller
         $propiedad = $this->getPropiedadDelGestor($id, $gestorId);
         if (!$propiedad) {
             abort(404);
+        }
+
+        $permisos = $this->getPermisosPropiedad($gestorId, $id);
+        if (!$permisos->gastos) {
+            return $this->redirigirSinPermiso('gastos');
         }
 
         $gasto = DB::table('tbl_gasto')
@@ -646,6 +677,11 @@ class PropiedadController extends Controller
         $propiedad = $this->getPropiedadDelGestor($id, $gestorId);
         if (!$propiedad) {
             abort(404);
+        }
+
+        $permisos = $this->getPermisosPropiedad($gestorId, $id);
+        if (!$permisos->gastos) {
+            return $this->redirigirSinPermiso('gastos');
         }
 
         $gasto = DB::table('tbl_gasto')

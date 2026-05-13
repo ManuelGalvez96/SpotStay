@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    use GestorPermisosTrait;
     public function index()
     {
         $gestor = Auth::user();
@@ -24,6 +25,13 @@ class DashboardController extends Controller
                                 ->where('tbl_propiedad.id_gestor_fk', $gestorId);
                         });
                 });
+            })
+            ->whereExists(function ($query) use ($gestorId) {
+                $query->selectRaw(1)
+                    ->from('tbl_propiedad_permisos')
+                    ->whereColumn('tbl_propiedad_permisos.id_propiedad_fk', 'tbl_propiedad.id_propiedad')
+                    ->where('tbl_propiedad_permisos.id_gestor_fk', $gestorId)
+                    ->where('tbl_propiedad_permisos.incidencias', true);
             });
 
         $incidenciasNuevas = (clone $baseIncidencias)
@@ -132,6 +140,11 @@ class DashboardController extends Controller
             'esperando' => (clone $baseIncidencias)->where('tbl_incidencia.estado_incidencia', 'esperando')->count(),
         ];
 
+        $permisosDashboard = [];
+        foreach ($propiedadesAsignadas as $p) {
+            $permisosDashboard[$p->id_propiedad] = $this->getPermisosPropiedad($gestorId, (int) $p->id_propiedad);
+        }
+
         return view('gestor.dashboard', compact(
             'incidenciasNuevas',
             'incidenciasEnProceso',
@@ -144,7 +157,8 @@ class DashboardController extends Controller
             'esperandoInquilino',
             'totalEsperandoDetalle',
             'notificaciones',
-            'resumenEstados'
+            'resumenEstados',
+            'permisosDashboard'
         ));
     }
 }

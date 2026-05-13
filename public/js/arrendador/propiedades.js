@@ -353,23 +353,97 @@ function cerrarModalFormulario() {
   }
 }
 
-// Gestor modal handlers
-function abrirModalGestor(propiedadId, gestorNombre) {
-  var modal = document.getElementById('modal-gestor-config');
-  if (!modal) return;
 
-  // Rellenar contenido
-  var titulo = modal.querySelector('.modal-header h2');
-  var cuerpo = modal.querySelector('.modal-body');
-  if (titulo) titulo.textContent = 'Configuración del gestor';
-  if (cuerpo) {
-    cuerpo.innerHTML = '<p><strong>Propiedad ID:</strong> ' + (propiedadId || '') + '</p>' +
-                      '<p><strong>Gestor:</strong> ' + (gestorNombre || 'Sin gestor') + '</p>' +
-                      '<p>Puedes aquí añadir opciones de configuración del gestor.</p>';
-  }
+// MODAL GESTOR
+function abrirModalGestor(propiedadId) {
+  const modal = document.getElementById('modal-gestor-config');
+  const contenido = modal.querySelector('.modal-body');
+  const ruta = rutaPermisosGestor.replace(':propiedad', propiedadId);
+  //FETCH para obtener datos del gestor y los permisos
+  fetch(ruta)
+    .then(response => response.json())
+    .then(data => {
+      //DATOS DE EJEMPLO QUE DEVUELVE: 
+      // {id_gestor: 51, nombre_gestor: 'Carlos Garcia', email_gestor: 'carlos@spotstay.com', incidencias: 1, gastos: 1, …}
+      
+      //Gestor
+      document.getElementById('nombre_gestor').textContent = data.nombre_gestor || 'Sin gestor asignado';
+      //Permisos
+      document.getElementById('permiso-chat').checked = data.chat;
+      document.getElementById('permiso-editar').checked = data.editar_propiedad;
+      document.getElementById('permiso-gastos').checked = data.gastos;
+      document.getElementById('permiso-incidencias').checked = data.incidencias;
+      //Guardar IDs para el submit
+      var btnGuardar = document.getElementById('btnGuardarPermisosGestor');
+      if (btnGuardar) {
+        btnGuardar.dataset.propiedadId = propiedadId;
+        btnGuardar.dataset.gestorId = data.id_gestor;
+      }
+
+    });
+  
+  //Construir el contenido del modal
 
   modal.hidden = false;
 }
+
+document.addEventListener('click', function (evento) {
+  var objetivo = evento.target;
+  if (objetivo && objetivo.id === 'btnGuardarPermisosGestor') {
+    evento.preventDefault();
+    guardarPermisos();
+  }
+});
+
+//Guardar permisos del gestor
+function guardarPermisos() {
+    var btn = document.getElementById('btnGuardarPermisosGestor');
+    if (!btn) {
+      mostrarMensaje('No se encontró el botón de guardado de permisos.', true);
+      return;
+    }
+    var propiedadId = btn.dataset.propiedadId;
+    var gestorId = btn.dataset.gestorId;
+
+    if (!propiedadId) {
+      mostrarMensaje('No se encontró la propiedad a actualizar.', true);
+      return;
+    }
+
+    var permisos = {
+      chat: document.getElementById('permiso-chat').checked,
+      editar_propiedad: document.getElementById('permiso-editar').checked,
+      gastos: document.getElementById('permiso-gastos').checked,
+      incidencias: document.getElementById('permiso-incidencias').checked
+    };
+    // Incluir gestorId en la carga útil para que el controlador lo reciba
+    permisos.gestor_id = gestorId;
+
+    fetch('/arrendador/propiedades/' + propiedadId + '/gestor/permisos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': obtenerTokenCsrf(),
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(permisos),
+      credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        mostrarMensaje('Permisos actualizados correctamente.', false);
+        cerrarModalGestor();
+      } else {
+        throw new Error('Error al actualizar permisos.');
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      mostrarMensaje(error.message || 'Error al actualizar permisos.', true);
+    });
+};
+
 
 function cerrarModalGestor() {
   var modal = document.getElementById('modal-gestor-config');

@@ -485,17 +485,58 @@ class PropiedadController extends Controller
     //MODAL CONFIGURACION GESTOR
 
     //Ver permisos del gestor
-    public function getPermisosGestor($idPropiedad,$idGestor){
-        $permisos = DB::table('tbl_gestor_permiso')
-            ->where('id_gestor_fk', $idGestor)
-            ->where('id_propiedad_fk', $idPropiedad)
-            ->first();
-        return response()->json($permisos);
+    public function getPermisosGestor($idPropiedad){
+        $permisos = DB::table('tbl_propiedad as prop')
+
+        ->leftJoin('tbl_usuario as u', 'u.id_usuario', '=', 'prop.id_gestor_fk')
+
+        ->leftJoin('tbl_propiedad_permisos as p', function ($join) {
+            $join->on('p.id_propiedad_fk', '=', 'prop.id_propiedad')
+                 ->on('p.id_gestor_fk', '=', 'prop.id_gestor_fk');
+        })
+
+        ->where('prop.id_propiedad', $idPropiedad)
+
+        ->select(
+            'u.id_usuario as id_gestor',
+            'u.nombre_usuario as nombre_gestor',
+            'u.email_usuario as email_gestor',
+
+            'p.incidencias',
+            'p.gastos',
+            'p.chat',
+            'p.editar_propiedad'
+        )
+
+        ->first();
+        //Si no hay permisos específicos se devuelve false, por si no están creados aún
+        return response()->json([
+            'id_gestor' => $permisos?->id_gestor ?? null,
+            'nombre_gestor' => $permisos?->nombre_gestor ?? null,
+            'email_gestor' => $permisos?->email_gestor ?? null,
+            'incidencias' => (bool) ($permisos?->incidencias ?? false),
+            'gastos' => (bool) ($permisos?->gastos ?? false),
+            'chat' => (bool) ($permisos?->chat ?? false),
+            'editar_propiedad' => (bool) ($permisos?->editar_propiedad ?? false),
+        ]);
     }
 
     //Actualizar permisos del gestor
-    public function updatePermisosGestor(Request $request, $idPropiedad, $idGestor){
-        DB::table('tbl_gestor_permiso')
+    public function updatePermisosGestor(Request $request, $idPropiedad){
+        // Obtener id del gestor desde la petición si viene, si no usar el id_gestor_fk de la propiedad
+        $idGestor = $request->input('gestor_id');
+        if (empty($idGestor)) {
+            $idGestor = DB::table('tbl_propiedad')
+                ->where('id_propiedad', $idPropiedad)
+                ->value('id_gestor_fk');
+        }
+
+        if (empty($idGestor)) {
+            return response()->json(['success' => false, 'message' => 'Gestor no encontrado.'], 400);
+        }
+
+        // Usar la tabla de permisos vinculada a propiedad
+        DB::table('tbl_propiedad_permisos')
             ->updateOrInsert(
                 [
                     'id_gestor_fk' => $idGestor,
@@ -507,9 +548,9 @@ class PropiedadController extends Controller
                     'chat' => (bool) $request->chat,
                     'editar_propiedad' => (bool) $request->editar_propiedad,
                     'updated_at' => now(),
-                    'created_at' => now(),
                 ]
             );
+
         return response()->json(['success' => true]);
     }
 }

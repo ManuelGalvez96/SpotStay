@@ -82,8 +82,8 @@
                                 <span class="badge badge-{{ $estado }}">{{ $label}}</span>
                             </td>
                             <td>
-                                {{ $propiedad->nombre_gestor ?? 'Sin gestor' }}
-                                <button type="button" class="btn-gear" aria-label="Configurar gestor" data-propiedad-id="{{ $propiedad->id_propiedad }}" data-gestor-nombre="{{ $propiedad->gestor_nombre ?? '' }}" onclick="abrirModalGestor(this.dataset.propiedadId, this.dataset.gestorNombre)">
+                                <span class="gestor-nombre">{{ $propiedad->nombre_gestor ?? 'Sin gestor asignado' }}</span>
+                                <button type="button" class="btn-gear" aria-label="Configurar gestor" data-propiedad-id="{{ $propiedad->id_propiedad }}" onclick="abrirModalGestor(this.dataset.propiedadId)">
                                     <i class="bi bi-gear"></i>
                                 </button>
                             </td>
@@ -124,15 +124,46 @@
         </div>
     </div>
 
+<!-- RUTA PARA OBTENER PERMISOS EN EL FETCH -->
+ <script>
+    const rutaPermisosGestor = "{{ route('arrendador.permisos.get', ':propiedad') }}";
+ </script>
+
+<!-- MODAL GESTOR -->
     <div id="modal-gestor-config" class="modal" hidden>
         <div class="modal-backdrop" onclick="cerrarModalGestor()"></div>
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Configuración del gestor</h2>
-                <button class="modal-close" type="button" onclick="cerrarModalGestor()">✕</button>
+                <button class="modal-close" id="btnCerrarModalGestor" type="button" onclick="cerrarModalGestor()">✕</button>
             </div>
             <div class="modal-body">
-                <p>Cargando...</p>
+                <p>
+                    <strong>Gestor: </strong>
+                    <span id="nombre_gestor"></span>
+                </p>
+                <div class="permissions-section">
+                    <h3>Permisos</h3>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="permiso-chat" value="1">
+                        <span>Chat con inquilinos</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="permiso-editar" value="1">
+                        <span>Editar la propiedad</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="permiso-gastos" value="1">
+                        <span>Gestión de gastos y recibos</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="permiso-incidencias" value="1">
+                        <span>Gestión de incidencias</span>
+                    </label>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-primary" id="btnGuardarPermisosGestor" type="button">Guardar cambios</button>
+                </div>
             </div>
         </div>
     </div>

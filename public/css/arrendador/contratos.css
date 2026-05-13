@@ -77,6 +77,8 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
 .btn-firmar:hover { background: #0f8f5c; }
 .btn-ver { background: rgba(255, 255, 255, 0.15); color: #333; border: 1px solid #ccc; }
 .btn-ver:hover { background: rgba(241, 245, 247, 0.95); }
+.btn-subir-pdf { background: #035498; color: #fff; border: none; border-radius: 8px; padding: 8px 12px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.15s ease; display: inline-flex; align-items: center; justify-content: center; }
+.btn-subir-pdf:hover { background: #023b6e; }
 .paginacion { margin-top: 12px; }
 .paginacion nav { display: flex; justify-content: center; }
 
@@ -116,6 +118,6 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
   .tabla th, .tabla td { padding: 8px 6px; font-size: 12px; }
   .kpi { padding: 12px; }
   .kpi span { font-size: 20px; }
-  .btn-firmar, .btn-ver { padding: 6px 8px; font-size: 12px; }
+  .btn-firmar, .btn-ver, .btn-subir-pdf { padding: 6px 8px; font-size: 12px; }
   .btn-volver { padding: 7px 12px; font-size: 13px; }
 }

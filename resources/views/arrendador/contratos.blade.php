@@ -89,6 +89,12 @@
                                 @if (!empty($contrato->url_pdf_contrato))
                                     <a class="btn-ver" href="{{ route('arrendador.contratos.descargar-pdf', ['id' => $contrato->id_contrato, 'arrendador_id' => $arrendadorId]) }}" target="_blank">Ver PDF</a>
                                 @endif
+
+                                <form method="POST" action="{{ route('arrendador.contratos.subir-pdf', ['id' => $contrato->id_contrato, 'arrendador_id' => $arrendadorId]) }}" enctype="multipart/form-data" class="form-subir-pdf" style="display:inline">
+                                    @csrf
+                                    <input type="file" name="pdf_contrato" accept=".pdf" required style="display:none" id="pdf-input-{{ $contrato->id_contrato }}">
+                                    <button type="button" class="btn-subir-pdf" data-contrato="{{ $contrato->id_contrato }}">Subir PDF</button>
+                                </form>
                             </div>
                         </td>
                     </tr>

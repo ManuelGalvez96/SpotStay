@@ -44,7 +44,6 @@ class PropiedadController extends Controller
         $datos = $request->validate([
             'titulo_propiedad' => ['required', 'string', 'max:150'],
             'tipo_propiedad' => ['required', 'in:piso,casa,estudio,habitacion'],
-            'estado_propiedad' => ['required', 'in:borrador,publicada'],
             'calle_propiedad' => ['required', 'string', 'max:150'],
             'numero_propiedad' => ['required', 'string', 'max:20'],
             'piso_propiedad' => ['nullable', 'string', 'max:20'],
@@ -74,7 +73,7 @@ class PropiedadController extends Controller
             'id_gestor_fk' => $arrendadorId,
             'titulo_propiedad' => $datos['titulo_propiedad'],
             'tipo_propiedad' => $datos['tipo_propiedad'],
-            'estado_propiedad' => $datos['estado_propiedad'],
+            'estado_propiedad' => 'borrador',
             'calle_propiedad' => $datos['calle_propiedad'],
             'numero_propiedad' => $datos['numero_propiedad'],
             'piso_propiedad' => $datos['piso_propiedad'] ?? null,

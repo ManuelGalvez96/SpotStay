@@ -246,13 +246,6 @@
                                         <option value="habitacion">Habitación</option>
                                     </select>
                                 </label>
-                                <label>
-                                    <span>Estado</span>
-                                    <select name="estado_propiedad" id="form-estado" required>
-                                        <option value="borrador">Borrador</option>
-                                        <option value="publicada">Publicada</option>
-                                    </select>
-                                </label>
                             </div>
                         </div>
 

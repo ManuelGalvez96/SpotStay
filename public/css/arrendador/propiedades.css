@@ -75,6 +75,10 @@ body {
   font-size: 24px;
 }
 
+.btn-nueva-propiedad small {
+  color: #fff !important;
+}
+
 /* Content Grid */
 .content-grid { 
   display: grid; 

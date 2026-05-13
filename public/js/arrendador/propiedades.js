@@ -378,7 +378,6 @@ function abrirModalFormulario(arrendadorId, datosPropiedad) {
     document.getElementById('form-id-propiedad').value = '';
     document.getElementById('form-titulo').value = '';
     document.getElementById('form-tipo').value = '';
-    document.getElementById('form-estado').value = 'borrador';
     document.getElementById('form-calle').value = '';
     document.getElementById('form-numero').value = '';
     document.getElementById('form-piso').value = '';
@@ -418,7 +417,6 @@ function abrirModalFormulario(arrendadorId, datosPropiedad) {
       document.getElementById('form-id-propiedad').value = datosPropiedad.id_propiedad || '';
       document.getElementById('form-titulo').value = datosPropiedad.titulo_propiedad || '';
       document.getElementById('form-tipo').value = datosPropiedad.tipo_propiedad || '';
-      document.getElementById('form-estado').value = datosPropiedad.estado_propiedad || 'borrador';
       document.getElementById('form-calle').value = datosPropiedad.calle_propiedad || '';
       document.getElementById('form-numero').value = datosPropiedad.numero_propiedad || '';
       document.getElementById('form-piso').value = datosPropiedad.piso_propiedad || '';

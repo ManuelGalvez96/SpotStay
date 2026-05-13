@@ -16,21 +16,21 @@ jobs:
       - name: Obtener codigo fuente
         uses: actions/checkout@v4
 
-      - name: Configurar PHP 8.2
+      - name: Configurar PHP 8.3
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
-          extensions: mbstring, xml, ctype, iconv, mysql, bcmath, curl
+          php-version: "8.3"
+          extensions: mbstring, xml, ctype, iconv, mysql, bcmath, curl, gd, dom
           coverage: none
 
       - name: Instalar Dependencias (Composer)
-        run: composer update --no-dev --optimize-autoloader --ignore-platform-reqs
+        run: composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - name: Compilar CSS y JS (Vite)
         run: |
@@ -49,16 +49,24 @@ jobs:
             --exclude '.github' \
             --exclude '.env' \
             --exclude 'README.md' \
+            --exclude 'README_*.md' \
+            --exclude 'ANALISIS_*.md' \
+            --exclude 'CAMBIOS_*.md' \
+            --exclude 'RESUMEN_*.md' \
+            --exclude 'CHANGELOG_*.md' \
             --exclude 'phpunit.xml' \
             --exclude 'deploy' \
-            --exclude 'public'
+            --exclude 'public' \
+            --exclude 'database_spotStay.sql' \
+            --exclude 'cleanup_tables.php' \
+            --exclude '*.lock' \
+            --exclude '.editorconfig'
 
           rsync -av ./public/ deploy/public/
 
           sed -i "s|__DIR__.'/../storage|__DIR__.'/laravel/storage|g" deploy/public/index.php
           sed -i "s|__DIR__.'/../vendor/autoload.php|__DIR__.'/laravel/vendor/autoload.php|g" deploy/public/index.php
           sed -i "s|__DIR__.'/../bootstrap/app.php|__DIR__.'/laravel/bootstrap/app.php|g" deploy/public/index.php
-          sed -i "s|\$app->handleRequest|\$app->usePublicPath(__DIR__);\n\$app->handleRequest|g" deploy/public/index.php
 
           rm -f deploy/laravel/bootstrap/cache/*.php
 
@@ -84,7 +92,6 @@ jobs:
             **/phpunit.xml
             **/.env.example
             **/README.md
-            **/public/**
             .env
             storage/logs/**
 

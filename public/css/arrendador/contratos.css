@@ -56,23 +56,27 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
   font-weight: 700;
   display: inline-flex;
 }
-.estado-pendiente { background: #fff4e6; color: var(--pendiente); }
-.estado-firmado { background: #e7f8f1; color: #05603a; }
+.estado-pendiente { background: #fef3c7; color: #92400e; }
+.estado-firmado { background: #d1fae5; color: #065f46; }
 .acciones { display: flex; gap: 8px; flex-wrap: wrap; }
 .btn-firmar,
 .btn-ver {
   border: none;
-  border-radius: 10px;
-  padding: 7px 10px;
+  border-radius: 8px;
+  padding: 8px 12px;
   font-weight: 600;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s ease;
 }
-.btn-firmar { background: var(--exito); color: #fff; }
-.btn-ver { background: #eef3fb; color: var(--primario); }
+.btn-firmar { background: #19a974; color: #fff; }
+.btn-firmar:hover { background: #0f8f5c; }
+.btn-ver { background: rgba(255, 255, 255, 0.15); color: #333; border: 1px solid #ccc; }
+.btn-ver:hover { background: rgba(241, 245, 247, 0.95); }
 .paginacion { margin-top: 12px; }
 .paginacion nav { display: flex; justify-content: center; }
 

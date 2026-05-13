@@ -63,8 +63,11 @@ class GestorController extends Controller
     {
         $arrendadorId = $this->obtenerIdArrendador($request);
 
+        $idGestor = $request->input('id_gestor_fk');
+        $idGestor = $idGestor === '' ? null : $idGestor;
+
         $datos = $request->validate([
-            'id_gestor_fk' => ['required', 'integer', 'min:1'],
+            'id_gestor_fk' => ['nullable', 'integer', 'min:1'],
         ]);
 
         $propiedad = DB::table('tbl_propiedad')
@@ -79,28 +82,30 @@ class GestorController extends Controller
             ], 404);
         }
 
-        $gestorValido = DB::table('tbl_usuario')
-            ->where('id_usuario', (int) $datos['id_gestor_fk'])
-            ->where('activo_usuario', true)
-            ->exists();
+        if ($idGestor !== null) {
+            $gestorValido = DB::table('tbl_usuario')
+                ->where('id_usuario', (int) $idGestor)
+                ->where('activo_usuario', true)
+                ->exists();
 
-        if (!$gestorValido) {
-            return response()->json([
-                'success' => false,
-                'message' => 'El gestor seleccionado no es valido.',
-            ], 422);
+            if (!$gestorValido) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El gestor seleccionado no es valido.',
+                ], 422);
+            }
         }
 
         DB::table('tbl_propiedad')
             ->where('id_propiedad', $id)
             ->update([
-                'id_gestor_fk' => (int) $datos['id_gestor_fk'],
+                'id_gestor_fk' => $idGestor,
                 'actualizado_propiedad' => Carbon::now(),
             ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Gestor actualizado correctamente.',
+            'message' => $idGestor === null ? 'Gestor desasignado correctamente.' : 'Gestor actualizado correctamente.',
         ]);
     }
 

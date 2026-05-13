@@ -29,90 +29,32 @@ function formatearImporte(valor) {
 }
 
 /* =========================================================
-   SECCIÓN 2: PARSER DE GASTOS (LÓGICA COMPLEJA)
-   Interpreta el campo de gastos (JSON, array o número) para
-   calcular el total automáticamente.
-   ========================================================= */
-
-function parsearGastos(texto) {
-  var limpio = (texto || '').trim();
-
-  if (!limpio) {
-    return { valido: true, total: 0, descripcion: 'Sin gastos extra.' };
-  }
-
-  var numeroDirecto = Number(limpio.replace(',', '.'));
-  if (!isNaN(numeroDirecto)) {
-    return { valido: true, total: numeroDirecto, descripcion: 'Gasto simple detectado.' };
-  }
-
-  try {
-    var datosJson = JSON.parse(limpio);
-    var total = 0;
-
-    if (Array.isArray(datosJson)) {
-      datosJson.forEach(function (importe) {
-        var valor = Number(importe);
-        if (!isNaN(valor)) {
-          total += valor;
-        }
-      });
-      return { valido: true, total: total, descripcion: 'Gastos JSON en array.' };
-    }
-
-    if (datosJson && typeof datosJson === 'object') {
-      Object.keys(datosJson).forEach(function (clave) {
-        var valor = Number(datosJson[clave]);
-        if (!isNaN(valor)) {
-          total += valor;
-        }
-      });
-      return { valido: true, total: total, descripcion: 'Gastos JSON por conceptos.' };
-    }
-
-    return { valido: false, total: 0, descripcion: 'Formato de gastos no compatible.' };
-  } catch (errorCapturado) {
-    return { valido: false, total: 0, descripcion: 'Gastos no validos para calculo automatico.' };
-  }
-}
-
-/* =========================================================
-   SECCIÓN 3: ACTUALIZACIÓN EN TIEMPO REAL
-   Recalcula el total mensual al escribir precio o gastos.
+   SECCIÓN 2: ACTUALIZACIÓN EN TIEMPO REAL
+   Recalcula el total mensual al escribir el precio.
    ========================================================= */
 
 function actualizarResumenFormulario(formulario) {
   var precio = formulario.querySelector('input[name="precio_propiedad"]');
-  var gastos = formulario.querySelector('textarea[name="gastos_propiedad"]');
   var total = formulario.querySelector('[data-total-mensual]');
   var estado = formulario.querySelector('[data-estado-gastos]');
 
-  if (!precio || !gastos || !total || !estado) {
+  if (!precio || !total || !estado) {
     return;
   }
 
   var precioValor = Number((precio.value || '0').replace(',', '.'));
   var precioSeguro = isNaN(precioValor) ? 0 : precioValor;
-  var resultadoGastos = parsearGastos(gastos.value);
-
-  if (!resultadoGastos.valido) {
-    total.textContent = formatearImporte(precioSeguro);
-    estado.textContent = resultadoGastos.descripcion;
-    return;
-  }
-
-  total.textContent = formatearImporte(precioSeguro + resultadoGastos.total);
-  estado.textContent = resultadoGastos.descripcion;
+  total.textContent = formatearImporte(precioSeguro);
+  estado.textContent = precioSeguro > 0 ? 'Importe calculado con el precio mensual.' : 'Introduce un precio para calcular.';
 }
 
 /* =========================================================
-   SECCIÓN 4: ENVÍO ASÍNCRONO (FETCH)
+   SECCIÓN 3: ENVÍO ASÍNCRONO (FETCH)
    Guarda los cambios sin recargar la página.
    ========================================================= */
 
 function enviarFormularioConFetch(formulario) {
   var precio = formulario.querySelector('input[name="precio_propiedad"]');
-  var gastos = formulario.querySelector('textarea[name="gastos_propiedad"]');
   var boton = formulario.querySelector('.btn-guardar');
   var textoBoton = formulario.querySelector('.texto-boton');
 
@@ -133,8 +75,7 @@ function enviarFormularioConFetch(formulario) {
     },
     credentials: 'same-origin',
     body: JSON.stringify({
-      precio_propiedad: precio ? precio.value : '',
-      gastos_propiedad: gastos ? gastos.value : ''
+      precio_propiedad: precio ? precio.value : ''
     })
   })
     .then(function (respuesta) {
@@ -164,16 +105,9 @@ function enviarFormularioConFetch(formulario) {
 
 document.querySelectorAll('[data-form-precios="true"]').forEach(function (formulario) {
   var precio = formulario.querySelector('input[name="precio_propiedad"]');
-  var gastos = formulario.querySelector('textarea[name="gastos_propiedad"]');
 
   if (precio) {
     precio.addEventListener('input', function () {
-      actualizarResumenFormulario(formulario);
-    });
-  }
-
-  if (gastos) {
-    gastos.addEventListener('input', function () {
       actualizarResumenFormulario(formulario);
     });
   }

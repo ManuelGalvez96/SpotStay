@@ -6,7 +6,11 @@
             <li><a href="{{ route('miembro.mensajes.index') }}" class="enlace-nav {{ request()->is('miembro/chat*') ? 'activo' : '' }}"><i class="bi bi-chat-dots"></i> Mensajes</a></li>
             
             @if ($esInquilino)
-            <li><a href="{{ route('gestionar_propiedades') }}" class="enlace-nav {{ request()->is('inquilino/*') ? 'activo' : '' }}"><i class="bi bi-building-gear"></i> Gestionar</a></li>
+            <li><a href="{{ route('gestionar_propiedades') }}" class="enlace-nav {{ request()->is('inquilino/gestionar-propiedades') || request()->is('inquilino/propiedad/*') ? 'activo' : '' }}"><i class="bi bi-building-gear"></i> Gestionar</a></li>
+            @endif
+
+            @if($tienePagos)
+            <li><a href="{{ route('inquilino.historial_pagos') }}" class="enlace-nav {{ request()->routeIs('inquilino.historial_pagos') ? 'activo' : '' }}"><i class="bi bi-receipt"></i> Mis Pagos</a></li>
             @endif
         </ul>
     </div>

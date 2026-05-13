@@ -66,6 +66,8 @@
                         <span id="error-rol" class="error-mensaje"></span>
                     </div>
 
+
+
                     <!-- SECCIÓN DINÁMICA DE PLANES -->
                     <div id="seccion-planes" class="full-width seccion-dinamica" style="display: none;">
                         <label>Selecciona tu Plan Mensual</label>
@@ -87,22 +89,6 @@
                     <!-- SECCIÓN DINÁMICA DE ARRENDADOR -->
                     <div id="seccion-arrendador" class="full-width seccion-dinamica" style="display: none;">
                         <div class="grid-arrendador">
-                            <div class="contenedor-entrada">
-                                <label>Tipo de Documento</label>
-                                <div class="input-wrapper">
-                                    <select name="tipo_documento" id="tipo-documento-arrendador">
-                                        <option value="dni" selected>DNI</option>
-                                        <option value="nie">NIE</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="contenedor-entrada">
-                                <label id="label-documento">Número de Documento</label>
-                                <div class="input-wrapper">
-                                    <input type="text" name="dni" id="dni-arrendador" placeholder="DNI" value="{{ old('dni') }}">
-                                </div>
-                                <span id="error-dni" class="error-mensaje"></span>
-                            </div>
                             <div class="contenedor-entrada">
                                 <label>Fecha de Nacimiento</label>
                                 <div class="input-wrapper">
@@ -136,6 +122,25 @@
                             <input type="text" id="nombre-usuario" name="nombre" placeholder="Nombre Completo" value="{{ old('nombre') }}">
                         </div>
                         <span id="error-nombre" class="error-mensaje"></span>
+                    </div>
+
+                    <!-- BLOQUE DE IDENTIDAD UNIFICADO -->
+                    <div class="contenedor-entrada">
+                        <label>Tipo de Documento</label>
+                        <div class="input-wrapper">
+                            <select name="tipo_documento" id="tipo-documento">
+                                <option value="dni" selected>DNI</option>
+                                <option value="nie">NIE</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="contenedor-entrada">
+                        <label id="label-documento">Número de Documento</label>
+                        <div class="input-wrapper">
+                            <input type="text" name="dni" id="dni-usuario" placeholder="DNI" value="{{ old('dni') }}">
+                        </div>
+                        <span id="error-dni" class="error-mensaje"></span>
+                        <span id="disponibilidad-dni" class="disponibilidad-mensaje"></span>
                     </div>
 
                     <div class="contenedor-entrada">

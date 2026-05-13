@@ -170,8 +170,10 @@
                     {{-- ESTADO ATRASADO --}}
                     <span class="label pago-requerido">⚠️ DEUDA PENDIENTE</span>
                     <span class="valor-kpi pago-requerido">{{ number_format($totalDeuda, 2, ',', '.') }}€</span>
-                    <span class="valor-kpi pago-requerido">{{ $numPagosAtrasados }} meses</span>
                     <p class="nota pago-requerido">Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso.<br>El total incluye las cuotas atrasadas y el mes actual.</p>
+                    @if($fechaProximoPago instanceof \Carbon\Carbon)
+                        <p class="nota pago-requerido">Te faltan <strong>{{ now()->diffInDays($fechaProximoPago, false) > 0 ? now()->diffInDays($fechaProximoPago) : 0 }}</strong> días para el próximo recibo.</p>
+                    @endif
                     <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId ?? 0) }}?tipo=alquiler" class="form-pago-cuota" data-monto="{{ number_format($totalDeuda, 2, ',', '.') }}€">
                         @csrf
                         <button type="button" id="boton-pagar" class="btn-accion btn-pago bg-pago-requerido">Pagar Deuda Total</button>
@@ -386,42 +388,21 @@
                 <div class="tab-content" id="tabHistorialContent" data-id-alquiler="{{ $alquiler->id_alquiler }}">
                     {{-- Historial Alquiler --}}
                     <div class="tab-pane fade show active" id="alquiler-history" role="tabpanel" aria-labelledby="alquiler-tab">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="ps-3">Fecha</th>
-                                        <th>Concepto</th>
-                                        <th class="text-end">Importe</th>
-                                        <th class="text-center pe-3">Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {{-- Se carga vía fetch --}}
-                                </tbody>
-                            </table>
+                        <div class="text-center p-5">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <p class="mt-2 text-muted">Cargando historial...</p>
                         </div>
                     </div>
 
                     {{-- Historial Gastos --}}
                     <div class="tab-pane fade" id="gastos-history" role="tabpanel" aria-labelledby="gastos-tab">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="ps-3">Fecha</th>
-                                        <th>Categoria(Concepto)</th>
-                                        <th class="text-end">Importe</th>
-                                        <th class="text-center pe-3">Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {{-- Se carga vía fetch --}}
-                                </tbody>
-                            </table>
+                        <div class="text-center p-5">
+                            <div class="spinner-border text-info" role="status"></div>
+                            <p class="mt-2 text-muted">Cargando suministros...</p>
                         </div>
                     </div>
                 </div>
+            </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">Cerrar Historial</button>

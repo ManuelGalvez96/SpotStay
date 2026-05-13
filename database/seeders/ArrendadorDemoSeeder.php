@@ -141,6 +141,8 @@ class ArrendadorDemoSeeder extends Seeder
                 'contrasena_usuario' => Hash::make('password123'),
                 'telefono_usuario' => $telefono,
                 'iban_usuario' => $iban,
+                'stripe_account_id' => 'acct_manual_' . uniqid(),
+                'stripe_status' => 'active',
                 'activo_usuario' => true,
                 'creado_usuario' => Carbon::now(),
                 'actualizado_usuario' => Carbon::now(),

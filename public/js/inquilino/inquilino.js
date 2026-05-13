@@ -548,34 +548,37 @@ function cargarHistorialPagosFetch(tipo) {
     const tabPane = document.getElementById(idTab);
     const endpoint = tipo === 'alquiler' ? 'historial-alquiler' : 'historial-suministros';
     
-    // Configuraciones visuales según tipo (Colores de SpotStay)
+    // Configuraciones visuales según tipo
     const colorTexto = tipo === 'alquiler' ? '' : 'texto-suministro';
     const colorBadge = tipo === 'alquiler' ? 'bg-success' : 'badge-suministro-abonado';
     const textoBadge = tipo === 'alquiler' ? 'Pagado' : 'Abonado';
     const spinnerColor = tipo === 'alquiler' ? 'text-primary' : 'text-info';
 
-    // Asegurar que la tabla existe antes de buscar el cuerpo (tbody)
-    let cuerpoTabla = tabPane.querySelector('tbody');
-    if (!cuerpoTabla) {
-        tabPane.innerHTML = `
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-3">Fecha</th>
-                            <th>${tipo === 'alquiler' ? 'Concepto' : 'Categoría(Concepto)'}</th>
-                            <th class="text-end">Importe</th>
-                            <th class="text-center pe-3">Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>`;
-        cuerpoTabla = tabPane.querySelector('tbody');
-    }
+    // REGENERACIÓN TOTAL: Aseguramos que la tabla siempre tenga 5 columnas y cabecera correcta
+    tabPane.innerHTML = `
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Fecha</th>
+                        <th>${tipo === 'alquiler' ? 'Concepto' : 'Categoría(Concepto)'}</th>
+                        <th class="text-end">Importe</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center pe-3">Factura</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="5" class="text-center p-5">
+                            <div class="spinner-border ${spinnerColor}" role="status"></div>
+                            <p class="mt-2 small text-muted">Cargando ${tipo}...</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>`;
 
-    // Spinner de carga dinámico dentro de la tabla
-    cuerpoTabla.innerHTML = `<tr><td colspan="4" class="text-center p-5"><div class="spinner-border ${spinnerColor}" role="status"></div><p class="mt-2 small text-muted">Cargando ${tipo}...</p></td></tr>`;
+    const cuerpoTabla = tabPane.querySelector('tbody');
 
     // Petición fetch para obtener datos JSON
     fetch(`/inquilino/alquiler/${idAlquiler}/${endpoint}`, {
@@ -584,7 +587,7 @@ function cargarHistorialPagosFetch(tipo) {
     .then(respuesta => respuesta.json())
     .then(datos => {
         if (!datos || datos.length === 0) {
-            cuerpoTabla.innerHTML = `<tr><td colspan="4" class="p-5 text-center text-muted">No hay registros de ${tipo} en este alquiler todavía.</td></tr>`;
+            cuerpoTabla.innerHTML = `<tr><td colspan="5" class="p-5 text-center text-muted">No hay registros de ${tipo} en este alquiler todavía.</td></tr>`;
             return;
         }
 
@@ -594,20 +597,30 @@ function cargarHistorialPagosFetch(tipo) {
             const fechaFormateada = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
             const importe = parseFloat(pago.importe_pago).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             
+            // Lógica para el botón de factura
+            const btnFactura = pago.factura_url 
+                ? `<a href="${pago.factura_url}" target="_blank" class="btn btn-sm btn-outline-danger" title="Descargar Factura">
+                    <i class="bi bi-file-pdf"></i> PDF
+                   </a>`
+                : `<span class="text-muted small">N/A</span>`;
+
             return `
             <tr>
                 <td class="ps-3 align-middle">${fechaFormateada}</td>
                 <td class="align-middle">${pago.concepto_pago}</td>
                 <td class="text-end fw-bold align-middle ${colorTexto}">${importe} €</td>
-                <td class="text-center pe-3 align-middle">
+                <td class="text-center align-middle">
                     <span class="badge ${colorBadge}">${textoBadge}</span>
+                </td>
+                <td class="text-center pe-3 align-middle">
+                    ${btnFactura}
                 </td>
             </tr>`;
         }).join('');
     })
     .catch(error => {
         console.error('Error crítico al cargar el historial:', error);
-        cuerpoTabla.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-danger">Error de conexión con el servidor.</td></tr>`;
+        cuerpoTabla.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-danger">Error de conexión con el servidor.</td></tr>`;
     });
 }
 

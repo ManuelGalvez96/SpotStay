@@ -1,0 +1,133 @@
+name: Deploy Laravel via FTP
+
+# Workflow de despliegue por FTP
+# -----------------------------
+# Antes de usarlo, añade los secrets en GitHub (Settings → Secrets and variables → Actions):
+# - FTP_SERVER: ejemplo ftp.midominio.com
+# - FTP_USERNAME: usuario_ftp
+# - FTP_PASSWORD: contraseña_secreta
+# Opcionales:
+# - FTP_PORT: puerto (por defecto 21)
+# - FTP_REMOTE_BASE: carpeta base para releases (por defecto 'releases')
+# - FTP_WEBROOT: carpeta pública remota (por ejemplo 'public_html')
+# - RELEASES_TO_KEEP: cuántas releases conservar (por defecto 3)
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  web-deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    env:
+      # Valores por defecto. Personalízalos si tu hosting usa rutas diferentes.
+      FTP_PORT: 21
+      FTP_REMOTE_BASE: releases
+      FTP_WEBROOT: public_html
+      RELEASES_TO_KEEP: '3'
+
+    steps:
+      - name: Obtener codigo fuente
+        uses: actions/checkout@v4
+
+      - name: Configurar PHP 8.3.6
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3.6'
+          extensions: mbstring, xml, ctype, iconv, mysql, bcmath, curl
+          coverage: none
+
+      - name: Instalar Dependencias (Composer)
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Compilar CSS y JS (Vite)
+        run: |
+          npm ci
+          npm run build
+
+      - name: Calcular release (timestamp)
+        run: echo "RELEASE_DIR=$(date +%s)" >> $GITHUB_ENV
+
+      - name: Preparar estructura para hosting compartido
+        run: |
+          rm -rf deploy
+          mkdir -p deploy/laravel deploy/public
+
+          rsync -av ./ deploy/laravel/ \
+            --exclude '.git*' \
+            --exclude 'node_modules' \
+            --exclude 'tests' \
+            --exclude '.github' \
+            --exclude '.env' \
+            --exclude 'README.md' \
+            --exclude 'phpunit.xml' \
+            --exclude 'deploy' \
+            --exclude 'public'
+
+          rsync -av ./public/ deploy/public/
+
+          # Ajustes en deploy/public/index.php para que apunte a la release que subiremos.
+          # Asumimos estructura remota donde 'releases' y 'public_html' son siblings.
+          # Si tu hosting tiene otra estructura, edita estas líneas según corresponda.
+          sed -i "s|__DIR__.'/../storage|__DIR__.'/../${FTP_REMOTE_BASE}/${RELEASE_DIR}/storage|g" deploy/public/index.php
+          sed -i "s|__DIR__.'/../vendor/autoload.php|__DIR__.'/../${FTP_REMOTE_BASE}/${RELEASE_DIR}/vendor/autoload.php|g" deploy/public/index.php
+          sed -i "s|__DIR__.'/../bootstrap/app.php|__DIR__.'/../${FTP_REMOTE_BASE}/${RELEASE_DIR}/bootstrap/app.php|g" deploy/public/index.php
+          sed -i "s|\$app->handleRequest|\$app->usePublicPath(__DIR__);\n\$app->handleRequest|g" deploy/public/index.php
+
+          rm -f deploy/laravel/bootstrap/cache/*.php || true
+
+          cat > deploy/laravel/.htaccess << 'EOF'
+          Require all denied
+          EOF
+
+      - name: Subir app Laravel (release)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ env.FTP_PORT }}
+          local-dir: ./deploy/laravel/
+          # Subimos a releases/${{ env.RELEASE_DIR }} (crearás una release por deploy)
+          server-dir: ${{ env.FTP_REMOTE_BASE }}/${{ env.RELEASE_DIR }}
+          dry-run: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/tests/**
+            **/phpunit.xml
+            **/.env.example
+            **/README.md
+            .env
+            storage/logs/**
+
+      - name: Subir carpeta publica (webroot)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ env.FTP_PORT }}
+          local-dir: ./deploy/public/
+          # Subir directamente al webroot remoto (por defecto public_html)
+          server-dir: ${{ env.FTP_WEBROOT }}
+          dry-run: false
+          exclude: |
+            **/.DS_Store
+
+      - name: Limpieza (releases antiguas) — NOTA
+        run: |
+          echo "Nota: la limpieza automática de releases por FTP no está implementada.
+          Si tu hosting permite SSH te puedo añadir pasos para mantener ${RELEASES_TO_KEEP} releases y crear symlink 'current'.
+          Alternativamente, haz limpieza manual en el servidor."
+
+      # Comentario final: Si necesitas ejecutar migraciones u otros comandos remotos,
+      # se requiere acceso SSH. Indica si lo tienes y agregaré pasos opcionales.

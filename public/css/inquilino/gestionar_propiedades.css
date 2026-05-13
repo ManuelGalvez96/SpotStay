@@ -9,36 +9,64 @@
 }
 
 .kpi-card-inquilino {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 1)) padding-box,
+        linear-gradient(135deg, #035498, #1AA068) border-box;
+    border: 2px solid transparent;
+    border-radius: 16px;
     padding: 24px;
     display: flex;
     align-items: center;
     gap: 20px;
-    transition: all 0.3s ease;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    position: relative;
+    overflow: hidden;
 }
 
 .kpi-card-inquilino:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 25px -5px rgba(3, 84, 152, 0.1), 0 10px 10px -5px rgba(26, 160, 104, 0.04);
+}
+
+/* Efecto de brillo sutil al pasar el ratón */
+.kpi-card-inquilino::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+
+.kpi-card-inquilino:hover::after {
+    opacity: 1;
 }
 
 .kpi-icon-inquilino {
-    width: 60px;
-    height: 60px;
-    border-radius: 10px;
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.6rem;
     flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(3, 84, 152, 0.08), rgba(26, 160, 104, 0.08));
+    color: #035498;
+    transition: all 0.4s ease;
+}
+
+.kpi-card-inquilino:hover .kpi-icon-inquilino {
+    background: linear-gradient(135deg, #035498, #1AA068);
+    color: white;
+    box-shadow: 0 8px 15px rgba(3, 84, 152, 0.2);
 }
 
 .kpi-icon-inquilino.primario {
-    background: #f0f7ff;
-    color: #1d4ed8;
+    color: #035498;
 }
 
 .kpi-icon-inquilino.advertencia {
@@ -66,6 +94,7 @@
     letter-spacing: 0.025em;
     font-weight: 700;
 }
+
 .cabecera-listado-gestion {
     display: flex;
     justify-content: space-between;
@@ -96,7 +125,7 @@
     border-radius: 12px;
     padding: 12px 20px;
     transition: all 0.3s ease;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     gap: 12px;
 }
 
@@ -111,7 +140,8 @@
     flex-shrink: 0;
 }
 
-.input-filtro, .select-filtro {
+.input-filtro,
+.select-filtro {
     border: none;
     outline: none;
     background: transparent;
@@ -321,8 +351,15 @@
 }
 
 @keyframes pulso-alerta {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.0); }
-    50%       { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.15); }
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.0);
+    }
+
+    50% {
+        box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.15);
+    }
 }
 
 /* ALERTA FIN DE CONTRATO */
@@ -479,7 +516,7 @@
     .grid-propiedades-gestion {
         grid-template-columns: 1fr;
     }
-    
+
     .meta-gestion {
         grid-template-columns: 1fr;
     }
@@ -500,4 +537,3 @@
     display: block;
     margin: 0 auto;
 }
-

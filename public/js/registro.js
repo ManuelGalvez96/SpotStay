@@ -24,19 +24,22 @@ function iniciarValidacionCrearUsuario() {
     const errorPasswordConfirmacion = document.getElementById("error-password-confirmation");
     const disponibilidadEmail = document.getElementById("disponibilidad-email");
     const disponibilidadTelefono = document.getElementById("disponibilidad-telefono");
+    const disponibilidadDni = document.getElementById("disponibilidad-dni");
 
     // Secciones Dinámicas
     const seccionPlanes = document.getElementById("seccion-planes");
     const seccionArrendador = document.getElementById("seccion-arrendador");
     const selectorTipoArrendador = document.getElementById("tipo-arrendador");
-    const selectorTipoDocumento = document.getElementById("tipo-documento-arrendador");
+    const selectorTipoDocumento = document.getElementById("tipo-documento");
     const contenedorNif = document.getElementById("contenedor-nif");
     
+    // Inputs Identidad (Unificado)
+    const entradaDni = document.getElementById("dni-usuario");
+    const errorDni = document.getElementById("error-dni");
+
     // Inputs Arrendador
-    const entradaDni = document.getElementById("dni-arrendador");
     const entradaFechaNac = document.getElementById("fecha-nacimiento-arrendador");
     const entradaNif = document.getElementById("nif-empresa");
-    const errorDni = document.getElementById("error-dni");
     const errorFechaNac = document.getElementById("error-fecha-nacimiento");
     const errorNif = document.getElementById("error-nif");
 
@@ -47,8 +50,10 @@ function iniciarValidacionCrearUsuario() {
     // --- VARIABLES DE ESTADO ---
     let emailDisponible = false;
     let telefonoDisponible = false;
+    let dniDisponible = false;
     let temporizadorEmail = null;
     let temporizadorTelefono = null;
+    let temporizadorDni = null;
 
     if (!entradaNombre || !cara) return;
 
@@ -87,18 +92,21 @@ function iniciarValidacionCrearUsuario() {
         const rol = entradaRol.value;
         const planSeleccionado = document.querySelector('input[name="plan_id"]:checked') !== null;
         
+        // Validación de DNI (Obligatorio para todos)
+        const dniFormato = validarDniGenerico(entradaDni, errorDni, false, selectorTipoDocumento.value);
+        const dniValido = dniFormato && dniDisponible;
+
         let arrendadorCamposValidos = true;
         if (rol === 'arrendador') {
-            const dniValido = validarDni(false);
             const fechaValida = validarFechaNac(false);
             let nifValido = true;
             if (selectorTipoArrendador.value === 'empresa') {
                 nifValido = validarNif(false);
             }
-            arrendadorCamposValidos = dniValido && fechaValida && nifValido;
+            arrendadorCamposValidos = fechaValida && nifValido;
         }
 
-        if (nombreValido && emailValido && telefonoValido && passwordValido && passwordConfirmacionValido && planSeleccionado && arrendadorCamposValidos) {
+        if (nombreValido && emailValido && telefonoValido && passwordValido && passwordConfirmacionValido && planSeleccionado && dniValido && arrendadorCamposValidos) {
             botonEnviar.disabled = false;
             botonEnviar.classList.remove("btn-login-desabilitado");
         } else {
@@ -223,32 +231,49 @@ function iniciarValidacionCrearUsuario() {
     }
 
     function validarDni(esBlur = false) {
-        const documento = entradaDni.value.trim().toUpperCase();
-        const tipo = selectorTipoDocumento.value;
+        return validarDniGenerico(entradaDni, errorDni, esBlur, selectorTipoDocumento.value);
+    }
+
+    function validarDniGenerico(input, spanError, esBlur, tipoForzado = 'dni') {
+        if (!input) return true;
+        const documento = input.value.trim().toUpperCase();
+        const tipo = tipoForzado;
 
         if (documento === "") {
-            errorDni.innerText = esBlur ? "El documento es obligatorio." : "";
+            spanError.innerText = esBlur ? "El documento es obligatorio." : "";
+            disponibilidadDni.innerText = "";
+            dniDisponible = false;
+            comprobarBoton();
             return false;
         }
 
         if (tipo === 'dni') {
             const regexDni = /^[0-9]{8}[TRWAGMYFPDXBNJZSQVHLCKE]$/;
             if (!regexDni.test(documento)) {
-                errorDni.innerText = "Formato DNI inválido (8 números + letra).";
+                spanError.innerText = "Formato DNI inválido (8 números + letra).";
+                disponibilidadDni.innerText = "";
+                dniDisponible = false;
+                comprobarBoton();
                 return false;
             }
             const numero = documento.substr(0, 8);
             const letra = documento.substr(8, 1);
             const letras = "TRWAGMYFPDXBNJZSQVHLCKE";
             if (letras[numero % 23] !== letra) {
-                errorDni.innerText = "La letra del DNI no coincide.";
+                spanError.innerText = "La letra del DNI no coincide.";
+                disponibilidadDni.innerText = "";
+                dniDisponible = false;
+                comprobarBoton();
                 return false;
             }
         } else {
             // NIE: Letra inicial (X, Y, Z) + 7 números + letra final
             const regexNie = /^[XYZ][0-9]{7}[TRWAGMYFPDXBNJZSQVHLCKE]$/;
             if (!regexNie.test(documento)) {
-                errorDni.innerText = "Formato NIE inválido (X/Y/Z + 7 números + letra).";
+                spanError.innerText = "Formato NIE inválido (X/Y/Z + 7 números + letra).";
+                disponibilidadDni.innerText = "";
+                dniDisponible = false;
+                comprobarBoton();
                 return false;
             }
             let prefijo = documento.charAt(0);
@@ -260,12 +285,34 @@ function iniciarValidacionCrearUsuario() {
             const letraNie = documento.substr(8, 1);
             const letrasNie = "TRWAGMYFPDXBNJZSQVHLCKE";
             if (letrasNie[numeroNie % 23] !== letraNie) {
-                errorDni.innerText = "La letra del NIE no coincide.";
+                spanError.innerText = "La letra del NIE no coincide.";
+                disponibilidadDni.innerText = "";
+                dniDisponible = false;
+                comprobarBoton();
                 return false;
             }
         }
 
-        errorDni.innerText = "";
+        spanError.innerText = "";
+        
+        // Validación de Disponibilidad vía Fetch
+        clearTimeout(temporizadorDni);
+        temporizadorDni = setTimeout(() => {
+            fetch(`/admin/usuarios/check-dni?dni=${encodeURIComponent(documento)}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.disponible) {
+                        disponibilidadDni.innerText = "Disponible.";
+                        dniDisponible = true;
+                    } else {
+                        spanError.innerText = "Este documento ya está registrado.";
+                        disponibilidadDni.innerText = "";
+                        dniDisponible = false;
+                    }
+                    comprobarBoton();
+                });
+        }, 150);
+
         return true;
     }
 
@@ -363,8 +410,8 @@ function iniciarValidacionCrearUsuario() {
     selectorTipoDocumento.onchange = gestionarTipoDocumento;
     
     if (entradaDni) {
-        entradaDni.oninput = () => { validarDni(false); comprobarBoton(); };
-        entradaDni.onblur = () => { validarDni(true); comprobarBoton(); };
+        entradaDni.oninput = () => { validarDniGenerico(entradaDni, errorDni, false, selectorTipoDocumento.value); comprobarBoton(); };
+        entradaDni.onblur = () => { validarDniGenerico(entradaDni, errorDni, true, selectorTipoDocumento.value); comprobarBoton(); };
     }
     if (entradaFechaNac) {
         entradaFechaNac.oninput = () => { validarFechaNac(false); comprobarBoton(); };

@@ -261,6 +261,16 @@ class AuthController extends Controller
         ]);
     }
 
+    public function checkDni(Request $request)
+    {
+        $dni = $request->query('dni');
+        $existe = Usuario::where('dni_usuario', $dni)->exists();
+
+        return response()->json([
+            'disponible' => !$existe
+        ]);
+    }
+
     /**
      * Cierra la sesión del usuario.
 

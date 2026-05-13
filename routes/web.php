@@ -235,7 +235,7 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
 
     Route::get('/inquilino/gestionar-propiedades', [InquilinoController::class, 'gestionarPropiedades'])->name('gestionar_propiedades');
     Route::get('/inquilino/propiedad/{id}', [InquilinoController::class, 'verPropiedad'])->name('inquilino.ver_propiedad');
-    
+
     // Rutas de Incidencias (Controlador Especializado)
     Route::get('/inquilino/propiedad/{id}/incidencias', [InquilinoIncidenciaController::class, 'getIncidencias'])->name('inquilino.get_incidencias');
     Route::get('/inquilino/incidencias/estados', [InquilinoIncidenciaController::class, 'obtenerEstadosIncidencias'])->name('inquilino.get_estados_incidencias');
@@ -244,7 +244,7 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
     Route::post('/inquilino/incidencia/{id}/decision-pago', [InquilinoIncidenciaController::class, 'decidirPagoIncidencia'])->name('inquilino.decision_pago_incidencia');
     Route::post('/inquilino/incidencia/{id}/pagar-presupuesto', [InquilinoIncidenciaController::class, 'pagarPresupuestoIncidencia'])->name('inquilino.pagar_presupuesto_incidencia');
     Route::post('/inquilino/incidencia/{id}/cerrar', [InquilinoIncidenciaController::class, 'cerrarIncidencia'])->name('inquilino.cerrar_incidencia');
-    
+
     // Rutas de Pagos e Historial (Controlador Especializado)
     Route::post('/inquilino/cuotas/{cuotaId}/pagar', [InquilinoPagoController::class, 'pagarCuotaAlquiler'])->name('inquilino.pagar_cuota');
     Route::get('/inquilino/alquiler/{id}/historial-suministros', [InquilinoPagoController::class, 'obtenerHistorialSuministros'])->name('inquilino.historial_suministros');
@@ -256,19 +256,16 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
     Route::get('/miembro/mapa/propiedades', [MapaController::class, 'propiedades'])->name('miembro.mapa.propiedades');
 });
 
-// Ruta de utilidad para despliegue (Migraciones y Seeders)
-Route::get('/deploy/migrate', function () {
+// Ruta temporal para ejecutar migraciones y seeders de forma segura desde el navegador
+Route::get('/ejecutar-migraciones-seguras', function () {
     try {
-        echo "Ejecutando migraciones...<br>";
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        echo \Illuminate\Support\Facades\Artisan::output() . "<br>";
+        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
+            '--force' => true,
+            '--seed' => true
+        ]);
 
-        echo "Ejecutando seeders...<br>";
-        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-        echo \Illuminate\Support\Facades\Artisan::output() . "<br>";
-
-        return "Base de datos actualizada con éxito.";
+        return view('index'); // Redirige a la página principal tras el éxito
     } catch (\Exception $e) {
-        return "Error al actualizar la base de datos: " . $e->getMessage();
+        return "Error: " . $e->getMessage();
     }
 });

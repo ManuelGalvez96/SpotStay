@@ -125,7 +125,7 @@
                     data-lat="{{ $propiedad->latitud_propiedad }}"
                     data-lng="{{ $propiedad->longitud_propiedad }}"
                     data-titulo="{{ $propiedad->titulo_propiedad }}"
-                    data-direccion="{{ $propiedad->direccion_propiedad }}">
+                    data-direccion="{{ $propiedad->direccion_completa ?? $propiedad->direccion_propiedad ?? '' }}">
                 </div>
             @else
                 <p class="detalle-mapa-vacio">No hay coordenadas disponibles para esta propiedad.</p>

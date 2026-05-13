@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\CodigoPropiedadController;
 use App\Http\Controllers\inquilino\InquilinoController;
 use App\Http\Controllers\inquilino\InquilinoIncidenciaController;
 use App\Http\Controllers\inquilino\InquilinoPagoController;
+use App\Http\Controllers\inquilino\InquilinoGastosController;
 use App\Http\Controllers\Arrendador\DashboardController as ArrendadorDashboardController;
 use App\Http\Controllers\Arrendador\PropiedadController as ArrendadorPropiedadController;
 use App\Http\Controllers\Arrendador\SolicitudController as ArrendadorSolicitudController;
@@ -249,7 +250,7 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
     Route::get('/inquilino/alquiler/{id}/historial-suministros', [InquilinoPagoController::class, 'obtenerHistorialSuministros'])->name('inquilino.historial_suministros');
     Route::get('/inquilino/alquiler/{id}/historial-alquiler', [InquilinoPagoController::class, 'obtenerHistorialAlquiler'])->name('inquilino.historial_alquiler');
     Route::get('/inquilino/pago/success', [InquilinoPagoController::class, 'stripeSuccess'])->name('inquilino.pago.success');
-    Route::get('/inquilino/historial-pagos', [InquilinoPagoController::class, 'historialPagos'])->name('inquilino.historial_pagos');
+    Route::get('/inquilino/gastos', [InquilinoGastosController::class, 'index'])->name('inquilino.historial_pagos');
 
     Route::get('/inquilino/alquiler/{id}/estado-contrato', [InquilinoController::class, 'obtenerEstadoContrato'])->name('inquilino.estado_contrato');
     Route::get('/miembro/mapa/propiedades', [MapaController::class, 'propiedades'])->name('miembro.mapa.propiedades');

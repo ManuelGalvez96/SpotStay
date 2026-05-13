@@ -33,7 +33,7 @@ class AppServiceProvider extends ServiceProvider
                     'fotoUsuario' => $tieneFoto ? (str_starts_with($foto, 'http') ? $foto : asset('storage/' . $foto)) : '',
                     'inicialUsuario' => $nombre !== '' ? strtoupper(substr($nombre, 0, 1)) : '',
                     'esInquilino' => $usuario->alquileres()->where('estado_alquiler', 'activo')->exists(),
-                    'tienePagos' => \Illuminate\Support\Facades\DB::table('tbl_pago')->where('id_pagador_fk', $usuario->id_usuario)->exists(),
+                    'tienePagos' => $usuario->alquileres()->where('estado_alquiler', 'activo')->exists() || \Illuminate\Support\Facades\DB::table('tbl_pago')->where('id_pagador_fk', $usuario->id_usuario)->exists(),
                 ]);
             } else {
                 $view->with([

@@ -90,7 +90,7 @@
                             <td>
                                 <div class="table-actions">
                                     <a class="action-link" href="{{ route('arrendador.propiedades', ['arrendador_id' => $arrendadorId, 'editar' => $propiedad->id_propiedad]) }}">Editar</a>
-                                    <button class="action-link" type="button" data-propiedad-id="{{ $propiedad->id_propiedad }}" data-arrendador-id="{{ $arrendadorId }}" onclick="abrirModalPropiedad(this.dataset.propiedadId, this.dataset.arrendadorId)">Ver</button>
+                                    <button class="action-link" type="button" data-propiedad-id="{{ $propiedad->id_propiedad }}" data-arrendador-id="{{ $arrendadorId }}" onclick="abrirModalPropiedad(this.dataset.propiedadId, this.dataset.arrendadorId)">Previsualizar</button>
                                     <form method="POST" action="{{ route('arrendador.propiedades.estado', $propiedad->id_propiedad) }}" data-ajax-state-form="true" class="inline-form">
                                         @csrf
                                         <input type="hidden" name="arrendador_id" value="{{ $arrendadorId }}" />
@@ -129,40 +129,98 @@
     const rutaPermisosGestor = "{{ route('arrendador.permisos.get', ':propiedad') }}";
  </script>
 
+@if ($propiedadEditando)
+    <div id="propiedad-editando-data"
+         hidden
+         data-arrendador-id="{{ $arrendadorId }}"
+         data-propiedad='@json($propiedadEditando)'>
+    </div>
+@endif
+
 <!-- MODAL GESTOR -->
     <div id="modal-gestor-config" class="modal" hidden>
         <div class="modal-backdrop" onclick="cerrarModalGestor()"></div>
-        <div class="modal-content">
+        <div class="modal-content modal-gestor-panel">
             <div class="modal-header">
-                <h2>Configuración del gestor</h2>
+                <h2>Gestión del gestor</h2>
                 <button class="modal-close" id="btnCerrarModalGestor" type="button" onclick="cerrarModalGestor()">✕</button>
             </div>
-            <div class="modal-body">
-                <p>
-                    <strong>Gestor: </strong>
-                    <span id="nombre_gestor"></span>
-                </p>
-                <div class="permissions-section">
-                    <h3>Permisos</h3>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="permiso-chat" value="1">
-                        <span>Chat con inquilinos</span>
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="permiso-editar" value="1">
-                        <span>Editar la propiedad</span>
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="permiso-gastos" value="1">
-                        <span>Gestión de gastos y recibos</span>
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="permiso-incidencias" value="1">
-                        <span>Gestión de incidencias</span>
-                    </label>
+            <div class="modal-body gestor-config-body">
+                <section class="propiedad-context-card" id="propiedad_contexto_modal" aria-live="polite">
+                    <div class="propiedad-context-main">
+                        <span class="propiedad-context-label">Propiedad seleccionada</span>
+                        <h4 class="propiedad-context-title" id="modal_propiedad_titulo">Cargando propiedad...</h4>
+                        <p class="propiedad-context-address" id="modal_propiedad_direccion">-</p>
+                    </div>
+                    <div class="propiedad-context-meta">
+                        <span class="propiedad-context-chip" id="modal_propiedad_precio">Precio no disponible</span>
+                        <span class="propiedad-context-chip" id="modal_propiedad_estado">Estado no disponible</span>
+                    </div>
+                </section>
+
+                <div class="gestor-config-grid">
+                    <aside class="gestor-left-panel">
+                        <h3>Asignar gestor</h3>
+                        <p class="gestor-panel-help">Selecciona quién administrará esta propiedad.</p>
+
+                        <div class="gestor-selector-wrap">
+                            <span class="gestor-selector-label">Gestor seleccionado</span>
+                            <div class="gestor-selector-box" aria-live="polite">
+                                <div class="gestor-avatar" id="gestor_avatar_inicial">-</div>
+                                <div class="gestor-selector-info">
+                                    <span class="gestor-selector-name" id="nombre_gestor">Sin gestor asignado</span>
+                                    <span class="gestor-selector-email" id="email_gestor">Sin email disponible</span>
+                                </div>
+                                <i class="bi bi-chevron-down"></i>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn-gestor-profile" id="btnVerPerfilGestor" disabled>Ver perfil del gestor</button>
+                    </aside>
+
+                    <section class="gestor-right-panel">
+                        <h3>Permisos de administración</h3>
+                        <p class="gestor-panel-help">Define exactamente qué acciones puede realizar <strong id="nombre_gestor_subtitulo">el gestor</strong> sobre esta propiedad.</p>
+
+                        <div class="permissions-grid">
+                            <label class="permission-card" for="permiso-gastos">
+                                <input type="checkbox" id="permiso-gastos" value="1">
+                                <div>
+                                    <span class="permission-title">Gestión de gastos</span>
+                                    <span class="permission-desc">Puede registrar y gestionar gastos y recibos.</span>
+                                </div>
+                            </label>
+
+                            <label class="permission-card" for="permiso-incidencias">
+                                <input type="checkbox" id="permiso-incidencias" value="1">
+                                <div>
+                                    <span class="permission-title">Gestión de incidencias</span>
+                                    <span class="permission-desc">Coordina incidencias y reparaciones con los inquilinos.</span>
+                                </div>
+                            </label>
+
+                            <label class="permission-card" for="permiso-editar">
+                                <input type="checkbox" id="permiso-editar" value="1">
+                                <div>
+                                    <span class="permission-title">Edición de propiedad</span>
+                                    <span class="permission-desc">Puede actualizar datos y contenido del anuncio.</span>
+                                </div>
+                            </label>
+
+                            <label class="permission-card" for="permiso-chat">
+                                <input type="checkbox" id="permiso-chat" value="1">
+                                <div>
+                                    <span class="permission-title">Atención al inquilino</span>
+                                    <span class="permission-desc">Gestiona conversaciones y consultas desde el chat.</span>
+                                </div>
+                            </label>
+                        </div>
+                    </section>
                 </div>
+
                 <div class="modal-footer">
-                    <button class="btn-primary" id="btnGuardarPermisosGestor" type="button">Guardar cambios</button>
+                    <button class="btn-modal-secondary" type="button" onclick="cerrarModalGestor()">Descartar</button>
+                    <button class="btn-primary" id="btnGuardarPermisosGestor" type="button">Guardar permisos</button>
                 </div>
             </div>
         </div>
@@ -310,4 +368,22 @@
 
 @section('scripts')
 <script src="{{ asset('js/arrendador/propiedades.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var contenedor = document.getElementById('propiedad-editando-data');
+        if (!contenedor || !window.abrirModalFormulario) {
+            return;
+        }
+
+        try {
+            var datosPropiedad = JSON.parse(contenedor.dataset.propiedad || 'null');
+            var arrendadorId = contenedor.dataset.arrendadorId;
+            if (datosPropiedad && arrendadorId) {
+                abrirModalFormulario(arrendadorId, datosPropiedad);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    });
+</script>
 @endsection

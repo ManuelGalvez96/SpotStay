@@ -159,7 +159,7 @@ class PropiedadController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
 
-            \Log::error('Error al guardar propiedad del arrendador', [
+            logger()->error('Error al guardar propiedad del arrendador', [
                 'arrendador_id' => $arrendadorId,
                 'propiedad_id' => $propiedadId,
                 'error' => $exception->getMessage(),
@@ -329,6 +329,11 @@ class PropiedadController extends Controller
             ->select(
                 'id_propiedad',
                 'titulo_propiedad',
+                'tipo_propiedad',
+                'calle_propiedad',
+                'numero_propiedad',
+                'piso_propiedad',
+                'puerta_propiedad',
                 DB::raw($this->obtenerSelectDireccionPropiedad('tbl_propiedad')),
                 'ciudad_propiedad',
                 'codigo_postal_propiedad',
@@ -336,7 +341,11 @@ class PropiedadController extends Controller
                 'longitud_propiedad',
                 'descripcion_propiedad',
                 DB::raw("{$columnaPrecio} as precio_propiedad"),
-                'estado_propiedad'
+                'estado_propiedad',
+                'banos_propiedad',
+                'metros_cuadrados_propiedad',
+                'ascensor_propiedad',
+                'amueblado_propiedad'
             )
             ->first();
     }

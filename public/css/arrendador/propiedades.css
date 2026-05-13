@@ -828,6 +828,18 @@ body {
     cursor: not-allowed;
 }
 
+/* Separador entre inputs de texto y checkboxes */
+.form-subsection-divider {
+    height: 1px;
+    background: #e0e0e0;
+    margin: 4px 0 14px 0;
+}
+
+.form-subsection-checkboxes {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+}
+
 /* Hidden */
 [hidden] {
     display: none !important;

@@ -56,6 +56,13 @@ class PropiedadController extends Controller
             'metros_cuadrados_propiedad' => ['nullable', 'integer', 'min:0'],
             'ascensor_propiedad' => ['nullable', 'boolean'],
             'amueblado_propiedad' => ['nullable', 'boolean'],
+            'piscina_propiedad' => ['nullable', 'boolean'],
+            'terraza_propiedad' => ['nullable', 'boolean'],
+            'garaje_propiedad' => ['nullable', 'boolean'],
+            'aire_acondicionado_propiedad' => ['nullable', 'boolean'],
+            'calefaccion_propiedad' => ['nullable', 'boolean'],
+            'trastero_propiedad' => ['nullable', 'boolean'],
+            'adicional_propiedad' => ['nullable', 'string', 'max:255'],
             'precio_propiedad' => ['required', 'numeric', 'min:0'],
             'descripcion_propiedad' => ['nullable', 'string'],
             'imagenes_propiedad' => ['nullable', 'array', 'max:10'],
@@ -79,6 +86,13 @@ class PropiedadController extends Controller
             'metros_cuadrados_propiedad' => $datos['metros_cuadrados_propiedad'] ?? null,
             'ascensor_propiedad' => (bool) ($datos['ascensor_propiedad'] ?? false),
             'amueblado_propiedad' => (bool) ($datos['amueblado_propiedad'] ?? false),
+            'piscina_propiedad' => (bool) ($datos['piscina_propiedad'] ?? false),
+            'terraza_propiedad' => (bool) ($datos['terraza_propiedad'] ?? false),
+            'garaje_propiedad' => (bool) ($datos['garaje_propiedad'] ?? false),
+            'aire_acondicionado_propiedad' => (bool) ($datos['aire_acondicionado_propiedad'] ?? false),
+            'calefaccion_propiedad' => (bool) ($datos['calefaccion_propiedad'] ?? false),
+            'trastero_propiedad' => (bool) ($datos['trastero_propiedad'] ?? false),
+            'adicional_propiedad' => $datos['adicional_propiedad'] ?? null,
             $columnaPrecio => $datos['precio_propiedad'],
             'descripcion_propiedad' => $datos['descripcion_propiedad'] ?? null,
             'actualizado_propiedad' => Carbon::now(),
@@ -199,52 +213,6 @@ class PropiedadController extends Controller
                 'message' => $mensaje,
                 'arrendador_id' => $arrendadorId,
                 'propiedad' => $propiedadActualizada,
-            ]);
-        }
-
-        return redirect()
-            ->route('arrendador.propiedades', ['arrendador_id' => $arrendadorId])
-            ->with('success', $mensaje);
-    }
-
-    public function alternarEstado(Request $request, int $id)
-    {
-        $arrendadorId = $this->obtenerIdArrendador($request);
-
-        $propiedad = DB::table('tbl_propiedad')
-            ->where('id_propiedad', $id)
-            ->where('id_arrendador_fk', $arrendadorId)
-            ->first();
-
-        if (!$propiedad) {
-            if ($request->expectsJson() || $request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No se encontró la propiedad.',
-                ], 404);
-            }
-
-            return redirect()
-                ->route('arrendador.propiedades', ['arrendador_id' => $arrendadorId])
-                ->with('error', 'No se encontró la propiedad.');
-        }
-
-        $nuevoEstado = $propiedad->estado_propiedad === 'publicada' ? 'inactiva' : 'publicada';
-
-        DB::table('tbl_propiedad')
-            ->where('id_propiedad', $id)
-            ->update([
-                'estado_propiedad' => $nuevoEstado,
-                'actualizado_propiedad' => Carbon::now(),
-            ]);
-
-        $mensaje = $nuevoEstado === 'publicada' ? 'Propiedad publicada.' : 'Propiedad inactivada.';
-
-        if ($request->expectsJson() || $request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => $mensaje,
-                'estado' => $nuevoEstado,
             ]);
         }
 
@@ -377,7 +345,14 @@ class PropiedadController extends Controller
                 'p.banos_propiedad',
                 'p.metros_cuadrados_propiedad',
                 'p.ascensor_propiedad',
-                'p.amueblado_propiedad'
+                'p.amueblado_propiedad',
+                'p.piscina_propiedad',
+                'p.terraza_propiedad',
+                'p.garaje_propiedad',
+                'p.aire_acondicionado_propiedad',
+                'p.calefaccion_propiedad',
+                'p.trastero_propiedad',
+                'p.adicional_propiedad'
             )
             ->first();
     }

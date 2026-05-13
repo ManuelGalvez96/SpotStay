@@ -91,11 +91,6 @@
                                 <div class="table-actions">
                                     <button class="action-link" type="button" data-propiedad-id="{{ $propiedad->id_propiedad }}" onclick="fetchEditData(this.dataset.propiedadId)">Editar</button>
                                     <button class="action-link" type="button" data-propiedad-id="{{ $propiedad->id_propiedad }}" data-arrendador-id="{{ $arrendadorId }}" onclick="abrirModalPropiedad(this.dataset.propiedadId, this.dataset.arrendadorId)">Previsualizar</button>
-                                    <form method="POST" action="{{ route('arrendador.propiedades.estado', $propiedad->id_propiedad) }}" data-ajax-state-form="true" class="inline-form">
-                                        @csrf
-                                        <input type="hidden" name="arrendador_id" value="{{ $arrendadorId }}" />
-                                        <button class="action-link" type="submit" data-state-button="true">{{ $propiedad->estado_propiedad === 'publicada' ? 'Inactivar' : 'Publicar' }}</button>
-                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -308,6 +303,9 @@
                                     <span>Metros cuadrados</span>
                                     <input type="number" name="metros_cuadrados_propiedad" id="form-metros" value="" min="0">
                                 </label>
+                            </div>
+                            <div class="form-subsection-divider"></div>
+                            <div class="form-subsection form-subsection-checkboxes">
                                 <label class="checkbox-label">
                                     <input type="checkbox" name="ascensor_propiedad" id="form-ascensor" value="1">
                                     <span>Ascensor</span>
@@ -315,6 +313,36 @@
                                 <label class="checkbox-label">
                                     <input type="checkbox" name="amueblado_propiedad" id="form-amueblado" value="1">
                                     <span>Amueblado</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="piscina_propiedad" id="form-piscina" value="1">
+                                    <span>Piscina</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="terraza_propiedad" id="form-terraza" value="1">
+                                    <span>Terraza</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="garaje_propiedad" id="form-garaje" value="1">
+                                    <span>Garaje</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="aire_acondicionado_propiedad" id="form-aire-acondicionado" value="1">
+                                    <span>Aire acondicionado</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="calefaccion_propiedad" id="form-calefaccion" value="1">
+                                    <span>Calefacción</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="trastero_propiedad" id="form-trastero" value="1">
+                                    <span>Trastero</span>
+                                </label>
+                            </div>
+                            <div class="form-subsection" style="margin-top: 10px;">
+                                <label class="full-width">
+                                    <span>Adicional</span>
+                                    <input type="text" name="adicional_propiedad" id="form-adicional" value="" placeholder="Otras características...">
                                 </label>
                             </div>
                         </div>

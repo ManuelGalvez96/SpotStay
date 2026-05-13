@@ -47,24 +47,6 @@ function extraerMensajeError(datosRespuesta) {
   return 'Error al procesar la solicitud.';
 }
 
-function actualizarEstadoEnTarjeta(formulario, nuevoEstado) {
-  var tarjeta = formulario.closest('.property-card');
-  if (!tarjeta) {
-    return;
-  }
-
-  var insignia = tarjeta.querySelector('.badge');
-  if (insignia) {
-    insignia.className = 'badge badge-' + nuevoEstado;
-    insignia.textContent = nuevoEstado.charAt(0).toUpperCase() + nuevoEstado.slice(1);
-  }
-
-  var boton = formulario.querySelector('[data-state-button="true"]');
-  if (boton) {
-    boton.textContent = nuevoEstado === 'publicada' ? 'Inactivar' : 'Publicar';
-  }
-}
-
 function actualizarFilaPropiedad(datosPropiedad) {
   if (!datosPropiedad || !datosPropiedad.id_propiedad) {
     return;
@@ -178,10 +160,6 @@ function enviarFormularioConFetch(formulario) {
 
         var mensajeExito = resultado.datosRespuesta.message || 'Cambio aplicado correctamente.';
         var esEdicionPropiedad = Boolean(formulario.querySelector('#form-id-propiedad') && formulario.querySelector('#form-id-propiedad').value);
-
-        if (formulario.dataset.ajaxStateForm === 'true' && resultado.datosRespuesta.estado) {
-          actualizarEstadoEnTarjeta(formulario, resultado.datosRespuesta.estado);
-        }
 
         if (esEdicionPropiedad && resultado.datosRespuesta.propiedad) {
           actualizarFilaPropiedad(resultado.datosRespuesta.propiedad);
@@ -412,6 +390,13 @@ function abrirModalFormulario(arrendadorId, datosPropiedad) {
     document.getElementById('form-metros').value = '';
     document.getElementById('form-ascensor').checked = false;
     document.getElementById('form-amueblado').checked = false;
+    document.getElementById('form-piscina').checked = false;
+    document.getElementById('form-terraza').checked = false;
+    document.getElementById('form-garaje').checked = false;
+    document.getElementById('form-aire-acondicionado').checked = false;
+    document.getElementById('form-calefaccion').checked = false;
+    document.getElementById('form-trastero').checked = false;
+    document.getElementById('form-adicional').value = '';
     document.getElementById('form-precio').value = '';
     document.getElementById('form-descripcion').value = '';
     document.getElementById('btn-submit-formulario').textContent = 'Crear propiedad';
@@ -445,6 +430,13 @@ function abrirModalFormulario(arrendadorId, datosPropiedad) {
       document.getElementById('form-metros').value = datosPropiedad.metros_cuadrados_propiedad || '';
       document.getElementById('form-ascensor').checked = Boolean(Number(datosPropiedad.ascensor_propiedad));
       document.getElementById('form-amueblado').checked = Boolean(Number(datosPropiedad.amueblado_propiedad));
+      document.getElementById('form-piscina').checked = Boolean(Number(datosPropiedad.piscina_propiedad));
+      document.getElementById('form-terraza').checked = Boolean(Number(datosPropiedad.terraza_propiedad));
+      document.getElementById('form-garaje').checked = Boolean(Number(datosPropiedad.garaje_propiedad));
+      document.getElementById('form-aire-acondicionado').checked = Boolean(Number(datosPropiedad.aire_acondicionado_propiedad));
+      document.getElementById('form-calefaccion').checked = Boolean(Number(datosPropiedad.calefaccion_propiedad));
+      document.getElementById('form-trastero').checked = Boolean(Number(datosPropiedad.trastero_propiedad));
+      document.getElementById('form-adicional').value = datosPropiedad.adicional_propiedad || '';
       document.getElementById('form-precio').value = datosPropiedad.precio_propiedad || '';
       document.getElementById('form-descripcion').value = datosPropiedad.descripcion_propiedad || '';
     }
@@ -693,6 +685,7 @@ function construirContenidoModal(datos) {
         '<p style="font-weight: 500; font-size: 16px;">' + parseFloat(propiedad.precio_propiedad).toFixed(2).replace('.', ',') + ' €/mes</p>' +
       '</div>' +
     '</div>' +
+    construirHtmlCaracteristicas(propiedad) +
     (propiedad.descripcion_propiedad ? (
       '<div style="margin-bottom: 20px;">' +
         '<p style="color: #999; font-size: 12px; text-transform: uppercase; margin-bottom: 8px;">Descripción</p>' +
@@ -700,6 +693,51 @@ function construirContenidoModal(datos) {
       '</div>'
     ) : '') +
     htmlAlquiler;
+}
+
+function construirHtmlCaracteristicas(p) {
+  var etiquetas = [];
+
+  if (p.habitaciones_propiedad) {
+    etiquetas.push('<span style="background:#f0f0f0;padding:4px 10px;border-radius:999px;font-size:13px;"><strong>' + p.habitaciones_propiedad + '</strong> hab.</span>');
+  }
+  if (p.banos_propiedad) {
+    etiquetas.push('<span style="background:#f0f0f0;padding:4px 10px;border-radius:999px;font-size:13px;"><strong>' + p.banos_propiedad + '</strong> ba&ntilde;os</span>');
+  }
+  if (p.metros_cuadrados_propiedad) {
+    etiquetas.push('<span style="background:#f0f0f0;padding:4px 10px;border-radius:999px;font-size:13px;"><strong>' + p.metros_cuadrados_propiedad + '</strong> m&sup2;</span>');
+  }
+
+  var extras = [];
+  if (Number(p.ascensor_propiedad)) extras.push('Ascensor');
+  if (Number(p.amueblado_propiedad)) extras.push('Amueblado');
+  if (Number(p.piscina_propiedad)) extras.push('Piscina');
+  if (Number(p.terraza_propiedad)) extras.push('Terraza');
+  if (Number(p.garaje_propiedad)) extras.push('Garaje');
+  if (Number(p.aire_acondicionado_propiedad)) extras.push('Aire acondicionado');
+  if (Number(p.calefaccion_propiedad)) extras.push('Calefacción');
+  if (Number(p.trastero_propiedad)) extras.push('Trastero');
+
+  extras.forEach(function(e) {
+    etiquetas.push('<span style="background:#e8f4e8;padding:4px 10px;border-radius:999px;font-size:13px;">' + e + '</span>');
+  });
+
+  if (etiquetas.length === 0 && !p.adicional_propiedad) {
+    return '';
+  }
+
+  var html = '<div style="margin-bottom:20px;">' +
+    '<p style="color:#999;font-size:12px;text-transform:uppercase;margin-bottom:8px;">Características</p>' +
+    '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;">' +
+    etiquetas.join('') +
+    '</div>';
+
+  if (p.adicional_propiedad) {
+    html += '<p style="font-size:14px;color:#555;margin-top:4px;"><em>' + p.adicional_propiedad + '</em></p>';
+  }
+
+  html += '</div>';
+  return html;
 }
 
 function cambiarFotoModal(src) {
@@ -720,7 +758,6 @@ function cambiarFotoModal(src) {
 
 
 document.querySelectorAll('form[data-ajax-form="true"]').forEach(enviarFormularioConFetch);
-document.querySelectorAll('form[data-ajax-state-form="true"]').forEach(enviarFormularioConFetch);
 iniciarValidacionImagenes();
 
 document.onkeydown = function (evento) {

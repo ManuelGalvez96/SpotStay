@@ -8,6 +8,7 @@ use App\Models\Alquiler;
 use App\Models\Usuario;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class IncidenciaSeeder extends Seeder
 {
@@ -21,6 +22,17 @@ class IncidenciaSeeder extends Seeder
         if ($propiedades->isEmpty() || $gestores->isEmpty()) {
             return;
         }
+
+        // Mapeo de nombres string a IDs de categoría
+        $mapeoCategoria = [
+            'fontaneria' => DB::table('tbl_categoria')->where('nombre_categoria', 'Fontanería')->value('id_categoria'),
+            'electricidad' => DB::table('tbl_categoria')->where('nombre_categoria', 'Electricidad')->value('id_categoria'),
+            'calefaccion' => DB::table('tbl_categoria')->where('nombre_categoria', 'Calefacción')->value('id_categoria'),
+            'climatizacion' => DB::table('tbl_categoria')->where('nombre_categoria', 'Climatización')->value('id_categoria'),
+            'humedades' => DB::table('tbl_categoria')->where('nombre_categoria', 'Humedades')->value('id_categoria'),
+            'cerrajeria' => DB::table('tbl_categoria')->where('nombre_categoria', 'Cerrajería')->value('id_categoria'),
+            'otro' => DB::table('tbl_categoria')->where('nombre_categoria', 'Otro')->value('id_categoria'),
+        ];
 
         $incidenciasData = [
             ['titulo' => 'Grifo roto', 'descripcion' => 'El grifo de la cocina gotea constantemente', 'categoria' => 'fontaneria', 'prioridad' => 'media'],
@@ -71,6 +83,7 @@ class IncidenciaSeeder extends Seeder
 
                 $asignado = $gestores->random();
                 $fechaCreacion = now()->subDays(rand(1, 30));
+                $idCategoriaFk = $mapeoCategoria[$incidenciaData['categoria']] ?? null;
 
                 Incidencia::firstOrCreate(
                     [
@@ -79,7 +92,7 @@ class IncidenciaSeeder extends Seeder
                     ],
                     [
                         'descripcion_incidencia' => $incidenciaData['descripcion'],
-                        'categoria_incidencia' => $incidenciaData['categoria'],
+                        'id_categoria_fk' => $idCategoriaFk,
                         'prioridad_incidencia' => $prioridad,
                         'estado_incidencia' => $estado,
                         'id_reporta_fk' => $reportador->id_usuario,

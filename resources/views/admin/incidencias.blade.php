@@ -142,13 +142,13 @@
                     };
                     $partesInc = explode(' ', $inc->nombre_inquilino ?? '');
                     $inicialesInc = strtoupper(substr($partesInc[0] ?? '', 0, 1)) . strtoupper(substr($partesInc[1] ?? '', 0, 1));
-                    $iconoCat = match($inc->categoria_incidencia) {
-                        'fontaneria'   => 'bi-droplet',
-                        'electricidad' => 'bi-lightning',
-                        'calefaccion'  => 'bi-thermometer',
-                        'climatizacion' => 'bi-fan',
-                        'humedades'    => 'bi-cloud-rain',
-                        'cerrajeria'   => 'bi-key',
+                    $iconoCat = match($inc->nombre_categoria) {
+                        'Fontanería'   => 'bi-droplet',
+                        'Electricidad' => 'bi-lightning',
+                        'Calefacción'  => 'bi-thermometer',
+                        'Climatización' => 'bi-fan',
+                        'Humedades'    => 'bi-cloud-rain',
+                        'Cerrajería'   => 'bi-key',
                         default        => 'bi-wrench'
                     };
                 @endphp
@@ -168,7 +168,7 @@
                     </div>
                     <div class="tarjeta-categoria">
                         <i class="bi {{ $iconoCat }}"></i>
-                        <span>{{ ucfirst($inc->categoria_incidencia) }}</span>
+                        <span>{{ $inc->nombre_categoria }}</span>
                     </div>
                 </div>
             @empty
@@ -195,13 +195,13 @@
                     };
                     $partesInc = explode(' ', $inc->nombre_inquilino ?? '');
                     $inicialesInc = strtoupper(substr($partesInc[0] ?? '', 0, 1)) . strtoupper(substr($partesInc[1] ?? '', 0, 1));
-                    $iconoCat = match($inc->categoria_incidencia) {
-                        'fontaneria'   => 'bi-droplet',
-                        'electricidad' => 'bi-lightning',
-                        'calefaccion'  => 'bi-thermometer',
-                        'climatizacion' => 'bi-fan',
-                        'humedades'    => 'bi-cloud-rain',
-                        'cerrajeria'   => 'bi-key',
+                    $iconoCat = match($inc->nombre_categoria) {
+                        'Fontanería'   => 'bi-droplet',
+                        'Electricidad' => 'bi-lightning',
+                        'Calefacción'  => 'bi-thermometer',
+                        'Climatización' => 'bi-fan',
+                        'Humedades'    => 'bi-cloud-rain',
+                        'Cerrajería'   => 'bi-key',
                         default        => 'bi-wrench'
                     };
                 @endphp
@@ -221,7 +221,7 @@
                     </div>
                     <div class="tarjeta-categoria">
                         <i class="bi {{ $iconoCat }}"></i>
-                        <span>{{ ucfirst($inc->categoria_incidencia) }}</span>
+                        <span>{{ $inc->nombre_categoria }}</span>
                     </div>
                     @if($inc->nombre_gestor)
                         <div class="tarjeta-gestor">
@@ -255,13 +255,13 @@
                     };
                     $partesInc = explode(' ', $inc->nombre_inquilino ?? '');
                     $inicialesInc = strtoupper(substr($partesInc[0] ?? '', 0, 1)) . strtoupper(substr($partesInc[1] ?? '', 0, 1));
-                    $iconoCat = match($inc->categoria_incidencia) {
-                        'fontaneria'   => 'bi-droplet',
-                        'electricidad' => 'bi-lightning',
-                        'calefaccion'  => 'bi-thermometer',
-                        'climatizacion' => 'bi-fan',
-                        'humedades'    => 'bi-cloud-rain',
-                        'cerrajeria'   => 'bi-key',
+                    $iconoCat = match($inc->nombre_categoria) {
+                        'Fontanería'   => 'bi-droplet',
+                        'Electricidad' => 'bi-lightning',
+                        'Calefacción'  => 'bi-thermometer',
+                        'Climatización' => 'bi-fan',
+                        'Humedades'    => 'bi-cloud-rain',
+                        'Cerrajería'   => 'bi-key',
                         default        => 'bi-wrench'
                     };
                 @endphp
@@ -281,7 +281,7 @@
                     </div>
                     <div class="tarjeta-categoria">
                         <i class="bi {{ $iconoCat }}"></i>
-                        <span>{{ ucfirst($inc->categoria_incidencia) }}</span>
+                        <span>{{ $inc->nombre_categoria }}</span>
                     </div>
                 </div>
             @empty

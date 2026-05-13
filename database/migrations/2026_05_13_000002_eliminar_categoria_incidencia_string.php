@@ -11,8 +11,6 @@ return new class extends Migration
         Schema::table('tbl_incidencia', function (Blueprint $table) {
             // Eliminar el campo string redundante
             $table->dropColumn('categoria_incidencia');
-            // Hacer id_categoria_fk NOT NULL ya que siempre debe tener categoría
-            $table->unsignedBigInteger('id_categoria_fk')->nullable(false)->change();
         });
     }
 
@@ -21,7 +19,6 @@ return new class extends Migration
         Schema::table('tbl_incidencia', function (Blueprint $table) {
             // Restaurar para rollback si es necesario
             $table->string('categoria_incidencia')->nullable();
-            $table->unsignedBigInteger('id_categoria_fk')->nullable()->change();
         });
     }
 };

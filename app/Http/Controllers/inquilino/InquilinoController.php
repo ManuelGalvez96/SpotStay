@@ -191,13 +191,11 @@ class InquilinoController extends Controller
         }
 
         $numInquilinos = max(1, DB::table('tbl_alquiler')->where('id_propiedad_fk', $alquiler->id_propiedad_fk)->where('estado_alquiler', 'activo')->count());
-        $montoCuotaActual = (float)($resumen['cuota_pendiente_importe'] ?? 0);
         $totalDeuda = $resumen['total_deuda'];
 
         if ($numInquilinos > 1) {
             $totalDeuda /= $numInquilinos;
             $totalGastosPendientes /= $numInquilinos;
-            $montoCuotaActual /= $numInquilinos;
         }
 
         $fotos = DB::table('tbl_fotos')->where('id_propiedad_fk', $id)->get();
@@ -207,23 +205,14 @@ class InquilinoController extends Controller
             'alquiler' => $alquiler,
             'fotos' => $fotos->map(fn($f) => (object)['url_foto' => asset('public/img/' . $f->ruta_foto)]),
             'fotoPrincipal' => $fotoPrincipal,
-            'diasParaPago' => $resumen['dias_para_pago'],
-            'fechaProximoPago' => $resumen['fecha_proximo_pago'],
             'proximaFinalizacion' => $proximaFinalizacion,
             'diasParaFinContrato' => $diasParaFinContrato,
             'fechaFinContrato' => $fechaFinContrato,
             'esIndefinido' => $esIndefinido,
-            'diasRestantesMes' => $diasRestantesMes,
-            'estadoPagoActual' => $resumen['estado_pago_actual'],
             'numPagosAtrasados' => $resumen['num_pagos_atrasados'],
             'totalDeuda' => $totalDeuda,
-            'montoCuotaActual' => $montoCuotaActual,
-            'cuotaPendienteId' => $resumen['cuota_pendiente_id'],
             'totalGastosPendientes' => $totalGastosPendientes,
             'numGastosPendientes' => $numGastosPendientes,
-            'listaGastos' => $listaGastos,
-            'conceptosGastos' => $conceptosGastos,
-            'numInquilinos' => $numInquilinos,
             'companeros' => DB::table('tbl_alquiler')->join('tbl_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_alquiler.id_inquilino_fk')->where('tbl_alquiler.id_propiedad_fk', $id)->where('tbl_alquiler.estado_alquiler', 'activo')->where('tbl_alquiler.id_inquilino_fk', '<>', $userId)->pluck('tbl_usuario.nombre_usuario')->toArray(),
             'incidencias' => DB::table('tbl_incidencia')->where('id_propiedad_fk', $id)->orderBy('creado_incidencia', 'desc')->get(),
             'esInquilino' => true,

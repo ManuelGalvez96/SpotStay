@@ -26,7 +26,7 @@ class InquilinoPagoController extends Controller
         $this->financeService = $financeService;
     }
 
-    public function pagarCuotaAlquiler(int $cuotaId)
+    public function pagarCuotaAlquiler(int $id)
     {
         $usuario = Auth::user();
         if (!$usuario) return response()->json(['success' => false], 401);
@@ -34,23 +34,50 @@ class InquilinoPagoController extends Controller
         $tipoPago = request()->query('tipo', 'alquiler');
 
         try {
-            $cuota = AlquilerCuota::findOrFail($cuotaId);
-            $alquiler = DB::table('tbl_alquiler')
-                ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
-                ->join('tbl_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
-                ->where('tbl_alquiler.id_alquiler', $cuota->id_alquiler_fk)
-                ->select('tbl_usuario.*', 'tbl_propiedad.*', 'tbl_alquiler.fecha_inicio_alquiler')
-                ->first();
+            $monto = 0;
+            $nombreProducto = "SpotStay: " . ucfirst($tipoPago);
+            $descripcion = "";
+            $idAlquiler = null;
+            $stripeAccountId = null;
 
-            if (!$alquiler || empty($alquiler->stripe_account_id)) {
-                return response()->json(['success' => false, 'message' => 'Arrendador sin Stripe.'], 400);
+            if ($tipoPago === 'alquiler') {
+                $cuota = AlquilerCuota::findOrFail($id);
+                $idAlquiler = $cuota->id_alquiler_fk;
+                $resumen = $this->financeService->obtenerResumenPagoAlquiler($idAlquiler);
+                $monto = ($resumen['total_deuda'] > 0) ? $resumen['total_deuda'] : $cuota->importe_base;
+                $descripcion = "Mensualidad de alquiler";
+            } elseif ($tipoPago === 'gasto') {
+                $detalle = DB::table('tbl_gasto_cuota_detalle')
+                    ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
+                    ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+                    ->where('id_gasto_cuota_detalle', $id)
+                    ->select('tbl_gasto_cuota_detalle.*', 'tbl_gasto.concepto_gasto', 'tbl_gasto.id_propiedad_fk')
+                    ->first();
+                if (!$detalle) throw new \Exception("Gasto no encontrado.");
+                $idAlquiler = $detalle->id_alquiler_fk;
+                $monto = $detalle->importe_pagar;
+                $nombreProducto = "Suministro: " . ($detalle->concepto_gasto ?? 'General');
+                $descripcion = "Pago de suministros/gastos";
+            } elseif ($tipoPago === 'incidencia') {
+                $incidencia = DB::table('tbl_incidencia')->where('id_incidencia', $id)->first();
+                if (!$incidencia) throw new \Exception("Incidencia no encontrada.");
+                $idAlquiler = DB::table('tbl_alquiler')->where('id_propiedad_fk', $incidencia->id_propiedad_fk)->where('estado_alquiler', 'activo')->value('id_alquiler');
+                $monto = $incidencia->presupuesto_importe_incidencia;
+                $nombreProducto = "Reparación: " . $incidencia->titulo_incidencia;
+                $descripcion = "Pago de presupuesto de incidencia";
             }
 
-            $resumen = $this->financeService->obtenerResumenPagoAlquiler($cuota->id_alquiler_fk, $alquiler->fecha_inicio_alquiler);
-            $importe = ($tipoPago === 'alquiler') ? ($resumen['total_deuda'] > 0 ? $resumen['total_deuda'] : $cuota->importe_base) : request()->query('monto', 0);
+            // Obtener info del Arrendador para Stripe Connect
+            $alquilerInfo = DB::table('tbl_alquiler')
+                ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
+                ->join('tbl_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
+                ->where('tbl_alquiler.id_alquiler', $idAlquiler)
+                ->select('tbl_usuario.stripe_account_id', 'tbl_propiedad.calle_propiedad')
+                ->first();
 
-            $numInquilinos = DB::table('tbl_alquiler')->where('id_propiedad_fk', $alquiler->id_propiedad)->where('estado_alquiler', 'activo')->count() ?: 1;
-            if ($numInquilinos > 1) $importe = $importe / $numInquilinos;
+            if (!$alquilerInfo || empty($alquilerInfo->stripe_account_id)) {
+                return response()->json(['success' => false, 'message' => 'El arrendador no ha configurado Stripe para recibir pagos.'], 400);
+            }
 
             Stripe::setApiKey(config('services.stripe.secret'));
             $sessionData = [
@@ -58,26 +85,31 @@ class InquilinoPagoController extends Controller
                 'line_items' => [[
                     'price_data' => [
                         'currency' => 'eur',
-                        'product_data' => ['name' => "SpotStay: " . $tipoPago, 'description' => $alquiler->calle_propiedad],
-                        'unit_amount' => (int)($importe * 100),
+                        'product_data' => [
+                            'name' => $nombreProducto,
+                            'description' => $alquilerInfo->calle_propiedad . " - " . $descripcion,
+                        ],
+                        'unit_amount' => (int)($monto * 100),
                     ],
                     'quantity' => 1,
                 ]],
                 'mode' => 'payment',
                 'success_url' => route('inquilino.pago.success') . '?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => route('gestionar_propiedades'),
+                'cancel_url' => route('inquilino.historial_pagos'),
                 'customer_email' => $usuario->email_usuario,
                 'metadata' => [
                     'tipo_pago' => $tipoPago,
-                    'id_referencia' => $cuotaId,
-                    'id_alquiler' => $cuota->id_alquiler_fk,
+                    'id_referencia' => $id,
+                    'id_alquiler' => $idAlquiler,
                     'id_usuario' => $usuario->id_usuario,
-                    'pago_total' => ($tipoPago === 'alquiler' && $resumen['num_pagos_atrasados'] > 0) ? '1' : '0'
+                    'pago_total' => ($tipoPago === 'alquiler') ? '1' : '0'
                 ]
             ];
 
-            if (!str_contains($alquiler->stripe_account_id, 'acct_manual')) {
-                $sessionData['payment_intent_data'] = ['transfer_data' => ['destination' => $alquiler->stripe_account_id], 'on_behalf_of' => $alquiler->stripe_account_id];
+            if (!str_contains($alquilerInfo->stripe_account_id, 'acct_manual')) {
+                $sessionData['payment_intent_data'] = [
+                    'transfer_data' => ['destination' => $alquilerInfo->stripe_account_id],
+                ];
             }
 
             $session = StripeSession::create($sessionData);

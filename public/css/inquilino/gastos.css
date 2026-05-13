@@ -1,0 +1,356 @@
+/* =========================================================
+   GASTOS Y PAGOS - ESTILO SPOTSTAY PREMIUM
+   ========================================================= */
+
+:root {
+    /* Variables heredadas de miembro.css para total consistencia */
+    --primario: #0f4c81;
+    --primario-oscuro: #0c3b64;
+    --acento: #18a672;
+    --fondo: #f3f6fa;
+    --texto: #102336;
+    --texto-suave: #5c6b7a;
+    --borde: #d8e2ec;
+    --sombra: 0 18px 45px -25px rgba(16, 35, 54, 0.45);
+    --radio-lg: 18px;
+    --radio: 12px;
+}
+
+.select-premium {
+    border-radius: var(--radio);
+    border: 1px solid var(--borde);
+    padding: 10px 15px;
+    font-weight: 600;
+    color: var(--texto);
+    background-color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    min-width: 250px;
+    cursor: pointer;
+}
+
+.select-premium:focus {
+    border-color: var(--primario);
+    box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.1);
+}
+
+.seccion-gastos-pagos {
+    padding-bottom: 40px;
+}
+
+/* --- KPI GRID --- */
+.kpi-gastos-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 28px;
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.kpi-pago-card {
+    flex: 1;
+    min-width: 300px;
+    background: #ffffff;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-lg);
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: var(--sombra);
+    transition: transform 0.3s ease;
+}
+
+.kpi-pago-card:hover {
+    transform: translateY(-4px);
+}
+
+.kpi-pago-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.kpi-pago-icon.azul { background: #eaf4ff; color: var(--primario); }
+.kpi-pago-icon.rojo { background: #fff2f2; color: #ef4444; }
+.kpi-pago-icon.accion { background: var(--primario); color: #ffffff; }
+
+.kpi-pago-info .label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+
+.kpi-pago-info .valor {
+    display: block;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--texto);
+}
+
+.accion-pagar-todo {
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.accion-pagar-todo:hover {
+    border-color: var(--primario);
+}
+
+/* --- CONTENEDOR DE LISTADOS --- */
+.contenedor-listados-gastos {
+    width: 100%;
+    margin-bottom: 40px;
+    padding: 0 !important;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-lg);
+    box-shadow: var(--sombra);
+}
+
+/* TABS ESTILO SPOTSTAY */
+.tabs-gastos {
+    display: flex;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--borde);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 18px 24px;
+    border: none;
+    background: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--texto-suave);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+    transition: all 0.2s ease;
+    white-space: nowrap; /* Evita que el texto se rompa en dos líneas */
+}
+
+.tab-btn i { font-size: 18px; }
+
+.tab-btn:hover {
+    background: #f1f5f9;
+    color: var(--texto);
+}
+
+.tab-btn.active {
+    color: var(--primario);
+    background: #ffffff;
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--primario);
+}
+
+.badge-count {
+    background: var(--primario);
+    color: white;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* CONTENIDO */
+.tab-content {
+    display: none;
+    padding: 24px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- FILAS DE GASTOS (ESTILO LISTADO) --- */
+.lista-gastos-items {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.gasto-item-row {
+    display: grid;
+    grid-template-columns: 50px 2fr 1.2fr 1fr 100px 120px;
+    align-items: center;
+    padding: 16px 20px;
+    background: #ffffff;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    transition: all 0.2s ease;
+}
+
+.gasto-item-row:hover {
+    border-color: var(--primario);
+    background: #fcfdfe;
+    transform: scale(1.01);
+}
+
+.item-icon-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.item-icon-circle.blue { background: #eaf4ff; color: var(--primario); }
+.item-icon-circle.yellow { background: #fff8e6; color: #d97706; }
+.item-icon-circle.purple { background: #f5f3ff; color: #7c3aed; }
+
+.item-info .concepto {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--texto);
+    margin-bottom: 2px;
+}
+
+.item-info .desc {
+    display: block;
+    font-size: 13px;
+    color: var(--texto-suave);
+}
+
+.item-vencimiento .date {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--texto);
+}
+
+.item-vencimiento .status-text {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.item-vencimiento .status-text.atrasado { color: #ef4444; }
+.item-vencimiento .status-text.pendiente { color: #f59e0b; }
+
+.badge-estado {
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-block;
+}
+
+.badge-estado.atrasado { background: #fff2f2; color: #ef4444; border: 1px solid #fee2e2; }
+.badge-estado.pendiente { background: #fff8e6; color: #d97706; border: 1px solid #fef3c7; }
+.badge-estado.pagado { background: #ecfbf4; color: #18a672; border: 1px solid #d1fae5; }
+
+.item-importe {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--texto);
+    text-align: right;
+    padding-right: 20px;
+}
+
+/* BOTONES */
+.btn-pagar-item {
+    width: 100%;
+    padding: 10px;
+    border-radius: 999px;
+    border: none;
+    background: var(--primario);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-pagar-item:hover {
+    background: var(--primario-oscuro);
+}
+
+.btn-ver-pdf {
+    background: #f3f6fa;
+    color: var(--texto);
+    border: 1px solid var(--borde);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-ver-pdf:hover {
+    background: #eef2f8;
+}
+
+/* MENSAJE VACÍO */
+.mensaje-vacio {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--texto-suave);
+}
+
+.mensaje-vacio i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+    color: var(--borde);
+}
+
+/* FOOTER */
+.footer-listado {
+    padding: 20px 24px;
+    border-top: 1px solid var(--borde);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fcfdfe;
+    font-size: 13px;
+    color: var(--texto-suave);
+}
+
+.enlace-descargar {
+    color: var(--primario);
+    text-decoration: none;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1100px) {
+    .kpi-gastos-grid { grid-template-columns: 1fr; }
+    .gasto-item-row {
+        grid-template-columns: 50px 1fr 1fr;
+        gap: 16px;
+    }
+    .item-status, .item-importe, .item-accion { grid-column: span 1; }
+}

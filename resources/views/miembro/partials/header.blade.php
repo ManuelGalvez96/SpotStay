@@ -23,7 +23,6 @@
                 @else
                 <div class="inicial-perfil" aria-hidden="true">{{ $inicialUsuario }}</div>
                 @endif
-
                 <div class="submenu-perfil" id="submenu-perfil">
                     <a href="#" class="item-submenu"><i class="bi bi-person"></i> Mi Perfil</a>
                     <a href="#" class="item-submenu"><i class="bi bi-gear"></i> Configuración</a>

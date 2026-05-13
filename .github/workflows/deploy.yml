@@ -24,7 +24,7 @@ jobs:
           coverage: none
 
       - name: Instalar Dependencias (Composer)
-        run: composer install --no-dev --optimize-autoloader
+        run: composer update --no-dev --optimize-autoloader --ignore-platform-reqs
 
       - name: Configurar Node.js
         uses: actions/setup-node@v4

@@ -255,3 +255,20 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
     Route::get('/inquilino/alquiler/{id}/estado-contrato', [InquilinoController::class, 'obtenerEstadoContrato'])->name('inquilino.estado_contrato');
     Route::get('/miembro/mapa/propiedades', [MapaController::class, 'propiedades'])->name('miembro.mapa.propiedades');
 });
+
+// Ruta de utilidad para despliegue (Migraciones y Seeders)
+Route::get('/deploy/migrate', function () {
+    try {
+        echo "Ejecutando migraciones...<br>";
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        echo \Illuminate\Support\Facades\Artisan::output() . "<br>";
+
+        echo "Ejecutando seeders...<br>";
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+        echo \Illuminate\Support\Facades\Artisan::output() . "<br>";
+
+        return "Base de datos actualizada con éxito.";
+    } catch (\Exception $e) {
+        return "Error al actualizar la base de datos: " . $e->getMessage();
+    }
+});

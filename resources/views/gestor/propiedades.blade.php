@@ -76,11 +76,11 @@
 
         <input type="text" name="ciudad" value="{{ $ciudad }}" placeholder="Filtrar por ciudad">
 
-        <select name="operativo">
-            <option value="" {{ $operativo === '' ? 'selected' : '' }}>Operativa: todas</option>
-            <option value="criticas" {{ $operativo === 'criticas' ? 'selected' : '' }}>Con incidencias críticas</option>
-            <option value="sin_alquiler" {{ $operativo === 'sin_alquiler' ? 'selected' : '' }}>Sin alquiler activo</option>
-            <option value="estables" {{ $operativo === 'estables' ? 'selected' : '' }}>Estables</option>
+        <select name="estado_pagos">
+            <option value="" {{ $estadoPagos === '' ? 'selected' : '' }}>Estado de pagos: todos</option>
+            <option value="al_dia" {{ $estadoPagos === 'al_dia' ? 'selected' : '' }}>Al día</option>
+            <option value="pendiente" {{ $estadoPagos === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+            <option value="atrasado" {{ $estadoPagos === 'atrasado' ? 'selected' : '' }}>Atrasado</option>
         </select>
 
     </form>

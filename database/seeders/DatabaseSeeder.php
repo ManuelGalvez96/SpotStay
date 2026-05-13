@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Database\Seeders\PropiedadPermisosSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,6 +19,7 @@ class DatabaseSeeder extends Seeder
             ArrendadorDemoSeeder::class,
             SuscripcionSeeder::class,
             PropiedadSeeder::class,
+            PropiedadPermisosSeeder::class,
             AlquilerSeeder::class,
             ContratoSeeder::class,
             PagoSeeder::class,

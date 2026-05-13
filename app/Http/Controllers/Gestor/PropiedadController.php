@@ -104,7 +104,7 @@ class PropiedadController extends Controller
         $q = trim((string) $request->query('q', ''));
         $estado = (string) $request->query('estado', '');
         $ciudad = trim((string) $request->query('ciudad', ''));
-        $operativo = (string) $request->query('operativo', '');
+        $estadoPagos = (string) $request->query('estado_pagos', '');
         $sort = (string) $request->query('sort', 'creado_propiedad');
         $dir = strtolower((string) $request->query('dir', 'desc'));
 
@@ -124,17 +124,17 @@ class PropiedadController extends Controller
             $query->where('tbl_propiedad.ciudad_propiedad', 'like', '%' . $ciudad . '%');
         }
 
-        if ($operativo === 'criticas') {
-            $query->whereRaw('COALESCE(inc_criticas.total_incidencias_criticas, 0) > 0');
+        if ($estadoPagos === 'al_dia') {
+            $query->whereRaw('COALESCE(pagos_pendientes.total_pagos_pendientes, 0) = 0')
+                ->whereRaw('COALESCE(pagos_atrasados.total_pagos_atrasados, 0) = 0');
         }
 
-        if ($operativo === 'sin_alquiler') {
-            $query->whereRaw('COALESCE(alq_activos.total_alquileres_activos, 0) = 0');
+        if ($estadoPagos === 'pendiente') {
+            $query->whereRaw('COALESCE(pagos_pendientes.total_pagos_pendientes, 0) > 0');
         }
 
-        if ($operativo === 'estables') {
-            $query->whereRaw('COALESCE(inc_activas.total_incidencias_activas, 0) = 0')
-                ->whereRaw('COALESCE(alq_activos.total_alquileres_activos, 0) > 0');
+        if ($estadoPagos === 'atrasado') {
+            $query->whereRaw('COALESCE(pagos_atrasados.total_pagos_atrasados, 0) > 0');
         }
 
         $allowedSorts = [
@@ -218,7 +218,7 @@ class PropiedadController extends Controller
             'q',
             'estado',
             'ciudad',
-            'operativo',
+            'estadoPagos',
             'sort',
             'dir'
         ));

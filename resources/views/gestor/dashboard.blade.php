@@ -9,7 +9,7 @@
 @section('content')
 <div class="hero-admin">
     <div class="hero-content">
-        <h1>Panel del gestor</h1>
+        <h1>Panel de gestor</h1>
         <p>Seguimiento operativo de incidencias y propiedades asignadas</p>
     </div>
     <div class="hero-deco hero-deco-1"></div>

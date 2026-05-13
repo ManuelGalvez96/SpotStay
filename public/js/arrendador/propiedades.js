@@ -47,22 +47,72 @@ function extraerMensajeError(datosRespuesta) {
   return 'Error al procesar la solicitud.';
 }
 
-function actualizarEstadoEnTarjeta(formulario, nuevoEstado) {
-  var tarjeta = formulario.closest('.property-card');
-  if (!tarjeta) {
+function actualizarFilaPropiedad(datosPropiedad) {
+  if (!datosPropiedad || !datosPropiedad.id_propiedad) {
     return;
   }
 
-  var insignia = tarjeta.querySelector('.badge');
-  if (insignia) {
-    insignia.className = 'badge badge-' + nuevoEstado;
-    insignia.textContent = nuevoEstado.charAt(0).toUpperCase() + nuevoEstado.slice(1);
+  var botonEditar = document.querySelector('[data-propiedad-id="' + datosPropiedad.id_propiedad + '"][onclick*="fetchEditData"]');
+  if (!botonEditar) {
+    return;
   }
 
-  var boton = formulario.querySelector('[data-state-button="true"]');
-  if (boton) {
-    boton.textContent = nuevoEstado === 'publicada' ? 'Inactivar' : 'Publicar';
+  var fila = botonEditar.closest('tr');
+  if (!fila) {
+    return;
   }
+
+  var titulo = fila.querySelector('.property-title');
+  var metas = fila.querySelectorAll('.property-meta');
+  var estadoPropiedad = fila.querySelector('td:nth-child(2) .badge');
+
+  if (titulo) {
+    titulo.textContent = datosPropiedad.titulo_propiedad || titulo.textContent;
+  }
+
+  if (metas.length > 0) {
+    metas[0].textContent = (datosPropiedad.direccion_propiedad || '') + (datosPropiedad.ciudad_propiedad ? ', ' + datosPropiedad.ciudad_propiedad : '') + (datosPropiedad.codigo_postal_propiedad ? ' ' + datosPropiedad.codigo_postal_propiedad : '');
+  }
+
+  if (metas.length > 1 && datosPropiedad.precio_propiedad !== undefined && datosPropiedad.precio_propiedad !== null) {
+    metas[1].textContent = parseFloat(datosPropiedad.precio_propiedad).toFixed(2).replace('.', ',') + ' €/mes';
+  }
+
+  if (estadoPropiedad && datosPropiedad.estado_propiedad) {
+    estadoPropiedad.className = 'badge badge-' + datosPropiedad.estado_propiedad;
+    estadoPropiedad.textContent = datosPropiedad.estado_propiedad.charAt(0).toUpperCase() + datosPropiedad.estado_propiedad.slice(1);
+  }
+}
+
+function fetchEditData(propiedadId) {
+  var ruta = rutaDatosEdicionPropiedad.replace(':id', propiedadId);
+
+  fetch(ruta, {
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'Accept': 'application/json'
+    },
+    credentials: 'same-origin'
+  })
+    .then(function (respuesta) {
+      return respuesta.json().then(function (datos) {
+        return { ok: respuesta.ok, datos: datos };
+      });
+    })
+    .then(function (resultado) {
+      if (!resultado.ok || !resultado.datos.success) {
+        throw new Error(extraerMensajeError(resultado.datos));
+      }
+
+      abrirModalFormulario(null, resultado.datos.propiedad);
+    })
+    .catch(function (error) {
+      if (window.swalError) {
+        swalError('No se pudo cargar la edición', error.message || 'Error al cargar la propiedad.');
+      } else {
+        mostrarMensaje(error.message || 'Error al cargar la propiedad.', true);
+      }
+    });
 }
 
 function enviarFormularioConFetch(formulario) {
@@ -107,14 +157,28 @@ function enviarFormularioConFetch(formulario) {
         if (!resultado.ok || !resultado.datosRespuesta.success) {
           throw new Error(extraerMensajeError(resultado.datosRespuesta));
         }
- 
-        mostrarMensaje(resultado.datosRespuesta.message || 'Cambio aplicado correctamente.', false);
 
-        if (formulario.dataset.ajaxStateForm === 'true' && resultado.datosRespuesta.estado) {
-          actualizarEstadoEnTarjeta(formulario, resultado.datosRespuesta.estado);
+        var mensajeExito = resultado.datosRespuesta.message || 'Cambio aplicado correctamente.';
+        var esEdicionPropiedad = Boolean(formulario.querySelector('#form-id-propiedad') && formulario.querySelector('#form-id-propiedad').value);
+
+        if (esEdicionPropiedad && resultado.datosRespuesta.propiedad) {
+          actualizarFilaPropiedad(resultado.datosRespuesta.propiedad);
         }
 
-        window.location.reload();
+        cerrarModalFormulario();
+
+        if (window.swalSuccess) {
+          swalSuccess('Guardado correcto', mensajeExito).then(function () {
+            if (!esEdicionPropiedad) {
+              window.location.reload();
+            }
+          });
+        } else {
+          mostrarMensaje(mensajeExito, false);
+          if (!esEdicionPropiedad) {
+            window.location.reload();
+          }
+        }
       })
       .catch(function (error) {
         mostrarMensaje(error.message || 'Error al procesar la solicitud.', true);
@@ -146,7 +210,7 @@ function iniciarValidacionImagenes() {
     listaPrevia.innerHTML = '';
     
     if (archivosAcumulados.length > 0) {
-      contenedorPrevia.style.display = 'block';
+      contenedorPrevia.hidden = false;
 
       archivosAcumulados.forEach(function (archivoObj, indice) {
         var lector = new FileReader();
@@ -234,7 +298,7 @@ function iniciarValidacionImagenes() {
         lector.readAsDataURL(archivoObj.archivo);
       });
     } else {
-      contenedorPrevia.style.display = 'none';
+      contenedorPrevia.hidden = true;
     }
   }
 
@@ -271,7 +335,7 @@ function abrirModalPropiedad(propiedadId, arrendadorId) {
     return;
   }
 
-  modal.style.display = 'flex';
+  modal.hidden = false;
   modalBody.innerHTML = '<div class="spinner">Cargando...</div>';
 
   fetch('/arrendador/propiedades/' + propiedadId + '?arrendador_id=' + arrendadorId)
@@ -295,8 +359,279 @@ function cerrarModalPropiedad() {
   var modal = document.getElementById('modal-propiedad');
 
   if (modal) {
-    modal.style.display = 'none';
+    modal.hidden = true;
+    modal.style.display = '';
   }
+}
+
+function abrirModalFormulario(arrendadorId, datosPropiedad) {
+  var modal = document.getElementById('modal-formulario');
+  
+  if (!modal) {
+    return;
+  }
+
+  // Limpiar el formulario
+  var formulario = modal.querySelector('form');
+  if (formulario) {
+    formulario.reset();
+    document.getElementById('form-id-propiedad').value = '';
+    document.getElementById('form-titulo').value = '';
+    document.getElementById('form-tipo').value = '';
+    document.getElementById('form-calle').value = '';
+    document.getElementById('form-numero').value = '';
+    document.getElementById('form-piso').value = '';
+    document.getElementById('form-puerta').value = '';
+    document.getElementById('form-codigo-postal').value = '';
+    document.getElementById('form-ciudad').value = '';
+    document.getElementById('form-habitaciones').value = '';
+    document.getElementById('form-banos').value = '';
+    document.getElementById('form-metros').value = '';
+    document.getElementById('form-ascensor').checked = false;
+    document.getElementById('form-amueblado').checked = false;
+    document.getElementById('form-piscina').checked = false;
+    document.getElementById('form-terraza').checked = false;
+    document.getElementById('form-garaje').checked = false;
+    document.getElementById('form-aire-acondicionado').checked = false;
+    document.getElementById('form-calefaccion').checked = false;
+    document.getElementById('form-trastero').checked = false;
+    document.getElementById('form-adicional').value = '';
+    document.getElementById('form-precio').value = '';
+    document.getElementById('form-descripcion').value = '';
+    document.getElementById('btn-submit-formulario').textContent = 'Crear propiedad';
+    
+    // Limpiar archivos acumulados
+    if (formulario._archivosAcumulados) {
+      formulario._archivosAcumulados = [];
+    }
+    
+    // Ocultar vista previa de imágenes
+    var contenedorPrevia = document.getElementById('contenedor-previa-imagenes');
+    if (contenedorPrevia) {
+      contenedorPrevia.hidden = true;
+    }
+
+    if (datosPropiedad) {
+      document.getElementById('modal-formulario-titulo').textContent = 'Editar propiedad';
+      document.getElementById('btn-submit-formulario').textContent = 'Guardar cambios';
+      document.getElementById('form-id-propiedad').value = datosPropiedad.id_propiedad || '';
+      document.getElementById('form-titulo').value = datosPropiedad.titulo_propiedad || '';
+      document.getElementById('form-tipo').value = datosPropiedad.tipo_propiedad || '';
+      document.getElementById('form-calle').value = datosPropiedad.calle_propiedad || '';
+      document.getElementById('form-numero').value = datosPropiedad.numero_propiedad || '';
+      document.getElementById('form-piso').value = datosPropiedad.piso_propiedad || '';
+      document.getElementById('form-puerta').value = datosPropiedad.puerta_propiedad || '';
+      document.getElementById('form-codigo-postal').value = datosPropiedad.codigo_postal_propiedad || '';
+      document.getElementById('form-ciudad').value = datosPropiedad.ciudad_propiedad || '';
+      document.getElementById('form-habitaciones').value = datosPropiedad.habitaciones_propiedad || '';
+      document.getElementById('form-banos').value = datosPropiedad.banos_propiedad || '';
+      document.getElementById('form-metros').value = datosPropiedad.metros_cuadrados_propiedad || '';
+      document.getElementById('form-ascensor').checked = Boolean(Number(datosPropiedad.ascensor_propiedad));
+      document.getElementById('form-amueblado').checked = Boolean(Number(datosPropiedad.amueblado_propiedad));
+      document.getElementById('form-piscina').checked = Boolean(Number(datosPropiedad.piscina_propiedad));
+      document.getElementById('form-terraza').checked = Boolean(Number(datosPropiedad.terraza_propiedad));
+      document.getElementById('form-garaje').checked = Boolean(Number(datosPropiedad.garaje_propiedad));
+      document.getElementById('form-aire-acondicionado').checked = Boolean(Number(datosPropiedad.aire_acondicionado_propiedad));
+      document.getElementById('form-calefaccion').checked = Boolean(Number(datosPropiedad.calefaccion_propiedad));
+      document.getElementById('form-trastero').checked = Boolean(Number(datosPropiedad.trastero_propiedad));
+      document.getElementById('form-adicional').value = datosPropiedad.adicional_propiedad || '';
+      document.getElementById('form-precio').value = datosPropiedad.precio_propiedad || '';
+      document.getElementById('form-descripcion').value = datosPropiedad.descripcion_propiedad || '';
+    }
+  }
+
+  if (!datosPropiedad) {
+    document.getElementById('modal-formulario-titulo').textContent = 'Nueva propiedad';
+  }
+  modal.hidden = false;
+}
+
+function cerrarModalFormulario() {
+  var modal = document.getElementById('modal-formulario');
+
+  if (modal) {
+    modal.hidden = true;
+  }
+}
+
+
+// MODAL GESTOR
+function actualizarResumenPropiedadEnModal(propiedadId) {
+  var tituloElemento = document.getElementById('modal_propiedad_titulo');
+  var direccionElemento = document.getElementById('modal_propiedad_direccion');
+  var precioElemento = document.getElementById('modal_propiedad_precio');
+  var estadoElemento = document.getElementById('modal_propiedad_estado');
+
+  if (!tituloElemento || !direccionElemento || !precioElemento || !estadoElemento) {
+    return;
+  }
+
+  tituloElemento.textContent = 'Propiedad #' + propiedadId;
+  direccionElemento.textContent = 'Datos no disponibles';
+  precioElemento.textContent = 'Precio no disponible';
+  estadoElemento.textContent = 'Estado no disponible';
+
+  var botonOrigen = document.querySelector('.btn-gear[data-propiedad-id="' + propiedadId + '"]');
+  if (!botonOrigen) {
+    return;
+  }
+
+  var fila = botonOrigen.closest('tr');
+  if (!fila) {
+    return;
+  }
+
+  var titulo = fila.querySelector('.property-title');
+  var metas = fila.querySelectorAll('.property-meta');
+  var insigniaEstado = fila.querySelector('td:nth-child(2) .badge');
+
+  if (titulo && titulo.textContent.trim() !== '') {
+    tituloElemento.textContent = titulo.textContent.trim();
+  }
+
+  if (metas.length > 0 && metas[0].textContent.trim() !== '') {
+    direccionElemento.textContent = metas[0].textContent.trim();
+  }
+
+  if (metas.length > 1 && metas[1].textContent.trim() !== '') {
+    precioElemento.textContent = metas[1].textContent.trim();
+  }
+
+  if (insigniaEstado && insigniaEstado.textContent.trim() !== '') {
+    estadoElemento.textContent = 'Estado: ' + insigniaEstado.textContent.trim();
+  }
+}
+
+function abrirModalGestor(propiedadId) {
+  const modal = document.getElementById('modal-gestor-config');
+  const ruta = rutaPermisosGestor.replace(':propiedad', propiedadId);
+  actualizarResumenPropiedadEnModal(propiedadId);
+  //FETCH para obtener datos del gestor y los permisos
+  fetch(ruta)
+    .then(response => response.json())
+    .then(data => {
+      //DATOS DE EJEMPLO QUE DEVUELVE: 
+      // {id_gestor: 51, nombre_gestor: 'Carlos Garcia', email_gestor: 'carlos@spotstay.com', incidencias: 1, gastos: 1, …}
+      
+      //Gestor
+      var nombreGestor = data.nombre_gestor || 'Sin gestor asignado';
+      var emailGestor = data.email_gestor || 'Sin email disponible';
+      var tieneGestor = Boolean(data.id_gestor);
+      var inicialGestor = nombreGestor && nombreGestor.length > 0 ? nombreGestor.trim().charAt(0).toUpperCase() : '-';
+
+      document.getElementById('nombre_gestor').textContent = nombreGestor;
+      document.getElementById('email_gestor').textContent = emailGestor;
+      document.getElementById('nombre_gestor_subtitulo').textContent = tieneGestor ? nombreGestor : 'el gestor';
+      document.getElementById('gestor_avatar_inicial').textContent = inicialGestor;
+      //Permisos
+      document.getElementById('permiso-chat').checked = Boolean(data.chat);
+      document.getElementById('permiso-editar').checked = Boolean(data.editar_propiedad);
+      document.getElementById('permiso-gastos').checked = Boolean(data.gastos);
+      document.getElementById('permiso-incidencias').checked = Boolean(data.incidencias);
+
+      document.getElementById('permiso-chat').disabled = !tieneGestor;
+      document.getElementById('permiso-editar').disabled = !tieneGestor;
+      document.getElementById('permiso-gastos').disabled = !tieneGestor;
+      document.getElementById('permiso-incidencias').disabled = !tieneGestor;
+
+      var btnVerPerfil = document.getElementById('btnVerPerfilGestor');
+      if (btnVerPerfil) {
+        btnVerPerfil.disabled = !tieneGestor;
+      }
+
+      //Guardar IDs para el submit
+      var btnGuardar = document.getElementById('btnGuardarPermisosGestor');
+      if (btnGuardar) {
+        btnGuardar.dataset.propiedadId = propiedadId;
+        btnGuardar.dataset.gestorId = data.id_gestor || '';
+        btnGuardar.disabled = !tieneGestor;
+      }
+
+    })
+    .catch(() => {
+      mostrarMensaje('No se pudieron cargar los permisos del gestor.', true);
+    });
+
+  modal.hidden = false;
+}
+
+document.addEventListener('click', function (evento) {
+  var objetivo = evento.target;
+  if (objetivo && objetivo.id === 'btnGuardarPermisosGestor') {
+    evento.preventDefault();
+    guardarPermisos();
+  }
+});
+
+//Guardar permisos del gestor
+function guardarPermisos() {
+    var btn = document.getElementById('btnGuardarPermisosGestor');
+    if (!btn) {
+      if (window.swalError) {
+        swalError('Error', 'No se encontró el botón de guardado de permisos.');
+      } else {
+        mostrarMensaje('No se encontró el botón de guardado de permisos.', true);
+      }
+      return;
+    }
+    var propiedadId = btn.dataset.propiedadId;
+    var gestorId = btn.dataset.gestorId;
+
+    if (!propiedadId) {
+      if (window.swalError) {
+        swalError('Error', 'No se encontró la propiedad a actualizar.');
+      } else {
+        mostrarMensaje('No se encontró la propiedad a actualizar.', true);
+      }
+      return;
+    }
+
+    var permisos = {
+      chat: document.getElementById('permiso-chat').checked,
+      editar_propiedad: document.getElementById('permiso-editar').checked,
+      gastos: document.getElementById('permiso-gastos').checked,
+      incidencias: document.getElementById('permiso-incidencias').checked
+    };
+    // Incluir gestorId en la carga útil para que el controlador lo reciba
+    permisos.gestor_id = gestorId;
+
+    fetch('/arrendador/propiedades/' + propiedadId + '/gestor/permisos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': obtenerTokenCsrf(),
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(permisos),
+      credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        cerrarModalGestor();
+        if (window.swalSuccess) {
+          swalSuccess('Permisos actualizados', data.message || 'Los permisos del gestor se han guardado correctamente.');
+        } else {
+          mostrarMensaje(data.message || 'Permisos actualizados correctamente.', false);
+        }
+      } else {
+        throw new Error(data.message || 'Error al actualizar permisos.');
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      if (window.swalError) {
+        swalError('No se pudo guardar', error.message || 'Error al actualizar permisos.');
+      } else {
+        mostrarMensaje(error.message || 'Error al actualizar permisos.', true);
+      }
+    });
+};
+
+
+function cerrarModalGestor() {
+  var modal = document.getElementById('modal-gestor-config');
+  if (modal) modal.hidden = true;
 }
 
 function construirContenidoModal(datos) {
@@ -348,6 +683,7 @@ function construirContenidoModal(datos) {
         '<p style="font-weight: 500; font-size: 16px;">' + parseFloat(propiedad.precio_propiedad).toFixed(2).replace('.', ',') + ' €/mes</p>' +
       '</div>' +
     '</div>' +
+    construirHtmlCaracteristicas(propiedad) +
     (propiedad.descripcion_propiedad ? (
       '<div style="margin-bottom: 20px;">' +
         '<p style="color: #999; font-size: 12px; text-transform: uppercase; margin-bottom: 8px;">Descripción</p>' +
@@ -355,6 +691,51 @@ function construirContenidoModal(datos) {
       '</div>'
     ) : '') +
     htmlAlquiler;
+}
+
+function construirHtmlCaracteristicas(p) {
+  var etiquetas = [];
+
+  if (p.habitaciones_propiedad) {
+    etiquetas.push('<span style="background:#f0f0f0;padding:4px 10px;border-radius:999px;font-size:13px;"><strong>' + p.habitaciones_propiedad + '</strong> hab.</span>');
+  }
+  if (p.banos_propiedad) {
+    etiquetas.push('<span style="background:#f0f0f0;padding:4px 10px;border-radius:999px;font-size:13px;"><strong>' + p.banos_propiedad + '</strong> ba&ntilde;os</span>');
+  }
+  if (p.metros_cuadrados_propiedad) {
+    etiquetas.push('<span style="background:#f0f0f0;padding:4px 10px;border-radius:999px;font-size:13px;"><strong>' + p.metros_cuadrados_propiedad + '</strong> m&sup2;</span>');
+  }
+
+  var extras = [];
+  if (Number(p.ascensor_propiedad)) extras.push('Ascensor');
+  if (Number(p.amueblado_propiedad)) extras.push('Amueblado');
+  if (Number(p.piscina_propiedad)) extras.push('Piscina');
+  if (Number(p.terraza_propiedad)) extras.push('Terraza');
+  if (Number(p.garaje_propiedad)) extras.push('Garaje');
+  if (Number(p.aire_acondicionado_propiedad)) extras.push('Aire acondicionado');
+  if (Number(p.calefaccion_propiedad)) extras.push('Calefacción');
+  if (Number(p.trastero_propiedad)) extras.push('Trastero');
+
+  extras.forEach(function(e) {
+    etiquetas.push('<span style="background:#e8f4e8;padding:4px 10px;border-radius:999px;font-size:13px;">' + e + '</span>');
+  });
+
+  if (etiquetas.length === 0 && !p.adicional_propiedad) {
+    return '';
+  }
+
+  var html = '<div style="margin-bottom:20px;">' +
+    '<p style="color:#999;font-size:12px;text-transform:uppercase;margin-bottom:8px;">Características</p>' +
+    '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;">' +
+    etiquetas.join('') +
+    '</div>';
+
+  if (p.adicional_propiedad) {
+    html += '<p style="font-size:14px;color:#555;margin-top:4px;"><em>' + p.adicional_propiedad + '</em></p>';
+  }
+
+  html += '</div>';
+  return html;
 }
 
 function cambiarFotoModal(src) {
@@ -375,11 +756,11 @@ function cambiarFotoModal(src) {
 
 
 document.querySelectorAll('form[data-ajax-form="true"]').forEach(enviarFormularioConFetch);
-document.querySelectorAll('form[data-ajax-state-form="true"]').forEach(enviarFormularioConFetch);
 iniciarValidacionImagenes();
 
 document.onkeydown = function (evento) {
   if (evento.key === 'Escape') {
     cerrarModalPropiedad();
+    cerrarModalFormulario();
   }
 };

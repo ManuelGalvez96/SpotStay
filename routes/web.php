@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\AlquilerController;
 use App\Http\Controllers\Admin\SuscripcionController;
 use App\Http\Controllers\Admin\CodigoGestorController;
 use App\Http\Controllers\Admin\CodigoPropiedadController;
+use App\Http\Controllers\Admin\CategoriaController;
 use App\Http\Controllers\inquilino\InquilinoController;
 use App\Http\Controllers\Arrendador\DashboardController as ArrendadorDashboardController;
 use App\Http\Controllers\Arrendador\PropiedadController as ArrendadorPropiedadController;
@@ -98,6 +99,13 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/incidencias/{id}', [IncidenciaController::class, 'show']);
     Route::post('/admin/incidencias/{id}/estado', [IncidenciaController::class, 'cambiarEstado']);
     Route::post('/admin/incidencias/{id}/asignar', [IncidenciaController::class, 'asignar']);
+
+    // Categorías
+    Route::get('/admin/categorias', [CategoriaController::class, 'index']);
+    Route::get('/admin/categorias/obtener', [CategoriaController::class, 'obtenerCategorias']);
+    Route::post('/admin/categorias/crear', [CategoriaController::class, 'crear']);
+    Route::put('/admin/categorias/{id}', [CategoriaController::class, 'editar']);
+    Route::delete('/admin/categorias/{id}', [CategoriaController::class, 'eliminar']);
 
     // Códigos de Gestor
     Route::get('/admin/codigos-gestores', [CodigoGestorController::class, 'index']);

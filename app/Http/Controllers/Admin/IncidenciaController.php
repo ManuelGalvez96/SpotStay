@@ -21,11 +21,15 @@ class IncidenciaController extends Controller
             ->leftJoin('tbl_usuario as asignado',
               'asignado.id_usuario','=',
               'tbl_incidencia.id_asignado_fk')
+            ->leftJoin('tbl_categoria',
+              'tbl_categoria.id_categoria','=',
+              'tbl_incidencia.id_categoria_fk')
             ->select(
               'tbl_incidencia.*',
               'tbl_propiedad.titulo_propiedad',
                             DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
               'tbl_propiedad.ciudad_propiedad',
+              'tbl_categoria.nombre_categoria',
               'reporta.nombre_usuario as nombre_inquilino',
               'asignado.nombre_usuario as nombre_gestor'
             );
@@ -96,6 +100,12 @@ class IncidenciaController extends Controller
             ->orderBy('tbl_usuario.nombre_usuario','asc')
             ->get();
 
+        $categorias = DB::table('tbl_categoria')
+            ->where('estado_categoria', 'activa')
+            ->select('id_categoria', 'nombre_categoria')
+            ->orderBy('nombre_categoria', 'asc')
+            ->get();
+
         return view('admin.incidencias', compact(
             'abiertas',
             'esperandoDecision',
@@ -110,7 +120,8 @@ class IncidenciaController extends Controller
             'urgentes',
             'gestores',
             'propiedades',
-            'inquilinos'
+            'inquilinos',
+            'categorias'
         ));
     }
 
@@ -250,17 +261,21 @@ class IncidenciaController extends Controller
             ->leftJoin('tbl_usuario as asignado',
               'asignado.id_usuario','=',
               'tbl_incidencia.id_asignado_fk')
+            ->leftJoin('tbl_categoria',
+              'tbl_categoria.id_categoria','=',
+              'tbl_incidencia.id_categoria_fk')
             ->select(
               'tbl_incidencia.*',
               'tbl_propiedad.titulo_propiedad',
               DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
+              'tbl_categoria.nombre_categoria',
               'reporta.nombre_usuario as nombre_inquilino',
               'asignado.nombre_usuario as nombre_gestor'
             );
 
         // Aplicar filtros
         if ($request->categoria) {
-            $queryBase->where('categoria_incidencia', $request->categoria);
+            $queryBase->where('tbl_incidencia.id_categoria_fk', $request->categoria);
         }
         if ($request->prioridad) {
             $queryBase->where('prioridad_incidencia', $request->prioridad);

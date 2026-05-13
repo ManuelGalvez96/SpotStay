@@ -65,6 +65,74 @@ function actualizarEstadoEnTarjeta(formulario, nuevoEstado) {
   }
 }
 
+function actualizarFilaPropiedad(datosPropiedad) {
+  if (!datosPropiedad || !datosPropiedad.id_propiedad) {
+    return;
+  }
+
+  var botonEditar = document.querySelector('[data-propiedad-id="' + datosPropiedad.id_propiedad + '"][onclick*="fetchEditData"]');
+  if (!botonEditar) {
+    return;
+  }
+
+  var fila = botonEditar.closest('tr');
+  if (!fila) {
+    return;
+  }
+
+  var titulo = fila.querySelector('.property-title');
+  var metas = fila.querySelectorAll('.property-meta');
+  var estadoPropiedad = fila.querySelector('td:nth-child(2) .badge');
+
+  if (titulo) {
+    titulo.textContent = datosPropiedad.titulo_propiedad || titulo.textContent;
+  }
+
+  if (metas.length > 0) {
+    metas[0].textContent = (datosPropiedad.direccion_propiedad || '') + (datosPropiedad.ciudad_propiedad ? ', ' + datosPropiedad.ciudad_propiedad : '') + (datosPropiedad.codigo_postal_propiedad ? ' ' + datosPropiedad.codigo_postal_propiedad : '');
+  }
+
+  if (metas.length > 1 && datosPropiedad.precio_propiedad !== undefined && datosPropiedad.precio_propiedad !== null) {
+    metas[1].textContent = parseFloat(datosPropiedad.precio_propiedad).toFixed(2).replace('.', ',') + ' €/mes';
+  }
+
+  if (estadoPropiedad && datosPropiedad.estado_propiedad) {
+    estadoPropiedad.className = 'badge badge-' + datosPropiedad.estado_propiedad;
+    estadoPropiedad.textContent = datosPropiedad.estado_propiedad.charAt(0).toUpperCase() + datosPropiedad.estado_propiedad.slice(1);
+  }
+}
+
+function fetchEditData(propiedadId) {
+  var ruta = rutaDatosEdicionPropiedad.replace(':id', propiedadId);
+
+  fetch(ruta, {
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'Accept': 'application/json'
+    },
+    credentials: 'same-origin'
+  })
+    .then(function (respuesta) {
+      return respuesta.json().then(function (datos) {
+        return { ok: respuesta.ok, datos: datos };
+      });
+    })
+    .then(function (resultado) {
+      if (!resultado.ok || !resultado.datos.success) {
+        throw new Error(extraerMensajeError(resultado.datos));
+      }
+
+      abrirModalFormulario(null, resultado.datos.propiedad);
+    })
+    .catch(function (error) {
+      if (window.swalError) {
+        swalError('No se pudo cargar la edición', error.message || 'Error al cargar la propiedad.');
+      } else {
+        mostrarMensaje(error.message || 'Error al cargar la propiedad.', true);
+      }
+    });
+}
+
 function enviarFormularioConFetch(formulario) {
   formulario.onsubmit = function (evento) {
     evento.preventDefault();
@@ -107,14 +175,32 @@ function enviarFormularioConFetch(formulario) {
         if (!resultado.ok || !resultado.datosRespuesta.success) {
           throw new Error(extraerMensajeError(resultado.datosRespuesta));
         }
- 
-        mostrarMensaje(resultado.datosRespuesta.message || 'Cambio aplicado correctamente.', false);
+
+        var mensajeExito = resultado.datosRespuesta.message || 'Cambio aplicado correctamente.';
+        var esEdicionPropiedad = Boolean(formulario.querySelector('#form-id-propiedad') && formulario.querySelector('#form-id-propiedad').value);
 
         if (formulario.dataset.ajaxStateForm === 'true' && resultado.datosRespuesta.estado) {
           actualizarEstadoEnTarjeta(formulario, resultado.datosRespuesta.estado);
         }
 
-        window.location.reload();
+        if (esEdicionPropiedad && resultado.datosRespuesta.propiedad) {
+          actualizarFilaPropiedad(resultado.datosRespuesta.propiedad);
+        }
+
+        cerrarModalFormulario();
+
+        if (window.swalSuccess) {
+          swalSuccess('Guardado correcto', mensajeExito).then(function () {
+            if (!esEdicionPropiedad) {
+              window.location.reload();
+            }
+          });
+        } else {
+          mostrarMensaje(mensajeExito, false);
+          if (!esEdicionPropiedad) {
+            window.location.reload();
+          }
+        }
       })
       .catch(function (error) {
         mostrarMensaje(error.message || 'Error al procesar la solicitud.', true);

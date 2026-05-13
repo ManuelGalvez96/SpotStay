@@ -144,8 +144,9 @@ Route::middleware(['role:arrendador'])->group(function () {
 
     Route::get('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'inicio'])->name('arrendador.propiedades');
     Route::post('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'guardar'])->name('arrendador.propiedades.store');
-    Route::get('/arrendador/propiedades/{id}', [ArrendadorPropiedadController::class, 'mostrar'])->name('arrendador.propiedades.show');
-    Route::post('/arrendador/propiedades/{id}/estado', [ArrendadorPropiedadController::class, 'alternarEstado'])->name('arrendador.propiedades.estado');
+    Route::get('/arrendador/propiedades/{id}/editar-datos', [ArrendadorPropiedadController::class, 'datosEdicion'])->whereNumber('id')->name('arrendador.propiedades.edit-data');
+    Route::get('/arrendador/propiedades/{id}', [ArrendadorPropiedadController::class, 'mostrar'])->whereNumber('id')->name('arrendador.propiedades.show');
+    Route::post('/arrendador/propiedades/{id}/estado', [ArrendadorPropiedadController::class, 'alternarEstado'])->whereNumber('id')->name('arrendador.propiedades.estado');
     Route::get('/arrendador/propiedades/{propiedad}/gestor/permisos', [ArrendadorPropiedadController::class, 'getPermisosGestor'])->name('arrendador.permisos.get');
     Route::post('/arrendador/propiedades/{propiedad}/gestor/permisos', [ArrendadorPropiedadController::class, 'updatePermisosGestor'])->name('arrendador.permisos.update');
 

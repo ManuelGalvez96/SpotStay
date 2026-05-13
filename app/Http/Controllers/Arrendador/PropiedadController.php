@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Arrendador;
 
 use App\Http\Controllers\Controller;
+use App\Models\Usuario;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
@@ -14,15 +16,11 @@ class PropiedadController extends Controller
     public function inicio(Request $request): View
     {
         $arrendadorId = $this->obtenerIdArrendador($request);
-        $propiedadIdEditar = (int) $request->query('editar', 0);
 
         $arrendador = $this->obtenerArrendadorBase($arrendadorId);
         $columnaPrecio = $this->obtenerColumnaPrecioPropiedad();
 
         $propiedades = $this->consultarPropiedades($arrendadorId, $columnaPrecio)->paginate(10);
-        $propiedadEditando = $propiedadIdEditar > 0
-            ? $this->consultarPropiedadEditable($arrendadorId, $propiedadIdEditar, $columnaPrecio)
-            : null;
 
         $totales = $this->obtenerTotales($arrendadorId);
 
@@ -30,7 +28,6 @@ class PropiedadController extends Controller
             'arrendador' => $arrendador,
             'avatarInicial' => $this->obtenerInicialAvatar($arrendador?->nombre_usuario),
             'propiedades' => $propiedades,
-            'propiedadEditando' => $propiedadEditando,
             'totales' => $totales,
             'arrendadorId' => $arrendadorId,
         ]);
@@ -182,11 +179,26 @@ class PropiedadController extends Controller
 
         $mensaje = $esEdicion ? 'Propiedad actualizada correctamente.' : 'Propiedad creada correctamente.';
 
+        $propiedadActualizada = DB::table('tbl_propiedad as p')
+            ->where('p.id_propiedad', $propiedadId)
+            ->where('p.id_arrendador_fk', $arrendadorId)
+            ->select(
+                'p.id_propiedad',
+                'p.titulo_propiedad',
+                DB::raw($this->obtenerSelectDireccionPropiedad('p')),
+                'p.ciudad_propiedad',
+                'p.codigo_postal_propiedad',
+                DB::raw("p.{$columnaPrecio} as precio_propiedad"),
+                'p.estado_propiedad'
+            )
+            ->first();
+
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
                 'message' => $mensaje,
                 'arrendador_id' => $arrendadorId,
+                'propiedad' => $propiedadActualizada,
             ]);
         }
 
@@ -281,6 +293,26 @@ class PropiedadController extends Controller
         ]);
     }
 
+    public function datosEdicion(Request $request, int $id)
+    {
+        $arrendadorId = $this->obtenerIdArrendador($request);
+        $columnaPrecio = $this->obtenerColumnaPrecioPropiedad();
+
+        $propiedad = $this->consultarPropiedadEditable($arrendadorId, $id, $columnaPrecio);
+
+        if (!$propiedad) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró la propiedad para editar.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'propiedad' => $propiedad,
+        ]);
+    }
+
     private function consultarPropiedades(int $arrendadorId, string $columnaPrecio)
     {
         return DB::table('tbl_propiedad as p')
@@ -323,29 +355,29 @@ class PropiedadController extends Controller
 
     private function consultarPropiedadEditable(int $arrendadorId, int $propiedadId, string $columnaPrecio)
     {
-        return DB::table('tbl_propiedad')
-            ->where('id_propiedad', $propiedadId)
-            ->where('id_arrendador_fk', $arrendadorId)
+        return DB::table('tbl_propiedad as p')
+            ->where('p.id_propiedad', $propiedadId)
+            ->where('p.id_arrendador_fk', $arrendadorId)
             ->select(
-                'id_propiedad',
-                'titulo_propiedad',
-                'tipo_propiedad',
-                'calle_propiedad',
-                'numero_propiedad',
-                'piso_propiedad',
-                'puerta_propiedad',
-                DB::raw($this->obtenerSelectDireccionPropiedad('tbl_propiedad')),
-                'ciudad_propiedad',
-                'codigo_postal_propiedad',
-                'latitud_propiedad',
-                'longitud_propiedad',
-                'descripcion_propiedad',
-                DB::raw("{$columnaPrecio} as precio_propiedad"),
-                'estado_propiedad',
-                'banos_propiedad',
-                'metros_cuadrados_propiedad',
-                'ascensor_propiedad',
-                'amueblado_propiedad'
+                'p.id_propiedad',
+                'p.titulo_propiedad',
+                'p.tipo_propiedad',
+                'p.calle_propiedad',
+                'p.numero_propiedad',
+                'p.piso_propiedad',
+                'p.puerta_propiedad',
+                DB::raw($this->obtenerSelectDireccionPropiedad('p')),
+                'p.ciudad_propiedad',
+                'p.codigo_postal_propiedad',
+                'p.latitud_propiedad',
+                'p.longitud_propiedad',
+                'p.descripcion_propiedad',
+                DB::raw("p.{$columnaPrecio} as precio_propiedad"),
+                'p.estado_propiedad',
+                'p.banos_propiedad',
+                'p.metros_cuadrados_propiedad',
+                'p.ascensor_propiedad',
+                'p.amueblado_propiedad'
             )
             ->first();
     }
@@ -376,15 +408,20 @@ class PropiedadController extends Controller
 
     private function obtenerIdArrendador(Request $request): int
     {
-        // Intentar obtener del input del formulario primero (para POST con edición)
+        if (Auth::check()) {
+            $usuarioAutenticado = Auth::user();
+
+            if ($usuarioAutenticado instanceof Usuario && $usuarioAutenticado->roles()->where('slug_rol', 'arrendador')->exists()) {
+                return (int) ($usuarioAutenticado->id_usuario ?? $usuarioAutenticado->id ?? 0);
+            }
+        }
+
         $arrendadorId = (int) $request->input('arrendador_id', 0);
 
-        // Si no está en el input, intentar del query string
         if ($arrendadorId <= 0) {
             $arrendadorId = (int) $request->query('arrendador_id', 0);
         }
 
-        // Si sigue sin haber valor, obtener el primer arrendador activo con propiedades
         if ($arrendadorId > 0) {
             return $arrendadorId;
         }

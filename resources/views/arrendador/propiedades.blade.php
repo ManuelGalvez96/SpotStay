@@ -89,7 +89,7 @@
                             </td>
                             <td>
                                 <div class="table-actions">
-                                    <a class="action-link" href="{{ route('arrendador.propiedades', ['arrendador_id' => $arrendadorId, 'editar' => $propiedad->id_propiedad]) }}">Editar</a>
+                                    <button class="action-link" type="button" data-propiedad-id="{{ $propiedad->id_propiedad }}" onclick="fetchEditData(this.dataset.propiedadId)">Editar</button>
                                     <button class="action-link" type="button" data-propiedad-id="{{ $propiedad->id_propiedad }}" data-arrendador-id="{{ $arrendadorId }}" onclick="abrirModalPropiedad(this.dataset.propiedadId, this.dataset.arrendadorId)">Previsualizar</button>
                                     <form method="POST" action="{{ route('arrendador.propiedades.estado', $propiedad->id_propiedad) }}" data-ajax-state-form="true" class="inline-form">
                                         @csrf
@@ -127,16 +127,8 @@
 <!-- RUTA PARA OBTENER PERMISOS EN EL FETCH -->
  <script>
     const rutaPermisosGestor = "{{ route('arrendador.permisos.get', ':propiedad') }}";
+    const rutaDatosEdicionPropiedad = "{{ route('arrendador.propiedades.edit-data', ':id') }}";
  </script>
-
-@if ($propiedadEditando)
-    <div id="propiedad-editando-data"
-         hidden
-         data-arrendador-id="{{ $arrendadorId }}"
-         data-propiedad='@json($propiedadEditando)'>
-    </div>
-@endif
-
 <!-- MODAL GESTOR -->
     <div id="modal-gestor-config" class="modal" hidden>
         <div class="modal-backdrop" onclick="cerrarModalGestor()"></div>

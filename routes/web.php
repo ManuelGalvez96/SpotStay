@@ -264,7 +264,7 @@ Route::get('/ejecutar-migraciones-seguras', function () {
             '--seed' => true
         ]);
 
-        return view('index'); // Redirige a la página principal tras el éxito
+        return view('inicio'); // Redirige a la página principal tras el éxito
     } catch (\Exception $e) {
         return "Error: " . $e->getMessage();
     }

@@ -206,7 +206,7 @@ class InquilinoFinanceService
                         'concepto' => $gasto->concepto_gasto ?? 'Gasto de Suministro',
                         'descripcion' => 'Recibo de ' . ($gasto->categoria_gasto ?? 'suministro'),
                         'fecha_vencimiento' => $gasto->vencimiento_cuota,
-                        'importe' => (float)$gasto->importe_pagar,
+                        'importe' => (float)$gasto->importe_detalle,
                         'estado' => $gasto->estado_detalle,
                         'icono' => 'bi-lightning-charge',
                         'color' => 'yellow'

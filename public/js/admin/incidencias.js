@@ -352,13 +352,13 @@ var crearTarjetaIncidencia = function(inc) {
     }
     
     var iconoCat = 'bi-wrench';
-    switch(inc.categoria_incidencia) {
-        case 'fontaneria': iconoCat = 'bi-droplet'; break;
-        case 'electricidad': iconoCat = 'bi-lightning'; break;
-        case 'calefaccion': iconoCat = 'bi-thermometer'; break;
-        case 'climatizacion': iconoCat = 'bi-fan'; break;
-        case 'humedades': iconoCat = 'bi-cloud-rain'; break;
-        case 'cerrajeria': iconoCat = 'bi-key'; break;
+    switch(inc.nombre_categoria) {
+        case 'Fontanería': iconoCat = 'bi-droplet'; break;
+        case 'Electricidad': iconoCat = 'bi-lightning'; break;
+        case 'Calefacción': iconoCat = 'bi-thermometer'; break;
+        case 'Climatización': iconoCat = 'bi-fan'; break;
+        case 'Humedades': iconoCat = 'bi-cloud-rain'; break;
+        case 'Cerrajería': iconoCat = 'bi-key'; break;
     }
     
     var partes = (inc.nombre_inquilino || '').split(' ');
@@ -390,7 +390,7 @@ var crearTarjetaIncidencia = function(inc) {
                '</div>' +
                '<div class="tarjeta-categoria">' +
                '<i class="bi ' + iconoCat + '"></i>' +
-               '<span>' + (inc.categoria_incidencia || '').charAt(0).toUpperCase() + (inc.categoria_incidencia || '').slice(1) + '</span>' +
+               '<span>' + (inc.nombre_categoria || 'Sin categoría') + '</span>' +
                '</div>';
     
     if (inc.nombre_gestor && (inc.estado_incidencia === 'en_proceso' || inc.estado_incidencia === 'resuelta')) {
@@ -527,7 +527,7 @@ var crearFilaIncidencia = function(inc) {
     }
     
     var prioridadLabel = inc.prioridad_incidencia.charAt(0).toUpperCase() + inc.prioridad_incidencia.slice(1);
-    var categoriaLabel = inc.categoria_incidencia.charAt(0).toUpperCase() + inc.categoria_incidencia.slice(1);
+    var categoriaLabel = inc.nombre_categoria || 'Sin categoría';
     
     fila.className = (inc.estado_incidencia === 'resuelta') ? 'fila-inactiva' : '';
     fila.innerHTML = '<td data-label="TÍTULO"><strong>' + (inc.titulo_incidencia || '') + '</strong></td>' +
@@ -579,7 +579,7 @@ var rellenarModal = function(inc) {
         propiedad.textContent = (inc.direccion_propiedad || '') + ', ' + (inc.ciudad_propiedad || '');
     }
     if (inquilino) { inquilino.textContent = inc.nombre_inquilino || ''; }
-    if (categoria) { categoria.textContent = inc.categoria_incidencia || ''; }
+    if (categoria) { categoria.textContent = inc.nombre_categoria || 'Sin categoría'; }
     if (badgePrioridad) {
         badgePrioridad.textContent = inc.prioridad_incidencia || '';
         badgePrioridad.className = 'badge';
@@ -591,7 +591,7 @@ var rellenarModal = function(inc) {
         }
     }
     if (badgeCategoria) {
-        badgeCategoria.textContent = inc.categoria_incidencia || '';
+        badgeCategoria.textContent = inc.nombre_categoria || 'Sin categoría';
     }
 };
 

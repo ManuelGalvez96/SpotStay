@@ -99,6 +99,7 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/incidencias/{id}', [IncidenciaController::class, 'show']);
     Route::post('/admin/incidencias/{id}/estado', [IncidenciaController::class, 'cambiarEstado']);
     Route::post('/admin/incidencias/{id}/asignar', [IncidenciaController::class, 'asignar']);
+    Route::post('/admin/incidencias/{id}/contactar', [IncidenciaController::class, 'contactar']);
 
     // Categorías
     Route::get('/admin/categorias', [CategoriaController::class, 'index']);

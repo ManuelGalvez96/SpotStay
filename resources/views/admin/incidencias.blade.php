@@ -404,8 +404,8 @@
                         <span id="modalPrioridadInc"></span>
                     </div>
                     <div class="col-md-6">
-                        <small class="text-muted d-block">Estado actual</small>
-                        <span id="modalEstadoInc"></span>
+                        <small class="text-muted d-block">Encargado de pago</small>
+                        <span id="modalEncargadoPago">-</span>
                     </div>
                 </div>
 
@@ -414,8 +414,16 @@
             </div>
 
             <div class="modal-footer">
+                <div style="flex:1; text-align:left;">
+                    <select id="modalContactarDestino" class="form-select form-select-sm mb-2">
+                        <option value="inquilino">Contactar inquilino</option>
+                        <option value="arrendador">Contactar arrendador</option>
+                        <option value="gestor">Contactar gestor</option>
+                    </select>
+                    <textarea id="modalMensajeContacto" class="form-control form-control-sm" rows="2" placeholder="Mensaje opcional (puede personalizarse)">Hola, te contactamos respecto a la incidencia reportada. Por favor, revisa la incidencia y responde.</textarea>
+                </div>
                 <button type="button" class="btn btn-outline-secondary" id="btnContactarInquilino">
-                    <i class="bi bi-chat"></i> Contactar
+                    <i class="bi bi-chat"></i> Enviar correo
                 </button>
             </div>
         </div>

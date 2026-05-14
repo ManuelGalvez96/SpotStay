@@ -11,7 +11,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        if (($docRoot = $_SERVER['DOCUMENT_ROOT'] ?? null) && realpath($docRoot) !== realpath($this->app->publicPath())) {
+            $this->app->usePublicPath($docRoot);
+        }
     }
 
     /**

@@ -606,6 +606,14 @@ class InquilinoPagoController extends Controller
                 $query->whereNotNull('tbl_documento.url_documento')
                       ->orWhere('tbl_pago.tipo_pago', 'suscripcion');
             })
+            ->when($request->filled('propiedad_id'), function ($query) use ($request) {
+                $query->where('tbl_pago.id_alquiler_fk', function ($subquery) use ($request) {
+                    $subquery->select('id_alquiler')
+                        ->from('tbl_alquiler')
+                        ->where('id_propiedad_fk', $request->propiedad_id)
+                        ->limit(1);
+                });
+            })
             ->select(
                 'tbl_pago.id_pago',
                 'tbl_pago.referencia_pago',

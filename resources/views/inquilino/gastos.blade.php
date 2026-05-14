@@ -8,7 +8,7 @@
 
 @section('content')
 <div id="data-session" data-exito="{{ session('success') }}" data-error="{{ session('error') }}" style="display:none;"></div>
-<section class="contenido-miembro seccion-gastos-pagos">
+<section class="contenido-miembro seccion-gastos-pagos" data-historial-url="{{ route('inquilino.verificar_pagos_pdf') }}">
     <!-- CABECERA PREMIUM -->
     <div class="cabecera-seccion d-flex justify-content-between align-items-center flex-wrap">
         <div>
@@ -17,7 +17,7 @@
         </div>
         <div class="filtro-propiedad mt-3 mt-md-0">
             <form action="{{ route('inquilino.historial_pagos') }}" method="GET" id="form-filtro-propiedad">
-                <select name="propiedad_id" class="form-select select-premium" onchange="this.form.submit()">
+                <select name="propiedad_id" class="form-select select-premium" id="filtro-propiedad-pagos">
                     <option value="">Todas mis propiedades</option>
                     @foreach($propiedades as $prop)
                         <option value="{{ $prop->id_propiedad }}" {{ $propiedad_seleccionada == $prop->id_propiedad ? 'selected' : '' }}>
@@ -123,40 +123,11 @@
 
         <!-- CONTENIDO TAB HISTORIAL -->
         <div class="tab-content" id="historial">
-            <div class="lista-gastos-items">
-                @forelse($historial as $pago)
-                <div class="gasto-item-row">
-                    <div class="item-icon-circle blue">
-                        <i class="bi bi-check-lg"></i>
-                    </div>
-                    <div class="item-info">
-                        <span class="concepto">{{ $pago->concepto_pago }}</span>
-                        <span class="desc">Ref: {{ $pago->referencia_pago }}</span>
-                    </div>
-                    <div class="item-vencimiento">
-                        <span class="date">{{ \Carbon\Carbon::parse($pago->creado_pago)->format('d/m/Y H:i') }}</span>
-                        <span class="status-text">Pago confirmado</span>
-                    </div>
-                    <div class="item-status">
-                        <span class="badge-estado pagado">Pagado</span>
-                    </div>
-                    <div class="item-importe">
-                        {{ number_format($pago->importe_pago, 2, ',', '.') }}€
-                    </div>
-                    <div class="item-accion">
-                        @if($pago->factura_url)
-                            <a href="{{ asset($pago->factura_url) }}" target="_blank" class="btn-pagar-item btn-ver-pdf">Ver PDF</a>
-                        @else
-                            <button class="btn-pagar-item btn-ver-pdf" disabled style="opacity: 0.5;">Sin PDF</button>
-                        @endif
-                    </div>
+            <div class="lista-gastos-items" id="historial-pagos-lista">
+                <div class="mensaje-vacio" id="historial-pagos-cargando">
+                    <i class="bi bi-hourglass-split"></i>
+                    <p>Cargando historial de pagos...</p>
                 </div>
-                @empty
-                <div class="mensaje-vacio">
-                    <i class="bi bi-info-circle"></i>
-                    <p>Aún no has realizado ningún pago.</p>
-                </div>
-                @endforelse
             </div>
         </div>
     </div>

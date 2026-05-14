@@ -262,6 +262,7 @@ class InquilinoPagoController extends Controller
                             'id_alquiler_fk' => $gasto->id_alquiler_fk,
                             'id_gasto_cuota_detalle_fk' => $gasto->id_gasto_cuota_detalle,
                             'tipo_pago' => 'gasto',
+                            'concepto_pago' => $gasto->concepto_gasto ?? 'Gasto de reparación',
                             'importe_pago' => $gasto->importe_detalle,
                             'estado_pago' => 'pagado',
                             'referencia_pago' => $session->payment_intent,
@@ -415,6 +416,8 @@ class InquilinoPagoController extends Controller
                 ]];
             }
 
+            $items = $this->normalizarItemsFactura($items, (string) $pagoInfo->concepto_pago);
+
             $response = Http::withoutVerifying()
                 ->withToken(config('services.pdfmonkey.api_key'))
                 ->post('https://api.pdfmonkey.io/api/v1/documents', [
@@ -483,6 +486,51 @@ class InquilinoPagoController extends Controller
         }
     }
 
+    private function normalizarItemsFactura(array $items, string $conceptoPorDefecto): array
+    {
+        $itemsAgrupados = [];
+
+        foreach ($items as $item) {
+            $concepto = trim((string) ($item['concepto_pago'] ?? $conceptoPorDefecto));
+            $mesCuota = $item['mes_cuota'] ?? null;
+            $mesCuota = $mesCuota !== null && $mesCuota !== '' ? (string) $mesCuota : null;
+            $importe = $this->normalizarImporteFactura($item['importe_pago'] ?? 0);
+            $claveAgrupacion = $concepto . '|' . ($mesCuota ?? '');
+
+            if (!isset($itemsAgrupados[$claveAgrupacion])) {
+                $itemsAgrupados[$claveAgrupacion] = [
+                    'concepto_pago' => $concepto,
+                    'importe_numero' => 0,
+                    'mes_cuota' => $mesCuota,
+                ];
+            }
+
+            $itemsAgrupados[$claveAgrupacion]['importe_numero'] += $importe;
+        }
+
+        return array_map(function (array $item) {
+            return [
+                'concepto_pago' => $item['concepto_pago'],
+                'importe_pago' => number_format((float) $item['importe_numero'], 2, ',', '.') . '€',
+                'mes_cuota' => $item['mes_cuota'],
+            ];
+        }, array_values($itemsAgrupados));
+    }
+
+    private function normalizarImporteFactura(mixed $importe): float
+    {
+        if (is_numeric($importe)) {
+            return (float) $importe;
+        }
+
+        $valor = (string) $importe;
+        $valor = str_replace(['€', ' '], '', $valor);
+        $valor = str_replace('.', '', $valor);
+        $valor = str_replace(',', '.', $valor);
+
+        return (float) $valor;
+    }
+
     public function historialPagos(Request $request)
     {
         $usuario = Auth::user();
@@ -497,6 +545,7 @@ class InquilinoPagoController extends Controller
             ->leftJoin('tbl_alquiler', 'tbl_alquiler.id_alquiler', '=', 'tbl_pago.id_alquiler_fk')
             ->leftJoin('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
             ->where('tbl_pago.id_pagador_fk', $usuario->id_usuario)
+            ->whereNotNull('tbl_documento.url_documento')
             ->select(
                 'tbl_pago.*',
                 'tbl_documento.url_documento as factura_url',
@@ -534,5 +583,45 @@ class InquilinoPagoController extends Controller
         return response()->json(DB::table('tbl_pago')->leftJoin('tbl_documento', function ($join) {
             $join->on('tbl_documento.id_entidad_documento', '=', 'tbl_pago.id_pago')->where('tbl_documento.tipo_entidad_documento', '=', 'pago')->where('tbl_documento.tipo_documento', '=', 'factura');
         })->where('tbl_pago.id_alquiler_fk', $id)->where('tbl_pago.id_pagador_fk', Auth::id())->where('tbl_pago.tipo_pago', 'alquiler')->select('tbl_pago.*', 'tbl_documento.url_documento as factura_url')->orderBy('tbl_pago.creado_pago', 'desc')->get());
+    }
+
+    public function verificarPagosConPdf(Request $request)
+    {
+        $usuario = Auth::user();
+        if (!$usuario) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Usuario no autenticado'
+            ], 401);
+        }
+
+        $pagos = DB::table('tbl_pago')
+            ->leftJoin('tbl_documento', function($join) {
+                $join->on('tbl_documento.id_entidad_documento', '=', 'tbl_pago.id_pago')
+                     ->where('tbl_documento.tipo_entidad_documento', '=', 'pago')
+                     ->where('tbl_documento.tipo_documento', '=', 'factura');
+            })
+            ->where('tbl_pago.id_pagador_fk', $usuario->id_usuario)
+            ->where(function($query) {
+                $query->whereNotNull('tbl_documento.url_documento')
+                      ->orWhere('tbl_pago.tipo_pago', 'suscripcion');
+            })
+            ->select(
+                'tbl_pago.id_pago',
+                'tbl_pago.referencia_pago',
+                'tbl_pago.importe_pago',
+                'tbl_pago.tipo_pago',
+                'tbl_pago.fecha_confirmacion_pago',
+                'tbl_pago.creado_pago',
+                'tbl_documento.url_documento as factura_url'
+            )
+            ->orderBy('tbl_pago.fecha_confirmacion_pago', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'total' => $pagos->count(),
+            'data' => $pagos
+        ]);
     }
 }

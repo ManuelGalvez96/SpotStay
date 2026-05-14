@@ -37,13 +37,14 @@ class InquilinoGastosController extends Controller
         // Obtenemos los datos unificados del servicio (con filtro opcional)
         $resumen = $this->financeService->obtenerResumenCompletoGastos($usuario->id_usuario, $propiedadId);
         
-        // Historial de pagos mejorado con URL de factura
+        // Historial de pagos mejorado con URL de factura - Solo pagos con PDF
         $queryHistorial = Pago::where('id_pagador_fk', $usuario->id_usuario)
             ->leftJoin('tbl_documento', function($join) {
                 $join->on('tbl_documento.id_entidad_documento', '=', 'tbl_pago.id_pago')
                      ->where('tbl_documento.tipo_entidad_documento', '=', 'pago')
                      ->where('tbl_documento.tipo_documento', '=', 'factura');
             })
+            ->whereNotNull('tbl_documento.url_documento')
             ->select('tbl_pago.*', 'tbl_documento.url_documento as factura_url')
             ->orderBy('tbl_pago.creado_pago', 'desc');
 

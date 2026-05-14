@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             SuscripcionSeeder::class,
             PropiedadSeeder::class,
             AlquilerSeeder::class,
+            GastoDemoSeeder::class,
             ContratoSeeder::class,
             PagoSeeder::class,
             IncidenciaSeeder::class,

@@ -227,28 +227,33 @@ class InquilinoFinanceService
                 }
             }
 
-            // 3. Incidencias con presupuesto a pagar
-            $incidencias = DB::table('tbl_incidencia')
-                ->where('id_propiedad_fk', $alquiler->id_propiedad_fk)
-                ->where('estado_incidencia', 'esperando_pago')
-                ->where('pagado_presupuesto_incidencia', false)
+            // 3. Reparaciones pendientes creadas desde incidencias
+            $reparaciones = DB::table('tbl_gasto_cuota_detalle')
+                ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
+                ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+                ->where('tbl_gasto_cuota_detalle.id_alquiler_fk', $alquiler->id_alquiler)
+                ->where('tbl_gasto_cuota_detalle.id_pagador_fk', $userId)
+                ->where('tbl_gasto.categoria_gasto', 'reparacion')
+                ->whereIn('tbl_gasto_cuota_detalle.estado_detalle', ['pendiente', 'atrasado'])
+                ->whereDate('tbl_gasto_cuota.mes_cuota', '<=', $ahora)
                 ->get();
 
-            foreach ($incidencias as $incidencia) {
+            foreach ($reparaciones as $reparacion) {
                 $item = [
-                    'id' => $incidencia->id_incidencia,
+                    'id' => $reparacion->id_gasto_cuota_detalle,
                     'id_propiedad' => $alquiler->id_propiedad_fk,
-                    'tipo' => 'incidencia',
-                    'concepto' => 'Reparación: ' . $incidencia->titulo_incidencia,
-                    'descripcion' => 'Cargos por reparación de incidencia.',
-                    'fecha_vencimiento' => $incidencia->creado_incidencia,
-                    'importe' => (float)$incidencia->presupuesto_importe_incidencia,
-                    'estado' => 'atrasado',
+                    'tipo' => 'gasto',
+                    'concepto' => $reparacion->concepto_gasto ?? 'Reparación pendiente',
+                    'descripcion' => 'Cargo por reparación pendiente.',
+                    'fecha_vencimiento' => $reparacion->vencimiento_cuota,
+                    'importe' => (float)$reparacion->importe_detalle,
+                    'estado' => $reparacion->estado_detalle,
                     'icono' => 'bi-tools',
-                    'color' => 'purple'
+                    'color' => 'purple',
                 ];
                 $pendientes->push($item);
                 $totalDeuda += $item['importe'];
+                if ($item['estado'] === 'atrasado') $totalAtrasado += $item['importe'];
             }
         }
 

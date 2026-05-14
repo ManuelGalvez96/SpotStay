@@ -252,6 +252,7 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
     Route::get('/inquilino/alquiler/{id}/historial-alquiler', [InquilinoPagoController::class, 'obtenerHistorialAlquiler'])->name('inquilino.historial_alquiler');
     Route::get('/inquilino/pago/success', [InquilinoPagoController::class, 'stripeSuccess'])->name('inquilino.pago.success');
     Route::get('/inquilino/gastos', [InquilinoGastosController::class, 'index'])->name('inquilino.historial_pagos');
+    Route::get('/inquilino/verificar-pagos-pdf', [InquilinoPagoController::class, 'verificarPagosConPdf'])->name('inquilino.verificar_pagos_pdf');
 
     Route::get('/inquilino/alquiler/{id}/estado-contrato', [InquilinoController::class, 'obtenerEstadoContrato'])->name('inquilino.estado_contrato');
     Route::get('/miembro/mapa/propiedades', [MapaController::class, 'propiedades'])->name('miembro.mapa.propiedades');

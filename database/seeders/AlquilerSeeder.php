@@ -178,6 +178,39 @@ class AlquilerSeeder extends Seeder
                 // Marcar la propiedad como alquilada
                 $propiedadCompartida->update(['estado_propiedad' => 'alquilada']);
             }
+
+            // Crear una segunda propiedad para Sergi SIN compañero de piso
+            $propiedadSolo = Propiedad::where('estado_propiedad', 'publicada')
+                ->where('id_propiedad', '<>', ($propiedadCompartida ? $propiedadCompartida->id_propiedad : 0))
+                ->inRandomOrder()
+                ->first();
+
+            if ($propiedadSolo) {
+                $fechaInicioSolo = now()->subMonth()->day(15);
+                $fechaFinSolo = $fechaInicioSolo->copy()->addYear();
+
+                $alquilerSolo = Alquiler::updateOrCreate(
+                    [
+                        'id_propiedad_fk' => $propiedadSolo->id_propiedad,
+                        'id_inquilino_fk' => $usuarioSnebot->id_usuario,
+                    ],
+                    [
+                        'fecha_inicio_alquiler' => $fechaInicioSolo->format('Y-m-d'),
+                        'fecha_fin_alquiler' => $fechaFinSolo->format('Y-m-d'),
+                        'estado_alquiler' => 'activo',
+                        'id_admin_aprueba_fk' => $admin?->id_usuario,
+                        'aprobado_alquiler' => $fechaInicioSolo->copy()->subDays(5),
+                        'creado_alquiler' => $fechaInicioSolo->copy()->subDays(10),
+                        'actualizado_alquiler' => now(),
+                    ]
+                );
+
+                if ($alquilerSolo) {
+                    $this->generarCuotas($alquilerSolo);
+                }
+
+                $propiedadSolo->update(['estado_propiedad' => 'alquilada']);
+            }
         }
     }
 

@@ -166,9 +166,11 @@
                         <td>
                             <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
                                 <div class="detalle-acciones" style="min-width:160px;">
-                                    <button type="button" class="btn-cuota-edit link-ver-todos">Editar</button>
-                                    <button type="button" class="btn-cuota-save link-ver-todos" style="display:none;">Guardar</button>
-                                    <button type="button" class="btn-cuota-cancel link-ver-todos" style="display:none;">Cancelar</button>
+                                    @if($cuota->estado_cuota !== 'pagado')
+                                        <button type="button" class="btn-cuota-edit link-ver-todos">Editar</button>
+                                        <button type="button" class="btn-cuota-save link-ver-todos" style="display:none;">Guardar</button>
+                                        <button type="button" class="btn-cuota-cancel link-ver-todos" style="display:none;">Cancelar</button>
+                                    @endif
                                 </div>
                                 <div class="detalle-pagos-lista">
                                 @foreach($detallesCuota as $detalle)
@@ -177,12 +179,6 @@
                                             {{ $detalle->nombre_usuario }}: {{ number_format((float) $detalle->importe_detalle, 2, ',', '.') }} EUR
                                             ({{ ucfirst($detalle->estado_detalle) }})
                                         </span>
-                                        @if($detalle->estado_detalle !== 'pagado')
-                                            <form method="POST" action="{{ route('gestor.propiedades.gastos.pago', ['id' => $propiedad->id_propiedad, 'cuotaId' => $cuota->id_gasto_cuota, 'detalleId' => $detalle->id_gasto_cuota_detalle]) }}">
-                                                @csrf
-                                                <button type="submit" class="link-ver-todos">Marcar pagado</button>
-                                            </form>
-                                        @endif
                                     </div>
                                 @endforeach
                                 </div>

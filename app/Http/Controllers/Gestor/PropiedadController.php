@@ -498,55 +498,6 @@ class PropiedadController extends Controller
      *
      * Retorna al formulario con mensaje de éxito.
      */
-    public function marcarPagoGasto(Request $request, int $id, int $cuotaId, int $detalleId)
-    {
-        $gestor = Auth::user();
-        $gestorId = (int) ($gestor?->id_usuario ?? 0);
-
-        if (!Schema::hasTable('tbl_gasto') || !Schema::hasTable('tbl_gasto_cuota') || !Schema::hasTable('tbl_gasto_cuota_detalle')) {
-            return redirect()->back()->with('error', 'La gestión de gastos todavía no está disponible. Ejecuta las migraciones pendientes.');
-        }
-
-        $propiedad = $this->getPropiedadDelGestor($id, $gestorId);
-        if (!$propiedad) {
-            abort(404);
-        }
-
-        $permisos = $this->getPermisosPropiedad($gestorId, $id);
-        if (!$permisos->gastos) {
-            return $this->redirigirSinPermiso('gastos');
-        }
-
-        DB::transaction(function () use ($id, $cuotaId, $detalleId) {
-            $detalle = DB::table('tbl_gasto_cuota_detalle')
-                ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
-                ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
-                ->where('tbl_gasto.id_propiedad_fk', $id)
-                ->where('tbl_gasto_cuota_detalle.id_gasto_cuota_detalle', $detalleId)
-                ->where('tbl_gasto_cuota_detalle.id_gasto_cuota_fk', $cuotaId)
-                ->select('tbl_gasto_cuota_detalle.id_gasto_cuota_detalle', 'tbl_gasto_cuota_detalle.estado_detalle')
-                ->first();
-
-            if (!$detalle) {
-                abort(404);
-            }
-
-            if ($detalle->estado_detalle !== 'pagado') {
-                DB::table('tbl_gasto_cuota_detalle')
-                    ->where('id_gasto_cuota_detalle', $detalleId)
-                    ->update([
-                        'estado_detalle' => 'pagado',
-                        'pagado_detalle' => now(),
-                        'actualizado_detalle' => now(),
-                    ]);
-            }
-
-            $this->actualizarEstadoCuota($cuotaId);
-        });
-
-        return redirect()->back()->with('success', 'Pago registrado correctamente.');
-    }
-
     /**
      * Actualiza un gasto existente: modifica datos del recibo y regenera sus cuotas.
      *
@@ -585,6 +536,15 @@ class PropiedadController extends Controller
 
         if (!$gasto) {
             abort(404);
+        }
+
+        $tieneCuotasPagadas = DB::table('tbl_gasto_cuota')
+            ->where('id_gasto_fk', $gastoId)
+            ->where('estado_cuota', 'pagado')
+            ->exists();
+
+        if ($tieneCuotasPagadas) {
+            return redirect()->back()->with('error', 'No puedes modificar un gasto que ya tiene pagos registrados.');
         }
 
         $validated = $request->validate([
@@ -692,6 +652,15 @@ class PropiedadController extends Controller
 
         if (!$gasto) {
             abort(404);
+        }
+
+        $tieneCuotasPagadas = DB::table('tbl_gasto_cuota')
+            ->where('id_gasto_fk', $gastoId)
+            ->where('estado_cuota', 'pagado')
+            ->exists();
+
+        if ($tieneCuotasPagadas) {
+            return redirect()->back()->with('error', 'No puedes eliminar un gasto que ya tiene pagos registrados.');
         }
 
         DB::transaction(function () use ($gastoId) {

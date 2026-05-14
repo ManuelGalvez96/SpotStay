@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Stripe\Stripe;
 use Stripe\Checkout\Session;
 use Carbon\Carbon;
@@ -223,20 +223,16 @@ class MiembroSuscripcionController extends Controller
 
                 if ($downloadUrl) {
                     $pdfContenido = Http::withoutVerifying()->get($downloadUrl)->body();
-                    $rutaCarpeta = public_path('facturas');
-                    if (!File::exists($rutaCarpeta)) File::makeDirectory($rutaCarpeta, 0755, true);
-
                     $nombreArchivo = 'factura_suscripcion_' . $idPago . '_' . time() . '.pdf';
-                    File::put($rutaCarpeta . '/' . $nombreArchivo, $pdfContenido);
+                    Storage::disk('public')->put('facturas/' . $nombreArchivo, $pdfContenido);
 
-                    // Registrar documento en la BD
                     DB::table('tbl_documento')->insert([
                         'id_usuario_fk' => $usuario->id_usuario,
                         'tipo_documento' => 'factura',
                         'tipo_entidad_documento' => 'pago',
                         'id_entidad_documento' => $idPago,
                         'nombre_documento' => 'Factura Suscripción #' . $idPago,
-                        'url_documento' => '/facturas/' . $nombreArchivo,
+                        'url_documento' => '/storage/facturas/' . $nombreArchivo,
                         'hash_documento' => $docId,
                         'creado_documento' => now(),
                         'actualizado_documento' => now()

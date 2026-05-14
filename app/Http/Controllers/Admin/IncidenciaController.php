@@ -304,7 +304,20 @@ class IncidenciaController extends Controller
         $mensaje = $request->input('mensaje', '');
 
         $inc = DB::table('tbl_incidencia')
-            ->where('id_incidencia', $id)
+            ->join('tbl_propiedad',
+              'tbl_propiedad.id_propiedad','=',
+              'tbl_incidencia.id_propiedad_fk')
+            ->leftJoin('tbl_categoria',
+              'tbl_categoria.id_categoria','=',
+              'tbl_incidencia.id_categoria_fk')
+            ->where('tbl_incidencia.id_incidencia', $id)
+            ->select(
+              'tbl_incidencia.*',
+              'tbl_propiedad.titulo_propiedad',
+              DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
+              'tbl_propiedad.ciudad_propiedad',
+              'tbl_categoria.nombre_categoria'
+            )
             ->first();
 
         if (!$inc) {

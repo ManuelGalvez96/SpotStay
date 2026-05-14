@@ -1119,7 +1119,7 @@ class PropiedadController extends Controller
                     if ($fechaPagado) {
                         $fechaPagadoCarbon = Carbon::parse((string) $fechaPagado);
                         $actual = $pagosPrincipales[$clave]['detalle'];
-                        if (!$actual || $fechaPagadoCarbon->greaterThan(Carbon::parse((string) $actual['fecha']))) {
+                        if (!$actual || $fechaPagadoCarbon->greaterThan(Carbon::createFromFormat('d/m/Y', (string) $actual['fecha']))) {
                             $pagosPrincipales[$clave]['detalle'] = [
                                 'texto' => 'Pagado',
                                 'fecha' => $fechaPagadoCarbon->format('d/m/Y'),

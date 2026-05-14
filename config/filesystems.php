@@ -49,7 +49,7 @@ return [
 
         'facturas_publicas' => [
             'driver' => 'local',
-            'root' => public_path('facturas'),
+            'root' => env('FACTURAS_PUBLIC_ROOT') ?? public_path('facturas'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/facturas',
             'visibility' => 'public',
             'throw' => false,

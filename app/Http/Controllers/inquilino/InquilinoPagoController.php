@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 use Carbon\Carbon;
 use Stripe\Stripe;
 use Stripe\Checkout\Session as StripeSession;
@@ -415,7 +415,14 @@ class InquilinoPagoController extends Controller
                 if ($downloadUrl) {
                     $pdfContenido = Http::withoutVerifying()->get($downloadUrl)->body();
                     $nombreArchivo = 'factura_' . $idPago . '_' . time() . '.pdf';
-                    Storage::disk('public')->put('facturas/' . $nombreArchivo, $pdfContenido);
+                    $rutaCarpeta = public_path('facturas');
+                    if (!File::exists($rutaCarpeta)) {
+                        File::makeDirectory($rutaCarpeta, 0755, true);
+                    }
+                    $rutaGuardado = $rutaCarpeta . '/' . $nombreArchivo;
+                    if (@file_put_contents($rutaGuardado, $pdfContenido) === false) {
+                        throw new \Exception("No se pudo escribir la factura en: " . $rutaGuardado);
+                    }
 
                     DB::table('tbl_documento')->insert([
                         'id_usuario_fk' => $pagoInfo->id_pagador_fk,
@@ -423,7 +430,7 @@ class InquilinoPagoController extends Controller
                         'tipo_entidad_documento' => 'pago',
                         'id_entidad_documento' => $idPago,
                         'nombre_documento' => 'Factura SpotStay #' . $idPago,
-                        'url_documento' => '/storage/facturas/' . $nombreArchivo,
+                        'url_documento' => '/facturas/' . $nombreArchivo,
                         'hash_documento' => $docId,
                         'creado_documento' => now(),
                         'actualizado_documento' => now()

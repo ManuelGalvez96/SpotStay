@@ -283,3 +283,5 @@ Route::get('/limpiar-cache', function () {
         return "Error al limpiar cachés: " . $e->getMessage();
     }
 });
+
+

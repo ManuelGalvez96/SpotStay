@@ -25,7 +25,8 @@ class ContactoIncidencia extends Mailable
 
     public function build()
     {
-        return $this->subject($this->asunto)
+        return $this->from('spotstayy@gmail.com', 'SpotStay')
+                    ->subject($this->asunto)
                     ->view('emails.contacto_incidencia')
                     ->with([
                         'incidencia' => $this->incidencia,

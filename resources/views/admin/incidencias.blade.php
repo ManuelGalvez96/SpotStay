@@ -400,6 +400,14 @@
                         <p id="modalCategoriaInc" class="fw-500"></p>
                     </div>
                     <div class="col-md-6">
+                        <small class="text-muted d-block">Arrendador</small>
+                        <p id="modalArrendadorInc" class="fw-500">-</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Gestor</small>
+                        <p id="modalGestorInc" class="fw-500">-</p>
+                    </div>
+                    <div class="col-md-6">
                         <small class="text-muted d-block">Prioridad</small>
                         <span id="modalPrioridadInc"></span>
                     </div>

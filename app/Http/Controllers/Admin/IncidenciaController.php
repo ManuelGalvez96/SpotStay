@@ -61,45 +61,8 @@ class IncidenciaController extends Controller
 
         // Marcar incidencias inactivas (sin cambios > 14 días)
         $marcarInactividad = function($col) {
-            return collect($col)->map(function($inc) {
-                $inc->inactivo = false;
-                try {
-                    $inc->inactivo = \Carbon\Carbon::parse($inc->actualizado_incidencia)->lt(\Carbon\Carbon::now()->subWeeks(2));
-                } catch (\Exception $e) {
-                    $inc->inactivo = false;
-                }
-                return $inc;
-            })->all();
-        };
-
-        $abiertas = $marcarInactividad($abiertas);
-        $esperandoDecision = $marcarInactividad($esperandoDecision);
-        $esperandoPago = $marcarInactividad($esperandoPago);
-        $solucionadas = $marcarInactividad($solucionadas);
-        $resueltas = $marcarInactividad($resueltas);
-
-        // Marcar inactividad también en las colecciones cuando se muestran desde index
-        $marcarInactividad = function($col) {
-            return $col->map(function($inc) {
-                $inc->inactivo = false;
-                try {
-                    $inc->inactivo = \Carbon\Carbon::parse($inc->actualizado_incidencia)->lt(\Carbon\Carbon::now()->subWeeks(2));
-                } catch (\Exception $e) {
-                    $inc->inactivo = false;
-                }
-                return $inc;
-            });
-        };
-
-        $abiertas = $marcarInactividad($abiertas);
-        $esperandoDecision = $marcarInactividad($esperandoDecision);
-        $esperandoPago = $marcarInactividad($esperandoPago);
-        $solucionadas = $marcarInactividad($solucionadas);
-        $resueltas = $marcarInactividad($resueltas);
-
-        // Marcar incidencias inactivas (sin cambios > 14 días)
-        $marcarInactividad = function($col) {
-            return $col->map(function($inc) {
+            $collection = \collect($col);
+            return $collection->map(function($inc) {
                 $inc->inactivo = false;
                 try {
                     $inc->inactivo = \Carbon\Carbon::parse($inc->actualizado_incidencia)->lt(\Carbon\Carbon::now()->subWeeks(2));

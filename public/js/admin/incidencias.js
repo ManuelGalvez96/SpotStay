@@ -610,6 +610,8 @@ var rellenarModal = function(inc, encargadoPago) {
     var propiedad = document.getElementById('modalPropiedadInc');
     var inquilino = document.getElementById('modalInquilinoInc');
     var categoria = document.getElementById('modalCategoriaInc');
+    var arrendador = document.getElementById('modalArrendadorInc');
+    var gestor = document.getElementById('modalGestorInc');
     var badgePrioridad = document.getElementById('modalBadgePrioridad');
     var badgeCategoria = document.getElementById('modalBadgeCategoria');
 
@@ -641,6 +643,13 @@ var rellenarModal = function(inc, encargadoPago) {
         } else {
             modalEnc.textContent = '-';
         }
+    }
+    // Arrendador y gestor
+    if (arrendador) {
+        arrendador.textContent = inc.nombre_arrendador || '-';
+    }
+    if (gestor) {
+        gestor.textContent = inc.nombre_gestor || '-';
     }
 };
 

@@ -1401,4 +1401,149 @@ class PropiedadController extends Controller
             });
         }
     }
+
+    public function getDatosEdicion(int $id)
+    {
+        $gestor = Auth::user();
+        $gestorId = (int) ($gestor?->id_usuario ?? 0);
+
+        $propiedad = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->where('id_gestor_fk', $gestorId)
+            ->select(
+                'id_propiedad',
+                'titulo_propiedad',
+                'tipo_propiedad',
+                'calle_propiedad',
+                'numero_propiedad',
+                'piso_propiedad',
+                'puerta_propiedad',
+                'ciudad_propiedad',
+                'codigo_postal_propiedad',
+                'descripcion_propiedad',
+                'precio_propiedad',
+                'estado_propiedad',
+                'habitaciones_propiedad',
+                'banos_propiedad',
+                'metros_cuadrados_propiedad',
+                'ascensor_propiedad',
+                'amueblado_propiedad',
+                'piscina_propiedad',
+                'terraza_propiedad',
+                'garaje_propiedad',
+                'aire_acondicionado_propiedad',
+                'calefaccion_propiedad',
+                'trastero_propiedad',
+                'adicional_propiedad'
+            )
+            ->first();
+
+        if (!$propiedad) {
+            return response()->json(['success' => false, 'message' => 'Propiedad no encontrada.'], 404);
+        }
+
+        $permisos = $this->getPermisosPropiedad($gestorId, $id);
+
+        if (!$permisos->editar_propiedad) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para editar esta propiedad.'], 403);
+        }
+
+        return response()->json([
+            'success' => true,
+            'propiedad' => $propiedad,
+            'permisos' => [
+                'puede_editar_precio' => $permisos->gastos,
+            ],
+        ]);
+    }
+
+    public function actualizar(Request $request, int $id)
+    {
+        $gestor = Auth::user();
+        $gestorId = (int) ($gestor?->id_usuario ?? 0);
+
+        $propiedad = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->where('id_gestor_fk', $gestorId)
+            ->first();
+
+        if (!$propiedad) {
+            return response()->json(['success' => false, 'message' => 'Propiedad no encontrada.'], 404);
+        }
+
+        $permisos = $this->getPermisosPropiedad($gestorId, $id);
+
+        if (!$permisos->editar_propiedad) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para editar esta propiedad.'], 403);
+        }
+
+        $validated = $request->validate([
+            'titulo_propiedad' => ['required', 'string', 'max:150'],
+            'tipo_propiedad' => ['required', 'in:piso,casa,estudio,habitacion'],
+            'calle_propiedad' => ['required', 'string', 'max:150'],
+            'numero_propiedad' => ['required', 'string', 'max:20'],
+            'piso_propiedad' => ['nullable', 'string', 'max:20'],
+            'puerta_propiedad' => ['nullable', 'string', 'max:20'],
+            'ciudad_propiedad' => ['required', 'string', 'max:100'],
+            'codigo_postal_propiedad' => ['required', 'string', 'max:10'],
+            'habitaciones_propiedad' => ['nullable', 'string', 'max:20'],
+            'banos_propiedad' => ['nullable', 'integer', 'min:0'],
+            'metros_cuadrados_propiedad' => ['nullable', 'integer', 'min:0'],
+            'ascensor_propiedad' => ['nullable', 'boolean'],
+            'amueblado_propiedad' => ['nullable', 'boolean'],
+            'piscina_propiedad' => ['nullable', 'boolean'],
+            'terraza_propiedad' => ['nullable', 'boolean'],
+            'garaje_propiedad' => ['nullable', 'boolean'],
+            'aire_acondicionado_propiedad' => ['nullable', 'boolean'],
+            'calefaccion_propiedad' => ['nullable', 'boolean'],
+            'trastero_propiedad' => ['nullable', 'boolean'],
+            'adicional_propiedad' => ['nullable', 'string', 'max:255'],
+            'precio_propiedad' => ['required', 'numeric', 'min:0'],
+            'descripcion_propiedad' => ['nullable', 'string'],
+        ]);
+
+        $datosPropiedad = [
+            'titulo_propiedad' => $validated['titulo_propiedad'],
+            'tipo_propiedad' => $validated['tipo_propiedad'],
+            'calle_propiedad' => $validated['calle_propiedad'],
+            'numero_propiedad' => $validated['numero_propiedad'],
+            'piso_propiedad' => $validated['piso_propiedad'] ?? null,
+            'puerta_propiedad' => $validated['puerta_propiedad'] ?? null,
+            'ciudad_propiedad' => $validated['ciudad_propiedad'],
+            'codigo_postal_propiedad' => $validated['codigo_postal_propiedad'],
+            'habitaciones_propiedad' => $validated['habitaciones_propiedad'] ?? null,
+            'banos_propiedad' => $validated['banos_propiedad'] ?? null,
+            'metros_cuadrados_propiedad' => $validated['metros_cuadrados_propiedad'] ?? null,
+            'ascensor_propiedad' => (bool) ($validated['ascensor_propiedad'] ?? false),
+            'amueblado_propiedad' => (bool) ($validated['amueblado_propiedad'] ?? false),
+            'piscina_propiedad' => (bool) ($validated['piscina_propiedad'] ?? false),
+            'terraza_propiedad' => (bool) ($validated['terraza_propiedad'] ?? false),
+            'garaje_propiedad' => (bool) ($validated['garaje_propiedad'] ?? false),
+            'aire_acondicionado_propiedad' => (bool) ($validated['aire_acondicionado_propiedad'] ?? false),
+            'calefaccion_propiedad' => (bool) ($validated['calefaccion_propiedad'] ?? false),
+            'trastero_propiedad' => (bool) ($validated['trastero_propiedad'] ?? false),
+            'adicional_propiedad' => $validated['adicional_propiedad'] ?? null,
+            'descripcion_propiedad' => $validated['descripcion_propiedad'] ?? null,
+            'actualizado_propiedad' => now(),
+        ];
+
+        if ($permisos->gastos) {
+            $datosPropiedad['precio_propiedad'] = $validated['precio_propiedad'];
+        }
+
+        DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->update($datosPropiedad);
+
+        $propiedadActualizada = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->select('id_propiedad', 'titulo_propiedad', 'precio_propiedad', 'estado_propiedad')
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Propiedad actualizada correctamente.',
+            'propiedad' => $propiedadActualizada,
+        ]);
+    }
 }

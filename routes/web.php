@@ -136,6 +136,9 @@ Route::middleware(['role:gestor'])->group(function () {
     Route::post('/gestor/incidencias/{id}/comunicacion', [GestorIncidenciaController::class, 'registrarComunicacion'])->name('gestor.incidencias.comunicacion');
     Route::post('/gestor/incidencias/{id}/documento', [GestorIncidenciaController::class, 'subirDocumento'])->name('gestor.incidencias.documento');
     Route::post('/gestor/incidencias/{id}/presupuesto', [GestorIncidenciaController::class, 'crearPresupuesto'])->name('gestor.incidencias.presupuesto');
+
+    Route::get('/gestor/propiedades/{id}/editar-datos', [GestorPropiedadController::class, 'getDatosEdicion'])->name('gestor.propiedades.editar-datos');
+    Route::post('/gestor/propiedades/{id}/editar', [GestorPropiedadController::class, 'actualizar'])->name('gestor.propiedades.actualizar');
 });
 
 // Rutas Arrendador

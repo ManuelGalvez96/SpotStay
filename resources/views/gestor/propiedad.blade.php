@@ -31,6 +31,11 @@
     </div>
     <div class="hero-actions">
         <a href="{{ route('gestor.propiedades') }}" class="btn-volver-propiedades">← Volver a propiedades</a>
+        @if($permisos->editar_propiedad)
+            <button type="button" class="btn-editar-propiedad" onclick="abrirModalEditar({{ $propiedad->id_propiedad }})">
+                <i class="bi bi-pencil"></i> Editar propiedad
+            </button>
+        @endif
     </div>
     <div class="hero-deco hero-deco-1"></div>
     <div class="hero-deco hero-deco-2"></div>
@@ -162,7 +167,152 @@
     @endif
 </div>
 
+<div id="modal-editar-propiedad" class="modal">
+    <div class="modal-backdrop" onclick="cerrarModalEditar()"></div>
+    <div class="modal-content modal-formulario">
+        <div class="modal-header">
+            <h2 id="modal-editar-titulo">Editar propiedad</h2>
+            <button class="modal-close" type="button" onclick="cerrarModalEditar()">✕</button>
+        </div>
+        <div class="modal-body">
+            <form method="POST" class="property-form" data-ajax-editar="true">
+                @csrf
+                <input type="hidden" name="id_propiedad" id="edit-id-propiedad" value="">
+
+                <div class="form-grid">
+                    <div class="form-section">
+                        <h3>Información Básica</h3>
+                        <div class="form-subsection">
+                            <label>
+                                <span>Título</span>
+                                <input type="text" name="titulo_propiedad" id="edit-form-titulo" required>
+                            </label>
+                            <label>
+                                <span>Tipo de propiedad</span>
+                                <select name="tipo_propiedad" id="edit-form-tipo" required>
+                                    <option value="">Selecciona un tipo</option>
+                                    <option value="piso">Piso</option>
+                                    <option value="casa">Casa</option>
+                                    <option value="estudio">Estudio</option>
+                                    <option value="habitacion">Habitación</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Ubicación</h3>
+                        <div class="form-subsection">
+                            <label>
+                                <span>Calle</span>
+                                <input type="text" name="calle_propiedad" id="edit-form-calle" required>
+                            </label>
+                            <label>
+                                <span>Número</span>
+                                <input type="text" name="numero_propiedad" id="edit-form-numero" required>
+                            </label>
+                            <label>
+                                <span>Piso</span>
+                                <input type="text" name="piso_propiedad" id="edit-form-piso">
+                            </label>
+                            <label>
+                                <span>Puerta</span>
+                                <input type="text" name="puerta_propiedad" id="edit-form-puerta">
+                            </label>
+                            <label>
+                                <span>Código postal</span>
+                                <input type="text" name="codigo_postal_propiedad" id="edit-form-codigo-postal" required>
+                            </label>
+                            <label class="full-width">
+                                <span>Ciudad</span>
+                                <input type="text" name="ciudad_propiedad" id="edit-form-ciudad" required>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Características</h3>
+                        <div class="form-subsection">
+                            <label>
+                                <span>Habitaciones</span>
+                                <input type="text" name="habitaciones_propiedad" id="edit-form-habitaciones">
+                            </label>
+                            <label>
+                                <span>Baños</span>
+                                <input type="number" name="banos_propiedad" id="edit-form-banos" min="0">
+                            </label>
+                            <label>
+                                <span>Metros cuadrados</span>
+                                <input type="number" name="metros_cuadrados_propiedad" id="edit-form-metros" min="0">
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="ascensor_propiedad" id="edit-form-ascensor" value="1">
+                                <span>Ascensor</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="amueblado_propiedad" id="edit-form-amueblado" value="1">
+                                <span>Amueblado</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="piscina_propiedad" id="edit-form-piscina" value="1">
+                                <span>Piscina</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="terraza_propiedad" id="edit-form-terraza" value="1">
+                                <span>Terraza</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="garaje_propiedad" id="edit-form-garaje" value="1">
+                                <span>Garaje</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="aire_acondicionado_propiedad" id="edit-form-aire-acondicionado" value="1">
+                                <span>Aire acondicionado</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="calefaccion_propiedad" id="edit-form-calefaccion" value="1">
+                                <span>Calefacción</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="trastero_propiedad" id="edit-form-trastero" value="1">
+                                <span>Trastero</span>
+                            </label>
+                            <label class="full-width">
+                                <span>Adicional</span>
+                                <input type="text" name="adicional_propiedad" id="edit-form-adicional" maxlength="255">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-section" id="edit-seccion-precio">
+                        <h3>Precio</h3>
+                        <div class="form-subsection">
+                            <label>
+                                <span>Alquiler mensual (€)</span>
+                                <input type="number" step="0.01" name="precio_propiedad" id="edit-form-precio" required>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Descripción</h3>
+                        <div class="form-subsection">
+                            <label class="full-width">
+                                <span>Descripción</span>
+                                <textarea name="descripcion_propiedad" id="edit-form-descripcion" rows="5"></textarea>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" type="submit" id="btn-submit-editar">Guardar cambios</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section('scripts')
+<script src="{{ asset('js/gestor/propiedad-editar.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const flashSuccess = document.querySelector('[data-flash-success]');

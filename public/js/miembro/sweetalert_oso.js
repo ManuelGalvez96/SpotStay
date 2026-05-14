@@ -29,6 +29,28 @@ var crearOsoExito = function() {
     `;
 };
 
+/* SVG del oso con cartel de pregunta */
+var crearOsoPregunta = function() {
+    return `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 120px; height: 120px;">
+        <circle class="yeti-part" cx="62" cy="52" r="14" />
+        <circle class="yeti-part" cx="138" cy="52" r="14" />
+        <path class="yeti-part" d="M40,200 Q40,55 100,55 Q160,55 160,200 Z" />
+        <path class="suit-jacket" d="M30,200 L170,200 L160,152 Q100,132 40,152 Z" />
+        <path class="suit-shirt" d="M100,140 L120,168 L100,200 L80,168 Z" />
+        <path class="suit-tie" d="M100,150 L110,168 L100,192 L90,168 Z" />
+        <g id="face-group">
+            <circle cx="82" cy="105" r="5" fill="#000" />
+            <circle cx="118" cy="105" r="5" fill="#000" />
+            <path d="M85 105 L115 105" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        </g>
+        <circle class="hand hand-l" cx="48" cy="180" r="19" />
+        <circle class="hand hand-r" cx="152" cy="180" r="19" />
+        <rect x="55" y="130" width="90" height="45" rx="5" fill="#FFD700" stroke="#B8860B" stroke-width="2.5"/>
+        <text x="100" y="160" font-size="32" font-weight="bold" text-anchor="middle" fill="#B8860B">?</text>
+    </svg>`;
+};
+
 /* SVG del oso con cartel de error */
 var crearOsoError = function() {
     return `
@@ -76,6 +98,26 @@ var mostrarAlertaExito = function(titulo, mensaje) {
         },
         confirmButtonText: 'Ok',
         confirmButtonColor: '#035498'
+    });
+};
+
+var mostrarAlertaConfirmacion = function(titulo, mensaje, botonConfirmar, botonCancelar) {
+    if (typeof Swal === 'undefined') {
+        return Promise.resolve(confirm(titulo + " - " + mensaje));
+    }
+
+    return Swal.fire({
+        title: titulo,
+        html: mensaje,
+        iconHtml: crearOsoPregunta(),
+        customClass: {
+            icon: 'oso-icon'
+        },
+        showCancelButton: true,
+        confirmButtonText: botonConfirmar || 'Sí, continuar',
+        cancelButtonText: botonCancelar || 'Cancelar',
+        confirmButtonColor: '#1AA068',
+        cancelButtonColor: '#6B7280'
     });
 };
 

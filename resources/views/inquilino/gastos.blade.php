@@ -7,6 +7,7 @@
 @endsection
 
 @section('content')
+<div id="data-session" data-exito="{{ session('success') }}" data-error="{{ session('error') }}" style="display:none;"></div>
 <section class="contenido-miembro seccion-gastos-pagos">
     <!-- CABECERA PREMIUM -->
     <div class="cabecera-seccion d-flex justify-content-between align-items-center flex-wrap">
@@ -164,5 +165,7 @@
 
 @section('scripts')
     <script src="https://js.stripe.com/v3/"></script>
+    <script src="{{ asset('js/miembro/sweetalert_oso.js') }}"></script>
     <script src="{{ asset('js/inquilino/gastos.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('css/shared/sweetalert-oso.css') }}" />
 @endsection

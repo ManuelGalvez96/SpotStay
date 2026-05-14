@@ -55,7 +55,7 @@ class InquilinoPagoController extends Controller
                     ->first();
                 if (!$detalle) throw new \Exception("Gasto no encontrado.");
                 $idAlquiler = $detalle->id_alquiler_fk;
-                $monto = $detalle->importe_pagar;
+                $monto = $detalle->importe_detalle;
                 $nombreProducto = "Suministro: " . ($detalle->concepto_gasto ?? 'General');
                 $descripcion = "Pago de suministros/gastos";
             } elseif ($tipoPago === 'incidencia') {
@@ -72,7 +72,7 @@ class InquilinoPagoController extends Controller
                 ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
                 ->join('tbl_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
                 ->where('tbl_alquiler.id_alquiler', $idAlquiler)
-                ->select('tbl_usuario.stripe_account_id', 'tbl_propiedad.calle_propiedad')
+                ->select('tbl_usuario.stripe_account_id', 'tbl_propiedad.calle_propiedad', 'tbl_propiedad.id_propiedad')
                 ->first();
 
             if (!$alquilerInfo || empty($alquilerInfo->stripe_account_id)) {
@@ -101,8 +101,93 @@ class InquilinoPagoController extends Controller
                     'tipo_pago' => $tipoPago,
                     'id_referencia' => $id,
                     'id_alquiler' => $idAlquiler,
+                    'id_propiedad' => $alquilerInfo->id_propiedad ?? '',
                     'id_usuario' => $usuario->id_usuario,
                     'pago_total' => ($tipoPago === 'alquiler') ? '1' : '0'
+                ]
+            ];
+
+            if (!str_contains($alquilerInfo->stripe_account_id, 'acct_manual')) {
+                $sessionData['payment_intent_data'] = [
+                    'transfer_data' => ['destination' => $alquilerInfo->stripe_account_id],
+                ];
+            }
+
+            $session = StripeSession::create($sessionData);
+            return response()->json(['success' => true, 'url' => $session->url]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function pagarTodo(Request $request)
+    {
+        $usuario = Auth::user();
+        if (!$usuario) return response()->json(['success' => false, 'message' => 'No autenticado.'], 401);
+
+        $propiedadId = $request->input('propiedad_id');
+        $resumen = $this->financeService->obtenerResumenCompletoGastos($usuario->id_usuario, $propiedadId);
+
+        if (empty($resumen['items'])) {
+            return response()->json(['success' => false, 'message' => 'No tienes pagos pendientes.'], 400);
+        }
+
+        try {
+            $monto = $resumen['total_pendiente'];
+            $idsAlquiler = [];
+            $idsGasto = [];
+            $idsIncidencia = [];
+            $idAlquiler = null;
+            $idPropiedad = null;
+            $stripeAccountId = null;
+
+            foreach ($resumen['items'] as $item) {
+                if ($item['tipo'] === 'alquiler') $idsAlquiler[] = $item['id'];
+                elseif ($item['tipo'] === 'gasto') $idsGasto[] = $item['id'];
+                elseif ($item['tipo'] === 'incidencia') $idsIncidencia[] = $item['id'];
+                if (!$idPropiedad) $idPropiedad = $item['id_propiedad'];
+            }
+
+            $alquilerInfo = DB::table('tbl_alquiler')
+                ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
+                ->join('tbl_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
+                ->where('tbl_alquiler.id_propiedad_fk', $idPropiedad)
+                ->where('tbl_alquiler.estado_alquiler', 'activo')
+                ->select('tbl_alquiler.id_alquiler', 'tbl_usuario.stripe_account_id', 'tbl_propiedad.calle_propiedad')
+                ->first();
+
+            if (!$alquilerInfo || empty($alquilerInfo->stripe_account_id)) {
+                return response()->json(['success' => false, 'message' => 'El arrendador no ha configurado Stripe.'], 400);
+            }
+
+            $idAlquiler = $alquilerInfo->id_alquiler;
+
+            Stripe::setApiKey(config('services.stripe.secret'));
+            $sessionData = [
+                'payment_method_types' => ['card'],
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => 'eur',
+                        'product_data' => [
+                            'name' => 'SpotStay: Pago total de deudas',
+                            'description' => $alquilerInfo->calle_propiedad . ' - Liquidación de todos los conceptos pendientes',
+                        ],
+                        'unit_amount' => (int) ($monto * 100),
+                    ],
+                    'quantity' => 1,
+                ]],
+                'mode' => 'payment',
+                'success_url' => route('inquilino.pago.success') . '?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => route('inquilino.historial_pagos', $propiedadId ? ['propiedad_id' => $propiedadId] : []),
+                'customer_email' => $usuario->email_usuario,
+                'metadata' => [
+                    'tipo_pago' => 'pago_total',
+                    'id_usuario' => $usuario->id_usuario,
+                    'id_alquiler' => $idAlquiler,
+                    'id_propiedad' => $idPropiedad ?? '',
+                    'ids_alquiler' => json_encode($idsAlquiler),
+                    'ids_gasto' => json_encode($idsGasto),
+                    'ids_incidencia' => json_encode($idsIncidencia),
                 ]
             ];
 
@@ -131,7 +216,62 @@ class InquilinoPagoController extends Controller
 
         DB::beginTransaction();
         try {
-            if ($meta->tipo_pago === 'alquiler') {
+            if ($meta->tipo_pago === 'pago_total') {
+                $idsAlquiler = json_decode($meta->ids_alquiler ?? '[]', true);
+                $idsGasto = json_decode($meta->ids_gasto ?? '[]', true);
+                $idsIncidencia = json_decode($meta->ids_incidencia ?? '[]', true);
+
+                foreach ($idsAlquiler as $idAlq) {
+                    AlquilerCuota::where('id_alquiler_cuota', $idAlq)->update(['estado' => 'pagado', 'pagado_en' => $ahora]);
+                    $cuota = AlquilerCuota::find($idAlq);
+                    Pago::create([
+                        'id_pagador_fk' => $meta->id_usuario,
+                        'id_alquiler_fk' => $meta->id_alquiler,
+                        'id_alquiler_cuota_fk' => $idAlq,
+                        'tipo_pago' => 'alquiler',
+                        'concepto_pago' => 'Liquidación de deuda',
+                        'importe_pago' => $cuota ? $cuota->importe_base : 0,
+                        'estado_pago' => 'pagado',
+                        'referencia_pago' => $session->payment_intent,
+                        'fecha_confirmacion_pago' => $ahora,
+                    ]);
+                }
+
+                if (!empty($idsGasto)) {
+                    $gastosPendientes = DB::table('tbl_gasto_cuota_detalle')
+                        ->whereIn('id_gasto_cuota_detalle', $idsGasto)
+                        ->get();
+                    foreach ($gastosPendientes as $gasto) {
+                        DB::table('tbl_gasto_cuota_detalle')
+                            ->where('id_gasto_cuota_detalle', $gasto->id_gasto_cuota_detalle)
+                            ->update(['estado_detalle' => 'pagado']);
+                        Pago::create([
+                            'id_pagador_fk' => $meta->id_usuario,
+                            'id_alquiler_fk' => $gasto->id_alquiler_fk,
+                            'id_gasto_cuota_detalle_fk' => $gasto->id_gasto_cuota_detalle,
+                            'tipo_pago' => 'gasto',
+                            'importe_pago' => $gasto->importe_detalle,
+                            'estado_pago' => 'pagado',
+                            'referencia_pago' => $session->payment_intent,
+                            'fecha_confirmacion_pago' => $ahora,
+                        ]);
+                    }
+                }
+
+                foreach ($idsIncidencia as $idInc) {
+                    DB::table('tbl_incidencia')->where('id_incidencia', $idInc)->update(['estado_workflow' => 'pagado']);
+                    Pago::create([
+                        'id_pagador_fk' => $meta->id_usuario,
+                        'id_alquiler_fk' => $meta->id_alquiler,
+                        'tipo_pago' => 'incidencia',
+                        'concepto_pago' => 'Pago reparación #' . $idInc,
+                        'importe_pago' => 0,
+                        'estado_pago' => 'pagado',
+                        'referencia_pago' => $session->payment_intent,
+                        'fecha_confirmacion_pago' => $ahora,
+                    ]);
+                }
+            } elseif ($meta->tipo_pago === 'alquiler') {
                 if (($meta->pago_total ?? '0') === '1') {
                     AlquilerCuota::where('id_alquiler_fk', $meta->id_alquiler)->whereIn('estado', ['pendiente', 'atrasado'])->whereDate('mes_cuota', '<=', now()->startOfMonth())->update(['estado' => 'pagado', 'pagado_en' => $ahora]);
                 } else {
@@ -168,11 +308,12 @@ class InquilinoPagoController extends Controller
             }
 
             DB::commit();
-            $idProp = DB::table('tbl_alquiler')->where('id_alquiler', $meta->id_alquiler)->value('id_propiedad_fk');
-            return redirect()->route('inquilino.ver_propiedad', $idProp)->with('success', 'Pago exitoso.');
+            $idProp = $meta->id_propiedad ?? DB::table('tbl_alquiler')->where('id_alquiler', $meta->id_alquiler)->value('id_propiedad_fk');
+            $params = $idProp ? ['propiedad_id' => $idProp] : [];
+            return redirect()->route('inquilino.historial_pagos', $params)->with('success', 'Pago realizado correctamente.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('gestionar_propiedades')->with('error', $e->getMessage());
+            return redirect()->route('inquilino.historial_pagos')->with('error', $e->getMessage());
         }
     }
 

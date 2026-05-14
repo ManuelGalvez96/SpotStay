@@ -247,6 +247,7 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
 
     // Rutas de Pagos e Historial (Controlador Especializado)
     Route::post('/inquilino/cuotas/{cuotaId}/pagar', [InquilinoPagoController::class, 'pagarCuotaAlquiler'])->name('inquilino.pagar_cuota');
+    Route::post('/inquilino/pagar-todo', [InquilinoPagoController::class, 'pagarTodo'])->name('inquilino.pagar_todo');
     Route::get('/inquilino/alquiler/{id}/historial-suministros', [InquilinoPagoController::class, 'obtenerHistorialSuministros'])->name('inquilino.historial_suministros');
     Route::get('/inquilino/alquiler/{id}/historial-alquiler', [InquilinoPagoController::class, 'obtenerHistorialAlquiler'])->name('inquilino.historial_alquiler');
     Route::get('/inquilino/pago/success', [InquilinoPagoController::class, 'stripeSuccess'])->name('inquilino.pago.success');
@@ -277,7 +278,7 @@ Route::get('/limpiar-cache', function () {
         \Illuminate\Support\Facades\Artisan::call('route:clear');
         \Illuminate\Support\Facades\Artisan::call('view:clear');
         \Illuminate\Support\Facades\Artisan::call('cache:clear');
-        return "Cachés limpiadas correctamente.";
+        return view('login');
     } catch (\Exception $e) {
         return "Error al limpiar cachés: " . $e->getMessage();
     }

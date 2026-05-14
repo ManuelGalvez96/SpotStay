@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use Stripe\Stripe;
 use Stripe\Checkout\Session as StripeSession;
@@ -415,14 +416,7 @@ class InquilinoPagoController extends Controller
                 if ($downloadUrl) {
                     $pdfContenido = Http::withoutVerifying()->get($downloadUrl)->body();
                     $nombreArchivo = 'factura_' . $idPago . '_' . time() . '.pdf';
-                    $rutaCarpeta = public_path('facturas');
-                    if (!File::exists($rutaCarpeta)) {
-                        File::makeDirectory($rutaCarpeta, 0755, true);
-                    }
-                    $rutaGuardado = $rutaCarpeta . '/' . $nombreArchivo;
-                    if (@file_put_contents($rutaGuardado, $pdfContenido) === false) {
-                        throw new \Exception("No se pudo escribir la factura en: " . $rutaGuardado);
-                    }
+                    Storage::disk('facturas_publicas')->put($nombreArchivo, $pdfContenido);
 
                     DB::table('tbl_documento')->insert([
                         'id_usuario_fk' => $pagoInfo->id_pagador_fk,

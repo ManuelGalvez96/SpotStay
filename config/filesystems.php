@@ -47,6 +47,15 @@ return [
             'report' => false,
         ],
 
+        'facturas_publicas' => [
+            'driver' => 'local',
+            'root' => public_path('facturas'),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/facturas',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

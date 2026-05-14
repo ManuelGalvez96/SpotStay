@@ -269,3 +269,16 @@ Route::get('/ejecutar-migraciones-seguras', function () {
         return "Error: " . $e->getMessage();
     }
 });
+
+// Limpiar cachés de Laravel (config, route, view, cache)
+Route::get('/limpiar-cache', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('route:clear');
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        return "Cachés limpiadas correctamente.";
+    } catch (\Exception $e) {
+        return "Error al limpiar cachés: " . $e->getMessage();
+    }
+});

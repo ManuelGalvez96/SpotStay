@@ -105,6 +105,11 @@ class InquilinoController extends Controller
                 $alquiler->mostrarAlertaFin = $alquiler->diasFinContrato <= 30;
                 $alquiler->haExpirado = Carbon::today()->gt($fin);
                 $alquiler->diasExpirado = $alquiler->haExpirado ? abs($alquiler->diasFinContrato) : 0;
+            } else {
+                $alquiler->mostrarAlertaFin = false;
+                $alquiler->haExpirado = false;
+                $alquiler->diasExpirado = 0;
+                $alquiler->diasFinContrato = null;
             }
         }
 

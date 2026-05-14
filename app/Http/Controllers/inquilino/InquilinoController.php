@@ -91,6 +91,17 @@ class InquilinoController extends Controller
             $alquiler->fecha_proximo_pago = $resumen['fecha_proximo_pago'];
             $alquiler->pago_atrasado = $resumen['num_pagos_atrasados'];
 
+            // Dividir deuda entre compañeros de piso
+            $numInquilinos = max(1, DB::table('tbl_alquiler')
+                ->where('id_propiedad_fk', $alquiler->id_propiedad)
+                ->where('estado_alquiler', 'activo')
+                ->count());
+            $alquiler->total_deuda_individual = $resumen['total_deuda'];
+            $alquiler->num_companeros = $numInquilinos;
+            if ($numInquilinos > 1) {
+                $alquiler->total_deuda_individual /= $numInquilinos;
+            }
+
             $alquiler->num_gastos_pendientes = Schema::hasTable('tbl_gasto_cuota_detalle') ? DB::table('tbl_gasto_cuota_detalle')->where('id_alquiler_fk', $alquiler->id_alquiler)->where('id_pagador_fk', $userId)->whereIn('estado_detalle', ['pendiente', 'atrasado'])->count() : 0;
 
             $alquiler->total_incidencias_propiedad = DB::table('tbl_incidencia')->where('id_propiedad_fk', $alquiler->id_propiedad)->whereIn('estado_incidencia', ['abierta', 'en_proceso'])->count();

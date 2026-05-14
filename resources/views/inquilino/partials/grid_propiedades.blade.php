@@ -22,6 +22,18 @@
             </div>
         </div>
 
+        @if(($alquiler->total_deuda_individual ?? 0) > 0)
+        <div class="alerta-deuda-individual" style="margin-top: 8px; padding: 8px 12px; border-radius: 8px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.15); font-size: 0.85rem;">
+            <i class="bi bi-wallet2" style="color: #ef4444;"></i>
+            <span style="color: #ef4444; font-weight: 600;">
+                Tu parte: <strong>{{ number_format($alquiler->total_deuda_individual, 2, ',', '.') }}€</strong>
+                @if(($alquiler->num_companeros ?? 1) > 1)
+                    (dividido entre {{ $alquiler->num_companeros }})
+                @endif
+            </span>
+        </div>
+        @endif
+
         @if(($alquiler->pago_atrasado ?? 0) > 0)
         <div class="alerta-pago-atrasado">
             <i class="bi bi-exclamation-triangle-fill"></i>

@@ -220,6 +220,7 @@ class InquilinoPagoController extends Controller
                 $idsAlquiler = json_decode($meta->ids_alquiler ?? '[]', true);
                 $idsGasto = json_decode($meta->ids_gasto ?? '[]', true);
                 $idsIncidencia = json_decode($meta->ids_incidencia ?? '[]', true);
+                $itemsFactura = [];
 
                 foreach ($idsAlquiler as $idAlq) {
                     AlquilerCuota::where('id_alquiler_cuota', $idAlq)->update(['estado' => 'pagado', 'pagado_en' => $ahora]);
@@ -235,11 +236,22 @@ class InquilinoPagoController extends Controller
                         'referencia_pago' => $session->payment_intent,
                         'fecha_confirmacion_pago' => $ahora,
                     ]);
+                    if ($cuota) {
+                        $mesCuota = Carbon::parse($cuota->mes_cuota)->translatedFormat('F Y');
+                        $itemsFactura[] = [
+                            'concepto_pago' => 'Cuota alquiler - ' . $mesCuota,
+                            'importe_pago' => number_format((float)$cuota->importe_base, 2, ',', '.') . '€',
+                            'mes_cuota' => $mesCuota,
+                        ];
+                    }
                 }
 
                 if (!empty($idsGasto)) {
                     $gastosPendientes = DB::table('tbl_gasto_cuota_detalle')
+                        ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
+                        ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
                         ->whereIn('id_gasto_cuota_detalle', $idsGasto)
+                        ->select('tbl_gasto_cuota_detalle.*', 'tbl_gasto.concepto_gasto', 'tbl_gasto_cuota.mes_cuota')
                         ->get();
                     foreach ($gastosPendientes as $gasto) {
                         DB::table('tbl_gasto_cuota_detalle')
@@ -255,22 +267,50 @@ class InquilinoPagoController extends Controller
                             'referencia_pago' => $session->payment_intent,
                             'fecha_confirmacion_pago' => $ahora,
                         ]);
+                        $mesGasto = Carbon::parse($gasto->mes_cuota)->translatedFormat('F Y');
+                        $itemsFactura[] = [
+                            'concepto_pago' => 'Suministro: ' . ($gasto->concepto_gasto ?? 'General'),
+                            'importe_pago' => number_format((float)$gasto->importe_detalle, 2, ',', '.') . '€',
+                            'mes_cuota' => $mesGasto,
+                        ];
                     }
                 }
 
                 foreach ($idsIncidencia as $idInc) {
+                    $incidencia = DB::table('tbl_incidencia')->where('id_incidencia', $idInc)->first();
                     DB::table('tbl_incidencia')->where('id_incidencia', $idInc)->update(['estado_workflow' => 'pagado']);
                     Pago::create([
                         'id_pagador_fk' => $meta->id_usuario,
                         'id_alquiler_fk' => $meta->id_alquiler,
                         'tipo_pago' => 'incidencia',
                         'concepto_pago' => 'Pago reparación #' . $idInc,
-                        'importe_pago' => 0,
+                        'importe_pago' => $incidencia ? ($incidencia->presupuesto_importe_incidencia ?? 0) : 0,
                         'estado_pago' => 'pagado',
                         'referencia_pago' => $session->payment_intent,
                         'fecha_confirmacion_pago' => $ahora,
                     ]);
+                    if ($incidencia) {
+                        $itemsFactura[] = [
+                            'concepto_pago' => 'Reparación: ' . $incidencia->titulo_incidencia,
+                            'importe_pago' => number_format((float)($incidencia->presupuesto_importe_incidencia ?? 0), 2, ',', '.') . '€',
+                            'mes_cuota' => null,
+                        ];
+                    }
                 }
+
+                // Create master Pago for the consolidated invoice
+                $pagoMaestro = Pago::create([
+                    'id_pagador_fk' => $meta->id_usuario,
+                    'id_alquiler_fk' => $meta->id_alquiler,
+                    'tipo_pago' => 'liquidacion',
+                    'concepto_pago' => 'Liquidación total de deuda',
+                    'importe_pago' => $session->amount_total / 100,
+                    'estado_pago' => 'pagado',
+                    'referencia_pago' => $session->payment_intent,
+                    'fecha_confirmacion_pago' => $ahora,
+                ]);
+
+                $this->generarFacturaPDF($pagoMaestro->id_pago, $itemsFactura);
             } elseif ($meta->tipo_pago === 'alquiler') {
                 if (($meta->pago_total ?? '0') === '1') {
                     AlquilerCuota::where('id_alquiler_fk', $meta->id_alquiler)->whereIn('estado', ['pendiente', 'atrasado'])->whereDate('mes_cuota', '<=', now()->startOfMonth())->update(['estado' => 'pagado', 'pagado_en' => $ahora]);
@@ -335,7 +375,7 @@ class InquilinoPagoController extends Controller
         }
     }
 
-    private function generarFacturaPDF($idPago)
+    private function generarFacturaPDF($idPago, $items = null)
     {
         try {
             $pagoInfo = DB::table('tbl_pago')
@@ -343,7 +383,6 @@ class InquilinoPagoController extends Controller
                 ->join('tbl_alquiler', 'tbl_alquiler.id_alquiler', '=', 'tbl_pago.id_alquiler_fk')
                 ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
                 ->join('tbl_usuario as arrendador', 'arrendador.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
-                ->leftJoin('tbl_alquiler_cuota', 'tbl_alquiler_cuota.id_alquiler_cuota', '=', 'tbl_pago.id_alquiler_cuota_fk')
                 ->where('tbl_pago.id_pago', $idPago)
                 ->select(
                     'tbl_pago.*',
@@ -354,8 +393,7 @@ class InquilinoPagoController extends Controller
                     'arrendador.dni_usuario as dni_arrendador',
                     'arrendador.email_usuario as email_arrendador',
                     'arrendador.iban_usuario as iban_arrendador',
-                    'tbl_propiedad.*',
-                    'tbl_alquiler_cuota.mes_cuota'
+                    'tbl_propiedad.*'
                 )
                 ->first();
 
@@ -366,10 +404,16 @@ class InquilinoPagoController extends Controller
             if (!empty($pagoInfo->puerta_propiedad)) $direccionCompleta .= ", Puerta {$pagoInfo->puerta_propiedad}";
             $direccionCompleta .= ". {$pagoInfo->ciudad_propiedad}";
             $fechaPago = Carbon::parse($pagoInfo->fecha_confirmacion_pago ?? $pagoInfo->creado_pago ?? now())->format('d/m/Y H:i');
-            $mesReferencia = !empty($pagoInfo->mes_cuota)
-                ? Carbon::parse($pagoInfo->mes_cuota)->translatedFormat('F Y')
-                : null;
-            $numeroReferencia = '#STAY-' . str_pad((string) $idPago, 6, '0', STR_PAD_LEFT);
+
+            // Build items array for the template's {{#items}} block
+            if ($items === null) {
+                $importeFormateado = number_format((float) $pagoInfo->importe_pago, 2, ',', '.') . '€';
+                $items = [[
+                    'concepto_pago' => $pagoInfo->concepto_pago,
+                    'importe_pago' => $importeFormateado,
+                    'mes_cuota' => null,
+                ]];
+            }
 
             $response = Http::withoutVerifying()
                 ->withToken(config('services.pdfmonkey.api_key'))
@@ -380,20 +424,20 @@ class InquilinoPagoController extends Controller
                         'payload' => [
                             'id_pago' => str_pad((string) $idPago, 6, '0', STR_PAD_LEFT),
                             'creado_pago' => $fechaPago,
-                            'mes_cuota' => $mesReferencia ?? 'N/A',
                             'importe_pago' => number_format((float) $pagoInfo->importe_pago, 2, ',', '.') . '€',
-                            
+                            'items' => $items,
+
                             'nombre_arrendador' => $pagoInfo->nombre_arrendador,
                             'dni_arrendador' => $pagoInfo->dni_arrendador,
                             'email_arrendador' => $pagoInfo->email_arrendador,
                             'iban_arrendador' => $pagoInfo->iban_arrendador ?? 'N/A',
-                            
+
                             'nombre_inquilino' => $pagoInfo->nombre_inquilino,
                             'dni_inquilino' => $pagoInfo->dni_inquilino,
                             'email_inquilino' => $pagoInfo->email_inquilino,
                             'calle_propiedad' => $direccionCompleta,
-                            
-                            'concepto_pago' => $pagoInfo->concepto_pago,
+
+                            'concepto_pago' => $items[0]['concepto_pago'] ?? $pagoInfo->concepto_pago,
                             'referencia_pago' => $pagoInfo->referencia_pago
                         ]
                     ]

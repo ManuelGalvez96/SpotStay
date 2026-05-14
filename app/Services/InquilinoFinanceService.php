@@ -162,6 +162,12 @@ class InquilinoFinanceService
         $ahora = Carbon::now()->endOfMonth();
 
         foreach ($alquileres as $alquiler) {
+            // Dividir importes entre compañeros de piso
+            $numInquilinos = max(1, DB::table('tbl_alquiler')
+                ->where('id_propiedad_fk', $alquiler->id_propiedad_fk)
+                ->where('estado_alquiler', 'activo')
+                ->count());
+
             // 1. Cuotas de Alquiler (Solo mes actual o anteriores)
             $cuotas = AlquilerCuota::where('id_alquiler_fk', $alquiler->id_alquiler)
                 ->whereIn('estado', ['pendiente', 'atrasado'])
@@ -169,6 +175,10 @@ class InquilinoFinanceService
                 ->get();
 
             foreach ($cuotas as $cuota) {
+                $importeIndividual = (float)$cuota->importe_base;
+                if ($numInquilinos > 1) {
+                    $importeIndividual /= $numInquilinos;
+                }
                 $item = [
                     'id' => $cuota->id_alquiler_cuota,
                     'id_propiedad' => $alquiler->id_propiedad_fk,
@@ -176,7 +186,7 @@ class InquilinoFinanceService
                     'concepto' => 'Alquiler ' . Carbon::parse($cuota->mes_cuota)->translatedFormat('F Y'),
                     'descripcion' => 'Mensualidad correspondiente al mes de ' . Carbon::parse($cuota->mes_cuota)->translatedFormat('F'),
                     'fecha_vencimiento' => $cuota->fecha_vencimiento,
-                    'importe' => (float)$cuota->importe_base,
+                    'importe' => $importeIndividual,
                     'estado' => $cuota->estado,
                     'icono' => 'bi-house-door',
                     'color' => 'blue'

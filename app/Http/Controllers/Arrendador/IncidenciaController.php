@@ -107,6 +107,7 @@ class IncidenciaController extends Controller
         return view('arrendador.incidencias', [
             'arrendador' => $arrendador,
             'arrendadorId' => $arrendadorId,
+            'avatarInicial' => $this->obtenerInicialAvatar($arrendador?->nombre_usuario),
             'incidencias' => $incidencias,
             'titulo' => $titulo,
             'propiedad' => $propiedad,
@@ -175,6 +176,7 @@ class IncidenciaController extends Controller
 
         return view('arrendador.incidencia', [
             'arrendadorId' => $arrendadorId,
+            'avatarInicial' => $this->obtenerInicialAvatar(null),
             'incidencia' => $incidencia,
             'historial' => $historial,
             'documentos' => $documentos,
@@ -526,5 +528,14 @@ class IncidenciaController extends Controller
         }
 
         return 'TRIM(CONCAT_WS(\' \' , ' . implode(', ', $partes) . ')) as direccion_propiedad';
+    }
+
+    private function obtenerInicialAvatar(?string $nombre): string
+    {
+        if (empty($nombre)) {
+            return 'A';
+        }
+
+        return mb_strtoupper(mb_substr(trim($nombre), 0, 1));
     }
 }

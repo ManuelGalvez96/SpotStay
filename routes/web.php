@@ -258,34 +258,29 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
     Route::get('/miembro/mapa/propiedades', [MapaController::class, 'propiedades'])->name('miembro.mapa.propiedades');
 });
 
-// Utilidades de mantenimiento (protegidas por autenticación y rol admin)
-
-Route::get('/admin/ejecutar-migraciones', function () {
+// Utilidades de mantenimiento (rutas públicas para poder usarlas incluso con BD vacía)
+Route::get('/ejecutar-migraciones', function () {
     try {
-        \Illuminate\Support\Facades\Artisan::call('migrate:fresh');
-        return redirect('/admin/dashboard')->with('success', 'Migraciones y seeders ejecutados correctamente.');
+        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--force' => true, '--seed' => true]);
+        echo "<pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
+        echo "<p style='color:green;font-weight:bold;'>✓ Migraciones y seeders ejecutados.</p>";
+        echo "<a href='/login'>Ir al login</a>";
     } catch (\Exception $e) {
-        return redirect('/admin/dashboard')->with('error', 'Error: ' . $e->getMessage());
+        echo "<p style='color:red;font-weight:bold;'>Error: " . $e->getMessage() . "</p>";
     }
-})->name('admin.ejecutar_migraciones');
+    die;
+});
 
-Route::get('/admin/ejecutar-seeders', function () {
-    try {
-        \Illuminate\Support\Facades\Artisan::call('db:seed');
-        return redirect('/admin/dashboard')->with('success', 'Seeders ejecutados correctamente.');
-    } catch (\Exception $e) {
-        return redirect('/admin/dashboard')->with('error', 'Error: ' . $e->getMessage());
-    }
-})->name('admin.ejecutar_seeders');
-
-Route::get('/admin/limpiar-cache', function () {
+Route::get('/limpiar-cache', function () {
     try {
         \Illuminate\Support\Facades\Artisan::call('config:clear');
         \Illuminate\Support\Facades\Artisan::call('route:clear');
         \Illuminate\Support\Facades\Artisan::call('view:clear');
         \Illuminate\Support\Facades\Artisan::call('cache:clear');
-        return redirect('/admin/dashboard')->with('success', 'Cachés limpiadas correctamente.');
+        echo "<p style='color:green;font-weight:bold;'>✓ Cachés limpiadas.</p>";
+        echo "<a href='/login'>Ir al login</a>";
     } catch (\Exception $e) {
-        return redirect('/admin/dashboard')->with('error', 'Error al limpiar cachés: ' . $e->getMessage());
+        echo "<p style='color:red;font-weight:bold;'>Error: " . $e->getMessage() . "</p>";
     }
-})->name('admin.limpiar_cache');
+    die;
+});

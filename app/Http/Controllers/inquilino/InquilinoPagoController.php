@@ -333,10 +333,13 @@ class InquilinoPagoController extends Controller
 
                 $this->generarFacturaPDF($pago->id_pago);
             } elseif ($meta->tipo_pago === 'gasto') {
-                $this->procesarPagoGastos($meta->id_alquiler, $meta->id_usuario, $session, $meta->id_referencia);
+                $pagosGasto = $this->procesarPagoGastos($meta->id_alquiler, $meta->id_usuario, $session, $meta->id_referencia);
+                foreach ($pagosGasto as $idPago) {
+                    $this->generarFacturaPDF($idPago);
+                }
             } elseif ($meta->tipo_pago === 'incidencia') {
                 DB::table('tbl_incidencia')->where('id_incidencia', $meta->id_referencia)->update(['estado_workflow' => 'pagado']);
-                Pago::create([
+                $pago = Pago::create([
                     'id_pagador_fk' => $meta->id_usuario,
                     'id_alquiler_fk' => $meta->id_alquiler,
                     'tipo_pago' => 'incidencia',
@@ -346,6 +349,7 @@ class InquilinoPagoController extends Controller
                     'referencia_pago' => $session->payment_intent,
                     'fecha_confirmacion_pago' => $ahora,
                 ]);
+                $this->generarFacturaPDF($pago->id_pago);
             }
 
             DB::commit();
@@ -373,9 +377,10 @@ class InquilinoPagoController extends Controller
         }
 
         $gastos = $query->get();
+        $pagoIds = [];
         foreach ($gastos as $gasto) {
             DB::table('tbl_gasto_cuota_detalle')->where('id_gasto_cuota_detalle', $gasto->id_gasto_cuota_detalle)->update(['estado_detalle' => 'pagado']);
-            Pago::create([
+            $pago = Pago::create([
                 'id_pagador_fk' => $idUsuario,
                 'id_alquiler_fk' => $idAlquiler,
                 'id_gasto_cuota_detalle_fk' => $gasto->id_gasto_cuota_detalle,
@@ -386,7 +391,9 @@ class InquilinoPagoController extends Controller
                 'referencia_pago' => $session->payment_intent,
                 'fecha_confirmacion_pago' => now(),
             ]);
+            $pagoIds[] = $pago->id_pago;
         }
+        return $pagoIds;
     }
 
     private function generarFacturaPDF($idPago, $items = null)

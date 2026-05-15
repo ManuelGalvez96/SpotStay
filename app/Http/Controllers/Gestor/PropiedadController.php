@@ -1189,8 +1189,8 @@ class PropiedadController extends Controller
                     'tbl_gasto.ambito_gasto',
                     'tbl_gasto.id_alquiler_fk'
                 )
-                ->orderBy('tbl_gasto_cuota.mes_cuota', 'desc')
-                ->orderBy('tbl_gasto_cuota.vencimiento_cuota', 'asc')
+                ->orderByRaw("CASE WHEN tbl_gasto_cuota.estado_cuota = 'pagado' THEN 1 ELSE 0 END")
+                ->orderBy('tbl_gasto_cuota.id_gasto_cuota', 'desc')
                 ->limit(24)
                 ->get();
 
@@ -1369,6 +1369,100 @@ class PropiedadController extends Controller
                     ]);
             });
         }
+    }
+
+    public function filtrarGastos(Request $request, int $id)
+    {
+        $gestor = Auth::user();
+        $gestorId = (int) ($gestor?->id_usuario ?? 0);
+
+        $propiedad = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->where('id_gestor_fk', $gestorId)
+            ->exists();
+
+        if (!$propiedad) {
+            return response()->json(['success' => false, 'message' => 'Propiedad no encontrada.'], 404);
+        }
+
+        $permisos = $this->getPermisosPropiedad($gestorId, $id);
+        if (!$permisos->gastos) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para gestionar gastos en esta propiedad.'], 403);
+        }
+
+        $categoria = (string) $request->query('categoria', '');
+        $estado = (string) $request->query('estado', '');
+        $concepto = trim((string) $request->query('concepto', ''));
+        $mesDesde = (string) $request->query('mes_desde', '');
+        $mesHasta = (string) $request->query('mes_hasta', '');
+
+        $query = DB::table('tbl_gasto_cuota')
+            ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+            ->where('tbl_gasto.id_propiedad_fk', $id)
+            ->select(
+                'tbl_gasto_cuota.id_gasto_cuota',
+                'tbl_gasto_cuota.id_gasto_fk',
+                'tbl_gasto_cuota.mes_cuota',
+                'tbl_gasto_cuota.vencimiento_cuota',
+                'tbl_gasto_cuota.importe_total_cuota',
+                'tbl_gasto_cuota.estado_cuota',
+                'tbl_gasto_cuota.pagado_cuota',
+                'tbl_gasto.concepto_gasto',
+                'tbl_gasto.categoria_gasto',
+                'tbl_gasto.pagador_gasto',
+                'tbl_gasto.ambito_gasto',
+                'tbl_gasto.id_alquiler_fk'
+            );
+
+        if ($categoria !== '') {
+            $query->where('tbl_gasto.categoria_gasto', $categoria);
+        }
+
+        if ($estado !== '') {
+            $query->where('tbl_gasto_cuota.estado_cuota', $estado);
+        }
+
+        if ($concepto !== '') {
+            $query->where('tbl_gasto.concepto_gasto', 'like', '%' . $concepto . '%');
+        }
+
+        if ($mesDesde !== '') {
+            $query->where('tbl_gasto_cuota.mes_cuota', '>=', $mesDesde . '-01');
+        }
+
+        if ($mesHasta !== '') {
+            $query->where('tbl_gasto_cuota.mes_cuota', '<=', $mesHasta . '-01');
+        }
+
+        $cuotas = $query
+            ->orderByRaw("CASE WHEN tbl_gasto_cuota.estado_cuota = 'pagado' THEN 1 ELSE 0 END")
+            ->orderBy('tbl_gasto_cuota.id_gasto_cuota', 'desc')
+            ->get();
+
+        $cuotaIds = $cuotas->pluck('id_gasto_cuota')->all();
+        $detalles = collect();
+
+        if (!empty($cuotaIds)) {
+            $detalles = DB::table('tbl_gasto_cuota_detalle')
+                ->join('tbl_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_gasto_cuota_detalle.id_pagador_fk')
+                ->whereIn('tbl_gasto_cuota_detalle.id_gasto_cuota_fk', $cuotaIds)
+                ->select(
+                    'tbl_gasto_cuota_detalle.id_gasto_cuota_detalle',
+                    'tbl_gasto_cuota_detalle.id_gasto_cuota_fk',
+                    'tbl_gasto_cuota_detalle.id_pagador_fk',
+                    'tbl_gasto_cuota_detalle.importe_detalle',
+                    'tbl_gasto_cuota_detalle.estado_detalle',
+                    'tbl_gasto_cuota_detalle.pagado_detalle',
+                    'tbl_usuario.nombre_usuario'
+                )
+                ->get();
+        }
+
+        return response()->json([
+            'success' => true,
+            'cuotas' => $cuotas,
+            'detalles' => $detalles,
+        ]);
     }
 
     public function getDatosEdicion(int $id)

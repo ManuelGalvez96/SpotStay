@@ -20,7 +20,10 @@
 </div>
 
 <div class="card-admin card-gastos" id="gastos-propiedad">
-    <div class="card-header-admin"><span>Gestión completa de gastos</span></div>
+    <div class="card-header-admin card-header-acciones">
+        <span>Gestión completa de gastos</span>
+        <button type="button" class="btn-nuevo-recibo" onclick="abrirModalNuevoGasto()">+ Añadir recibo</button>
+    </div>
 
     @if(session('success'))
         <div class="mensaje-estado mensaje-ok" data-flash-success="{{ session('success') }}">{{ session('success') }}</div>
@@ -67,54 +70,31 @@
 
         <!-- Resumen visual mensual eliminado por petición del usuario -->
 
-        <form method="POST" action="{{ route('gestor.propiedades.gastos.store', ['id' => $propiedad->id_propiedad]) }}" class="form-gasto">
-            @csrf
-            <div class="fila-form-gasto">
-                <label>
-                    Categoría
-                    <select name="categoria_gasto" required>
-                        <option value="" disabled {{ old('categoria_gasto') ? '' : 'selected' }}>Selecciona una categoría</option>
-                        <option value="luz" {{ old('categoria_gasto') === 'luz' ? 'selected' : '' }}>Luz</option>
-                        <option value="agua" {{ old('categoria_gasto') === 'agua' ? 'selected' : '' }}>Agua</option>
-                        <option value="gas" {{ old('categoria_gasto') === 'gas' ? 'selected' : '' }}>Gas</option>
-                        <option value="internet" {{ old('categoria_gasto') === 'internet' ? 'selected' : '' }}>Internet</option>
-                        <option value="comunidad" {{ old('categoria_gasto') === 'comunidad' ? 'selected' : '' }}>Comunidad</option>
-                        <option value="otros" {{ old('categoria_gasto') === 'otros' ? 'selected' : '' }}>Otros</option>
-                    </select>
-                </label>
-                <label>
-                    Concepto (opcional)
-                    <input type="text" name="concepto_gasto" value="{{ old('concepto_gasto') }}" maxlength="200" placeholder="Ej: recibo de electricidad" />
-                </label>
-                <label>
-                    Importe
-                    <input type="number" step="0.01" min="0.01" name="importe_estimado" value="{{ old('importe_estimado') }}" required placeholder="Importe del recibo" />
-                </label>
+        <div class="card-admin card-con-franja" id="gastosFiltrosCard">
+            <div class="card-franja"></div>
+            <div class="card-header-admin card-header-gradient"><span>Filtros</span></div>
+            <div class="gastos-filtros-form" id="gastosFiltrosForm" data-propiedad-id="{{ $propiedad->id_propiedad }}" data-ruta-gastos-filtrar="{{ route('gestor.propiedades.gastos.filtrar', ['id' => $propiedad->id_propiedad]) }}">
+                <select name="categoria" data-filtro-gasto>
+                    <option value="">Todas las categorías</option>
+                    <option value="luz">Luz</option>
+                    <option value="agua">Agua</option>
+                    <option value="gas">Gas</option>
+                    <option value="internet">Internet</option>
+                    <option value="comunidad">Comunidad</option>
+                    <option value="otros">Otros</option>
+                </select>
+                <select name="estado" data-filtro-gasto>
+                    <option value="">Todos los estados</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="pagado">Pagado</option>
+                    <option value="atrasado">Atrasado</option>
+                    <option value="parcial">Parcial</option>
+                </select>
+                <input type="month" name="mes_desde" data-filtro-gasto>
+                <input type="month" name="mes_hasta" data-filtro-gasto>
+                <input type="text" name="concepto" data-filtro-gasto placeholder="Buscar concepto">
             </div>
-
-            <div class="fila-form-gasto">
-                <label>
-                    Fecha inicio
-                    <input type="date" name="fecha_inicio_gasto" value="{{ old('fecha_inicio_gasto', now()->startOfMonth()->toDateString()) }}" required />
-                </label>
-                <label>
-                    Fecha fin
-                    <input type="date" name="fecha_fin_gasto" value="{{ old('fecha_fin_gasto', now()->endOfMonth()->toDateString()) }}" required />
-                </label>
-            </div>
-
-            @if($errors->any())
-                <div class="mensaje-estado mensaje-error">
-                    {{ $errors->first() }}
-                </div>
-            @endif
-
-            <div class="acciones-form-gasto">
-                        <button type="submit" class="btn-principal">Añadir recibo</button>
-            </div>
-        </form>
-
-        <!-- Se elimina la sección "Recibos creados" — los gastos se editan inline en la tabla de abajo -->
+        </div>
 
         <table class="tabla-admin tabla-gastos">
             <thead>
@@ -128,7 +108,7 @@
                     <th>DETALLE DE PAGO</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="gastosTableBody">
                 @forelse($cuotasGasto as $cuota)
                     @php
                         $esAtrasado = in_array($cuota->estado_cuota, ['pendiente', 'parcial', 'atrasado'], true)
@@ -192,12 +172,67 @@
                 @endforelse
             </tbody>
         </table>
+    <div id="modal-nuevo-gasto" class="modal">
+    <div class="modal-backdrop" onclick="cerrarModalNuevoGasto()"></div>
+    <div class="modal-content modal-formulario">
+        <div class="modal-header">
+            <h2>Nuevo recibo</h2>
+            <button class="modal-close" type="button" onclick="cerrarModalNuevoGasto()">✕</button>
+        </div>
+        <div class="modal-body">
+            <form method="POST" action="{{ route('gestor.propiedades.gastos.store', ['id' => $propiedad->id_propiedad]) }}" class="property-form" data-ajax-nuevo-gasto="true">
+                @csrf
+                <div class="form-grid">
+                    <div class="form-section">
+                        <h3>Datos del recibo</h3>
+                        <div class="form-subsection">
+                            <label>
+                                <span>Categoría</span>
+                                <select name="categoria_gasto" required>
+                                    <option value="" disabled selected>Selecciona una categoría</option>
+                                    <option value="luz">Luz</option>
+                                    <option value="agua">Agua</option>
+                                    <option value="gas">Gas</option>
+                                    <option value="internet">Internet</option>
+                                    <option value="comunidad">Comunidad</option>
+                                    <option value="otros">Otros</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Concepto (opcional)</span>
+                                <input type="text" name="concepto_gasto" maxlength="200" placeholder="Ej: recibo de electricidad">
+                            </label>
+                            <label>
+                                <span>Importe (€)</span>
+                                <input type="number" step="0.01" min="0.01" name="importe_estimado" required placeholder="0.00">
+                            </label>
+                            <label>
+                                <span>Fecha inicio</span>
+                                <input type="date" name="fecha_inicio_gasto" value="{{ now()->startOfMonth()->toDateString() }}" required>
+                            </label>
+                            <label>
+                                <span>Fecha fin</span>
+                                <input type="date" name="fecha_fin_gasto" value="{{ now()->endOfMonth()->toDateString() }}" required>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mensaje-estado mensaje-error mensaje-error-js" style="display:none;"></div>
+
+                <button class="btn-primary" type="submit">Añadir recibo</button>
+            </form>
+        </div>
+    </div>
+</div>
     @endif
 </div>
+
 @endsection
 
     @section('scripts')
-    <script src="{{ asset('js/gestor/gastos-validate.js') }}"></script>
+    <script src="{{ asset('js/gestor/gasto-modal.js') }}"></script>
+    <script src="{{ asset('js/gestor/gastos-filtros.js') }}"></script>
     <script src="{{ asset('js/gestor/recibos-inline.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {

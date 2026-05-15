@@ -258,31 +258,27 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
     Route::get('/miembro/mapa/propiedades', [MapaController::class, 'propiedades'])->name('miembro.mapa.propiedades');
 });
 
-// Ruta temporal para ejecutar migraciones y seeders de forma segura desde el navegador
-Route::get('/ejecutar-migraciones-seguras', function () {
+// Utilidades de mantenimiento (protegidas por autenticación y rol admin)
+Route::get('/admin/ejecutar-migraciones', function () {
     try {
         \Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
             '--force' => true,
             '--seed' => true
         ]);
-
-        return view('inicio'); // Redirige a la página principal tras el éxito
+        return redirect('/admin/dashboard')->with('success', 'Migraciones y seeders ejecutados correctamente.');
     } catch (\Exception $e) {
-        return "Error: " . $e->getMessage();
+        return redirect('/admin/dashboard')->with('error', 'Error: ' . $e->getMessage());
     }
-});
+})->name('admin.ejecutar_migraciones');
 
-// Limpiar cachés de Laravel (config, route, view, cache)
-Route::get('/limpiar-cache', function () {
+Route::get('/admin/limpiar-cache', function () {
     try {
         \Illuminate\Support\Facades\Artisan::call('config:clear');
         \Illuminate\Support\Facades\Artisan::call('route:clear');
         \Illuminate\Support\Facades\Artisan::call('view:clear');
         \Illuminate\Support\Facades\Artisan::call('cache:clear');
-        return view('login');
+        return redirect('/admin/dashboard')->with('success', 'Cachés limpiadas correctamente.');
     } catch (\Exception $e) {
-        return "Error al limpiar cachés: " . $e->getMessage();
+        return redirect('/admin/dashboard')->with('error', 'Error al limpiar cachés: ' . $e->getMessage());
     }
-});
-
-
+})->name('admin.limpiar_cache');

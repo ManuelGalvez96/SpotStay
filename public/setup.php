@@ -9,11 +9,20 @@ ini_set('display_errors', 1);
 
 function obtenerRutaLaravelBase(): string
 {
+    $documentRoot = $_SERVER['DOCUMENT_ROOT'] ?? '';
+    $directorioScript = __DIR__;
+
     $candidatos = [
         dirname(__DIR__),
         dirname(__DIR__) . '/laravel',
-        dirname(__FILE__) . '/..',
-        dirname(__FILE__) . '/../laravel',
+        dirname(__DIR__) . '/public/..',
+        $directorioScript,
+        $directorioScript . '/..',
+        $directorioScript . '/../laravel',
+        $documentRoot,
+        $documentRoot . '/laravel',
+        dirname($documentRoot),
+        dirname($documentRoot) . '/laravel',
     ];
 
     $candidatos = array_values(array_unique(array_map('realpath', array_filter($candidatos))));
@@ -33,6 +42,11 @@ function obtenerRutaEnv(string $basePath): ?string
         $basePath . '/.env',
         $basePath . '/laravel/.env',
         dirname($basePath) . '/laravel/.env',
+        dirname($basePath) . '/.env',
+        (__DIR__) . '/.env',
+        (__DIR__) . '/../laravel/.env',
+        ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/.env',
+        ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/laravel/.env',
     ];
 
     foreach ($candidatos as $candidato) {
@@ -197,6 +211,7 @@ echo "<!DOCTYPE html>
 
 // Sección 1: DIAGNÓSTICO
 echo "<h2>📋 Diagnóstico del Sistema</h2>";
+echo "<div class='status ok'><span class='icon'>ℹ️</span><span><strong>Ruta Laravel detectada:</strong> " . htmlspecialchars($basePath, ENT_QUOTES, 'UTF-8') . "</span></div>";
 
 // 1.1 Verificar archivo .env
 $envExists = $envPath !== null;

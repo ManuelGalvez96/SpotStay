@@ -333,7 +333,7 @@ class InquilinoPagoController extends Controller
 
                 $this->generarFacturaPDF($pago->id_pago);
             } elseif ($meta->tipo_pago === 'gasto') {
-                $this->procesarPagoGastos($meta->id_alquiler, $meta->id_usuario, $session);
+                $this->procesarPagoGastos($meta->id_alquiler, $meta->id_usuario, $session, $meta->id_referencia);
             } elseif ($meta->tipo_pago === 'incidencia') {
                 DB::table('tbl_incidencia')->where('id_incidencia', $meta->id_referencia)->update(['estado_workflow' => 'pagado']);
                 Pago::create([
@@ -358,16 +358,21 @@ class InquilinoPagoController extends Controller
         }
     }
 
-    private function procesarPagoGastos($idAlquiler, $idUsuario, $session)
+    private function procesarPagoGastos($idAlquiler, $idUsuario, $session, $idDetalle = null)
     {
-        $gastos = DB::table('tbl_gasto_cuota_detalle')
+        $query = DB::table('tbl_gasto_cuota_detalle')
             ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
             ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
             ->where('tbl_gasto_cuota_detalle.id_alquiler_fk', $idAlquiler)
             ->where('tbl_gasto_cuota_detalle.id_pagador_fk', $idUsuario)
             ->whereIn('tbl_gasto_cuota_detalle.estado_detalle', ['pendiente', 'atrasado'])
-            ->select('tbl_gasto_cuota_detalle.*', 'tbl_gasto.concepto_gasto')
-            ->get();
+            ->select('tbl_gasto_cuota_detalle.*', 'tbl_gasto.concepto_gasto');
+
+        if ($idDetalle) {
+            $query->where('tbl_gasto_cuota_detalle.id_gasto_cuota_detalle', $idDetalle);
+        }
+
+        $gastos = $query->get();
         foreach ($gastos as $gasto) {
             DB::table('tbl_gasto_cuota_detalle')->where('id_gasto_cuota_detalle', $gasto->id_gasto_cuota_detalle)->update(['estado_detalle' => 'pagado']);
             Pago::create([

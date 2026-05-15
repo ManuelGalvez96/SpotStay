@@ -46,6 +46,16 @@ class InquilinoPagoController extends Controller
                 $resumen = $this->financeService->obtenerResumenPagoAlquiler($idAlquiler);
                 $monto = ($resumen['total_deuda'] > 0) ? $resumen['total_deuda'] : $cuota->importe_base;
                 $descripcion = "Mensualidad de alquiler";
+
+                // Dividir entre compañeros de piso
+                $idPropiedadAlquiler = DB::table('tbl_alquiler')->where('id_alquiler', $idAlquiler)->value('id_propiedad_fk');
+                $numInquilinos = max(1, DB::table('tbl_alquiler')
+                    ->where('id_propiedad_fk', $idPropiedadAlquiler)
+                    ->where('estado_alquiler', 'activo')
+                    ->count());
+                if ($numInquilinos > 1) {
+                    $monto /= $numInquilinos;
+                }
             } elseif ($tipoPago === 'gasto') {
                 $detalle = DB::table('tbl_gasto_cuota_detalle')
                     ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')

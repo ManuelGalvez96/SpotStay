@@ -361,6 +361,167 @@ Route::get('/limpiar-cache', function () {
     die;
 });
 
+Route::get('/setup', function () {
+    $styles = "
+    <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #f5f5f5;
+        padding: 20px;
+        color: #333;
+    }
+    .container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 30px;
+    }
+    h1 { color: #00c4cc; margin-bottom: 10px; font-size: 28px; }
+    h2 { color: #333; margin-top: 25px; margin-bottom: 15px; border-bottom: 2px solid #00c4cc; padding-bottom: 10px; }
+    .status { 
+        display: flex; 
+        align-items: center;
+        padding: 12px 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+        border-left: 4px solid #ccc;
+    }
+    .status.ok { 
+        background: #e8f5e9;
+        border-left-color: #4caf50;
+        color: #2e7d32;
+    }
+    .status.error { 
+        background: #ffebee;
+        border-left-color: #f44336;
+        color: #c62828;
+    }
+    .status.warning { 
+        background: #fff3e0;
+        border-left-color: #ff9800;
+        color: #e65100;
+    }
+    .icon { font-size: 20px; margin-right: 10px; }
+    code { 
+        background: #f4f4f4;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: 'Courier New', monospace;
+    }
+    button {
+        background: #00c4cc;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        margin: 8px 8px 8px 0;
+        transition: background 0.3s;
+    }
+    button:hover { background: #00a8b8; }
+    button.warning { background: #ff9800; }
+    button.warning:hover { background: #f57c00; }
+    .credentials {
+        background: #e8f5e9;
+        padding: 15px;
+        border-radius: 5px;
+        border-left: 4px solid #4caf50;
+        margin: 15px 0;
+    }
+    .action-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 20px 0;
+    }
+    </style>
+    ";
+    
+    echo "<!DOCTYPE html><html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Setup SpotStay</title>$styles</head><body><div class='container'>";
+    echo "<h1>🔧 Setup SpotStay</h1>";
+    echo "<p>Actualización: " . date('Y-m-d H:i:s') . "</p>";
+    
+    // Diagnóstico
+    echo "<h2>📋 Diagnóstico</h2>";
+    echo "<div class='status ok'><span class='icon'>ℹ️</span><span><strong>PHP:</strong> " . phpversion() . "</span></div>";
+    
+    $envExists = file_exists(base_path('.env'));
+    echo "<div class='status " . ($envExists ? 'ok' : 'error') . "'>";
+    echo "<span class='icon'>" . ($envExists ? '✓' : '✗') . "</span>";
+    echo "<span>.env: " . ($envExists ? "existe" : "NO EXISTE") . "</span></div>";
+    
+    // Intentar conexión BD
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        echo "<div class='status ok'><span class='icon'>✓</span><span>Conexión BD: OK</span></div>";
+        
+        $tables = \Illuminate\Support\Facades\DB::select('SHOW TABLES');
+        $tableCount = count($tables);
+        echo "<div class='status " . ($tableCount > 0 ? 'ok' : 'warning') . "'>";
+        echo "<span class='icon'>" . ($tableCount > 0 ? '✓' : '⚠️') . "</span>";
+        echo "<span>Tablas: $tableCount</span></div>";
+        
+        // Acciones
+        echo "<h2>⚙️ Acciones</h2>";
+        
+        if (isset($_GET['action'])) {
+            if ($_GET['action'] === 'clear-cache') {
+                \Illuminate\Support\Facades\Artisan::call('config:clear');
+                \Illuminate\Support\Facades\Artisan::call('cache:clear');
+                echo "<div class='status ok'><span class='icon'>✓</span><span>Caché limpiada</span></div>";
+            }
+            
+            if ($_GET['action'] === 'migrate') {
+                echo "<pre style='background:#f4f4f4;padding:15px;margin:15px 0;border-radius:5px;max-height:400px;overflow:auto;'>";
+                \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--force' => true, '--seed' => true]);
+                echo \Illuminate\Support\Facades\Artisan::output();
+                echo "</pre>";
+            }
+            
+            if ($_GET['action'] === 'minimal') {
+                try {
+                    \Illuminate\Support\Facades\DB::table('tbl_usuarios')->delete();
+                    
+                    \Illuminate\Support\Facades\DB::table('tbl_usuarios')->insert([
+                        'nombre_usuario' => 'Admin',
+                        'apellido_usuario' => 'SpotStay',
+                        'email_usuario' => 'admin@spotsstay.local',
+                        'password_usuario' => \Illuminate\Support\Facades\Hash::make('admin123'),
+                        'telefono_usuario' => '666666666',
+                        'dni_usuario' => '12345678A',
+                        'rol_usuario' => 'admin',
+                        'estado_usuario' => 'activo',
+                        'creado_usuario' => now(),
+                        'actualizado_usuario' => now(),
+                    ]);
+                    
+                    echo "<div class='status ok'><span class='icon'>✓</span><span>Usuario admin creado</span></div>";
+                    echo "<div class='credentials'><strong>📧 Credenciales:</strong><br>Email: <code>admin@spotsstay.local</code><br>Contraseña: <code>admin123</code></div>";
+                } catch (\Exception $e) {
+                    echo "<div class='status error'><span class='icon'>✗</span><span>Error: " . $e->getMessage() . "</span></div>";
+                }
+            }
+        }
+        
+        echo "<div class='action-group'>";
+        echo "<button onclick=\"window.location.href='?action=clear-cache'\">🧹 Limpiar Caché</button>";
+        echo "<button class='warning' onclick=\"window.location.href='?action=migrate'\">🔄 Migraciones</button>";
+        echo "<button class='warning' onclick=\"window.location.href='?action=minimal'\">👤 Usuario Admin</button>";
+        echo "<button onclick=\"window.location.href='/login'\">🚀 Ir al Login</button>";
+        echo "</div>";
+        
+    } catch (\Exception $e) {
+        echo "<div class='status error'><span class='icon'>✗</span><span>BD: ERROR - " . $e->getMessage() . "</span></div>";
+    }
+    
+    echo "</div></body></html>";
+    die;
+});
+
 Route::get('/diagnostico', function () {
     echo "<h2>🔍 Diagnóstico del servidor</h2>";
     echo "<table border='1' cellpadding='8' cellspacing='0' style='border-collapse:collapse;'>";

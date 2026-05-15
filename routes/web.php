@@ -264,99 +264,87 @@ Route::get('/ejecutar-migraciones', function () {
     try {
         // Verificar conexión a BD
         \Illuminate\Support\Facades\DB::connection()->getPdo();
-        
+
         echo "<h2>⚙️ Ejecutando migraciones y seeders...</h2>";
-        
+
         \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--force' => true, '--seed' => true]);
         $output = \Illuminate\Support\Facades\Artisan::output();
-        
+
         echo "<pre style='background:#f4f4f4;padding:15px;border-radius:8px;max-height:500px;overflow:auto;font-size:12px;'>$output</pre>";
-        
+
         if (str_contains($output, 'Seeding') || str_contains($output, 'DONE') || str_contains($output, 'Migrated')) {
-    }
-    </style>
-    ";
-    
-    echo "<!DOCTYPE html><html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Setup SpotStay</title>$styles</head><body><div class='container'>";
-    echo "<h1>🔧 Setup SpotStay</h1>";
-    echo "<p>Actualización: " . date('Y-m-d H:i:s') . "</p>";
-    
-    // Diagnóstico
-    echo "<h2>📋 Diagnóstico</h2>";
-    echo "<div class='status ok'><span class='icon'>ℹ️</span><span><strong>PHP:</strong> " . phpversion() . "</span></div>";
-    
-    $envExists = file_exists(base_path('.env'));
-    echo "<div class='status " . ($envExists ? 'ok' : 'error') . "'>";
-    echo "<span class='icon'>" . ($envExists ? '✓' : '✗') . "</span>";
-    echo "<span>.env: " . ($envExists ? "existe" : "NO EXISTE") . "</span></div>";
-    
-    // Intentar conexión BD
-    try {
-        \Illuminate\Support\Facades\DB::connection()->getPdo();
-        echo "<div class='status ok'><span class='icon'>✓</span><span>Conexión BD: OK</span></div>";
-        
-        $tables = \Illuminate\Support\Facades\DB::select('SHOW TABLES');
-        $tableCount = count($tables);
-        echo "<div class='status " . ($tableCount > 0 ? 'ok' : 'warning') . "'>";
-        echo "<span class='icon'>" . ($tableCount > 0 ? '✓' : '⚠️') . "</span>";
-        echo "<span>Tablas: $tableCount</span></div>";
-        
-        // Acciones
-        echo "<h2>⚙️ Acciones</h2>";
-        
-        if (isset($_GET['action'])) {
-            if ($_GET['action'] === 'clear-cache') {
-                \Illuminate\Support\Facades\Artisan::call('config:clear');
-                \Illuminate\Support\Facades\Artisan::call('cache:clear');
-                echo "<div class='status ok'><span class='icon'>✓</span><span>Caché limpiada</span></div>";
-            }
-            
-            if ($_GET['action'] === 'migrate') {
-                echo "<pre style='background:#f4f4f4;padding:15px;margin:15px 0;border-radius:5px;max-height:400px;overflow:auto;'>";
-                \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--force' => true, '--seed' => true]);
-                echo \Illuminate\Support\Facades\Artisan::output();
-                echo "</pre>";
-            }
-            
-            if ($_GET['action'] === 'minimal') {
-                try {
-                    \Illuminate\Support\Facades\DB::table('tbl_usuarios')->delete();
-                    
-                    \Illuminate\Support\Facades\DB::table('tbl_usuarios')->insert([
-                        'nombre_usuario' => 'Admin',
-                        'apellido_usuario' => 'SpotStay',
-                        'email_usuario' => 'admin@spotsstay.local',
-                        'password_usuario' => \Illuminate\Support\Facades\Hash::make('admin123'),
-                        'telefono_usuario' => '666666666',
-                        'dni_usuario' => '12345678A',
-                        'rol_usuario' => 'admin',
-                        'estado_usuario' => 'activo',
-                        'creado_usuario' => now(),
-                        'actualizado_usuario' => now(),
-                    ]);
-                    
-                    echo "<div class='status ok'><span class='icon'>✓</span><span>Usuario admin creado</span></div>";
-                    echo "<div class='credentials'><strong>📧 Credenciales:</strong><br>Email: <code>admin@spotsstay.local</code><br>Contraseña: <code>admin123</code></div>";
-                } catch (\Exception $e) {
-                    echo "<div class='status error'><span class='icon'>✗</span><span>Error: " . $e->getMessage() . "</span></div>";
-                }
-            }
+            echo "<p style='color:green;font-weight:bold;font-size:18px;margin-top:20px;'>✓ Migraciones y seeders ejecutados correctamente.</p>";
+            echo "<a href='/login' style='display:inline-block;padding:12px 24px;background:#00c4cc;color:white;text-decoration:none;border-radius:8px;margin-top:10px;'>Ir al login</a>";
+            echo "&nbsp;<a href='/diagnostico' style='display:inline-block;padding:12px 24px;background:#666;color:white;text-decoration:none;border-radius:8px;margin-top:10px;'>Ver diagnóstico</a>";
+        } else {
+            echo "<p style='color:orange;font-weight:bold;'>⚠️ Proceso completado pero verifica el output arriba.</p>";
+            echo "<a href='/crear-datos-minimos' style='display:inline-block;padding:12px 24px;background:#ff9800;color:white;text-decoration:none;border-radius:8px;margin-top:10px;'>Ir a datos mínimos (alternativa)</a>";
         }
-        
-        echo "<div class='action-group'>";
-        echo "<button onclick=\"window.location.href='?action=clear-cache'\">🧹 Limpiar Caché</button>";
-        echo "<button class='warning' onclick=\"window.location.href='?action=migrate'\">🔄 Migraciones</button>";
-        echo "<button class='warning' onclick=\"window.location.href='?action=minimal'\">👤 Usuario Admin</button>";
-        echo "<button onclick=\"window.location.href='/login'\">🚀 Ir al Login</button>";
-        echo "</div>";
-        
-    } catch (\Exception $e) {
-        echo "<div class='status error'><span class='icon'>✗</span><span>BD: ERROR - " . $e->getMessage() . "</span></div>";
+    } catch (\Throwable $e) {
+        echo "<h2>❌ Error de conexión a BD</h2>";
+        echo "<p style='color:red;font-weight:bold;font-size:14px;'>" . $e->getMessage() . "</p>";
+        echo "<p style='color:#666;margin-top:10px;'><strong>Soluciones:</strong></p>";
+        echo "<ul style='color:#666;'>";
+        echo "<li>Verifica que MySQL está corriendo en tu servidor WAMP</li>";
+        echo "<li>Comprueba las credenciales en <code>.env</code></li>";
+        echo "<li>Usa la opción de datos mínimos para poder entrar:</li>";
+        echo "</ul>";
+        echo "<a href='/crear-datos-minimos' style='display:inline-block;padding:12px 24px;background:#ff5722;color:white;text-decoration:none;border-radius:8px;margin-top:10px;'>Crear datos mínimos (sin migraciones)</a>";
     }
-    
-    echo "</div></body></html>";
     die;
 });
+
+Route::get('/crear-datos-minimos', function () {
+    set_time_limit(60);
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+
+        echo "<h2>📋 Creando datos mínimos para acceso básico...</h2>";
+
+        // Verificar si ya existen tablas
+        $tablas = \Illuminate\Support\Facades\DB::select('SHOW TABLES');
+        $tieneTablas = !empty($tablas);
+
+        if (!$tieneTablas) {
+            echo "<p style='color:orange;'>⚠️ No hay tablas. Ejecutando migraciones primero...</p>";
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        }
+
+        // Limpiar datos existentes (opcional)
+        \Illuminate\Support\Facades\DB::table('tbl_usuarios')->truncate();
+
+        // Crear usuario admin
+        $adminId = \Illuminate\Support\Facades\DB::table('tbl_usuarios')->insertGetId([
+            'nombre_usuario' => 'Admin',
+            'apellido_usuario' => 'SpotStay',
+            'email_usuario' => 'admin@spotsstay.local',
+            'password_usuario' => \Illuminate\Support\Facades\Hash::make('admin123'),
+            'telefono_usuario' => '666666666',
+            'dni_usuario' => '12345678A',
+            'rol_usuario' => 'admin',
+            'estado_usuario' => 'activo',
+            'creado_usuario' => now(),
+            'actualizado_usuario' => now(),
+        ]);
+
+        echo "<p style='color:green;'>✓ Usuario admin creado</p>";
+        echo "<div style='background:#e8f5e9;padding:15px;border-radius:8px;margin:15px 0;border-left:4px solid green;'>";
+        echo "<strong>📧 Credenciales de acceso:</strong><br>";
+        echo "Email: <code>admin@spotsstay.local</code><br>";
+        echo "Contraseña: <code>admin123</code>";
+        echo "</div>";
+
+        echo "<a href='/login' style='display:inline-block;padding:12px 24px;background:#00c4cc;color:white;text-decoration:none;border-radius:8px;margin-top:10px;'>Ir al login</a>";
+        echo "&nbsp;<a href='/ejecutar-migraciones' style='display:inline-block;padding:12px 24px;background:#4caf50;color:white;text-decoration:none;border-radius:8px;margin-top:10px;'>Ejecutar migraciones completas</a>";
+    } catch (\Throwable $e) {
+        echo "<h2>❌ Error al crear datos mínimos</h2>";
+        echo "<p style='color:red;font-weight:bold;'>" . $e->getMessage() . "</p>";
+        echo "<p style='color:#666;margin-top:20px;'><strong>Solución manual:</strong> Ejecuta el SQL en phpMyAdmin.</p>";
+        echo "<a href='/diagnostico' style='display:inline-block;padding:12px 24px;background:#ff9800;color:white;text-decoration:none;border-radius:8px;margin-top:10px;'>Ver diagnóstico</a>";
+    }
+    die;
+});
+
 
 Route::get('/diagnostico', function () {
     echo "<h2>🔍 Diagnóstico del servidor</h2>";

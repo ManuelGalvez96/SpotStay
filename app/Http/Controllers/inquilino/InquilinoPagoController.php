@@ -319,12 +319,27 @@ class InquilinoPagoController extends Controller
                     AlquilerCuota::where('id_alquiler_cuota', $meta->id_referencia)->update(['estado' => 'pagado', 'pagado_en' => $ahora]);
                 }
 
+                $cuotasPagadas = AlquilerCuota::where('id_alquiler_fk', $meta->id_alquiler)
+                    ->where('pagado_en', $ahora)
+                    ->orderBy('mes_cuota', 'asc')
+                    ->get();
+                $conceptoAlquiler = 'Cuota alquiler';
+                if ($cuotasPagadas->count() === 1) {
+                    $conceptoAlquiler = 'Alquiler ' . Carbon::parse($cuotasPagadas->first()->mes_cuota)->translatedFormat('F Y');
+                } elseif ($cuotasPagadas->count() > 1) {
+                    $primerMes = Carbon::parse($cuotasPagadas->first()->mes_cuota)->translatedFormat('F Y');
+                    $ultimoMes = Carbon::parse($cuotasPagadas->last()->mes_cuota)->translatedFormat('F Y');
+                    $conceptoAlquiler = $primerMes === $ultimoMes
+                        ? 'Alquiler ' . $primerMes
+                        : "Alquiler $primerMes - $ultimoMes";
+                }
+
                 $pago = Pago::create([
                     'id_pagador_fk' => $meta->id_usuario,
                     'id_alquiler_fk' => $meta->id_alquiler,
                     'id_alquiler_cuota_fk' => $meta->id_referencia,
                     'tipo_pago' => 'alquiler',
-                    'concepto_pago' => ($meta->pago_total === '1') ? 'Liquidación de deuda' : 'Cuota alquiler',
+                    'concepto_pago' => $conceptoAlquiler,
                     'importe_pago' => $session->amount_total / 100,
                     'estado_pago' => 'pagado',
                     'referencia_pago' => $session->payment_intent,

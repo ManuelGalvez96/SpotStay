@@ -360,7 +360,14 @@ class InquilinoPagoController extends Controller
 
     private function procesarPagoGastos($idAlquiler, $idUsuario, $session)
     {
-        $gastos = DB::table('tbl_gasto_cuota_detalle')->where('id_alquiler_fk', $idAlquiler)->where('id_pagador_fk', $idUsuario)->whereIn('estado_detalle', ['pendiente', 'atrasado'])->get();
+        $gastos = DB::table('tbl_gasto_cuota_detalle')
+            ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
+            ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+            ->where('tbl_gasto_cuota_detalle.id_alquiler_fk', $idAlquiler)
+            ->where('tbl_gasto_cuota_detalle.id_pagador_fk', $idUsuario)
+            ->whereIn('tbl_gasto_cuota_detalle.estado_detalle', ['pendiente', 'atrasado'])
+            ->select('tbl_gasto_cuota_detalle.*', 'tbl_gasto.concepto_gasto')
+            ->get();
         foreach ($gastos as $gasto) {
             DB::table('tbl_gasto_cuota_detalle')->where('id_gasto_cuota_detalle', $gasto->id_gasto_cuota_detalle)->update(['estado_detalle' => 'pagado']);
             Pago::create([
@@ -368,6 +375,7 @@ class InquilinoPagoController extends Controller
                 'id_alquiler_fk' => $idAlquiler,
                 'id_gasto_cuota_detalle_fk' => $gasto->id_gasto_cuota_detalle,
                 'tipo_pago' => 'gasto',
+                'concepto_pago' => $gasto->concepto_gasto ?? 'Gasto de suministro',
                 'importe_pago' => $gasto->importe_detalle,
                 'estado_pago' => 'pagado',
                 'referencia_pago' => $session->payment_intent,

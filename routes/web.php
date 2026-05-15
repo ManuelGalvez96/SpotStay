@@ -260,27 +260,131 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
 
 // Utilidades de mantenimiento (rutas públicas para poder usarlas incluso con BD vacía)
 Route::get('/ejecutar-migraciones', function () {
+    set_time_limit(120);
     try {
+        // Verificar conexión a BD
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        
+        echo "<h2>⚙️ Ejecutando migraciones y seeders...</h2>";
+        
         \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--force' => true, '--seed' => true]);
-        echo "<pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
-        echo "<p style='color:green;font-weight:bold;'>✓ Migraciones y seeders ejecutados.</p>";
-        echo "<a href='/login'>Ir al login</a>";
-    } catch (\Exception $e) {
-        echo "<p style='color:red;font-weight:bold;'>Error: " . $e->getMessage() . "</p>";
+        $output = \Illuminate\Support\Facades\Artisan::output();
+        
+        echo "<pre style='background:#f4f4f4;padding:15px;border-radius:8px;max-height:500px;overflow:auto;font-size:12px;'>$output</pre>";
+        
+        if (str_contains($output, 'Seeding') || str_contains($output, 'DONE') || str_contains($output, 'Migrated')) {
+            echo "<p style='color:green;font-weight:bold;font-size:18px;margin-top:20px;'>✓ Migraciones y seeders ejecutados correctamente.</p>";
+            echo "<a href='/login' style='display:inline-block;padding:12px 24px;background:#00c4cc;color:white;text-decoration:none;border-radius:8px;margin-top:10px;'>Ir al login</a>";
+            echo "&nbsp;<a href='/diagnostico' style='display:inline-block;padding:12px 24px;background:#666;color:white;text-decoration:none;border-radius:8px;margin-top:10px;'>Ver diagnóstico</a>";
+        } else {
+            echo "<p style='color:orange;font-weight:bold;'>⚠️ Proceso completado pero verifica el output arriba.</p>";
+            echo "<a href='/crear-datos-minimos' style='display:inline-block;padding:12px 24px;background:#ff9800;color:white;text-decoration:none;border-radius:8px;margin-top:10px;'>Ir a datos mínimos (alternativa)</a>";
+        }
+    } catch (\Throwable $e) {
+        echo "<h2>❌ Error de conexión a BD</h2>";
+        echo "<p style='color:red;font-weight:bold;font-size:14px;'>" . $e->getMessage() . "</p>";
+        echo "<p style='color:#666;margin-top:10px;'><strong>Soluciones:</strong></p>";
+        echo "<ul style='color:#666;'>";
+        echo "<li>Verifica que MySQL está corriendo en tu servidor WAMP</li>";
+        echo "<li>Comprueba las credenciales en <code>.env</code></li>";
+        echo "<li>Usa la opción de datos mínimos para poder entrar:</li>";
+        echo "</ul>";
+        echo "<a href='/crear-datos-minimos' style='display:inline-block;padding:12px 24px;background:#ff5722;color:white;text-decoration:none;border-radius:8px;margin-top:10px;'>Crear datos mínimos (sin migraciones)</a>";
+    }
+    die;
+});
+
+Route::get('/crear-datos-minimos', function () {
+    set_time_limit(60);
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        
+        echo "<h2>📋 Creando datos mínimos para acceso básico...</h2>";
+        
+        // Verificar si ya existen tablas
+        $tablas = \Illuminate\Support\Facades\DB::select('SHOW TABLES');
+        $tieneTablas = !empty($tablas);
+        
+        if (!$tieneTablas) {
+            echo "<p style='color:orange;'>⚠️ No hay tablas. Ejecutando migraciones primero...</p>";
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        }
+        
+        // Limpiar datos existentes (opcional)
+        \Illuminate\Support\Facades\DB::table('tbl_usuarios')->truncate();
+        
+        // Crear usuario admin
+        $adminId = \Illuminate\Support\Facades\DB::table('tbl_usuarios')->insertGetId([
+            'nombre_usuario' => 'Admin',
+            'apellido_usuario' => 'SpotStay',
+            'email_usuario' => 'admin@spotsstay.local',
+            'password_usuario' => \Illuminate\Support\Facades\Hash::make('admin123'),
+            'telefono_usuario' => '666666666',
+            'dni_usuario' => '12345678A',
+            'rol_usuario' => 'admin',
+            'estado_usuario' => 'activo',
+            'creado_usuario' => now(),
+            'actualizado_usuario' => now(),
+        ]);
+        
+        echo "<p style='color:green;'>✓ Usuario admin creado</p>";
+        echo "<div style='background:#e8f5e9;padding:15px;border-radius:8px;margin:15px 0;border-left:4px solid green;'>";
+        echo "<strong>📧 Credenciales de acceso:</strong><br>";
+        echo "Email: <code>admin@spotsstay.local</code><br>";
+        echo "Contraseña: <code>admin123</code>";
+        echo "</div>";
+        
+        echo "<a href='/login' style='display:inline-block;padding:12px 24px;background:#00c4cc;color:white;text-decoration:none;border-radius:8px;margin-top:10px;'>Ir al login</a>";
+        echo "&nbsp;<a href='/ejecutar-migraciones' style='display:inline-block;padding:12px 24px;background:#4caf50;color:white;text-decoration:none;border-radius:8px;margin-top:10px;'>Ejecutar migraciones completas</a>";
+        
+    } catch (\Throwable $e) {
+        echo "<h2>❌ Error al crear datos mínimos</h2>";
+        echo "<p style='color:red;font-weight:bold;'>" . $e->getMessage() . "</p>";
+        echo "<p style='color:#666;margin-top:20px;'><strong>Solución manual:</strong> Ejecuta el SQL en phpMyAdmin.</p>";
+        echo "<a href='/diagnostico' style='display:inline-block;padding:12px 24px;background:#ff9800;color:white;text-decoration:none;border-radius:8px;margin-top:10px;'>Ver diagnóstico</a>";
     }
     die;
 });
 
 Route::get('/limpiar-cache', function () {
+    set_time_limit(60);
     try {
         \Illuminate\Support\Facades\Artisan::call('config:clear');
         \Illuminate\Support\Facades\Artisan::call('route:clear');
         \Illuminate\Support\Facades\Artisan::call('view:clear');
         \Illuminate\Support\Facades\Artisan::call('cache:clear');
-        echo "<p style='color:green;font-weight:bold;'>✓ Cachés limpiadas.</p>";
-        echo "<a href='/login'>Ir al login</a>";
-    } catch (\Exception $e) {
+        echo "<p style='color:green;font-weight:bold;font-size:18px;'>✓ Cachés limpiadas correctamente.</p>";
+        echo "<a href='/login' style='display:inline-block;padding:12px 24px;background:#00c4cc;color:white;text-decoration:none;border-radius:8px;'>Ir al login</a>";
+    } catch (\Throwable $e) {
         echo "<p style='color:red;font-weight:bold;'>Error: " . $e->getMessage() . "</p>";
     }
+    die;
+});
+
+Route::get('/diagnostico', function () {
+    echo "<h2>🔍 Diagnóstico del servidor</h2>";
+    echo "<table border='1' cellpadding='8' cellspacing='0' style='border-collapse:collapse;'>";
+    echo "<tr><td>PHP Version</td><td>" . phpversion() . "</td></tr>";
+    echo "<tr><td>PDO MySQL</td><td>" . (extension_loaded('pdo_mysql') ? '✓ OK' : '✗ NO DISPONIBLE') . "</td></tr>";
+    echo "<tr><td>MySQLi</td><td>" . (extension_loaded('mysqli') ? '✓ OK' : '✗ NO DISPONIBLE') . "</td></tr>";
+    echo "<tr><td>vendor/autoload.php</td><td>" . (file_exists(base_path('vendor/autoload.php')) ? '✓ Existe' : '✗ NO EXISTE - Ejecutar composer install') . "</td></tr>";
+    echo "<tr><td>.env</td><td>" . (file_exists(base_path('.env')) ? '✓ Existe' : '✗ NO EXISTE') . "</td></tr>";
+    echo "<tr><td>APP_KEY</td><td>" . (env('APP_KEY') ? '✓ Configurada' : '✗ NO CONFIGURADA - php artisan key:generate') . "</td></tr>";
+    echo "<tr><td>APP_ENV</td><td>" . env('APP_ENV', 'no definido') . "</td></tr>";
+    echo "<tr><td>APP_DEBUG</td><td>" . (env('APP_DEBUG') ? 'true' : 'false') . "</td></tr>";
+    echo "<tr><td>DB_CONNECTION</td><td>" . env('DB_CONNECTION', 'no definido') . "</td></tr>";
+    echo "<tr><td>DB_HOST</td><td>" . env('DB_HOST', 'no definido') . "</td></tr>";
+    echo "<tr><td>DB_DATABASE</td><td>" . env('DB_DATABASE', 'no definido') . "</td></tr>";
+    echo "<tr><td>Storage escribible</td><td>" . (is_writable(storage_path()) ? '✓ OK' : '✗ NO - chmod -R 775 storage/') . "</td></tr>";
+    echo "<tr><td>Cache escribible</td><td>" . (is_writable(base_path('bootstrap/cache')) ? '✓ OK' : '✗ NO - chmod -R 775 bootstrap/cache/') . "</td></tr>";
+
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        echo "<tr><td>Conexión BD</td><td style='color:green;'>✓ OK</td></tr>";
+    } catch (\Throwable $e) {
+        echo "<tr><td>Conexión BD</td><td style='color:red;'>✗ " . $e->getMessage() . "</td></tr>";
+    }
+
+    echo "</table>";
     die;
 });

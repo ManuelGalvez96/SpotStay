@@ -567,6 +567,12 @@ class InquilinoPagoController extends Controller
         if ($request->filled('referencia')) {
             $query->where('tbl_pago.referencia_pago', 'like', '%' . $request->referencia . '%');
         }
+        if ($request->filled('propiedad_id')) {
+            $query->whereIn('tbl_pago.id_alquiler_fk', function ($q) use ($request) {
+                $q->select('id_alquiler')->from('tbl_alquiler')
+                  ->where('id_propiedad_fk', $request->propiedad_id);
+            });
+        }
 
         $pagos = $query->paginate(15)->withQueryString();
 
@@ -607,11 +613,10 @@ class InquilinoPagoController extends Controller
                       ->orWhere('tbl_pago.tipo_pago', 'suscripcion');
             })
             ->when($request->filled('propiedad_id'), function ($query) use ($request) {
-                $query->where('tbl_pago.id_alquiler_fk', function ($subquery) use ($request) {
+                $query->whereIn('tbl_pago.id_alquiler_fk', function ($subquery) use ($request) {
                     $subquery->select('id_alquiler')
                         ->from('tbl_alquiler')
-                        ->where('id_propiedad_fk', $request->propiedad_id)
-                        ->limit(1);
+                        ->where('id_propiedad_fk', $request->propiedad_id);
                 });
             })
             ->select(

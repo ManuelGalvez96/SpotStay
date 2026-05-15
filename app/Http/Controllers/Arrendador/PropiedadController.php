@@ -133,7 +133,8 @@ class PropiedadController extends Controller
 
                 foreach ($imagenesSubidas as $indice => $imagenSubida) {
                     $nombreArchivo = now()->format('YmdHis') . '_' . $propiedadId . '_' . $indice . '_' . uniqid() . '.' . $imagenSubida->getClientOriginalExtension();
-                    $rutaGuardada = $imagenSubida->storeAs('propiedades', $nombreArchivo, 'public');
+                    $rutaGuardada = 'propiedades/' . $nombreArchivo;
+                    $imagenSubida->move(public_path('img/propiedades'), $nombreArchivo);
 
                     $esPrincipal = ($indice === $imagenPrincipalIndice);
 

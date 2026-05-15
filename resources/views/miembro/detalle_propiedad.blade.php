@@ -24,13 +24,13 @@
 
                 <div class="collage-grid">
                     <div class="collage-principal">
-                        <img src="{{ asset('storage/' . $fotoPrincipal->ruta_foto) }}" alt="Imagen principal de la propiedad" />
+                        <img src="{{ asset('img/' . $fotoPrincipal->ruta_foto) }}" alt="Imagen principal de la propiedad" />
                     </div>
 
                     <div class="collage-secundarias">
                         @foreach ($fotosSecundarias as $foto)
                             <div class="collage-miniatura">
-                                <img src="{{ asset('storage/' . $foto->ruta_foto) }}" alt="Imagen de la propiedad" />
+                                <img src="{{ asset('img/' . $foto->ruta_foto) }}" alt="Imagen de la propiedad" />
                             </div>
                         @endforeach
                     </div>

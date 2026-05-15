@@ -108,7 +108,7 @@ class InquilinoController extends Controller
 
             $alquiler->nombres_companeros = DB::table('tbl_alquiler')->join('tbl_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_alquiler.id_inquilino_fk')->where('tbl_alquiler.id_propiedad_fk', $alquiler->id_propiedad)->where('tbl_alquiler.estado_alquiler', 'activo')->where('tbl_alquiler.id_inquilino_fk', '<>', $userId)->pluck('tbl_usuario.nombre_usuario')->toArray();
 
-            $alquiler->banner_foto_url = $alquiler->ruta_foto ? asset('public/img/' . $alquiler->ruta_foto) : null;
+            $alquiler->banner_foto_url = $alquiler->ruta_foto ? asset('img/' . $alquiler->ruta_foto) : null;
 
             if (!empty($alquiler->fecha_fin_alquiler)) {
                 $fin = Carbon::parse($alquiler->fecha_fin_alquiler)->startOfDay();
@@ -215,11 +215,11 @@ class InquilinoController extends Controller
         }
 
         $fotos = DB::table('tbl_fotos')->where('id_propiedad_fk', $id)->get();
-        $fotoPrincipal = $fotos->isNotEmpty() ? asset('public/img/' . $fotos->first()->ruta_foto) : null;
+        $fotoPrincipal = $fotos->isNotEmpty() ? asset('img/' . $fotos->first()->ruta_foto) : null;
 
         return view('inquilino.ver_propiedad', [
             'alquiler' => $alquiler,
-            'fotos' => $fotos->map(fn($f) => (object)['url_foto' => asset('public/img/' . $f->ruta_foto)]),
+            'fotos' => $fotos->map(fn($f) => (object)['url_foto' => asset('img/' . $f->ruta_foto)]),
             'fotoPrincipal' => $fotoPrincipal,
             'proximaFinalizacion' => $proximaFinalizacion,
             'diasParaFinContrato' => $diasParaFinContrato,

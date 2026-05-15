@@ -7,6 +7,52 @@
 set_time_limit(300);
 ini_set('display_errors', 1);
 
+function obtenerRutaLaravelBase(): string
+{
+    $candidatos = [
+        dirname(__DIR__),
+        dirname(__DIR__) . '/laravel',
+        dirname(__FILE__) . '/..',
+        dirname(__FILE__) . '/../laravel',
+    ];
+
+    $candidatos = array_values(array_unique(array_map('realpath', array_filter($candidatos))));
+
+    foreach ($candidatos as $candidato) {
+        if ($candidato && file_exists($candidato . '/bootstrap/app.php') && file_exists($candidato . '/vendor/autoload.php')) {
+            return $candidato;
+        }
+    }
+
+    return realpath(dirname(__DIR__)) ?: dirname(__DIR__);
+}
+
+function obtenerRutaEnv(string $basePath): ?string
+{
+    $candidatos = [
+        $basePath . '/.env',
+        $basePath . '/laravel/.env',
+        dirname($basePath) . '/laravel/.env',
+    ];
+
+    foreach ($candidatos as $candidato) {
+        if (file_exists($candidato)) {
+            return $candidato;
+        }
+    }
+
+    return null;
+}
+
+function imprimirBotonAccion(string $texto, string $accion, string $clase = ''): void
+{
+    $claseCss = trim('action-button ' . $clase);
+    echo "<form method='post' style='display:inline-block;'>";
+    echo "<input type='hidden' name='action' value='" . htmlspecialchars($accion, ENT_QUOTES, 'UTF-8') . "'>";
+    echo "<button type='submit' class='" . htmlspecialchars($claseCss, ENT_QUOTES, 'UTF-8') . "'>" . htmlspecialchars($texto, ENT_QUOTES, 'UTF-8') . "</button>";
+    echo "</form>";
+}
+
 // Estilos CSS
 $styles = "
 <style>
@@ -82,6 +128,22 @@ button.danger { background: #f44336; }
 button.danger:hover { background: #d32f2f; }
 button.warning { background: #ff9800; }
 button.warning:hover { background: #f57c00; }
+.action-button {
+    background: #00c4cc;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    margin: 8px 8px 8px 0;
+    transition: background 0.3s;
+}
+.action-button:hover { background: #00a8b8; }
+.action-button.warning { background: #ff9800; }
+.action-button.warning:hover { background: #f57c00; }
+.action-button.danger { background: #f44336; }
+.action-button.danger:hover { background: #d32f2f; }
 .action-group {
     display: flex;
     flex-wrap: wrap;
@@ -115,7 +177,9 @@ th { background: #f5f5f5; font-weight: bold; }
 
 // Detectar si estamos en servidor de producción o local
 $isLocal = in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1', 'localhost']) || gethostname() === getenv('HOSTNAME');
-$basePath = dirname(__FILE__);
+$basePath = obtenerRutaLaravelBase();
+$envPath = obtenerRutaEnv($basePath);
+$requestAction = $_POST['action'] ?? $_GET['action'] ?? null;
 
 echo "<!DOCTYPE html>
 <html>
@@ -135,15 +199,15 @@ echo "<!DOCTYPE html>
 echo "<h2>📋 Diagnóstico del Sistema</h2>";
 
 // 1.1 Verificar archivo .env
-$envExists = file_exists("$basePath/.env");
+$envExists = $envPath !== null;
 echo "<div class='status " . ($envExists ? 'ok' : 'error') . "'>";
 echo "<span class='icon'>" . ($envExists ? '✓' : '✗') . "</span>";
-echo "<span><strong>.env</strong> " . ($envExists ? "existe" : "NO EXISTE") . "</span>";
+echo "<span><strong>.env</strong> " . ($envExists ? "existe en " . htmlspecialchars(str_replace($basePath, '.', $envPath), ENT_QUOTES, 'UTF-8') : "NO EXISTE") . "</span>";
 echo "</div>";
 
 // 1.2 Leer variables de .env
 if ($envExists) {
-    $env = parse_ini_file("$basePath/.env");
+    $env = parse_ini_file($envPath);
     echo "<table>";
     echo "<tr><th>Variable</th><th>Valor</th></tr>";
     $keyVars = ['APP_NAME', 'APP_ENV', 'APP_DEBUG', 'APP_KEY', 'DB_CONNECTION', 'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME'];
@@ -173,8 +237,8 @@ foreach ($extensions as $ext) {
 
 // 1.5 Directorios escribibles
 $dirs = [
-    'storage' => "$basePath/storage",
-    'bootstrap/cache' => "$basePath/bootstrap/cache",
+    'storage' => $basePath . '/storage',
+    'bootstrap/cache' => $basePath . '/bootstrap/cache',
 ];
 foreach ($dirs as $name => $path) {
     $writable = is_writable($path);
@@ -193,16 +257,16 @@ if (!file_exists("$basePath/vendor/autoload.php")) {
     echo "<span><strong>Composer no instalado.</strong> Ejecuta: <code>composer install</code></span>";
     echo "</div>";
 } else {
-    require_once "$basePath/vendor/autoload.php";
+    require_once $basePath . "/vendor/autoload.php";
     
-    if (!file_exists("$basePath/bootstrap/app.php")) {
+    if (!file_exists($basePath . "/bootstrap/app.php")) {
         echo "<div class='status error'>";
         echo "<span class='icon'>✗</span>";
         echo "<span><strong>Bootstrap falta.</strong> Proyecto Laravel corrupto.</span>";
         echo "</div>";
     } else {
         try {
-            $app = require_once "$basePath/bootstrap/app.php";
+            $app = require_once $basePath . "/bootstrap/app.php";
             $container = $app->make(\Illuminate\Contracts\Container\Container::class);
             $db = $container->make('db');
             
@@ -242,7 +306,7 @@ if (!file_exists("$basePath/vendor/autoload.php")) {
             echo "<h2>⚙️ Herramientas de Reparación</h2>";
             
             // Botón para limpiar caché
-            if (isset($_GET['action']) && $_GET['action'] === 'clear-cache') {
+            if ($requestAction === 'clear-cache') {
                 try {
                     \Illuminate\Support\Facades\Artisan::call('config:clear');
                     \Illuminate\Support\Facades\Artisan::call('route:clear');
@@ -261,7 +325,7 @@ if (!file_exists("$basePath/vendor/autoload.php")) {
             }
             
             // Botón para ejecutar migraciones
-            if (isset($_GET['action']) && $_GET['action'] === 'migrate') {
+            if ($requestAction === 'migrate') {
                 echo "<pre>";
                 try {
                     \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--force' => true, '--seed' => true]);
@@ -274,33 +338,40 @@ if (!file_exists("$basePath/vendor/autoload.php")) {
             }
             
             // Botón para crear datos mínimos
-            if (isset($_GET['action']) && $_GET['action'] === 'minimal') {
+            if ($requestAction === 'minimal') {
                 try {
-                    $db->table('tbl_usuarios')->delete();
-                    
-                    $userId = $db->table('tbl_usuarios')->insertGetId([
-                        'nombre_usuario' => 'Admin',
-                        'apellido_usuario' => 'SpotStay',
-                        'email_usuario' => 'admin@spotsstay.local',
-                        'password_usuario' => \Illuminate\Support\Facades\Hash::make('admin123'),
-                        'telefono_usuario' => '666666666',
-                        'dni_usuario' => '12345678A',
-                        'rol_usuario' => 'admin',
-                        'estado_usuario' => 'activo',
-                        'creado_usuario' => now(),
-                        'actualizado_usuario' => now(),
-                    ]);
-                    
-                    echo "<div class='status ok'>";
-                    echo "<span class='icon'>✓</span>";
-                    echo "<span><strong>Usuario admin creado (ID: $userId)</strong></span>";
-                    echo "</div>";
-                    
-                    echo "<div class='credentials'>";
-                    echo "<strong>📧 Credenciales de acceso:</strong><br>";
-                    echo "Email: <code>admin@spotsstay.local</code><br>";
-                    echo "Contraseña: <code>admin123</code>";
-                    echo "</div>";
+                    if ($db->getSchemaBuilder()->hasTable('tbl_usuarios')) {
+                        $db->table('tbl_usuarios')->delete();
+
+                        $userId = $db->table('tbl_usuarios')->insertGetId([
+                            'nombre_usuario' => 'Admin',
+                            'apellido_usuario' => 'SpotStay',
+                            'email_usuario' => 'admin@spotsstay.local',
+                            'password_usuario' => \Illuminate\Support\Facades\Hash::make('admin123'),
+                            'telefono_usuario' => '666666666',
+                            'dni_usuario' => '12345678A',
+                            'rol_usuario' => 'admin',
+                            'estado_usuario' => 'activo',
+                            'creado_usuario' => now(),
+                            'actualizado_usuario' => now(),
+                        ]);
+
+                        echo "<div class='status ok'>";
+                        echo "<span class='icon'>✓</span>";
+                        echo "<span><strong>Usuario admin creado (ID: $userId)</strong></span>";
+                        echo "</div>";
+
+                        echo "<div class='credentials'>";
+                        echo "<strong>📧 Credenciales de acceso:</strong><br>";
+                        echo "Email: <code>admin@spotsstay.local</code><br>";
+                        echo "Contraseña: <code>admin123</code>";
+                        echo "</div>";
+                    } else {
+                        echo "<div class='status warning'>";
+                        echo "<span class='icon'>⚠️</span>";
+                        echo "<span><strong>tbl_usuarios no existe.</strong> Ejecuta migraciones primero.</span>";
+                        echo "</div>";
+                    }
                 } catch (\Exception $e) {
                     echo "<div class='status error'>";
                     echo "<span class='icon'>✗</span>";
@@ -310,10 +381,10 @@ if (!file_exists("$basePath/vendor/autoload.php")) {
             }
             
             echo "<div class='action-group'>";
-            echo "<button onclick=\"window.location.href='?action=clear-cache'\">🧹 Limpiar Caché</button>";
-            echo "<button class='warning' onclick=\"window.location.href='?action=migrate'\">🔄 Ejecutar Migraciones</button>";
-            echo "<button class='warning' onclick=\"window.location.href='?action=minimal'\">👤 Crear Usuario Admin</button>";
-            echo "<button onclick=\"window.location.href='/login'\">🚀 Ir al Login</button>";
+            imprimirBotonAccion('🧹 Limpiar Caché', 'clear-cache');
+            imprimirBotonAccion('🔄 Ejecutar Migraciones', 'migrate', 'warning');
+            imprimirBotonAccion('👤 Crear Usuario Admin', 'minimal', 'warning');
+            echo "<form method='get' style='display:inline-block;'><button type='submit' class='action-button'>🚀 Ir al Login</button></form>";
             echo "</div>";
             
         } catch (\Exception $e) {

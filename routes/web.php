@@ -259,17 +259,24 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
 });
 
 // Utilidades de mantenimiento (protegidas por autenticación y rol admin)
+
 Route::get('/admin/ejecutar-migraciones', function () {
     try {
-        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
-            '--force' => true,
-            '--seed' => true
-        ]);
+        \Illuminate\Support\Facades\Artisan::call('migrate:fresh');
         return redirect('/admin/dashboard')->with('success', 'Migraciones y seeders ejecutados correctamente.');
     } catch (\Exception $e) {
         return redirect('/admin/dashboard')->with('error', 'Error: ' . $e->getMessage());
     }
 })->name('admin.ejecutar_migraciones');
+
+Route::get('/admin/ejecutar-seeders', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('db:seed');
+        return redirect('/admin/dashboard')->with('success', 'Seeders ejecutados correctamente.');
+    } catch (\Exception $e) {
+        return redirect('/admin/dashboard')->with('error', 'Error: ' . $e->getMessage());
+    }
+})->name('admin.ejecutar_seeders');
 
 Route::get('/admin/limpiar-cache', function () {
     try {

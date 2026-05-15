@@ -167,14 +167,14 @@
     @endif
 </div>
 
-<div id="modal-editar-propiedad" class="modal">
-    <div class="modal-backdrop" onclick="cerrarModalEditar()"></div>
-    <div class="modal-content modal-formulario">
-        <div class="modal-header">
+<div id="modal-editar-propiedad" class="gestor-modal">
+    <div class="gestor-modal-backdrop" onclick="cerrarModalEditar()"></div>
+    <div class="gestor-modal-content">
+        <div class="gestor-modal-header">
             <h2 id="modal-editar-titulo">Editar propiedad</h2>
-            <button class="modal-close" type="button" onclick="cerrarModalEditar()">✕</button>
+            <button class="gestor-modal-close" onclick="cerrarModalEditar()">✕</button>
         </div>
-        <div class="modal-body">
+        <div class="gestor-modal-body">
             <form method="POST" class="property-form" data-ajax-editar="true">
                 @csrf
                 <input type="hidden" name="id_propiedad" id="edit-id-propiedad" value="">

@@ -172,59 +172,59 @@
                 @endforelse
             </tbody>
         </table>
-    <div id="modal-nuevo-gasto" class="modal">
-    <div class="modal-backdrop" onclick="cerrarModalNuevoGasto()"></div>
-    <div class="modal-content modal-formulario">
-        <div class="modal-header">
+    <div id="modal-nuevo-gasto" class="gestor-modal">
+    <div class="gestor-modal-backdrop" onclick="cerrarModalNuevoGasto()"></div>
+    <div class="gestor-modal-content">
+        <div class="gestor-modal-header">
             <h2>Nuevo recibo</h2>
-            <button class="modal-close" type="button" onclick="cerrarModalNuevoGasto()">✕</button>
+            <button class="gestor-modal-close" onclick="cerrarModalNuevoGasto()">✕</button>
         </div>
-        <div class="modal-body">
-            <form method="POST" action="{{ route('gestor.propiedades.gastos.store', ['id' => $propiedad->id_propiedad]) }}" class="property-form" data-ajax-nuevo-gasto="true">
-                @csrf
-                <div class="form-grid">
-                    <div class="form-section">
-                        <h3>Datos del recibo</h3>
-                        <div class="form-subsection">
-                            <label>
-                                <span>Categoría</span>
-                                <select name="categoria_gasto" required>
-                                    <option value="" disabled selected>Selecciona una categoría</option>
-                                    <option value="luz">Luz</option>
-                                    <option value="agua">Agua</option>
-                                    <option value="gas">Gas</option>
-                                    <option value="internet">Internet</option>
-                                    <option value="comunidad">Comunidad</option>
-                                    <option value="otros">Otros</option>
-                                </select>
-                            </label>
-                            <label>
-                                <span>Concepto (opcional)</span>
-                                <input type="text" name="concepto_gasto" maxlength="200" placeholder="Ej: recibo de electricidad">
-                            </label>
-                            <label>
-                                <span>Importe (€)</span>
-                                <input type="number" step="0.01" min="0.01" name="importe_estimado" required placeholder="0.00">
-                            </label>
-                            <label>
-                                <span>Fecha inicio</span>
-                                <input type="date" name="fecha_inicio_gasto" value="{{ now()->startOfMonth()->toDateString() }}" required>
-                            </label>
-                            <label>
-                                <span>Fecha fin</span>
-                                <input type="date" name="fecha_fin_gasto" value="{{ now()->endOfMonth()->toDateString() }}" required>
-                            </label>
+        <div class="gestor-modal-body">
+                <form method="POST" action="{{ route('gestor.propiedades.gastos.store', ['id' => $propiedad->id_propiedad]) }}" class="property-form" data-ajax-nuevo-gasto="true">
+                    @csrf
+                    <div class="form-grid">
+                        <div class="form-section">
+                            <h3>Datos del recibo</h3>
+                            <div class="form-subsection">
+                                <label>
+                                    <span>Categoría</span>
+                                    <select name="categoria_gasto" required>
+                                        <option value="" disabled selected>Selecciona una categoría</option>
+                                        <option value="luz">Luz</option>
+                                        <option value="agua">Agua</option>
+                                        <option value="gas">Gas</option>
+                                        <option value="internet">Internet</option>
+                                        <option value="comunidad">Comunidad</option>
+                                        <option value="otros">Otros</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    <span>Concepto (opcional)</span>
+                                    <input type="text" name="concepto_gasto" maxlength="200" placeholder="Ej: recibo de electricidad">
+                                </label>
+                                <label>
+                                    <span>Importe (€)</span>
+                                    <input type="number" step="0.01" min="0.01" name="importe_estimado" required placeholder="0.00">
+                                </label>
+                                <label>
+                                    <span>Fecha inicio</span>
+                                    <input type="date" name="fecha_inicio_gasto" value="{{ now()->startOfMonth()->toDateString() }}" required>
+                                </label>
+                                <label>
+                                    <span>Fecha fin</span>
+                                    <input type="date" name="fecha_fin_gasto" value="{{ now()->endOfMonth()->toDateString() }}" required>
+                                </label>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="mensaje-estado mensaje-error mensaje-error-js" style="display:none;"></div>
+                    <div class="mensaje-estado mensaje-error mensaje-error-js" style="display:none;"></div>
 
-                <button class="btn-primary" type="submit">Añadir recibo</button>
-            </form>
+                    <button class="btn-primary" type="submit">Añadir recibo</button>
+                </form>
+            </div>
         </div>
     </div>
-</div>
     @endif
 </div>
 

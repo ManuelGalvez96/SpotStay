@@ -5,9 +5,12 @@ function abrirModalNuevoGasto() {
   var form = modal.querySelector('form');
   if (form) {
     form.reset();
-    form.querySelector('select[name="categoria_gasto"]').value = '';
-    form.querySelector('input[name="fecha_inicio_gasto"]').value = getTodayMonthStart();
-    form.querySelector('input[name="fecha_fin_gasto"]').value = getTodayMonthEnd();
+    var select = form.querySelector('select[name="categoria_gasto"]');
+    if (select) select.value = '';
+    var fi = form.querySelector('input[name="fecha_inicio_gasto"]');
+    if (fi) fi.value = getTodayMonthStart();
+    var ff = form.querySelector('input[name="fecha_fin_gasto"]');
+    if (ff) ff.value = getTodayMonthEnd();
   }
 
   var errorDiv = modal.querySelector('.mensaje-error-js');
@@ -16,12 +19,12 @@ function abrirModalNuevoGasto() {
     errorDiv.textContent = '';
   }
 
-  modal.classList.add('is-open');
+  modal.style.display = 'flex';
 }
 
 function cerrarModalNuevoGasto() {
   var modal = document.getElementById('modal-nuevo-gasto');
-  if (modal) modal.classList.remove('is-open');
+  if (modal) modal.style.display = 'none';
 }
 
 function getTodayMonthStart() {
@@ -43,6 +46,8 @@ function obtenerTokenCsrf() {
 document.querySelectorAll('form[data-ajax-nuevo-gasto="true"]').forEach(function (form) {
   form.addEventListener('submit', function (evento) {
     evento.preventDefault();
+
+    var modal = document.getElementById('modal-nuevo-gasto');
 
     var errorDiv = form.querySelector('.mensaje-error-js');
     if (errorDiv) {
@@ -144,7 +149,5 @@ document.querySelectorAll('form[data-ajax-nuevo-gasto="true"]').forEach(function
 });
 
 document.onkeydown = function (evento) {
-  if (evento.key === 'Escape') {
-    cerrarModalNuevoGasto();
-  }
+  if (evento.key === 'Escape') cerrarModalNuevoGasto();
 };

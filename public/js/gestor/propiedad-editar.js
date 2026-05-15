@@ -13,7 +13,7 @@ function abrirModalEditar(propiedadId) {
   document.getElementById('edit-id-propiedad').value = propiedadId;
   document.getElementById('modal-editar-titulo').textContent = 'Cargando...';
 
-  modal.classList.add('is-open');
+  modal.style.display = 'flex';
 
   var ruta = '/gestor/propiedades/' + propiedadId + '/editar-datos';
 
@@ -77,7 +77,7 @@ function abrirModalEditar(propiedadId) {
 
 function cerrarModalEditar() {
   var modal = document.getElementById('modal-editar-propiedad');
-  if (modal) modal.classList.remove('is-open');
+  if (modal) modal.style.display = 'none';
 }
 
 document.querySelectorAll('form[data-ajax-editar="true"]').forEach(function (form) {
@@ -134,9 +134,3 @@ document.querySelectorAll('form[data-ajax-editar="true"]').forEach(function (for
       });
   });
 });
-
-document.onkeydown = function (evento) {
-  if (evento.key === 'Escape') {
-    cerrarModalEditar();
-  }
-};

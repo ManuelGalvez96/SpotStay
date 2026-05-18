@@ -143,8 +143,10 @@ function inicializarGastos() {
 
                 if (kpiAccion) {
                     if (datos.propiedad_seleccionada) {
+                        kpiAccion.classList.remove('oculto');
                         kpiAccion.style.display = '';
                     } else {
+                        kpiAccion.classList.add('oculto');
                         kpiAccion.style.display = 'none';
                     }
                 }

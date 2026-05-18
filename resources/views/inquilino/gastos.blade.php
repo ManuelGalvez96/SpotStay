@@ -51,8 +51,7 @@
             </div>
         </div>
 
-        @if($propiedad_seleccionada)
-        <div class="kpi-pago-card accion-pagar-todo" id="btn-pagar-todo">
+        <div class="kpi-pago-card accion-pagar-todo {{ $propiedad_seleccionada ? '' : 'oculto' }}" id="btn-pagar-todo">
             <div class="kpi-pago-icon accion">
                 <i class="bi bi-lightning-fill"></i>
             </div>
@@ -61,7 +60,6 @@
                 <span class="valor">Pagar Todo Ahora</span>
             </div>
         </div>
-        @endif
     </div>
 
     <!-- CONTENEDOR DE LISTADOS -->

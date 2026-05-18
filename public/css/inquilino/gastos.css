@@ -37,6 +37,10 @@
     padding-bottom: 40px;
 }
 
+.oculto {
+    display: none !important;
+}
+
 /* --- KPI GRID --- */
 .kpi-gastos-grid {
     display: flex;

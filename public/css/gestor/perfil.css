@@ -5,6 +5,16 @@
     padding: 24px 40px;
 }
 
+.perfil-info-lectura {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-size: 13px;
+    color: var(--admin-muted);
+    padding: 16px 0 0;
+    border-top: 1px solid var(--admin-border);
+    margin-top: 4px;
+}
+
 .perfil-grid .card-con-franja {
     display: flex;
     flex-direction: column;

@@ -99,6 +99,11 @@
             <button type="submit" class="btn-submit">Actualizar contraseña</button>
         </form>
     </div>
+
+    <div class="perfil-info-lectura">
+        Miembro desde {{ \Carbon\Carbon::parse($gestor->creado_usuario)->format('d/m/Y') }}
+        · Última actualización: {{ \Carbon\Carbon::parse($gestor->actualizado_usuario)->format('d/m/Y') }}
+    </div>
 </div>
 @section('scripts')
 <script>

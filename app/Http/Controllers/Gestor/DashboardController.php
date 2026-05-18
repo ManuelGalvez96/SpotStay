@@ -134,6 +134,20 @@ class DashboardController extends Controller
             ->limit(6)
             ->get();
 
+        $mensajesSinLeer = DB::table('tbl_conversacion')
+            ->join('tbl_conversacion_usuario', function ($join) use ($gestorId) {
+                $join->on('tbl_conversacion_usuario.id_conversacion_fk', '=', 'tbl_conversacion.id_conversacion')
+                    ->where('tbl_conversacion_usuario.id_usuario_fk', $gestorId);
+            })
+            ->leftJoin(DB::raw('(SELECT id_conversacion_fk, MAX(creado_mensaje) as ultimo_creado FROM tbl_mensaje GROUP BY id_conversacion_fk) as ult'), function ($join) {
+                $join->on('ult.id_conversacion_fk', '=', 'tbl_conversacion.id_conversacion');
+            })
+            ->where(function ($query) {
+                $query->whereNull('tbl_conversacion_usuario.ultima_lectura_conv_usuario')
+                    ->orWhereColumn('ult.ultimo_creado', '>', 'tbl_conversacion_usuario.ultima_lectura_conv_usuario');
+            })
+            ->count();
+
         $resumenEstados = [
             'abierta' => (clone $baseIncidencias)->where('tbl_incidencia.estado_incidencia', 'abierta')->count(),
             'en_proceso' => (clone $baseIncidencias)->where('tbl_incidencia.estado_incidencia', 'en_proceso')->count(),
@@ -157,6 +171,7 @@ class DashboardController extends Controller
             'esperandoInquilino',
             'totalEsperandoDetalle',
             'notificaciones',
+            'mensajesSinLeer',
             'resumenEstados',
             'permisosDashboard'
         ));

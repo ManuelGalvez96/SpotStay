@@ -23,54 +23,40 @@
 
 @php
     $tieneIncidencias = collect($permisosDashboard)->contains(fn($p) => $p->incidencias);
-    $tieneGastos = collect($permisosDashboard)->contains(fn($p) => $p->gastos);
+    $tieneChat = collect($permisosDashboard)->contains(fn($p) => $p->chat);
 @endphp
 
-@if($tieneIncidencias)
+@if($tieneIncidencias || $tieneChat)
 <div class="kpi-grid">
+    <div class="kpi-grid-header">
+        <h2 class="seccion-titulo-acciones">Acciones necesarias</h2>
+    </div>
+
+    @if($tieneIncidencias)
     <a class="kpi-card-link" href="{{ route('gestor.incidencias', ['estado' => 'abierta']) }}">
         <div class="kpi-card">
             <div class="kpi-header">
-                <span class="kpi-label">INCIDENCIAS NUEVAS</span>
+                <span class="kpi-label">INCIDENCIAS ABIERTAS</span>
                 <div class="kpi-icon kpi-icon-red"><i class="bi bi-exclamation-triangle"></i></div>
             </div>
             <div class="kpi-numero kpi-numero-red">{{ $incidenciasNuevas }}</div>
-            <div class="kpi-sub">Pendientes de iniciar</div>
+            <div class="kpi-sub">Requieren iniciar gestión</div>
         </div>
     </a>
+    @endif
 
-    <a class="kpi-card-link" href="{{ route('gestor.incidencias', ['estado' => 'en_proceso']) }}">
+    @if($tieneChat)
+    <a class="kpi-card-link" href="{{ route('gestor.mensajes.index') }}">
         <div class="kpi-card">
             <div class="kpi-header">
-                <span class="kpi-label">EN PROCESO</span>
-                <div class="kpi-icon kpi-icon-orange"><i class="bi bi-hourglass-split"></i></div>
+                <span class="kpi-label">MENSAJES SIN LEER</span>
+                <div class="kpi-icon kpi-icon-blue"><i class="bi bi-chat-dots"></i></div>
             </div>
-            <div class="kpi-numero kpi-numero-orange">{{ $incidenciasEnProceso }}</div>
-            <div class="kpi-sub">En gestión</div>
+            <div class="kpi-numero">{{ $mensajesSinLeer }}</div>
+            <div class="kpi-sub">Conversaciones pendientes</div>
         </div>
     </a>
-
-    <a class="kpi-card-link" href="{{ route('gestor.incidencias', ['estado' => 'esperando']) }}">
-        <div class="kpi-card">
-            <div class="kpi-header">
-                <span class="kpi-label">EN ESPERA</span>
-                <div class="kpi-icon kpi-icon-blue"><i class="bi bi-pause-circle"></i></div>
-            </div>
-            <div class="kpi-numero">{{ $incidenciasEsperandoAccion }}</div>
-            <div class="kpi-sub">Esperando decisión del arrendador</div>
-        </div>
-    </a>
-
-    <a class="kpi-card-link" href="{{ route('gestor.incidencias') }}">
-        <div class="kpi-card">
-            <div class="kpi-header">
-                <span class="kpi-label">URGENTES</span>
-                <div class="kpi-icon kpi-icon-green"><i class="bi bi-lightning-charge"></i></div>
-            </div>
-            <div class="kpi-numero">{{ $incidenciasUrgentes->count() }}</div>
-            <div class="kpi-sub">Requieren prioridad alta</div>
-        </div>
-    </a>
+    @endif
 </div>
 @endif
 

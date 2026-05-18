@@ -168,7 +168,15 @@ body.pagina-miembro {
 .grupo-filtro {
 	display: flex;
 	flex-direction: column;
+	gap: 10px;
+	margin-bottom: 22px;
+}
+
+.filtros-propiedad-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
 	gap: 12px;
+	margin-bottom: 22px;
 }
 
 .etiqueta-filtro {
@@ -1784,6 +1792,6 @@ body.pagina-miembro.pagina-mensajes .mensajes-formulario {
 		flex-direction: column;
 	}
 	.fila-campos {
-		grid-template-columns: 1fr;
+		grid-template-columns: repeat(2, 1fr) !important;
 	}
 }

@@ -203,6 +203,7 @@ class InquilinoFinanceService
                     ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
                     ->where('tbl_gasto_cuota_detalle.id_alquiler_fk', $alquiler->id_alquiler)
                     ->where('tbl_gasto_cuota_detalle.id_pagador_fk', $userId)
+                    ->where('tbl_gasto.categoria_gasto', '!=', 'reparacion')
                     ->whereIn('tbl_gasto_cuota_detalle.estado_detalle', ['pendiente', 'atrasado'])
                     ->whereDate('tbl_gasto_cuota.mes_cuota', '<=', $ahora)
                     ->select('tbl_gasto_cuota_detalle.*', 'tbl_gasto.concepto_gasto', 'tbl_gasto.categoria_gasto', 'tbl_gasto_cuota.vencimiento_cuota')

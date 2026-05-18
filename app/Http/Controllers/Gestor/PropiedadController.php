@@ -464,8 +464,7 @@ class PropiedadController extends Controller
                 'pagador_gasto' => 'inquilino',
                 'periodicidad_gasto' => 'mensual',
                 'fecha_inicio_gasto' => $fechaInicioRecibo->toDateString(),
-                // For recibos added by gestor we treat them as single-event: set fecha_fin to start
-                'fecha_fin_gasto' => $fechaInicioRecibo->toDateString(),
+                'fecha_fin_gasto' => $fechaFinRecibo->toDateString(),
                 'estado_gasto' => 'activo',
                 'creado_gasto' => $ahora,
                 'actualizado_gasto' => $ahora,
@@ -553,6 +552,7 @@ class PropiedadController extends Controller
             'concepto_gasto' => ['nullable', 'string', 'max:200'],
             'importe_estimado' => ['required', 'numeric', 'min:0.01'],
             'fecha_inicio_gasto' => ['required', 'date'],
+            'fecha_fin_gasto' => ['required', 'date', 'after_or_equal:fecha_inicio_gasto'],
         ]);
 
         $alquileresActivos = $this->getAlquileresActivos($id);
@@ -565,11 +565,12 @@ class PropiedadController extends Controller
         $conceptoGasto = trim((string) ($validated['concepto_gasto'] ?? ''));
         $conceptoGasto = $conceptoGasto !== '' ? $conceptoGasto : null;
         $fechaInicioRecibo = Carbon::parse($validated['fecha_inicio_gasto']);
+        $fechaFinRecibo = Carbon::parse($validated['fecha_fin_gasto']);
         $importeEstimado = round((float) $validated['importe_estimado'], 2);
         $mesCuota = $fechaInicioRecibo->copy()->startOfMonth();
         $vencimientoFijo = Carbon::today()->addMonth();
 
-        DB::transaction(function () use ($id, $gestorId, $gastoId, $validated, $conceptoGasto, $fechaInicioRecibo, $importeEstimado, $mesCuota, $vencimientoFijo, $alquileresActivos) {
+        DB::transaction(function () use ($id, $gestorId, $gastoId, $validated, $conceptoGasto, $fechaInicioRecibo, $fechaFinRecibo, $importeEstimado, $mesCuota, $vencimientoFijo, $alquileresActivos) {
             $idAlquilerFk = !$alquileresActivos->isEmpty()
                 ? (int) $alquileresActivos->first()->id_alquiler
                 : null;
@@ -582,7 +583,7 @@ class PropiedadController extends Controller
                     'concepto_gasto' => $conceptoGasto,
                     'importe_estimado' => $importeEstimado,
                     'fecha_inicio_gasto' => $fechaInicioRecibo->toDateString(),
-                    'fecha_fin_gasto' => $fechaInicioRecibo->toDateString(),
+                    'fecha_fin_gasto' => $fechaFinRecibo->toDateString(),
                     'actualizado_gasto' => now(),
                 ]);
 
@@ -1188,7 +1189,9 @@ class PropiedadController extends Controller
                     'tbl_gasto.categoria_gasto',
                     'tbl_gasto.pagador_gasto',
                     'tbl_gasto.ambito_gasto',
-                    'tbl_gasto.id_alquiler_fk'
+                    'tbl_gasto.id_alquiler_fk',
+                    'tbl_gasto.fecha_inicio_gasto',
+                    'tbl_gasto.fecha_fin_gasto'
                 )
                 ->orderByRaw("CASE WHEN tbl_gasto_cuota.estado_cuota = 'pagado' THEN 1 ELSE 0 END")
                 ->orderBy('tbl_gasto_cuota.id_gasto_cuota', 'desc')
@@ -1394,8 +1397,8 @@ class PropiedadController extends Controller
         $categoria = (string) $request->query('categoria', '');
         $estado = (string) $request->query('estado', '');
         $concepto = trim((string) $request->query('concepto', ''));
-        $mesDesde = (string) $request->query('mes_desde', '');
-        $mesHasta = (string) $request->query('mes_hasta', '');
+        $periodoDesde = (string) $request->query('periodo_desde', '');
+        $periodoHasta = (string) $request->query('periodo_hasta', '');
 
         $query = DB::table('tbl_gasto_cuota')
             ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
@@ -1412,7 +1415,9 @@ class PropiedadController extends Controller
                 'tbl_gasto.categoria_gasto',
                 'tbl_gasto.pagador_gasto',
                 'tbl_gasto.ambito_gasto',
-                'tbl_gasto.id_alquiler_fk'
+                'tbl_gasto.id_alquiler_fk',
+                'tbl_gasto.fecha_inicio_gasto',
+                'tbl_gasto.fecha_fin_gasto'
             );
 
         if ($categoria !== '') {
@@ -1427,12 +1432,12 @@ class PropiedadController extends Controller
             $query->where('tbl_gasto.concepto_gasto', 'like', '%' . $concepto . '%');
         }
 
-        if ($mesDesde !== '') {
-            $query->where('tbl_gasto_cuota.mes_cuota', '>=', $mesDesde . '-01');
+        if ($periodoDesde !== '') {
+            $query->where('tbl_gasto.fecha_fin_gasto', '>=', $periodoDesde);
         }
 
-        if ($mesHasta !== '') {
-            $query->where('tbl_gasto_cuota.mes_cuota', '<=', $mesHasta . '-01');
+        if ($periodoHasta !== '') {
+            $query->where('tbl_gasto.fecha_inicio_gasto', '<=', $periodoHasta);
         }
 
         $cuotas = $query

@@ -2,142 +2,243 @@ function inicializarEdicionInline() {
   var card = document.getElementById('gastos-propiedad');
   if (!card) return;
 
-  function toText(node) {
-    return node ? node.textContent.trim() : '';
-  }
+  var categoriaMap = {
+    'Luz': 'luz', 'Agua': 'agua', 'Gas': 'gas',
+    'Internet': 'internet', 'Comunidad': 'comunidad',
+    'Otros': 'otros', 'Base propiedad': 'base_propiedad'
+  };
 
   card.addEventListener('click', function (e) {
     var target = e.target;
-    var row = target.closest('.cuota-row');
-    if (!row) return;
-
-    var editBtn = row.querySelector('.btn-cuota-edit');
-    var saveBtn = row.querySelector('.btn-cuota-save');
-    var cancelBtn = row.querySelector('.btn-cuota-cancel');
-    var conceptoSpan = row.querySelector('.display-concepto');
-    var categoriaSpan = row.querySelector('.display-categoria');
-    var fechaSpan = row.querySelector('.display-fecha');
-    var gastoId = row.dataset.gastoId;
-    var propiedadId = row.dataset.propiedadId;
-    var importeDefault = row.dataset.importe || '';
-    var original = {};
-
-    function enterEditMode() {
-      original = {
-        concepto: toText(conceptoSpan),
-        categoria: toText(categoriaSpan),
-        fecha: toText(fechaSpan),
-        importe: importeDefault
-      };
-
-      var select = document.createElement('select');
-      select.name = 'categoria_gasto';
-      ['', 'luz', 'agua', 'gas', 'internet', 'comunidad', 'otros'].forEach(function (k) {
-        var opt = document.createElement('option');
-        opt.value = k;
-        opt.text = k === '' ? 'Selecciona una categoría' : k.charAt(0).toUpperCase() + k.slice(1);
-        if (k === original.categoria.toLowerCase()) opt.selected = true;
-        select.appendChild(opt);
-      });
-      categoriaSpan.innerHTML = '';
-      categoriaSpan.appendChild(select);
-
-      var conceptoInput = document.createElement('input');
-      conceptoInput.type = 'text';
-      conceptoInput.name = 'concepto_gasto';
-      conceptoInput.value = original.concepto === 'Sin concepto' ? '' : original.concepto;
-      conceptoInput.maxLength = 200;
-      conceptoSpan.innerHTML = '';
-      conceptoSpan.appendChild(conceptoInput);
-
-      var importeInput = document.createElement('input');
-      importeInput.type = 'number';
-      importeInput.step = '0.01';
-      importeInput.min = '0.01';
-      importeInput.name = 'importe_estimado';
-      importeInput.value = parseFloat(original.importe) || '';
-      var fechaInput = document.createElement('input');
-      fechaInput.type = 'date';
-      fechaInput.name = 'fecha_inicio_gasto';
-      fechaInput.value = row.dataset.mes || '';
-      fechaSpan.innerHTML = '';
-      fechaSpan.appendChild(fechaInput);
-      row.querySelector('.detalle-acciones').appendChild(importeInput);
-
-      editBtn.style.display = 'none';
-      saveBtn.style.display = '';
-      cancelBtn.style.display = '';
-    }
-
-    function exitEditMode(reset) {
-      if (reset) {
-        conceptoSpan.textContent = original.concepto || '';
-        categoriaSpan.textContent = original.categoria || '';
-        fechaSpan.textContent = original.fecha || '';
-      } else {
-        var sel = categoriaSpan.querySelector('select[name="categoria_gasto"]');
-        var ci = conceptoSpan.querySelector('input[name="concepto_gasto"]');
-        var im = row.querySelector('input[name="importe_estimado"]');
-        var fi = fechaSpan.querySelector('input[name="fecha_inicio_gasto"]');
-
-        categoriaSpan.textContent = sel ? (sel.value ? sel.value.charAt(0).toUpperCase() + sel.value.slice(1) : '') : categoriaSpan.textContent;
-        conceptoSpan.textContent = ci ? ci.value || 'Sin concepto' : conceptoSpan.textContent;
-        if (im && im.value) row.dataset.importe = im.value;
-        fechaSpan.textContent = fi ? fi.value : fechaSpan.textContent;
-      }
-
-      var imEl = row.querySelector('input[name="importe_estimado"]');
-      if (imEl && imEl.parentNode) imEl.parentNode.removeChild(imEl);
-
-      editBtn.style.display = '';
-      saveBtn.style.display = 'none';
-      cancelBtn.style.display = 'none';
-    }
 
     if (target.classList.contains('btn-cuota-edit')) {
-      e.preventDefault();
-      enterEditMode();
-    }
+      var row = target.closest('.cuota-row');
+      if (!row) return;
 
-    if (target.classList.contains('btn-cuota-cancel')) {
-      e.preventDefault();
-      exitEditMode(true);
-    }
+      var gastoId = row.dataset.gastoId;
+      var propiedadId = row.dataset.propiedadId;
+      var importe = row.dataset.importe || '';
+      var mes = row.dataset.mes || '';
+      var fechaInicio = row.dataset.fechaInicio || mes;
+      var fechaFin = row.dataset.fechaFin || mes;
 
-    if (target.classList.contains('btn-cuota-save')) {
-      e.preventDefault();
-      var sel = categoriaSpan.querySelector('select[name="categoria_gasto"]');
-      var ci = conceptoSpan.querySelector('input[name="concepto_gasto"]');
-      var im = row.querySelector('input[name="importe_estimado"]');
-      var fi = fechaSpan.querySelector('input[name="fecha_inicio_gasto"]');
+      var conceptoSpan = row.querySelector('.display-concepto');
+      var categoriaSpan = row.querySelector('.display-categoria');
 
-      var payload = new FormData();
-      var csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-      payload.append('_token', csrf);
-      payload.append('categoria_gasto', sel ? sel.value : '');
-      payload.append('concepto_gasto', ci ? ci.value : '');
-      payload.append('importe_estimado', im ? im.value : (row.dataset.importe || '0'));
-      payload.append('fecha_inicio_gasto', fi ? fi.value : (row.dataset.mes || ''));
+      var concepto = conceptoSpan ? conceptoSpan.textContent.trim() : '';
+      var categoriaTexto = categoriaSpan ? categoriaSpan.textContent.trim() : '';
+      var categoriaValue = categoriaMap[categoriaTexto] || '';
 
-      var url = '/gestor/propiedades/' + propiedadId + '/gastos/' + gastoId + '/editar';
-      fetch(url, {
-        method: 'POST',
-        body: payload,
-        headers: { 'Accept': 'application/json' }
-      }).then(async function (res) {
-        if (res.ok) {
-          if (window.swalSuccess) swalSuccess('Guardado', 'Cambios guardados correctamente').then(function () { window.location.reload(); }); else window.location.reload();
-        } else if (res.status === 422) {
-          var data = await res.json();
-          if (window.swalError) swalError('Error de validación', data?.message || 'Error de validación.'); else alert(data?.message || 'Error de validación.');
-        } else {
-          if (window.swalError) swalError('Error', 'Error al guardar.'); else alert('Error al guardar.');
-        }
-      }).catch(function () {
-        if (window.swalError) swalError('Error de red', 'No se ha podido conectar'); else alert('Error de red.');
+      abrirModalEditarGasto(gastoId, propiedadId, {
+        categoria: categoriaValue,
+        concepto: concepto === 'Sin concepto' ? '' : concepto,
+        importe: importe,
+        fechaInicio: fechaInicio,
+        fechaFin: fechaFin
       });
+    }
+
+    if (target.classList.contains('btn-cuota-delete')) {
+      var row = target.closest('.cuota-row');
+      if (!row) return;
+
+      var gastoId = row.dataset.gastoId;
+      var propiedadId = row.dataset.propiedadId;
+
+      if (window.Swal) {
+        window.Swal.fire({
+          title: '¿Eliminar recibo?',
+          text: 'Esta acción no se puede deshacer.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#DC2626',
+          cancelButtonColor: '#6B7280',
+          confirmButtonText: 'Sí, eliminar',
+          cancelButtonText: 'Cancelar'
+        }).then(function (result) {
+          if (!result.isConfirmed) return;
+
+          var formData = new FormData();
+          formData.append('_token', obtenerTokenCsrf());
+
+          fetch('/gestor/propiedades/' + propiedadId + '/gastos/' + gastoId + '/eliminar', {
+            method: 'POST',
+            headers: { 'Accept': 'application/json' },
+            body: formData
+          }).then(function (res) {
+            if (res.ok) {
+              if (window.swalSuccess) {
+                swalSuccess('Eliminado', 'Recibo eliminado correctamente.').then(function () { window.location.reload(); });
+              } else {
+                window.location.reload();
+              }
+            } else {
+              return res.json().then(function (data) {
+                throw new Error(data.message || 'Error al eliminar el recibo.');
+              });
+            }
+          }).catch(function (err) {
+            if (window.swalError) {
+              swalError('Error', err.message || 'No se pudo eliminar el recibo.');
+            }
+          });
+        });
+      } else {
+        if (confirm('¿Eliminar este recibo?')) {
+          var formData = new FormData();
+          formData.append('_token', obtenerTokenCsrf());
+
+          fetch('/gestor/propiedades/' + propiedadId + '/gastos/' + gastoId + '/eliminar', {
+            method: 'POST',
+            headers: { 'Accept': 'application/json' },
+            body: formData
+          }).then(function (res) {
+            if (res.ok) window.location.reload();
+          });
+        }
+      }
     }
   });
 }
+
+function abrirModalEditarGasto(gastoId, propiedadId, datos) {
+  var modal = document.getElementById('modal-editar-gasto');
+  if (!modal) return;
+
+  var form = modal.querySelector('form');
+  if (!form) return;
+
+  form.action = '/gestor/propiedades/' + propiedadId + '/gastos/' + gastoId + '/editar';
+
+  var selectCategoria = form.querySelector('select[name="categoria_gasto"]');
+  var inputConcepto = form.querySelector('input[name="concepto_gasto"]');
+  var inputImporte = form.querySelector('input[name="importe_estimado"]');
+  var inputFechaInicio = form.querySelector('input[name="fecha_inicio_gasto"]');
+  var inputFechaFin = form.querySelector('input[name="fecha_fin_gasto"]');
+
+  if (selectCategoria) selectCategoria.value = datos.categoria || '';
+  if (inputConcepto) inputConcepto.value = datos.concepto || '';
+  if (inputImporte) inputImporte.value = datos.importe || '';
+  if (inputFechaInicio) inputFechaInicio.value = datos.fechaInicio || '';
+  if (inputFechaFin) inputFechaFin.value = datos.fechaFin || '';
+
+  var errorDiv = modal.querySelector('.mensaje-error-js');
+  if (errorDiv) {
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+  }
+
+  modal.style.display = 'flex';
+}
+
+function cerrarModalEditarGasto() {
+  var modal = document.getElementById('modal-editar-gasto');
+  if (modal) modal.style.display = 'none';
+}
+
+document.querySelectorAll('form[data-ajax-editar-gasto="true"]').forEach(function (form) {
+  form.addEventListener('submit', function (evento) {
+    evento.preventDefault();
+
+    var modal = document.getElementById('modal-editar-gasto');
+
+    var errorDiv = form.querySelector('.mensaje-error-js');
+    if (errorDiv) {
+      errorDiv.style.display = 'none';
+      errorDiv.textContent = '';
+    }
+
+    var categoria = form.querySelector('select[name="categoria_gasto"]');
+    var importe = form.querySelector('input[name="importe_estimado"]');
+    var fechaInicio = form.querySelector('input[name="fecha_inicio_gasto"]');
+    var fechaFin = form.querySelector('input[name="fecha_fin_gasto"]');
+
+    var errors = [];
+    if (!categoria || !categoria.value) errors.push('Selecciona una categoría.');
+
+    if (importe) {
+      var raw = (importe.value || '').toString().trim().replace(',', '.');
+      var val = parseFloat(raw);
+      if (Number.isNaN(val) || val < 0.01) errors.push('Introduce un importe válido (>= 0.01).');
+    }
+
+    if (!fechaInicio || !fechaInicio.value) errors.push('Selecciona la fecha inicio.');
+    if (!fechaFin || !fechaFin.value) errors.push('Selecciona la fecha fin.');
+
+    if (fechaInicio && fechaFin && fechaInicio.value && fechaFin.value) {
+      if (fechaFin.value < fechaInicio.value) errors.push('La fecha fin no puede ser anterior a la fecha inicio.');
+    }
+
+    if (errors.length) {
+      if (errorDiv) {
+        errorDiv.textContent = errors.join(' ');
+        errorDiv.style.display = '';
+      }
+      return;
+    }
+
+    var boton = form.querySelector('button[type="submit"]');
+    if (boton) {
+      boton.disabled = true;
+      boton.textContent = 'Guardando...';
+    }
+
+    var formData = new FormData(form);
+
+    fetch(form.action, {
+      method: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': obtenerTokenCsrf(),
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json'
+      },
+      body: formData,
+      credentials: 'same-origin'
+    })
+      .then(function (respuesta) {
+        return respuesta.json().catch(function () {
+          return {};
+        }).then(function (datos) {
+          return { ok: respuesta.ok, datos: datos };
+        });
+      })
+      .then(function (resultado) {
+        if (!resultado.ok) {
+          var msg = resultado.datos && resultado.datos.message ? resultado.datos.message : 'Error al guardar el recibo.';
+          if (resultado.datos && resultado.datos.errors) {
+            var campos = Object.keys(resultado.datos.errors);
+            if (campos.length > 0 && resultado.datos.errors[campos[0]].length > 0) {
+              msg = resultado.datos.errors[campos[0]][0];
+            }
+          }
+          throw new Error(msg);
+        }
+
+        cerrarModalEditarGasto();
+
+        if (window.swalSuccess) {
+          swalSuccess('Recibo actualizado', resultado.datos.message || 'Recibo actualizado correctamente.').then(function () {
+            window.location.reload();
+          });
+        } else {
+          window.location.reload();
+        }
+      })
+      .catch(function (error) {
+        if (errorDiv) {
+          errorDiv.textContent = error.message || 'Error al procesar la solicitud.';
+          errorDiv.style.display = '';
+        } else if (window.swalError) {
+          swalError('Error', error.message || 'No se pudo guardar el recibo.');
+        }
+      })
+      .finally(function () {
+        if (boton) {
+          boton.disabled = false;
+          boton.textContent = 'Guardar cambios';
+        }
+      });
+  });
+});
 
 document.addEventListener('DOMContentLoaded', inicializarEdicionInline);

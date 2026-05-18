@@ -8,10 +8,16 @@ function gastosRenderFila(cuota, detalles, propiedadId) {
     otros: 'Otros', base_propiedad: 'Base propiedad'
   }[cuota.categoria_gasto] || cuota.categoria_gasto || 'Sin categoría';
 
-  var mesDate = new Date(cuota.mes_cuota + 'T00:00:00');
-  var mesLabel = mesDate.toLocaleDateString('es-ES', { month: '2-digit', year: 'numeric' });
   var vencDate = new Date(cuota.vencimiento_cuota + 'T00:00:00');
   var vencLabel = vencDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  function formatDate(d) { return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
+  var periodoLabel = '';
+  if (cuota.fecha_inicio_gasto && cuota.fecha_fin_gasto) {
+    periodoLabel = formatDate(new Date(cuota.fecha_inicio_gasto + 'T00:00:00')) + ' \u2192 ' + formatDate(new Date(cuota.fecha_fin_gasto + 'T00:00:00'));
+  } else {
+    periodoLabel = new Date(cuota.mes_cuota + 'T00:00:00').toLocaleDateString('es-ES', { month: '2-digit', year: 'numeric' });
+  }
 
   var ambitoLabel = (cuota.ambito_gasto || 'propiedad') === 'contrato'
     ? 'Contrato #' + cuota.id_alquiler_fk
@@ -26,11 +32,12 @@ function gastosRenderFila(cuota, detalles, propiedadId) {
 
   var botonEditar = '';
   if (cuota.estado_cuota !== 'pagado') {
-    botonEditar = '<button type="button" class="btn-cuota-edit link-ver-todos">Editar</button><button type="button" class="btn-cuota-save link-ver-todos" style="display:none;">Guardar</button><button type="button" class="btn-cuota-cancel link-ver-todos" style="display:none;">Cancelar</button>';
+    botonEditar = '<button type="button" class="btn-cuota-edit">Editar</button> ' +
+      '<button type="button" class="btn-cuota-delete">Eliminar</button>';
   }
 
-  return '<tr class="cuota-row" data-gasto-id="' + cuota.id_gasto_fk + '" data-propiedad-id="' + propiedadId + '" data-importe="' + cuota.importe_total_cuota + '" data-mes="' + cuota.mes_cuota + '">' +
-    '<td class="display-mes">' + mesLabel + '</td>' +
+  return '<tr class="cuota-row" data-gasto-id="' + cuota.id_gasto_fk + '" data-propiedad-id="' + propiedadId + '" data-importe="' + cuota.importe_total_cuota + '" data-mes="' + cuota.mes_cuota + '" data-fecha-inicio="' + (cuota.fecha_inicio_gasto || '') + '" data-fecha-fin="' + (cuota.fecha_fin_gasto || '') + '">' +
+    '<td class="display-mes">' + periodoLabel + '</td>' +
     '<td class="display-concepto">' + (cuota.concepto_gasto || 'Sin concepto') + '</td>' +
     '<td class="display-categoria">' + categoriaLabel + '</td>' +
     '<td class="display-ambito">' + ambitoLabel + '</td>' +
@@ -77,12 +84,15 @@ function gastosCargarFiltros() {
         html += gastosRenderFila(c, detallesArray, propiedadId);
       });
       tbody.innerHTML = html;
-
-      if (typeof inicializarEdicionInline === 'function') {
-        inicializarEdicionInline();
-      }
     })
     .catch(function () {});
+}
+
+function gastosLimpiarFiltros() {
+  document.querySelectorAll('[data-filtro-gasto]').forEach(function (el) {
+    el.value = '';
+  });
+  gastosCargarFiltros();
 }
 
 document.addEventListener('DOMContentLoaded', function () {

@@ -507,6 +507,63 @@
     background: #024080;
 }
 
+.btn-cuota-edit {
+    border: none;
+    border-radius: 6px;
+    background: #035498;
+    color: #fff;
+    padding: 5px 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.15s ease;
+    white-space: nowrap;
+}
+
+.btn-cuota-edit:hover {
+    background: #024080;
+}
+
+.date-range-group {
+    grid-column: 1 / -1;
+}
+
+.date-range-group span {
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    display: block;
+}
+
+.date-range-inputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.date-range-inputs input[type="date"] {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.date-range-inputs input[type="date"]:focus {
+    outline: none;
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
+}
+
+.date-range-sep {
+    font-size: 18px;
+    color: #9CA3AF;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
 @media (max-width: 768px) {
     .gastos-filtros-form {
         padding: 12px 14px;
@@ -710,6 +767,48 @@
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+}
+
+.btn-cuota-delete {
+    border: none;
+    border-radius: 6px;
+    background: #DC2626;
+    color: #fff;
+    padding: 5px 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.15s ease;
+    white-space: nowrap;
+}
+
+.btn-cuota-delete:hover {
+    background: #B91C1C;
+}
+
+.btn-limpiar-filtros {
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    background: #fff;
+    color: #374151;
+    padding: 9px 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s ease;
+}
+
+.btn-limpiar-filtros:hover {
+    background: #F3F4F6;
+    border-color: #9CA3AF;
+}
+
+.filtro-label {
+    font-size: 13px;
+    color: #64748B;
+    font-weight: 500;
+    align-self: center;
+    line-height: 1;
 }
 
 .gastos-filtros-form select,

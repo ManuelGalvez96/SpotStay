@@ -90,16 +90,19 @@
                     <option value="atrasado">Atrasado</option>
                     <option value="parcial">Parcial</option>
                 </select>
-                <input type="month" name="mes_desde" data-filtro-gasto>
-                <input type="month" name="mes_hasta" data-filtro-gasto>
+                <span class="filtro-label">Desde</span>
+                <input type="date" name="periodo_desde" data-filtro-gasto>
+                <span class="filtro-label">Hasta</span>
+                <input type="date" name="periodo_hasta" data-filtro-gasto>
                 <input type="text" name="concepto" data-filtro-gasto placeholder="Buscar concepto">
+                <button type="button" class="btn-limpiar-filtros" onclick="gastosLimpiarFiltros()">Limpiar</button>
             </div>
         </div>
 
         <table class="tabla-admin tabla-gastos">
             <thead>
                 <tr>
-                    <th>MES</th>
+                    <th>PERIODO</th>
                     <th>CONCEPTO</th>
                     <th>CATEGORÍA</th>
                     <th>ÁMBITO</th>
@@ -126,8 +129,8 @@
                             default => $cuota->categoria_gasto ?: 'Sin categoría',
                         };
                     @endphp
-                    <tr class="cuota-row" data-gasto-id="{{ $cuota->id_gasto_fk }}" data-propiedad-id="{{ $propiedad->id_propiedad }}" data-importe="{{ $cuota->importe_total_cuota }}" data-mes="{{ $cuota->mes_cuota }}">
-                        <td class="display-mes">{{ \Carbon\Carbon::parse($cuota->mes_cuota)->translatedFormat('m/Y') }}</td>
+                    <tr class="cuota-row" data-gasto-id="{{ $cuota->id_gasto_fk }}" data-propiedad-id="{{ $propiedad->id_propiedad }}" data-importe="{{ $cuota->importe_total_cuota }}" data-mes="{{ $cuota->mes_cuota }}" data-fecha-inicio="{{ $cuota->fecha_inicio_gasto ?? '' }}" data-fecha-fin="{{ $cuota->fecha_fin_gasto ?? '' }}">
+                        <td class="display-mes">@if($cuota->fecha_inicio_gasto && $cuota->fecha_fin_gasto){{ \Carbon\Carbon::parse($cuota->fecha_inicio_gasto)->format('d/m/Y') }} → {{ \Carbon\Carbon::parse($cuota->fecha_fin_gasto)->format('d/m/Y') }}@else{{ \Carbon\Carbon::parse($cuota->mes_cuota)->translatedFormat('m/Y') }}@endif</td>
                         <td class="display-concepto">{{ $cuota->concepto_gasto ?: 'Sin concepto' }}</td>
                         <td class="display-categoria">{{ $categoriaLabel }}</td>
                         <td class="display-ambito">
@@ -147,9 +150,8 @@
                             <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
                                 <div class="detalle-acciones" style="min-width:160px;">
                                     @if($cuota->estado_cuota !== 'pagado')
-                                        <button type="button" class="btn-cuota-edit link-ver-todos">Editar</button>
-                                        <button type="button" class="btn-cuota-save link-ver-todos" style="display:none;">Guardar</button>
-                                        <button type="button" class="btn-cuota-cancel link-ver-todos" style="display:none;">Cancelar</button>
+                                        <button type="button" class="btn-cuota-edit">Editar</button>
+                                        <button type="button" class="btn-cuota-delete">Eliminar</button>
                                     @endif
                                 </div>
                                 <div class="detalle-pagos-lista">
@@ -206,13 +208,13 @@
                                     <span>Importe (€)</span>
                                     <input type="number" step="0.01" min="0.01" name="importe_estimado" required placeholder="0.00">
                                 </label>
-                                <label>
-                                    <span>Fecha inicio</span>
-                                    <input type="date" name="fecha_inicio_gasto" value="{{ now()->startOfMonth()->toDateString() }}" required>
-                                </label>
-                                <label>
-                                    <span>Fecha fin</span>
-                                    <input type="date" name="fecha_fin_gasto" value="{{ now()->endOfMonth()->toDateString() }}" required>
+                                <label class="date-range-group">
+                                    <span>Período</span>
+                                    <div class="date-range-inputs">
+                                        <input type="date" name="fecha_inicio_gasto" value="{{ now()->startOfMonth()->toDateString() }}" required>
+                                        <span class="date-range-sep">→</span>
+                                        <input type="date" name="fecha_fin_gasto" value="{{ now()->endOfMonth()->toDateString() }}" required>
+                                    </div>
                                 </label>
                             </div>
                         </div>
@@ -221,6 +223,60 @@
                     <div class="mensaje-estado mensaje-error mensaje-error-js" style="display:none;"></div>
 
                     <button class="btn-primary" type="submit">Añadir recibo</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-editar-gasto" class="gestor-modal">
+    <div class="gestor-modal-backdrop" onclick="cerrarModalEditarGasto()"></div>
+    <div class="gestor-modal-content">
+        <div class="gestor-modal-header">
+            <h2>Editar recibo</h2>
+            <button class="gestor-modal-close" onclick="cerrarModalEditarGasto()">✕</button>
+        </div>
+        <div class="gestor-modal-body">
+                <form method="POST" class="property-form" data-ajax-editar-gasto="true">
+                    @csrf
+                    <div class="form-grid">
+                        <div class="form-section">
+                            <h3>Datos del recibo</h3>
+                            <div class="form-subsection">
+                                <label>
+                                    <span>Categoría</span>
+                                    <select name="categoria_gasto" required>
+                                        <option value="" disabled selected>Selecciona una categoría</option>
+                                        <option value="luz">Luz</option>
+                                        <option value="agua">Agua</option>
+                                        <option value="gas">Gas</option>
+                                        <option value="internet">Internet</option>
+                                        <option value="comunidad">Comunidad</option>
+                                        <option value="otros">Otros</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    <span>Concepto (opcional)</span>
+                                    <input type="text" name="concepto_gasto" maxlength="200" placeholder="Ej: recibo de electricidad">
+                                </label>
+                                <label>
+                                    <span>Importe (€)</span>
+                                    <input type="number" step="0.01" min="0.01" name="importe_estimado" required placeholder="0.00">
+                                </label>
+                                <label class="date-range-group">
+                                    <span>Período</span>
+                                    <div class="date-range-inputs">
+                                        <input type="date" name="fecha_inicio_gasto" required>
+                                        <span class="date-range-sep">→</span>
+                                        <input type="date" name="fecha_fin_gasto" required>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mensaje-estado mensaje-error mensaje-error-js" style="display:none;"></div>
+
+                    <button class="btn-primary" type="submit">Guardar cambios</button>
                 </form>
             </div>
         </div>

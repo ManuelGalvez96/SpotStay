@@ -149,5 +149,8 @@ document.querySelectorAll('form[data-ajax-nuevo-gasto="true"]').forEach(function
 });
 
 document.onkeydown = function (evento) {
-  if (evento.key === 'Escape') cerrarModalNuevoGasto();
+  if (evento.key === 'Escape') {
+    cerrarModalNuevoGasto();
+    cerrarModalEditarGasto();
+  }
 };

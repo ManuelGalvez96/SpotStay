@@ -51,6 +51,11 @@ function inicializarGastos() {
         btnPagarTodo.onclick = pagarTodo;
     }
 
+    if (kpiAccion && (!filtroPropiedad || !filtroPropiedad.value)) {
+        kpiAccion.classList.add('d-none', 'oculto');
+        kpiAccion.style.display = 'none';
+    }
+
     function cargarHistorialPagos() {
         if (!historialLista || historialCargando) return;
 
@@ -143,10 +148,10 @@ function inicializarGastos() {
 
                 if (kpiAccion) {
                     if (datos.propiedad_seleccionada) {
-                        kpiAccion.classList.remove('oculto');
+                        kpiAccion.classList.remove('d-none', 'oculto');
                         kpiAccion.style.display = '';
                     } else {
-                        kpiAccion.classList.add('oculto');
+                        kpiAccion.classList.add('d-none', 'oculto');
                         kpiAccion.style.display = 'none';
                     }
                 }

@@ -1726,6 +1726,24 @@ body.pagina-miembro.pagina-mensajes .mensajes-formulario {
 	.contenedor-encabezado, .contenedor-encabezado-miembro {
 		padding: 0 12px;
 	}
+	.contenedor-nav {
+		justify-content: flex-start;
+		padding-left: 0;
+	}
+	.lista-nav {
+		gap: 4px;
+	}
+	.enlace-nav {
+		padding: 12px 10px;
+		font-size: 13px;
+	}
+	.boton-filtros-header span {
+		display: none;
+	}
+	.boton-filtros-header {
+		padding: 0 12px !important;
+		height: 34px !important;
+	}
 	.contenido-miembro {
 		padding: 16px 12px 40px;
 	}

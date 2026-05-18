@@ -3,7 +3,7 @@
 @section('title', 'Mis Gastos y Pagos')
 
 @section('styles')
-    <link rel="stylesheet" href="{{ asset('css/inquilino/gastos.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/inquilino/gastos.css') }}?v=2" />
 @endsection
 
 @section('content')
@@ -51,7 +51,7 @@
             </div>
         </div>
 
-        <div class="kpi-pago-card accion-pagar-todo {{ $propiedad_seleccionada ? '' : 'oculto' }}" id="btn-pagar-todo">
+        <div class="kpi-pago-card accion-pagar-todo {{ $propiedad_seleccionada ? '' : 'd-none oculto' }}" id="btn-pagar-todo">
             <div class="kpi-pago-icon accion">
                 <i class="bi bi-lightning-fill"></i>
             </div>
@@ -135,6 +135,6 @@
 @section('scripts')
     <script src="https://js.stripe.com/v3/"></script>
     <script src="{{ asset('js/miembro/sweetalert_oso.js') }}"></script>
-    <script src="{{ asset('js/inquilino/gastos.js') }}"></script>
+    <script src="{{ asset('js/inquilino/gastos.js') }}?v=2"></script>
     <link rel="stylesheet" href="{{ asset('css/shared/sweetalert-oso.css') }}" />
 @endsection

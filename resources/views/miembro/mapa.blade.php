@@ -14,10 +14,6 @@
 			<div class="contenedor-encabezado">
 				<div class="logo-spotstay">
 					<img src="/img/logo.png"/>
-					<button class="boton-filtros-header" id="boton-toggle-filtros" type="button" aria-label="Ocultar filtros">
-						<i class="bi bi-funnel" aria-hidden="true"></i>
-						<span id="texto-boton-filtros">Ocultar filtros</span>
-					</button>
 				</div>
 				<div class="acciones-miembro">
 					<button class="boton-icono" type="button" aria-label="Notificaciones">

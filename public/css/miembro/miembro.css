@@ -1689,13 +1689,8 @@ body.pagina-miembro.pagina-mensajes .mensajes-formulario {
 
 	.solicitud-columna-doble,
 	.solicitud-columna-completa,
-	.filtros-propiedad-grid,
 	.solicitud-boton {
 		grid-column: 1 / -1;
-	}
-
-	.filtros-propiedad-grid {
-		grid-template-columns: 1fr;
 	}
 }
 
@@ -1791,7 +1786,8 @@ body.pagina-miembro.pagina-mensajes .mensajes-formulario {
 		display: flex;
 		flex-direction: column;
 	}
-	.fila-campos {
+	.fila-campos,
+	.filtros-propiedad-grid {
 		grid-template-columns: repeat(2, 1fr) !important;
 	}
 }

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Arrendador;
 
 use App\Http\Controllers\Controller;
+use App\Models\Usuario;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
@@ -14,15 +16,11 @@ class PropiedadController extends Controller
     public function inicio(Request $request): View
     {
         $arrendadorId = $this->obtenerIdArrendador($request);
-        $propiedadIdEditar = (int) $request->query('editar', 0);
 
         $arrendador = $this->obtenerArrendadorBase($arrendadorId);
         $columnaPrecio = $this->obtenerColumnaPrecioPropiedad();
 
         $propiedades = $this->consultarPropiedades($arrendadorId, $columnaPrecio)->paginate(10);
-        $propiedadEditando = $propiedadIdEditar > 0
-            ? $this->consultarPropiedadEditable($arrendadorId, $propiedadIdEditar, $columnaPrecio)
-            : null;
 
         $totales = $this->obtenerTotales($arrendadorId);
 
@@ -30,7 +28,6 @@ class PropiedadController extends Controller
             'arrendador' => $arrendador,
             'avatarInicial' => $this->obtenerInicialAvatar($arrendador?->nombre_usuario),
             'propiedades' => $propiedades,
-            'propiedadEditando' => $propiedadEditando,
             'totales' => $totales,
             'arrendadorId' => $arrendadorId,
         ]);
@@ -46,14 +43,27 @@ class PropiedadController extends Controller
 
         $datos = $request->validate([
             'titulo_propiedad' => ['required', 'string', 'max:150'],
-            'direccion_propiedad' => ['required', 'string', 'max:255'],
+            'tipo_propiedad' => ['required', 'in:piso,casa,estudio,habitacion'],
+            'calle_propiedad' => ['required', 'string', 'max:150'],
+            'numero_propiedad' => ['required', 'string', 'max:20'],
+            'piso_propiedad' => ['nullable', 'string', 'max:20'],
+            'puerta_propiedad' => ['nullable', 'string', 'max:20'],
             'ciudad_propiedad' => ['required', 'string', 'max:100'],
             'codigo_postal_propiedad' => ['required', 'string', 'max:10'],
-            'latitud_propiedad' => ['nullable', 'numeric'],
-            'longitud_propiedad' => ['nullable', 'numeric'],
-            'descripcion_propiedad' => ['nullable', 'string'],
+            'habitaciones_propiedad' => ['nullable', 'string', 'max:20'],
+            'banos_propiedad' => ['nullable', 'integer', 'min:0'],
+            'metros_cuadrados_propiedad' => ['nullable', 'integer', 'min:0'],
+            'ascensor_propiedad' => ['nullable', 'boolean'],
+            'amueblado_propiedad' => ['nullable', 'boolean'],
+            'piscina_propiedad' => ['nullable', 'boolean'],
+            'terraza_propiedad' => ['nullable', 'boolean'],
+            'garaje_propiedad' => ['nullable', 'boolean'],
+            'aire_acondicionado_propiedad' => ['nullable', 'boolean'],
+            'calefaccion_propiedad' => ['nullable', 'boolean'],
+            'trastero_propiedad' => ['nullable', 'boolean'],
+            'adicional_propiedad' => ['nullable', 'string', 'max:255'],
             'precio_propiedad' => ['required', 'numeric', 'min:0'],
-            'estado_propiedad' => ['required', 'in:borrador,publicada,inactiva,alquilada'],
+            'descripcion_propiedad' => ['nullable', 'string'],
             'imagenes_propiedad' => ['nullable', 'array', 'max:10'],
             'imagenes_propiedad.*' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
@@ -62,20 +72,30 @@ class PropiedadController extends Controller
             'id_arrendador_fk' => $arrendadorId,
             'id_gestor_fk' => $arrendadorId,
             'titulo_propiedad' => $datos['titulo_propiedad'],
+            'tipo_propiedad' => $datos['tipo_propiedad'],
+            'estado_propiedad' => 'borrador',
+            'calle_propiedad' => $datos['calle_propiedad'],
+            'numero_propiedad' => $datos['numero_propiedad'],
+            'piso_propiedad' => $datos['piso_propiedad'] ?? null,
+            'puerta_propiedad' => $datos['puerta_propiedad'] ?? null,
             'ciudad_propiedad' => $datos['ciudad_propiedad'],
             'codigo_postal_propiedad' => $datos['codigo_postal_propiedad'],
-            'latitud_propiedad' => $datos['latitud_propiedad'] ?? null,
-            'longitud_propiedad' => $datos['longitud_propiedad'] ?? null,
-            'descripcion_propiedad' => $datos['descripcion_propiedad'] ?? null,
+            'habitaciones_propiedad' => $datos['habitaciones_propiedad'] ?? null,
+            'banos_propiedad' => $datos['banos_propiedad'] ?? null,
+            'metros_cuadrados_propiedad' => $datos['metros_cuadrados_propiedad'] ?? null,
+            'ascensor_propiedad' => (bool) ($datos['ascensor_propiedad'] ?? false),
+            'amueblado_propiedad' => (bool) ($datos['amueblado_propiedad'] ?? false),
+            'piscina_propiedad' => (bool) ($datos['piscina_propiedad'] ?? false),
+            'terraza_propiedad' => (bool) ($datos['terraza_propiedad'] ?? false),
+            'garaje_propiedad' => (bool) ($datos['garaje_propiedad'] ?? false),
+            'aire_acondicionado_propiedad' => (bool) ($datos['aire_acondicionado_propiedad'] ?? false),
+            'calefaccion_propiedad' => (bool) ($datos['calefaccion_propiedad'] ?? false),
+            'trastero_propiedad' => (bool) ($datos['trastero_propiedad'] ?? false),
+            'adicional_propiedad' => $datos['adicional_propiedad'] ?? null,
             $columnaPrecio => $datos['precio_propiedad'],
-            'estado_propiedad' => $datos['estado_propiedad'],
+            'descripcion_propiedad' => $datos['descripcion_propiedad'] ?? null,
             'actualizado_propiedad' => Carbon::now(),
         ];
-
-        $datosPropiedad = array_merge(
-            $datosPropiedad,
-            $this->mapearDireccionParaGuardar($datos['direccion_propiedad'])
-        );
 
         DB::beginTransaction();
 
@@ -150,7 +170,7 @@ class PropiedadController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
 
-            \Log::error('Error al guardar propiedad del arrendador', [
+            logger()->error('Error al guardar propiedad del arrendador', [
                 'arrendador_id' => $arrendadorId,
                 'propiedad_id' => $propiedadId,
                 'error' => $exception->getMessage(),
@@ -173,57 +193,26 @@ class PropiedadController extends Controller
 
         $mensaje = $esEdicion ? 'Propiedad actualizada correctamente.' : 'Propiedad creada correctamente.';
 
+        $propiedadActualizada = DB::table('tbl_propiedad as p')
+            ->where('p.id_propiedad', $propiedadId)
+            ->where('p.id_arrendador_fk', $arrendadorId)
+            ->select(
+                'p.id_propiedad',
+                'p.titulo_propiedad',
+                DB::raw($this->obtenerSelectDireccionPropiedad('p')),
+                'p.ciudad_propiedad',
+                'p.codigo_postal_propiedad',
+                DB::raw("p.{$columnaPrecio} as precio_propiedad"),
+                'p.estado_propiedad'
+            )
+            ->first();
+
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
                 'message' => $mensaje,
                 'arrendador_id' => $arrendadorId,
-            ]);
-        }
-
-        return redirect()
-            ->route('arrendador.propiedades', ['arrendador_id' => $arrendadorId])
-            ->with('success', $mensaje);
-    }
-
-    public function alternarEstado(Request $request, int $id)
-    {
-        $arrendadorId = $this->obtenerIdArrendador($request);
-
-        $propiedad = DB::table('tbl_propiedad')
-            ->where('id_propiedad', $id)
-            ->where('id_arrendador_fk', $arrendadorId)
-            ->first();
-
-        if (!$propiedad) {
-            if ($request->expectsJson() || $request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No se encontró la propiedad.',
-                ], 404);
-            }
-
-            return redirect()
-                ->route('arrendador.propiedades', ['arrendador_id' => $arrendadorId])
-                ->with('error', 'No se encontró la propiedad.');
-        }
-
-        $nuevoEstado = $propiedad->estado_propiedad === 'publicada' ? 'inactiva' : 'publicada';
-
-        DB::table('tbl_propiedad')
-            ->where('id_propiedad', $id)
-            ->update([
-                'estado_propiedad' => $nuevoEstado,
-                'actualizado_propiedad' => Carbon::now(),
-            ]);
-
-        $mensaje = $nuevoEstado === 'publicada' ? 'Propiedad publicada.' : 'Propiedad inactivada.';
-
-        if ($request->expectsJson() || $request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => $mensaje,
-                'estado' => $nuevoEstado,
+                'propiedad' => $propiedadActualizada,
             ]);
         }
 
@@ -272,10 +261,47 @@ class PropiedadController extends Controller
         ]);
     }
 
+    public function datosEdicion(Request $request, int $id)
+    {
+        $arrendadorId = $this->obtenerIdArrendador($request);
+        $columnaPrecio = $this->obtenerColumnaPrecioPropiedad();
+
+        $propiedad = $this->consultarPropiedadEditable($arrendadorId, $id, $columnaPrecio);
+
+        if (!$propiedad) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró la propiedad para editar.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'propiedad' => $propiedad,
+        ]);
+    }
+
     private function consultarPropiedades(int $arrendadorId, string $columnaPrecio)
     {
         return DB::table('tbl_propiedad as p')
-            ->leftJoin(DB::raw('(SELECT id_propiedad_fk, COUNT(*) as total_inquilinos FROM tbl_alquiler WHERE estado_alquiler = "activo" GROUP BY id_propiedad_fk) as alq'), 'alq.id_propiedad_fk', '=', 'p.id_propiedad')
+        //Obtener inquilinos
+            ->leftJoin(DB::raw('(SELECT id_propiedad_fk, COUNT(*) as total_inquilinos FROM tbl_alquiler GROUP BY id_propiedad_fk) as alq'), 'alq.id_propiedad_fk', '=', 'p.id_propiedad')
+        //Obtener nombre del gestor 
+            ->leftJoin('tbl_usuario as g', 'g.id_usuario', '=', 'p.id_gestor_fk')
+        //Obtener total de incidencias
+            ->leftJoin(DB::raw('(SELECT id_propiedad_fk, COUNT(*) as total_incidencias FROM tbl_incidencia GROUP BY id_propiedad_fk) as inc'), 'inc.id_propiedad_fk', '=', 'p.id_propiedad')
+        //Obtener cuotas de alquiler atrasadas y pendientes
+            ->leftJoin(DB::raw('(
+                SELECT
+                    a.id_propiedad_fk,
+                    SUM(CASE WHEN ac.estado = "atrasado" THEN 1 ELSE 0 END) as cuotas_atrasadas,
+                    SUM(CASE WHEN ac.estado = "pendiente" THEN 1 ELSE 0 END) as cuotas_pendientes
+                FROM tbl_alquiler_cuota ac
+                JOIN tbl_alquiler a
+                    ON a.id_alquiler = ac.id_alquiler_fk
+                GROUP BY a.id_propiedad_fk
+            ) as cuotas'), 'cuotas.id_propiedad_fk', '=', 'p.id_propiedad')
+        //QUEDA AÑADIR GASTOS ATRASADOS Y PENDIENTES
             ->where('p.id_arrendador_fk', $arrendadorId)
             ->select(
                 'p.id_propiedad',
@@ -286,27 +312,47 @@ class PropiedadController extends Controller
                 'p.estado_propiedad',
                 DB::raw("p.{$columnaPrecio} as precio_propiedad"),
                 'alq.total_inquilinos',
-                'p.creado_propiedad'
+                'p.creado_propiedad',
+                'g.nombre_usuario as nombre_gestor',
+                'inc.total_incidencias',
+                'cuotas.cuotas_atrasadas',
+                'cuotas.cuotas_pendientes'
             )
             ->orderByDesc('p.creado_propiedad');
     }
 
     private function consultarPropiedadEditable(int $arrendadorId, int $propiedadId, string $columnaPrecio)
     {
-        return DB::table('tbl_propiedad')
-            ->where('id_propiedad', $propiedadId)
-            ->where('id_arrendador_fk', $arrendadorId)
+        return DB::table('tbl_propiedad as p')
+            ->where('p.id_propiedad', $propiedadId)
+            ->where('p.id_arrendador_fk', $arrendadorId)
             ->select(
-                'id_propiedad',
-                'titulo_propiedad',
-                DB::raw($this->obtenerSelectDireccionPropiedad('tbl_propiedad')),
-                'ciudad_propiedad',
-                'codigo_postal_propiedad',
-                'latitud_propiedad',
-                'longitud_propiedad',
-                'descripcion_propiedad',
-                DB::raw("{$columnaPrecio} as precio_propiedad"),
-                'estado_propiedad'
+                'p.id_propiedad',
+                'p.titulo_propiedad',
+                'p.tipo_propiedad',
+                'p.calle_propiedad',
+                'p.numero_propiedad',
+                'p.piso_propiedad',
+                'p.puerta_propiedad',
+                DB::raw($this->obtenerSelectDireccionPropiedad('p')),
+                'p.ciudad_propiedad',
+                'p.codigo_postal_propiedad',
+                'p.latitud_propiedad',
+                'p.longitud_propiedad',
+                'p.descripcion_propiedad',
+                DB::raw("p.{$columnaPrecio} as precio_propiedad"),
+                'p.estado_propiedad',
+                'p.banos_propiedad',
+                'p.metros_cuadrados_propiedad',
+                'p.ascensor_propiedad',
+                'p.amueblado_propiedad',
+                'p.piscina_propiedad',
+                'p.terraza_propiedad',
+                'p.garaje_propiedad',
+                'p.aire_acondicionado_propiedad',
+                'p.calefaccion_propiedad',
+                'p.trastero_propiedad',
+                'p.adicional_propiedad'
             )
             ->first();
     }
@@ -337,15 +383,20 @@ class PropiedadController extends Controller
 
     private function obtenerIdArrendador(Request $request): int
     {
-        // Intentar obtener del input del formulario primero (para POST con edición)
+        if (Auth::check()) {
+            $usuarioAutenticado = Auth::user();
+
+            if ($usuarioAutenticado instanceof Usuario && $usuarioAutenticado->roles()->where('slug_rol', 'arrendador')->exists()) {
+                return (int) ($usuarioAutenticado->id_usuario ?? $usuarioAutenticado->id ?? 0);
+            }
+        }
+
         $arrendadorId = (int) $request->input('arrendador_id', 0);
 
-        // Si no está en el input, intentar del query string
         if ($arrendadorId <= 0) {
             $arrendadorId = (int) $request->query('arrendador_id', 0);
         }
 
-        // Si sigue sin haber valor, obtener el primer arrendador activo con propiedades
         if ($arrendadorId > 0) {
             return $arrendadorId;
         }
@@ -450,5 +501,77 @@ class PropiedadController extends Controller
         }
 
         return mb_strtoupper(mb_substr(trim($nombre), 0, 1));
+    }
+
+    //MODAL CONFIGURACION GESTOR
+
+    //Ver permisos del gestor
+    public function getPermisosGestor($idPropiedad){
+        $permisos = DB::table('tbl_propiedad as prop')
+
+        ->leftJoin('tbl_usuario as u', 'u.id_usuario', '=', 'prop.id_gestor_fk')
+
+        ->leftJoin('tbl_propiedad_permisos as p', function ($join) {
+            $join->on('p.id_propiedad_fk', '=', 'prop.id_propiedad')
+                 ->on('p.id_gestor_fk', '=', 'prop.id_gestor_fk');
+        })
+
+        ->where('prop.id_propiedad', $idPropiedad)
+
+        ->select(
+            'u.id_usuario as id_gestor',
+            'u.nombre_usuario as nombre_gestor',
+            'u.email_usuario as email_gestor',
+
+            'p.incidencias',
+            'p.gastos',
+            'p.chat',
+            'p.editar_propiedad'
+        )
+
+        ->first();
+        //Si no hay permisos específicos se devuelve false, por si no están creados aún
+        return response()->json([
+            'id_gestor' => $permisos?->id_gestor ?? null,
+            'nombre_gestor' => $permisos?->nombre_gestor ?? null,
+            'email_gestor' => $permisos?->email_gestor ?? null,
+            'incidencias' => (bool) ($permisos?->incidencias ?? false),
+            'gastos' => (bool) ($permisos?->gastos ?? false),
+            'chat' => (bool) ($permisos?->chat ?? false),
+            'editar_propiedad' => (bool) ($permisos?->editar_propiedad ?? false),
+        ]);
+    }
+
+    //Actualizar permisos del gestor
+    public function updatePermisosGestor(Request $request, $idPropiedad){
+        // Obtener id del gestor desde la petición si viene, si no usar el id_gestor_fk de la propiedad
+        $idGestor = $request->input('gestor_id');
+        if (empty($idGestor)) {
+            $idGestor = DB::table('tbl_propiedad')
+                ->where('id_propiedad', $idPropiedad)
+                ->value('id_gestor_fk');
+        }
+
+        if (empty($idGestor)) {
+            return response()->json(['success' => false, 'message' => 'Gestor no encontrado.'], 400);
+        }
+
+        // Usar la tabla de permisos vinculada a propiedad
+        DB::table('tbl_propiedad_permisos')
+            ->updateOrInsert(
+                [
+                    'id_gestor_fk' => $idGestor,
+                    'id_propiedad_fk' => $idPropiedad,
+                ],
+                [
+                    'incidencias' => (bool) $request->incidencias,
+                    'gastos' => (bool) $request->gastos,
+                    'chat' => (bool) $request->chat,
+                    'editar_propiedad' => (bool) $request->editar_propiedad,
+                    'updated_at' => now(),
+                ]
+            );
+
+        return response()->json(['success' => true]);
     }
 }

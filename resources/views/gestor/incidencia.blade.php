@@ -10,11 +10,11 @@
     <a href="{{ route('gestor.dashboard') }}" class="volver-link">← Volver al dashboard</a>
 
     @if(session('ok'))
-        <div class="alerta ok" id="flash-ok" data-msg="{{ session('ok') }}"></div>
+        <div class="alerta ok" data-flash-success="{{ session('ok') }}"></div>
     @endif
 
     @if(session('error'))
-        <div class="alerta error" id="flash-error" data-msg="{{ session('error') }}"></div>
+        <div class="alerta error" data-flash-error="{{ session('error') }}"></div>
     @endif
 
     @if($errors->any())
@@ -157,4 +157,18 @@
         </aside>
     </section>
 </div>
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const flashOk = document.querySelector('[data-flash-success]');
+    const flashError = document.querySelector('[data-flash-error]');
+    if (flashOk && flashOk.dataset.flashSuccess && window.swalSuccess) {
+        swalSuccess('Éxito', flashOk.dataset.flashSuccess);
+    }
+    if (flashError && flashError.dataset.flashError && window.swalError) {
+        swalError('Error', flashError.dataset.flashError);
+    }
+});
+</script>
+@endsection
 @endsection

@@ -1,0 +1,121 @@
+/* Estilos para minigráficos del dashboard */
+
+.welcome-section {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.mini-chart {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(255, 255, 255, 0.68) 100%);
+    border: 1px solid rgba(220, 229, 236, 0.75);
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: 0 12px 28px -22px rgba(15, 27, 45, 0.35);
+    transition: all 0.2s ease;
+}
+
+.mini-chart:hover {
+    box-shadow: 0 22px 40px -28px rgba(15, 27, 45, 0.42);
+    border-color: rgba(18, 59, 122, 0.26);
+    transform: translateY(-3px);
+}
+
+.chart-container {
+    position: relative;
+    height: 140px;
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.chart-container canvas {
+    max-height: 140px;
+}
+
+.chart-label {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.chart-label::before {
+    content: "";
+    display: block;
+    width: 44px;
+    height: 3px;
+    margin: 0 auto 8px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(18, 59, 122, 0.22), rgba(18, 59, 122, 0.78));
+}
+
+.dashboard-header {
+    grid-column: auto;
+    width: 100%;
+    margin: 0;
+    padding: 24px 28px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(255, 255, 255, 0.68) 100%);
+    border: 1px solid rgba(220, 229, 236, 0.75);
+    border-radius: 24px;
+    box-shadow: 0 18px 40px -32px rgba(15, 27, 45, 0.28);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .welcome-section {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .mini-chart {
+        grid-column: 1 / -1;
+    }
+
+    .dashboard-header {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .welcome-section {
+        grid-template-columns: 1fr;
+        margin-bottom: 20px;
+    }
+
+    .mini-chart {
+        padding: 12px;
+    }
+
+    .chart-container {
+        height: 100px;
+    }
+
+    .dashboard-header {
+        padding: 18px;
+        border-radius: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-section {
+        gap: 12px;
+    }
+
+    .mini-chart {
+        padding: 10px;
+    }
+
+    .chart-container {
+        height: 80px;
+    }
+
+    .dashboard-header {
+        padding: 14px;
+    }
+}

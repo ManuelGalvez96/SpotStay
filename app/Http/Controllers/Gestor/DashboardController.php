@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    use GestorPermisosTrait;
     public function index()
     {
         $gestor = Auth::user();
@@ -24,6 +25,13 @@ class DashboardController extends Controller
                                 ->where('tbl_propiedad.id_gestor_fk', $gestorId);
                         });
                 });
+            })
+            ->whereExists(function ($query) use ($gestorId) {
+                $query->selectRaw(1)
+                    ->from('tbl_propiedad_permisos')
+                    ->whereColumn('tbl_propiedad_permisos.id_propiedad_fk', 'tbl_propiedad.id_propiedad')
+                    ->where('tbl_propiedad_permisos.id_gestor_fk', $gestorId)
+                    ->where('tbl_propiedad_permisos.incidencias', true);
             });
 
         $incidenciasNuevas = (clone $baseIncidencias)
@@ -81,16 +89,50 @@ class DashboardController extends Controller
             })
             ->groupBy('id_propiedad_fk');
 
+        $subAlquilerActivo = DB::table('tbl_alquiler')
+            ->select('id_propiedad_fk', 'id_alquiler', 'id_inquilino_fk', 'fecha_inicio_alquiler', 'fecha_fin_alquiler')
+            ->where('estado_alquiler', 'activo');
+
+        $subPagosPendientes = DB::table('tbl_alquiler')
+            ->join('tbl_alquiler_cuota', 'tbl_alquiler_cuota.id_alquiler_fk', '=', 'tbl_alquiler.id_alquiler')
+            ->select('tbl_alquiler.id_propiedad_fk', DB::raw('COUNT(*) as total_pagos_pendientes'))
+            ->where('tbl_alquiler.estado_alquiler', 'activo')
+            ->where('tbl_alquiler_cuota.estado', 'pendiente')
+            ->groupBy('tbl_alquiler.id_propiedad_fk');
+
+        $subPagosAtrasados = DB::table('tbl_alquiler')
+            ->join('tbl_alquiler_cuota', 'tbl_alquiler_cuota.id_alquiler_fk', '=', 'tbl_alquiler.id_alquiler')
+            ->select('tbl_alquiler.id_propiedad_fk', DB::raw('COUNT(*) as total_pagos_atrasados'))
+            ->where('tbl_alquiler.estado_alquiler', 'activo')
+            ->where('tbl_alquiler_cuota.estado', 'atrasado')
+            ->groupBy('tbl_alquiler.id_propiedad_fk');
+
         $propiedadesAsignadas = DB::table('tbl_propiedad')
             ->leftJoinSub($subQueryIncidenciasActivas, 'inc_activas', function ($join) {
                 $join->on('inc_activas.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad');
             })
+            ->leftJoinSub($subAlquilerActivo, 'alq_activo', function ($join) {
+                $join->on('alq_activo.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad');
+            })
+            ->leftJoinSub($subPagosPendientes, 'pagos_pendientes', function ($join) {
+                $join->on('pagos_pendientes.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad');
+            })
+            ->leftJoinSub($subPagosAtrasados, 'pagos_atrasados', function ($join) {
+                $join->on('pagos_atrasados.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad');
+            })
+            ->leftJoin('tbl_usuario as inquilino', 'inquilino.id_usuario', '=', 'alq_activo.id_inquilino_fk')
             ->select(
                 'tbl_propiedad.id_propiedad',
                 'tbl_propiedad.titulo_propiedad',
                 DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
                 'tbl_propiedad.ciudad_propiedad',
-                DB::raw('COALESCE(inc_activas.incidencias_activas, 0) as incidencias_activas')
+                DB::raw('COALESCE(inc_activas.incidencias_activas, 0) as incidencias_activas'),
+                DB::raw('COALESCE(pagos_pendientes.total_pagos_pendientes, 0) as pagos_pendientes'),
+                DB::raw('COALESCE(pagos_atrasados.total_pagos_atrasados, 0) as pagos_atrasados'),
+                'alq_activo.id_alquiler',
+                'alq_activo.fecha_inicio_alquiler',
+                'alq_activo.fecha_fin_alquiler',
+                'inquilino.nombre_usuario as nombre_inquilino'
             )
             ->when($gestorId, function ($query) use ($gestorId) {
                 $query->where('tbl_propiedad.id_gestor_fk', $gestorId);
@@ -126,11 +168,39 @@ class DashboardController extends Controller
             ->limit(6)
             ->get();
 
+        $mensajesSinLeer = DB::table('tbl_conversacion')
+            ->join('tbl_conversacion_usuario', function ($join) use ($gestorId) {
+                $join->on('tbl_conversacion_usuario.id_conversacion_fk', '=', 'tbl_conversacion.id_conversacion')
+                    ->where('tbl_conversacion_usuario.id_usuario_fk', $gestorId);
+            })
+            ->leftJoin(DB::raw('(SELECT id_conversacion_fk, MAX(creado_mensaje) as ultimo_creado FROM tbl_mensaje GROUP BY id_conversacion_fk) as ult'), function ($join) {
+                $join->on('ult.id_conversacion_fk', '=', 'tbl_conversacion.id_conversacion');
+            })
+            ->where(function ($query) {
+                $query->whereNull('tbl_conversacion_usuario.ultima_lectura_conv_usuario')
+                    ->orWhereColumn('ult.ultimo_creado', '>', 'tbl_conversacion_usuario.ultima_lectura_conv_usuario');
+            })
+            ->count();
+
         $resumenEstados = [
             'abierta' => (clone $baseIncidencias)->where('tbl_incidencia.estado_incidencia', 'abierta')->count(),
             'en_proceso' => (clone $baseIncidencias)->where('tbl_incidencia.estado_incidencia', 'en_proceso')->count(),
             'esperando' => (clone $baseIncidencias)->where('tbl_incidencia.estado_incidencia', 'esperando')->count(),
         ];
+
+        $totalesPropiedades = (object) [
+            'total' => DB::table('tbl_propiedad')->where('id_gestor_fk', $gestorId)->count(),
+            'con_alquiler' => DB::table('tbl_alquiler')
+                ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
+                ->where('tbl_propiedad.id_gestor_fk', $gestorId)
+                ->where('tbl_alquiler.estado_alquiler', 'activo')
+                ->count(),
+        ];
+
+        $permisosDashboard = [];
+        foreach ($propiedadesAsignadas as $p) {
+            $permisosDashboard[$p->id_propiedad] = $this->getPermisosPropiedad($gestorId, (int) $p->id_propiedad);
+        }
 
         return view('gestor.dashboard', compact(
             'incidenciasNuevas',
@@ -144,7 +214,10 @@ class DashboardController extends Controller
             'esperandoInquilino',
             'totalEsperandoDetalle',
             'notificaciones',
-            'resumenEstados'
+            'mensajesSinLeer',
+            'resumenEstados',
+            'totalesPropiedades',
+            'permisosDashboard'
         ));
     }
 }

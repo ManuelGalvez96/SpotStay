@@ -1,30 +1,15 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Propiedades del Arrendador - SpotStay</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{{ asset('css/arrendador/propiedades.css') }}" />
-</head>
-<body>
-<div class="page-shell">
-    <header class="page-hero">
-        <div>
-            <p class="eyebrow">Arrendador</p>
-            <h1>Gestiona tus propiedades</h1>
-            <p class="hero-copy">Crea, edita y publica inmuebles de tu portafolio.</p>
-        </div>
-        <div class="hero-lateral">
-            <div class="hero-avatar">{{ $avatarInicial }}</div>
-            <a class="btn-volver" href="{{ route('arrendador.dashboard', ['arrendador_id' => $arrendadorId]) }}">← Volver al dashboard</a>
-            <a class="btn-volver" href="{{ route('logout') }}">Cerrar sesion</a>
-        </div>
-    </header>
+@extends('layouts.arrendador')
 
+@section('titulo', 'Gestiona tus propiedades')
+@section('titulo-cabecera', 'Gestiona tus propiedades')
+@section('subtitulo', 'Crea, edita y publica inmuebles de tu portafolio.')
+@section('avatar', $avatarInicial)
+
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/arrendador/propiedades.css') }}" />
+@endsection
+
+@section('content')
     @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
@@ -38,225 +23,380 @@
         <div class="stat-card"><span>{{ $totales['publicadas'] }}</span><small>Publicadas</small></div>
         <div class="stat-card"><span>{{ $totales['alquiladas'] }}</span><small>Alquiladas</small></div>
         <div class="stat-card"><span>{{ $totales['inactivas'] }}</span><small>Inactivas</small></div>
+        <button class="stat-card btn-nueva-propiedad" type="button" data-arrendador-id="{{ $arrendadorId }}" onclick="abrirModalFormulario(this.dataset.arrendadorId)">
+            <span>+</span>
+            <small>Nueva propiedad</small>
+        </button>
     </section>
 
     <section class="content-grid">
-        <div class="panel form-panel">
-            <div class="panel-header">
-                <h2>{{ $propiedadEditando ? 'Editar propiedad' : 'Nueva propiedad' }}</h2>
-                @if ($propiedadEditando)
-                    <a class="link-secondary" href="{{ route('arrendador.propiedades', ['arrendador_id' => $arrendadorId]) }}">Cancelar edición</a>
-                @endif
-            </div>
-
-            <form method="POST" action="{{ route('arrendador.propiedades.store') }}" class="property-form" data-ajax-form="true" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" name="id_propiedad" value="{{ old('id_propiedad', $propiedadEditando->id_propiedad ?? '') }}" />
-                <input type="hidden" name="arrendador_id" value="{{ $arrendadorId }}" />
-                <input type="hidden" name="imagen-principal-indice" id="imagen-principal-indice" value="-1" />
-
-                <div class="form-grid">
-                    <label>
-                        <span>Título</span>
-                        <input type="text" name="titulo_propiedad" value="{{ old('titulo_propiedad', $propiedadEditando->titulo_propiedad ?? '') }}" required>
-                    </label>
-                    <label>
-                        <span>Estado</span>
-                        <select name="estado_propiedad" required>
-                            @foreach (['borrador' => 'Borrador', 'publicada' => 'Publicada', 'alquilada' => 'Alquilada', 'inactiva' => 'Inactiva'] as $valor => $texto)
-                                <option value="{{ $valor }}" @selected(old('estado_propiedad', $propiedadEditando->estado_propiedad ?? 'borrador') === $valor)>{{ $texto }}</option>
-                            @endforeach
-                        </select>
-                    </label>
-                    <label class="wide">
-                        <span>Dirección</span>
-                        <input type="text" name="direccion_propiedad" value="{{ old('direccion_propiedad', $propiedadEditando->direccion_propiedad ?? '') }}" required>
-                    </label>
-                    <label>
-                        <span>Ciudad</span>
-                        <input type="text" name="ciudad_propiedad" value="{{ old('ciudad_propiedad', $propiedadEditando->ciudad_propiedad ?? '') }}" required>
-                    </label>
-                    <label>
-                        <span>Código postal</span>
-                        <input type="text" name="codigo_postal_propiedad" value="{{ old('codigo_postal_propiedad', $propiedadEditando->codigo_postal_propiedad ?? '') }}" required>
-                    </label>
-                    <label>
-                        <span>Latitud</span>
-                        <input type="number" step="0.0000001" name="latitud_propiedad" value="{{ old('latitud_propiedad', $propiedadEditando->latitud_propiedad ?? '') }}">
-                    </label>
-                    <label>
-                        <span>Longitud</span>
-                        <input type="number" step="0.0000001" name="longitud_propiedad" value="{{ old('longitud_propiedad', $propiedadEditando->longitud_propiedad ?? '') }}">
-                    </label>
-                    <label>
-                        <span>Precio mensual</span>
-                        <input type="number" step="0.01" name="precio_propiedad" value="{{ old('precio_propiedad', $propiedadEditando->precio_propiedad ?? '') }}" required>
-                    </label>
-                    <label class="wide">
-                        <span>Descripción</span>
-                        <textarea name="descripcion_propiedad" rows="5">{{ old('descripcion_propiedad', $propiedadEditando->descripcion_propiedad ?? '') }}</textarea>
-                    </label>
-                    <label class="wide">
-                        <span>Imágenes de la propiedad (máximo 10)</span>
-                        <input type="file" name="imagenes_propiedad[]" id="imagenes-propiedad" accept="image/jpeg,image/png,image/webp" multiple>
-                        <small class="input-help">Puedes subir hasta 10 imágenes (JPG, PNG, WEBP). Solo puedes anclar una como principal.</small>
-                    </label>
-                    <div id="contenedor-previa-imagenes" style="display: none; margin-top: 15px;">
-                        <p class="input-help"><strong>Vista previa y seleccionar principal:</strong></p>
-                        <div id="lista-previa-imagenes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 10px;"></div>
-                    </div>
-                </div>
-
-                <button class="btn-primary" type="submit">{{ $propiedadEditando ? 'Guardar cambios' : 'Crear propiedad' }}</button>
-            </form>
-        </div>
-
         <div class="panel list-panel">
             <div class="panel-header">
                 <h2>Mis propiedades</h2>
                 <a class="link-secondary" href="{{ route('arrendador.dashboard', ['arrendador_id' => $arrendadorId]) }}">Volver al dashboard</a>
             </div>
 
-            <div class="property-list">
-                @forelse ($propiedades as $propiedad)
-                    <article class="property-card">
-                        <div>
-                            <p class="property-title">{{ $propiedad->titulo_propiedad }}</p>
-                            <p class="property-meta">{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }} · {{ $propiedad->codigo_postal_propiedad }}</p>
-                            <p class="property-meta">{{ number_format((float) $propiedad->precio_propiedad, 2, ',', '.') }} €/mes · {{ $propiedad->total_inquilinos ?? 0 }} inquilinos activos</p>
-                        </div>
-                        <div class="property-actions">
-                            <span class="badge badge-{{ $propiedad->estado_propiedad }}">{{ ucfirst($propiedad->estado_propiedad) }}</span>
-                            <a class="mini-link" href="{{ route('arrendador.propiedades', ['arrendador_id' => $arrendadorId, 'editar' => $propiedad->id_propiedad]) }}">Editar</a>
-                            <button class="mini-link" type="button" onclick="abrirModalPropiedad({{ $propiedad->id_propiedad }}, {{ $arrendadorId }})">Ver</button>
-                            <form method="POST" action="{{ route('arrendador.propiedades.estado', $propiedad->id_propiedad) }}" data-ajax-state-form="true">
-                                @csrf
-                                <input type="hidden" name="arrendador_id" value="{{ $arrendadorId }}" />
-                                <button class="mini-button" type="submit" data-state-button="true">
-                                    {{ $propiedad->estado_propiedad === 'publicada' ? 'Inactivar' : 'Publicar' }}
+            <table class="properties-table">
+                <thead>
+                        <th>Propiedades</th>
+                        <th>Estado</th>
+                        <th>Incidencias</th>
+                        <th>Pagos</th>
+                        <th>Gestor</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($propiedades as $propiedad)
+                        <tr>
+                            <td>
+                                <div class="property-info">
+                                    <p class="property-title">{{ $propiedad->titulo_propiedad }}</p>
+                                    <p class="property-meta">{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }} {{ $propiedad->codigo_postal_propiedad }}</p>
+                                    <p class="property-meta">{{ number_format((float) $propiedad->precio_propiedad, 2, ',', '.') }} €/mes</p>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{ $propiedad->estado_propiedad }}">{{ ucfirst($propiedad->estado_propiedad) }}</span>
+                            </td>
+                            <td>
+                                {{ $propiedad->total_incidencias ?? 'Sin incidencias' }}
+                            </td>
+                            @php
+                                //Cálculo de las cuotas
+                                $atrasadas = $propiedad->cuotas_atrasadas ?? 0;
+                                $pendientes = $propiedad->cuotas_pendientes ?? 0;
+
+                                if($atrasadas > 0) {
+                                    $estado = 'atrasado';
+                                    $label = 'Atrasado';
+                                } elseif($pendientes > 0) {
+                                    $estado = 'pendiente';
+                                    $label = 'Pendiente';
+                                } else {
+                                    $estado = 'al-dia';
+                                    $label = 'Al día';
+                                }
+                            @endphp
+                            <td>
+                                <span class="badge badge-{{ $estado }}">{{ $label}}</span>
+                            </td>
+                            <td>
+                                <span class="gestor-nombre">{{ $propiedad->nombre_gestor ?? 'Sin gestor asignado' }}</span>
+                                <button type="button" class="btn-gear" aria-label="Configurar gestor" data-propiedad-id="{{ $propiedad->id_propiedad }}" onclick="abrirModalGestor(this.dataset.propiedadId)">
+                                    <i class="bi bi-gear"></i>
                                 </button>
-                            </form>
-                        </div>
-                    </article>
-                @empty
-                    <div class="empty-state">Aún no tienes propiedades creadas.</div>
-                @endforelse
-            </div>
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="action-link" type="button" data-propiedad-id="{{ $propiedad->id_propiedad }}" onclick="fetchEditData(this.dataset.propiedadId)">Editar</button>
+                                    <button class="action-link" type="button" data-propiedad-id="{{ $propiedad->id_propiedad }}" data-arrendador-id="{{ $arrendadorId }}" onclick="abrirModalPropiedad(this.dataset.propiedadId, this.dataset.arrendadorId)">Previsualizar</button>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center">Aún no tienes propiedades creadas.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
 
             <div class="pagination-wrap">{{ $propiedades->withQueryString()->links() }}</div>
         </div>
     </section>
-</div>
 
-<div id="modal-propiedad" class="modal" style="display: none;">
-    <div class="modal-backdrop" onclick="cerrarModalPropiedad()"></div>
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 id="modal-titulo">Detalles de la propiedad</h2>
-            <button class="modal-close" type="button" onclick="cerrarModalPropiedad()">✕</button>
-        </div>
-        <div class="modal-body" id="modal-body">
-            <div class="spinner">Cargando...</div>
+    <div id="modal-propiedad" class="modal" hidden>
+        <div class="modal-backdrop" onclick="cerrarModalPropiedad()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-titulo">Detalles de la propiedad</h2>
+                <button class="modal-close" type="button" onclick="cerrarModalPropiedad()">✕</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <div class="spinner">Cargando...</div>
+            </div>
         </div>
     </div>
-</div>
 
-<style>
-.modal {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1000;
-}
+<!-- RUTA PARA OBTENER PERMISOS EN EL FETCH -->
+ <script>
+    const rutaPermisosGestor = "{{ route('arrendador.permisos.get', ':propiedad') }}";
+    const rutaDatosEdicionPropiedad = "{{ route('arrendador.propiedades.edit-data', ':id') }}";
+ </script>
+<!-- MODAL GESTOR -->
+    <div id="modal-gestor-config" class="modal" hidden>
+        <div class="modal-backdrop" onclick="cerrarModalGestor()"></div>
+        <div class="modal-content modal-gestor-panel">
+            <div class="modal-header">
+                <h2>Gestión del gestor</h2>
+                <button class="modal-close" id="btnCerrarModalGestor" type="button" onclick="cerrarModalGestor()">✕</button>
+            </div>
+            <div class="modal-body gestor-config-body">
+                <section class="propiedad-context-card" id="propiedad_contexto_modal" aria-live="polite">
+                    <div class="propiedad-context-main">
+                        <span class="propiedad-context-label">Propiedad seleccionada</span>
+                        <h4 class="propiedad-context-title" id="modal_propiedad_titulo">Cargando propiedad...</h4>
+                        <p class="propiedad-context-address" id="modal_propiedad_direccion">-</p>
+                    </div>
+                    <div class="propiedad-context-meta">
+                        <span class="propiedad-context-chip" id="modal_propiedad_precio">Precio no disponible</span>
+                        <span class="propiedad-context-chip" id="modal_propiedad_estado">Estado no disponible</span>
+                    </div>
+                </section>
 
-.modal-backdrop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    cursor: pointer;
-}
+                <div class="gestor-config-grid">
+                    <aside class="gestor-left-panel">
+                        <h3>Asignar gestor</h3>
+                        <p class="gestor-panel-help">Selecciona quién administrará esta propiedad.</p>
 
-.modal-content {
-    position: relative;
-    background: white;
-    border-radius: 12px;
-    max-width: 600px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    z-index: 1001;
-}
+                        <div class="gestor-selector-wrap">
+                            <span class="gestor-selector-label">Gestor seleccionado</span>
+                            <div class="gestor-selector-box" aria-live="polite">
+                                <div class="gestor-avatar" id="gestor_avatar_inicial">-</div>
+                                <div class="gestor-selector-info">
+                                    <span class="gestor-selector-name" id="nombre_gestor">Sin gestor asignado</span>
+                                    <span class="gestor-selector-email" id="email_gestor">Sin email disponible</span>
+                                </div>
+                                <i class="bi bi-chevron-down"></i>
+                            </div>
+                        </div>
 
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    border-bottom: 1px solid #eee;
-}
+                        <button type="button" class="btn-gestor-profile" id="btnVerPerfilGestor" disabled>Ver perfil del gestor</button>
+                    </aside>
 
-.modal-header h2 {
-    margin: 0;
-    font-size: 20px;
-}
+                    <section class="gestor-right-panel">
+                        <h3>Permisos de administración</h3>
+                        <p class="gestor-panel-help">Define exactamente qué acciones puede realizar <strong id="nombre_gestor_subtitulo">el gestor</strong> sobre esta propiedad.</p>
 
-.modal-close {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: #666;
-    padding: 0;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+                        <div class="permissions-grid">
+                            <label class="permission-card" for="permiso-gastos">
+                                <input type="checkbox" id="permiso-gastos" value="1">
+                                <div>
+                                    <span class="permission-title">Gestión de gastos</span>
+                                    <span class="permission-desc">Puede registrar y gestionar gastos y recibos.</span>
+                                </div>
+                            </label>
 
-.modal-close:hover {
-    color: #000;
-}
+                            <label class="permission-card" for="permiso-incidencias">
+                                <input type="checkbox" id="permiso-incidencias" value="1">
+                                <div>
+                                    <span class="permission-title">Gestión de incidencias</span>
+                                    <span class="permission-desc">Coordina incidencias y reparaciones con los inquilinos.</span>
+                                </div>
+                            </label>
 
-.modal-body {
-    padding: 20px;
-}
+                            <label class="permission-card" for="permiso-editar">
+                                <input type="checkbox" id="permiso-editar" value="1">
+                                <div>
+                                    <span class="permission-title">Edición de propiedad</span>
+                                    <span class="permission-desc">Puede actualizar datos y contenido del anuncio.</span>
+                                </div>
+                            </label>
 
-.spinner {
-    text-align: center;
-    color: #999;
-    padding: 40px;
-}
+                            <label class="permission-card" for="permiso-chat">
+                                <input type="checkbox" id="permiso-chat" value="1">
+                                <div>
+                                    <span class="permission-title">Atención al inquilino</span>
+                                    <span class="permission-desc">Gestiona conversaciones y consultas desde el chat.</span>
+                                </div>
+                            </label>
+                        </div>
+                    </section>
+                </div>
 
-.badge {
-    display: inline-block;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-}
+                <div class="modal-footer">
+                    <button class="btn-modal-secondary" type="button" onclick="cerrarModalGestor()">Descartar</button>
+                    <button class="btn-primary" id="btnGuardarPermisosGestor" type="button">Guardar permisos</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-.badge-borrador { background: #fff3cd; color: #856404; }
-.badge-publicada { background: #d4edda; color: #155724; }
-.badge-alquilada { background: #cce5ff; color: #004085; }
-.badge-inactiva { background: #f8d7da; color: #721c24; }
+    <div id="modal-formulario" class="modal" hidden>
+        <div class="modal-backdrop" onclick="cerrarModalFormulario()"></div>
+        <div class="modal-content modal-formulario">
+            <div class="modal-header">
+                <h2 id="modal-formulario-titulo">Nueva propiedad</h2>
+                <button class="modal-close" type="button" onclick="cerrarModalFormulario()">✕</button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ route('arrendador.propiedades.store') }}" class="property-form" data-ajax-form="true" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="id_propiedad" id="form-id-propiedad" value="" />
+                    <input type="hidden" name="arrendador_id" id="form-arrendador-id" value="{{ $arrendadorId }}" />
+                    <input type="hidden" name="imagen-principal-indice" id="imagen-principal-indice" value="-1" />
 
-.error {
-    color: #d32f2f;
-    text-align: center;
-    padding: 20px;
-}
-</style>
+                    <div class="form-grid">
+                        <!-- Información Básica -->
+                        <div class="form-section">
+                            <h3>Información Básica</h3>
+                            <div class="form-subsection">
+                                <label>
+                                    <span>Título</span>
+                                    <input type="text" name="titulo_propiedad" id="form-titulo" value="" required>
+                                </label>
+                                <label>
+                                    <span>Tipo de propiedad</span>
+                                    <select name="tipo_propiedad" id="form-tipo" required>
+                                        <option value="">Selecciona un tipo</option>
+                                        <option value="piso">Piso</option>
+                                        <option value="casa">Casa</option>
+                                        <option value="estudio">Estudio</option>
+                                        <option value="habitacion">Habitación</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </div>
 
+                        <!-- Ubicación -->
+                        <div class="form-section">
+                            <h3>Ubicación</h3>
+                            <div class="form-subsection">
+                                <label>
+                                    <span>Calle</span>
+                                    <input type="text" name="calle_propiedad" id="form-calle" value="" required>
+                                </label>
+                                <label>
+                                    <span>Número</span>
+                                    <input type="text" name="numero_propiedad" id="form-numero" value="" required>
+                                </label>
+                                <label>
+                                    <span>Piso</span>
+                                    <input type="text" name="piso_propiedad" id="form-piso" value="">
+                                </label>
+                                <label>
+                                    <span>Puerta</span>
+                                    <input type="text" name="puerta_propiedad" id="form-puerta" value="">
+                                </label>
+                                <label>
+                                    <span>Código postal</span>
+                                    <input type="text" name="codigo_postal_propiedad" id="form-codigo-postal" value="" required>
+                                </label>
+                                <label class="full-width">
+                                    <span>Ciudad</span>
+                                    <input type="text" name="ciudad_propiedad" id="form-ciudad" value="" required>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Características -->
+                        <div class="form-section">
+                            <h3>Características</h3>
+                            <div class="form-subsection">
+                                <label>
+                                    <span>Habitaciones</span>
+                                    <input type="text" name="habitaciones_propiedad" id="form-habitaciones" value="">
+                                </label>
+                                <label>
+                                    <span>Baños</span>
+                                    <input type="number" name="banos_propiedad" id="form-banos" value="" min="0">
+                                </label>
+                                <label>
+                                    <span>Metros cuadrados</span>
+                                    <input type="number" name="metros_cuadrados_propiedad" id="form-metros" value="" min="0">
+                                </label>
+                            </div>
+                            <div class="form-subsection-divider"></div>
+                            <div class="form-subsection form-subsection-checkboxes">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="ascensor_propiedad" id="form-ascensor" value="1">
+                                    <span>Ascensor</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="amueblado_propiedad" id="form-amueblado" value="1">
+                                    <span>Amueblado</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="piscina_propiedad" id="form-piscina" value="1">
+                                    <span>Piscina</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="terraza_propiedad" id="form-terraza" value="1">
+                                    <span>Terraza</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="garaje_propiedad" id="form-garaje" value="1">
+                                    <span>Garaje</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="aire_acondicionado_propiedad" id="form-aire-acondicionado" value="1">
+                                    <span>Aire acondicionado</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="calefaccion_propiedad" id="form-calefaccion" value="1">
+                                    <span>Calefacción</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="trastero_propiedad" id="form-trastero" value="1">
+                                    <span>Trastero</span>
+                                </label>
+                            </div>
+                            <div class="form-subsection" style="margin-top: 10px;">
+                                <label class="full-width">
+                                    <span>Adicional</span>
+                                    <input type="text" name="adicional_propiedad" id="form-adicional" value="" placeholder="Otras características...">
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Precio -->
+                        <div class="form-section">
+                            <h3>Precio</h3>
+                            <div class="form-subsection">
+                                <label>
+                                    <span>Alquiler mensual (€)</span>
+                                    <input type="number" step="0.01" name="precio_propiedad" id="form-precio" value="" required>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Descripción e Imágenes -->
+                        <div class="form-section">
+                            <h3>Descripción e Imágenes</h3>
+                            <div class="form-subsection">
+                                <label class="full-width">
+                                    <span>Descripción</span>
+                                    <textarea name="descripcion_propiedad" id="form-descripcion" rows="5"></textarea>
+                                </label>
+                                <label class="full-width">
+                                    <span>Imágenes de la propiedad (máximo 10)</span>
+                                    <input type="file" name="imagenes_propiedad[]" id="imagenes-propiedad" accept="image/jpeg,image/png,image/webp" multiple>
+                                    <small class="input-help">Puedes subir hasta 10 imágenes (JPG, PNG, WEBP). Solo puedes anclar una como principal.</small>
+                                </label>
+                                <div id="contenedor-previa-imagenes" hidden>
+                                    <p class="input-help"><strong>Vista previa y seleccionar principal:</strong></p>
+                                    <div id="lista-previa-imagenes"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" type="submit" id="btn-submit-formulario">Publicar propiedad</button>
+                </form>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@section('scripts')
 <script src="{{ asset('js/arrendador/propiedades.js') }}"></script>
-</body>
-</html>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var contenedor = document.getElementById('propiedad-editando-data');
+        if (!contenedor || !window.abrirModalFormulario) {
+            return;
+        }
+
+        try {
+            var datosPropiedad = JSON.parse(contenedor.dataset.propiedad || 'null');
+            var arrendadorId = contenedor.dataset.arrendadorId;
+            if (datosPropiedad && arrendadorId) {
+                abrirModalFormulario(arrendadorId, datosPropiedad);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    });
+</script>
+@endsection

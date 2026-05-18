@@ -5,8 +5,20 @@
     padding: 24px 40px;
 }
 
+.perfil-grid .card-con-franja {
+    display: flex;
+    flex-direction: column;
+}
+
 .perfil-form {
     padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.perfil-form .btn-submit {
+    margin-top: auto;
 }
 
 .perfil-avatar-section {

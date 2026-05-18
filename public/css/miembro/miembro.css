@@ -1702,6 +1702,10 @@ body.pagina-miembro.pagina-mensajes .mensajes-formulario {
 		flex-direction: column;
 		height: auto;
 	}
+	.contenedor-mapa, #mapa {
+		min-height: 55vh;
+		width: 100%;
+	}
 	.panel-filtros {
 		width: 100%;
 		max-height: 40vh;
@@ -1727,7 +1731,7 @@ body.pagina-miembro.pagina-mensajes .mensajes-formulario {
 		padding: 0 12px;
 	}
 	.contenedor-nav {
-		justify-content: flex-start;
+		justify-content: flex-start !important;
 		padding-left: 0;
 	}
 	.lista-nav {

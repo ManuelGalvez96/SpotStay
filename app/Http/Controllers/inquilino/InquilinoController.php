@@ -211,7 +211,6 @@ class InquilinoController extends Controller
 
         if ($numInquilinos > 1) {
             $totalDeuda /= $numInquilinos;
-            $totalGastosPendientes /= $numInquilinos;
         }
 
         $fotos = DB::table('tbl_fotos')->where('id_propiedad_fk', $id)->get();

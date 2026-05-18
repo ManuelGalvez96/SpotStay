@@ -4,6 +4,7 @@
 
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/inquilino/ver_propiedad.css') }}" />
+<link rel="stylesheet" href="{{ asset('css/visor_fotos.css') }}" />
 @endsection
 
 @section('content')
@@ -39,21 +40,36 @@
 
         <!-- Columna Izquierda: Info y Fotos -->
         <div class="columna-izquierda">
-            <!-- Galería Simple -->
-            <div class="galeria-detalle">
+            <!-- Carrusel de Fotos Bootstrap -->
+            <div class="galeria-detalle mb-4">
                 @if ($fotos->count() > 0)
-                <div class="foto-principal">
-                    <img src="{{ $fotoPrincipal }}" alt="Imagen principal de {{ $alquiler->titulo_propiedad }}" class="foto-principal-imagen">
-                </div>
-                <div class="miniaturas">
-                    @foreach ($fotos as $foto)
-                    <div class="miniatura">
-                        <img src="{{ $foto->url_foto }}" alt="Miniatura de {{ $alquiler->titulo_propiedad }}" class="miniatura-imagen">
+                <div id="carouselPropiedadInquilino" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-indicators">
+                        @foreach ($fotos as $index => $foto)
+                            <button type="button" data-bs-target="#carouselPropiedadInquilino" data-bs-slide-to="{{ $index }}" class="{{ $index == 0 ? 'active' : '' }}" aria-current="{{ $index == 0 ? 'true' : 'false' }}" aria-label="Slide {{ $index + 1 }}"></button>
+                        @endforeach
                     </div>
-                    @endforeach
+                    <div class="carousel-inner carrusel-contenedor-inner">
+                        @foreach ($fotos as $index => $foto)
+                            <div class="carousel-item {{ $index == 0 ? 'active' : '' }}">
+                                <img src="{{ $foto->url_foto }}" class="d-block w-100 imagen-carrusel-ampliable" alt="Imagen {{ $index + 1 }} de {{ $alquiler->titulo_propiedad }}" data-bs-toggle="modal" data-bs-target="#modalVisorFotos-{{ $index }}">
+                            </div>
+                        @endforeach
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselPropiedadInquilino" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon carrusel-btn-navegacion" aria-hidden="true"></span>
+                        <span class="visually-hidden">Anterior</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselPropiedadInquilino" data-bs-slide="next">
+                        <span class="carousel-control-next-icon carrusel-btn-navegacion" aria-hidden="true"></span>
+                        <span class="visually-hidden">Siguiente</span>
+                    </button>
                 </div>
                 @else
-                <div class="foto-principal placeholder">No hay fotos disponibles</div>
+                <div class="carrusel-estado-vacio">
+                    <i class="bi bi-image text-muted"></i>
+                    <span>No hay fotos disponibles para esta propiedad.</span>
+                </div>
                 @endif
             </div>
 
@@ -256,6 +272,21 @@
         </div>
     </div>
 </div>
+
+<!-- MODALES VISOR DE FOTOS BOOTSTRAP NATIVO -->
+@if ($fotos->count() > 0)
+    @foreach ($fotos as $index => $foto)
+    <div class="modal fade modal-visor-fotos" id="modalVisorFotos-{{ $index }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <img class="imagen-visor-modal" id="imagen-visor-modal-{{ $index }}" src="{{ $foto->url_foto }}" alt="Vista ampliada {{ $index + 1 }}">
+                </div>
+            </div>
+        </div>
+    </div>
+    @endforeach
+@endif
 
 @endsection
 

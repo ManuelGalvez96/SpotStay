@@ -354,3 +354,33 @@
     }
     .item-status, .item-importe, .item-accion { grid-column: span 1; }
 }
+
+@media (max-width: 768px) {
+    .tabs-gastos {
+        flex-direction: column;
+    }
+    .tab-btn {
+        width: 100%;
+        justify-content: flex-start;
+        border-bottom: 1px solid var(--borde);
+    }
+    .gasto-item-row {
+        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .item-importe {
+        text-align: left;
+        padding-left: 0;
+    }
+    .btn-pagar-item {
+        width: 100%;
+    }
+    .footer-listado {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+}

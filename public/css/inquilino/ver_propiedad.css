@@ -780,3 +780,38 @@
 .badge-suministro-abonado {
 	background-color: #00c4cc !important;
 }
+
+/* =========================================================
+   SECCIÓN RESPONSIVE INTEGRAL (MÓVILES Y TABLETS)
+   ========================================================= */
+@media (max-width: 992px) {
+	.grid-ver-propiedad {
+		grid-template-columns: 1fr; /* Colapsa a 1 columna en tablets y móviles */
+	}
+	.header-detalle {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
+	.detalles-grid {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+@media (max-width: 768px) {
+	.detalles-grid {
+		grid-template-columns: 1fr; /* 1 sola columna de características en móvil */
+	}
+	.foto-principal {
+		height: 260px; /* Reducir altura del carrusel en móvil */
+	}
+	.carrusel-contenedor-inner img {
+		height: 260px !important;
+	}
+	.carrusel-estado-vacio {
+		height: 260px;
+	}
+	.contenedor-ver-propiedad {
+		padding: 12px;
+	}
+}

@@ -1690,3 +1690,66 @@ body.pagina-miembro.pagina-mensajes .mensajes-formulario {
 		grid-template-columns: 1fr;
 	}
 }
+
+/* =========================================================
+   SECCIÓN RESPONSIVE INTEGRAL (MÓVILES Y TABLETS)
+   ========================================================= */
+@media (max-width: 992px) {
+	.contenedor-encabezado, .contenedor-encabezado-miembro {
+		padding: 0 16px;
+	}
+	.contenido-mapa {
+		flex-direction: column;
+		height: auto;
+	}
+	.panel-filtros {
+		width: 100%;
+		max-height: 40vh;
+		border-right: none;
+		border-bottom: 1px solid var(--borde);
+	}
+	body.pagina-mapa.filtros-ocultos .contenido-mapa {
+		height: auto;
+	}
+	.contenedor-listado {
+		grid-template-columns: 1fr;
+	}
+	.grid-propiedades {
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	}
+	.contenido-miembro {
+		padding: 20px 16px;
+	}
+}
+
+@media (max-width: 768px) {
+	.nombre-miembro {
+		display: none; /* En móviles ocultamos el nombre para dejar solo foto y campana */
+	}
+	.acciones-miembro {
+		gap: 10px;
+	}
+	.logo-spotstay img, .marca-miembro img {
+		height: 34px;
+	}
+	.grid-propiedades {
+		grid-template-columns: 1fr;
+	}
+	.detalle-cabecera {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+	.detalle-resumen {
+		grid-template-columns: 1fr !important;
+		display: flex;
+		flex-direction: column;
+	}
+	.detalle-info {
+		grid-template-columns: 1fr !important;
+		display: flex;
+		flex-direction: column;
+	}
+	.fila-campos {
+		grid-template-columns: 1fr;
+	}
+}

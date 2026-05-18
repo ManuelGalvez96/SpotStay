@@ -184,11 +184,34 @@ class InquilinoController extends Controller
             $diasRestantesMes = (int) $hoy->diffInDays($hoy->copy()->endOfMonth()->startOfDay());
         }
 
-        // Usamos el mismo motor que "Mis Gastos" para que no haya NINGUNA discrepancia
-        $resumenCompleto = $this->financeService->obtenerResumenCompletoGastos($userId, $alquiler->id_propiedad_fk);
-        $totalDeuda = $resumenCompleto['total_pendiente'];
-        $totalGastosPendientes = 0; // Se agrupa todo en totalDeuda
-        $numGastosPendientes = count($resumenCompleto['items']);
+        $resumen = $this->financeService->obtenerResumenPagoAlquiler((int) $alquiler->id_alquiler, $alquiler->fecha_inicio_alquiler);
+
+        // Gastos de suministros
+        $totalGastosPendientes = 0;
+        $numGastosPendientes = 0;
+        $conceptosGastos = "";
+        $listaGastos = collect();
+
+        if (Schema::hasTable('tbl_gasto_cuota_detalle')) {
+            $consultaGastos = DB::table('tbl_gasto_cuota_detalle')
+                ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
+                ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+                ->where('tbl_gasto_cuota_detalle.id_alquiler_fk', $alquiler->id_alquiler)
+                ->where('tbl_gasto_cuota_detalle.id_pagador_fk', $userId)
+                ->whereIn('tbl_gasto_cuota_detalle.estado_detalle', ['pendiente', 'atrasado']);
+
+            $totalGastosPendientes = (float) $consultaGastos->sum('tbl_gasto_cuota_detalle.importe_detalle');
+            $numGastosPendientes = $consultaGastos->count();
+            $listaGastos = $consultaGastos->select('tbl_gasto.categoria_gasto', 'tbl_gasto.concepto_gasto', 'tbl_gasto_cuota_detalle.importe_detalle')->get();
+            $conceptosGastos = implode(", ", $listaGastos->pluck('concepto_gasto')->unique()->toArray());
+        }
+
+        $numInquilinos = max(1, DB::table('tbl_alquiler')->where('id_propiedad_fk', $alquiler->id_propiedad_fk)->where('estado_alquiler', 'activo')->count());
+        $totalDeuda = $resumen['total_deuda'];
+
+        if ($numInquilinos > 1) {
+            $totalDeuda /= $numInquilinos;
+        }
 
         $fotos = DB::table('tbl_fotos')->where('id_propiedad_fk', $id)->get();
         $fotoPrincipal = $fotos->isNotEmpty() ? asset('img/' . $fotos->first()->ruta_foto) : null;
@@ -201,7 +224,7 @@ class InquilinoController extends Controller
             'diasParaFinContrato' => $diasParaFinContrato,
             'fechaFinContrato' => $fechaFinContrato,
             'esIndefinido' => $esIndefinido,
-            'numPagosAtrasados' => $resumenCompleto['items']->where('estado', 'atrasado')->count(),
+            'numPagosAtrasados' => $resumen['num_pagos_atrasados'],
             'totalDeuda' => $totalDeuda,
             'totalGastosPendientes' => $totalGastosPendientes,
             'numGastosPendientes' => $numGastosPendientes,

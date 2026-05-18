@@ -29,6 +29,7 @@ use App\Http\Controllers\Arrendador\IncidenciaController as ArrendadorIncidencia
 use App\Http\Controllers\Gestor\DashboardController as GestorDashboardController;
 use App\Http\Controllers\Gestor\IncidenciaController as GestorIncidenciaController;
 use App\Http\Controllers\Gestor\PropiedadController as GestorPropiedadController;
+use App\Http\Controllers\Gestor\MensajeController as GestorMensajeController;
 
 // Rutas Públicas
 Route::get('/', function () {
@@ -139,6 +140,11 @@ Route::middleware(['role:gestor'])->group(function () {
     Route::get('/gestor/propiedades/{id}/gastos/filtrar', [GestorPropiedadController::class, 'filtrarGastos'])->name('gestor.propiedades.gastos.filtrar');
     Route::get('/gestor/propiedades/{id}/editar-datos', [GestorPropiedadController::class, 'getDatosEdicion'])->name('gestor.propiedades.editar-datos');
     Route::post('/gestor/propiedades/{id}/editar', [GestorPropiedadController::class, 'actualizar'])->name('gestor.propiedades.actualizar');
+
+    Route::get('/gestor/mensajes', [GestorMensajeController::class, 'index'])->name('gestor.mensajes.index');
+    Route::post('/gestor/mensajes/iniciar/{propiedadId}', [GestorMensajeController::class, 'iniciar'])->name('gestor.mensajes.iniciar');
+    Route::get('/gestor/mensajes/{id}', [GestorMensajeController::class, 'mostrar'])->name('gestor.mensajes.mostrar')->whereNumber('id');
+    Route::post('/gestor/mensajes/{id}', [GestorMensajeController::class, 'enviar'])->name('gestor.mensajes.enviar')->whereNumber('id');
 });
 
 // Rutas Arrendador

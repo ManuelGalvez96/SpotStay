@@ -281,6 +281,7 @@ class PropiedadController extends Controller
                 'tbl_alquiler.id_alquiler',
                 'tbl_alquiler.fecha_inicio_alquiler',
                 'tbl_alquiler.fecha_fin_alquiler',
+                'tbl_alquiler.id_inquilino_fk',
                 'inquilino.nombre_usuario as nombre_inquilino',
                 'inquilino.email_usuario as email_inquilino'
             )

@@ -31,6 +31,15 @@
     </div>
     <div class="hero-actions">
         <a href="{{ route('gestor.propiedades') }}" class="btn-volver-propiedades">← Volver a propiedades</a>
+        @if($permisos->chat)
+            <form method="POST" action="{{ route('gestor.mensajes.iniciar', ['propiedadId' => $propiedad->id_propiedad]) }}" style="display:inline">
+                @csrf
+                <input type="hidden" name="tipo" value="arrendador">
+                <button type="submit" class="btn-editar-propiedad" style="background:#123b7a;border-color:#123b7a;">
+                    <i class="bi bi-chat-dots"></i> Chat con arrendador
+                </button>
+            </form>
+        @endif
         @if($permisos->editar_propiedad)
             <button type="button" class="btn-editar-propiedad" onclick="abrirModalEditar({{ $propiedad->id_propiedad }})">
                 <i class="bi bi-pencil"></i> Editar propiedad
@@ -109,6 +118,7 @@
                     <th>EMAIL</th>
                     <th>INICIO</th>
                     <th>FIN</th>
+                    @if($permisos->chat)<th>CHAT</th>@endif
                 </tr>
             </thead>
             <tbody>
@@ -118,10 +128,22 @@
                         <td>{{ $alquiler->email_inquilino }}</td>
                         <td>{{ \Carbon\Carbon::parse($alquiler->fecha_inicio_alquiler)->format('d/m/Y') }}</td>
                         <td>{{ $alquiler->fecha_fin_alquiler ? \Carbon\Carbon::parse($alquiler->fecha_fin_alquiler)->format('d/m/Y') : 'Indefinido' }}</td>
+                        @if($permisos->chat)
+                            <td>
+                                <form method="POST" action="{{ route('gestor.mensajes.iniciar', ['propiedadId' => $propiedad->id_propiedad]) }}" style="display:inline">
+                                    @csrf
+                                    <input type="hidden" name="tipo" value="inquilino">
+                                    <input type="hidden" name="id_usuario" value="{{ $alquiler->id_inquilino_fk }}">
+                                    <button type="submit" class="link-ver-todos" style="background:none;border:none;cursor:pointer;padding:0;font:inherit;color:#123b7a;text-decoration:underline;">
+                                        <i class="bi bi-chat-dots"></i> Chat
+                                    </button>
+                                </form>
+                            </td>
+                        @endif
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="tabla-vacia">No hay alquileres activos para esta propiedad.</td>
+                        <td colspan="{{ $permisos->chat ? 5 : 4 }}" class="tabla-vacia">No hay alquileres activos para esta propiedad.</td>
                     </tr>
                 @endforelse
             </tbody>

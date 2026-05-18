@@ -19,6 +19,7 @@
 <section class="contenedor-chat" data-gestor-id="{{ $gestorId }}">
     <aside class="panel-conversaciones">
         <h2>Conversaciones</h2>
+        <input type="text" id="filtroConversaciones" class="filtro-conversaciones" placeholder="🔍 Buscar usuario" autocomplete="off">
         <div class="lista-conversaciones" id="listaConversaciones">
             @forelse ($conversaciones as $conversacion)
                 @php

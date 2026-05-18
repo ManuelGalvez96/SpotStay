@@ -196,3 +196,14 @@ if (textoMensaje) {
     }
   });
 }
+
+var filtro = document.getElementById('filtroConversaciones');
+if (filtro) {
+  filtro.addEventListener('input', function () {
+    var q = this.value.toLowerCase().trim();
+    document.querySelectorAll('.item-conversacion').forEach(function (item) {
+      var nombre = item.querySelector('.conv-nombre').textContent.toLowerCase();
+      item.style.display = (!q || nombre.includes(q)) ? '' : 'none';
+    });
+  });
+}

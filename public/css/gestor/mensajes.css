@@ -24,10 +24,31 @@
   color: #0f1b2d;
 }
 
+.filtro-conversaciones {
+  width: 100%;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  border: 1px solid #dce5ec;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.filtro-conversaciones:focus {
+  border-color: #123b7a;
+}
+
+.filtro-conversaciones::placeholder {
+  color: #a0aec0;
+}
+
 .lista-conversaciones {
   display: grid;
   gap: 10px;
-  max-height: 520px;
+  max-height: 480px;
   overflow-y: auto;
 }
 

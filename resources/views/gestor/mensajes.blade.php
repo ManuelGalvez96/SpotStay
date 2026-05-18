@@ -26,14 +26,30 @@
                     $ultimo = $conversacion->ultimoMensaje;
                     $activa = $conversacionActiva && $conversacionActiva->id_conversacion === $conversacion->id_conversacion;
                 @endphp
+                @php
+                    $esArrendador = $conversacion->propiedad && (int) $conversacion->propiedad->id_arrendador_fk === (int) ($otro->id_usuario ?? 0);
+                    $rol = $conversacion->propiedad ? ($esArrendador ? 'Arrendador' : 'Inquilino') : null;
+                    $iniciales = strtoupper(substr($otro->nombre_usuario ?? '?', 0, 2));
+                @endphp
                 <button
                     class="item-conversacion {{ $activa ? 'activo' : '' }}"
                     data-conversacion-id="{{ $conversacion->id_conversacion }}"
                     data-propiedad-titulo="{{ $conversacion->propiedad->titulo_propiedad ?? 'Sin propiedad' }}"
                 >
-                    <strong>{{ $otro->nombre_usuario ?? 'Usuario' }}</strong>
-                    <small>{{ $conversacion->propiedad->titulo_propiedad ?? 'Sin propiedad' }}</small>
-                    <span>{{ $ultimo->cuerpo_mensaje ?? 'Sin mensajes todavía' }}</span>
+                    <div class="conv-avatar" style="background:{{ $esArrendador ? '#035498' : '#0b6e4f' }}">{{ $iniciales }}</div>
+                    <div class="conv-info">
+                        <div class="conv-nombre">
+                            {{ $otro->nombre_usuario ?? 'Usuario' }}
+                            @if($rol)<span class="rol-badge">{{ $rol }}</span>@endif
+                        </div>
+                        <div class="conv-propiedad">{{ $conversacion->propiedad->titulo_propiedad ?? 'Sin propiedad' }}</div>
+                        <div class="conv-preview">{{ $ultimo->cuerpo_mensaje ?? 'Sin mensajes todavía' }}</div>
+                    </div>
+                    <div class="conv-meta">
+                        @if($ultimo && $ultimo->creado_mensaje)
+                            <span class="conv-tiempo">{{ \Carbon\Carbon::parse($ultimo->creado_mensaje)->diffForHumans() }}</span>
+                        @endif
+                    </div>
                 </button>
             @empty
                 <p class="vacio">No hay conversaciones disponibles. Inicia un chat desde el detalle de una propiedad.</p>

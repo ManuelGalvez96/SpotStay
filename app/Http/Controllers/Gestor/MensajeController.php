@@ -63,6 +63,14 @@ class MensajeController extends Controller
 
         $otro = $conversacion->participantes->firstWhere('id_usuario', '!=', $gestorId);
 
+        $rol = null;
+        if ($conversacion->id_propiedad_fk && $otro) {
+            $propArrendadorId = (int) DB::table('tbl_propiedad')
+                ->where('id_propiedad', $conversacion->id_propiedad_fk)
+                ->value('id_arrendador_fk');
+            $rol = ($propArrendadorId === (int) $otro->id_usuario) ? 'Arrendador' : 'Inquilino';
+        }
+
         $mensajes = Mensaje::where('id_conversacion_fk', $id)
             ->orderBy('creado_mensaje', 'asc')
             ->get()
@@ -86,6 +94,7 @@ class MensajeController extends Controller
                     'id_usuario' => $otro->id_usuario,
                     'nombre_usuario' => $otro->nombre_usuario,
                     'email_usuario' => $otro->email_usuario,
+                    'rol' => $rol,
                 ] : null,
                 'mensajes' => $mensajes,
             ],

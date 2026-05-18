@@ -93,10 +93,13 @@ function cargarConversacion(idConversacion, propiedadTitulo) {
       var formulario = document.getElementById('formularioMensaje');
 
       if (titulo) {
-        titulo.textContent = conversacion.otro ? conversacion.otro.nombre_usuario : 'Conversación';
+        var nombre = conversacion.otro ? escaparHtml(conversacion.otro.nombre_usuario) : 'Conversación';
+        var rol = conversacion.otro && conversacion.otro.rol ? conversacion.otro.rol : '';
+        titulo.innerHTML = nombre + (rol ? ' <span class="rol-badge">' + rol + '</span>' : '');
       }
       if (subtitulo) {
-        subtitulo.textContent = propiedadTitulo || (conversacion.otro ? (conversacion.otro.email_usuario || '') : '');
+        var email = conversacion.otro && conversacion.otro.email_usuario ? escaparHtml(conversacion.otro.email_usuario) : '';
+        subtitulo.innerHTML = (propiedadTitulo ? escaparHtml(propiedadTitulo) : '') + (propiedadTitulo && email ? ' · ' : '') + email;
       }
       if (inputId) {
         inputId.value = conversacion.id_conversacion;
@@ -152,8 +155,21 @@ function enviarMensajeConFetch(evento) {
       }
 
       textarea.value = '';
-      var propiedadTitulo = document.getElementById('subtituloHilo');
-      cargarConversacion(inputId.value, propiedadTitulo ? propiedadTitulo.textContent : '');
+      var item = document.querySelector('[data-conversacion-id="' + inputId.value + '"]');
+      var propTitulo = item ? item.getAttribute('data-propiedad-titulo') : '';
+      cargarConversacion(inputId.value, propTitulo);
+
+      var item = document.querySelector('[data-conversacion-id="' + inputId.value + '"]');
+      if (item) {
+        var preview = item.querySelector('.conv-preview');
+        var tiempo = item.querySelector('.conv-tiempo');
+        if (preview) preview.textContent = texto;
+        if (tiempo) tiempo.textContent = 'ahora mismo';
+        var lista = document.getElementById('listaConversaciones');
+        if (lista && item.parentNode === lista) {
+          lista.insertBefore(item, lista.firstChild);
+        }
+      }
     })
     .catch(function (err) {
       console.error('Error enviarMensajeConFetch:', err);
@@ -168,6 +184,15 @@ document.querySelectorAll('[data-conversacion-id]').forEach(function (boton) {
 });
 
 var formularioMensaje = document.getElementById('formularioMensaje');
+var textoMensaje = document.getElementById('textoMensaje');
 if (formularioMensaje) {
   formularioMensaje.addEventListener('submit', enviarMensajeConFetch);
+}
+if (textoMensaje) {
+  textoMensaje.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      formularioMensaje.requestSubmit();
+    }
+  });
 }

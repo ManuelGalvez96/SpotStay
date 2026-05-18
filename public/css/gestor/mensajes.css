@@ -1,9 +1,9 @@
 .contenedor-chat {
   margin-top: 16px;
   display: grid;
-  grid-template-columns: 360px 1fr;
+  grid-template-columns: 30% 1fr;
   gap: 14px;
-  min-height: 580px;
+  height: calc(100vh - 200px);
 }
 
 .panel-conversaciones,
@@ -32,46 +32,100 @@
 }
 
 .item-conversacion {
-  text-align: left;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   width: 100%;
+  text-align: left;
   border: 1px solid #dce5ec;
-  border-radius: 12px;
+  border-radius: 10px;
   background: #fff;
-  padding: 12px;
+  padding: 10px;
   cursor: pointer;
   font-family: inherit;
+  transition: background 0.15s;
 }
 
 .item-conversacion:hover {
   background: #f8f9fc;
 }
 
-.item-conversacion strong {
-  display: block;
-  font-size: 14px;
-  color: #0f1b2d;
+.item-conversacion.activo {
+  border-color: #123b7a;
+  background: #f2f7ff;
 }
 
-.item-conversacion small {
-  display: block;
-  margin-top: 4px;
-  color: #667085;
+.conv-avatar {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
   font-size: 12px;
+  color: #fff;
 }
 
-.item-conversacion span {
-  display: block;
-  margin-top: 8px;
-  color: #324155;
+.conv-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.conv-nombre {
+  font-weight: 600;
   font-size: 13px;
+  color: #0f1b2d;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.conv-propiedad {
+  font-size: 11px;
+  color: #667085;
+  margin-top: 1px;
+}
+
+.conv-preview {
+  font-size: 12px;
+  color: #324155;
+  margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.item-conversacion.activo {
-  border-color: #123b7a;
-  background: #f2f7ff;
+.conv-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 60px;
+}
+
+.conv-tiempo {
+  font-size: 10px;
+  color: #667085;
+  white-space: nowrap;
+}
+
+.rol-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0 6px;
+  border-radius: 999px;
+  vertical-align: middle;
+  background: #eaf6f3;
+  color: #0b6e4f;
+}
+
+.cabecera-hilo .rol-badge {
+  font-size: 11px;
+  padding: 2px 10px;
 }
 
 .vacio {
@@ -104,7 +158,6 @@
 .lista-mensajes {
   padding: 16px;
   overflow-y: auto;
-  max-height: 390px;
 }
 
 .burbuja {
@@ -227,6 +280,7 @@
     font-size: 13px;
   }
   .item-conversacion {
-    padding: 10px;
+    padding: 8px;
+    gap: 8px;
   }
 }

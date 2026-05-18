@@ -1712,8 +1712,11 @@ body.pagina-miembro.pagina-mensajes .mensajes-formulario {
 		border-right: none;
 		border-bottom: 1px solid var(--borde);
 	}
-	body.pagina-mapa.filtros-ocultos .contenido-mapa {
-		height: auto;
+	body.pagina-mapa.filtros-ocultos .contenido-mapa,
+	body.pagina-mapa.filtros-ocultos .contenedor-mapa,
+	body.pagina-mapa.filtros-ocultos #mapa {
+		height: calc(100vh - 72px) !important;
+		min-height: calc(100vh - 72px) !important;
 	}
 	.contenedor-listado {
 		grid-template-columns: 1fr;

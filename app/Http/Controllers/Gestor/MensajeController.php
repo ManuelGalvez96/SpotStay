@@ -18,9 +18,9 @@ class MensajeController extends Controller
 
     public function index(Request $request)
     {
-        $gestorId = (int) Auth::id();
+        Carbon::setLocale('es');
 
-        $propiedadesConChat = $this->getPropiedadesConPermiso($gestorId, 'chat');
+        $gestorId = (int) Auth::id();
 
         $conversaciones = Conversacion::with([
             'propiedad',
@@ -39,10 +39,20 @@ class MensajeController extends Controller
             $conversacionActiva = $conversaciones->firstWhere('id_conversacion', $activaId);
         }
 
+        $noLeidos = [];
+        foreach ($conversaciones as $conv) {
+            $gestorPivot = $conv->participantes->firstWhere('id_usuario', $gestorId);
+            $ultimaLectura = $gestorPivot?->pivot?->ultima_lectura_conv_usuario;
+            $ultimoMensaje = $conv->ultimoMensaje;
+            $noLeidos[$conv->id_conversacion] = $ultimoMensaje && $ultimoMensaje->creado_mensaje &&
+                (!$ultimaLectura || $ultimoMensaje->creado_mensaje->gt($ultimaLectura));
+        }
+
         return view('gestor.mensajes', [
             'conversaciones' => $conversaciones,
             'conversacionActiva' => $conversacionActiva,
             'gestorId' => $gestorId,
+            'noLeidos' => $noLeidos,
         ]);
     }
 
@@ -60,6 +70,10 @@ class MensajeController extends Controller
         if (!$esParticipante) {
             return response()->json(['success' => false, 'message' => 'No tienes acceso a esta conversación.'], 403);
         }
+
+        ConversacionUsuario::where('id_conversacion_fk', $id)
+            ->where('id_usuario_fk', $gestorId)
+            ->update(['ultima_lectura_conv_usuario' => Carbon::now()]);
 
         $otro = $conversacion->participantes->firstWhere('id_usuario', '!=', $gestorId);
 

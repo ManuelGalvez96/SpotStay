@@ -42,6 +42,9 @@
                         <div class="conv-nombre">
                             {{ $otro->nombre_usuario ?? 'Usuario' }}
                             @if($rol)<span class="rol-badge">{{ $rol }}</span>@endif
+                            @if(!empty($noLeidos[$conversacion->id_conversacion]))
+                                <span class="no-leidos-dot"></span>
+                            @endif
                         </div>
                         <div class="conv-propiedad">{{ $conversacion->propiedad->titulo_propiedad ?? 'Sin propiedad' }}</div>
                         <div class="conv-preview">{{ $ultimo->cuerpo_mensaje ?? 'Sin mensajes todavía' }}</div>

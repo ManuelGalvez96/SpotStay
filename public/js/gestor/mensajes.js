@@ -110,6 +110,7 @@ function cargarConversacion(idConversacion, propiedadTitulo) {
 
       renderizarMensajes(conversacion.mensajes);
       marcarConversacionActiva(conversacion.id_conversacion);
+      iniciarPolling();
     })
     .catch(function (err) {
       console.error('Error cargarConversacion:', err);
@@ -180,6 +181,8 @@ document.querySelectorAll('[data-conversacion-id]').forEach(function (boton) {
   boton.addEventListener('click', function () {
     var propiedadTitulo = boton.getAttribute('data-propiedad-titulo');
     cargarConversacion(boton.getAttribute('data-conversacion-id'), propiedadTitulo);
+    var dot = boton.querySelector('.no-leidos-dot');
+    if (dot) dot.remove();
   });
 });
 
@@ -195,6 +198,27 @@ if (textoMensaje) {
       formularioMensaje.requestSubmit();
     }
   });
+}
+
+var intervaloChat = null;
+
+function iniciarPolling() {
+  detenerPolling();
+  intervaloChat = setInterval(function () {
+    var inputId = document.getElementById('idConversacionSeleccionada');
+    if (inputId && inputId.value) {
+      var item = document.querySelector('[data-conversacion-id="' + inputId.value + '"]');
+      var propTitulo = item ? item.getAttribute('data-propiedad-titulo') : '';
+      cargarConversacion(inputId.value, propTitulo);
+    }
+  }, 5000);
+}
+
+function detenerPolling() {
+  if (intervaloChat) {
+    clearInterval(intervaloChat);
+    intervaloChat = null;
+  }
 }
 
 var filtro = document.getElementById('filtroConversaciones');

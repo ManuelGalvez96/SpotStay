@@ -1723,6 +1723,15 @@ body.pagina-miembro.pagina-mensajes .mensajes-formulario {
 }
 
 @media (max-width: 768px) {
+	.contenedor-encabezado, .contenedor-encabezado-miembro {
+		padding: 0 12px;
+	}
+	.contenido-miembro {
+		padding: 16px 12px 40px;
+	}
+	.solicitud-panel {
+		padding: 16px;
+	}
 	.nombre-miembro {
 		display: none; /* En móviles ocultamos el nombre para dejar solo foto y campana */
 	}
@@ -1730,7 +1739,7 @@ body.pagina-miembro.pagina-mensajes .mensajes-formulario {
 		gap: 10px;
 	}
 	.logo-spotstay img, .marca-miembro img {
-		height: 34px;
+		height: 32px;
 	}
 	.grid-propiedades {
 		grid-template-columns: 1fr;

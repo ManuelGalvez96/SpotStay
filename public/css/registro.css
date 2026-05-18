@@ -291,15 +291,7 @@ input:focus {
   color: var(--corp-blue);
 }
 
-@media (max-width: 600px) {
-  .grid-container {
-    grid-template-columns: 1fr;
-  }
-
-  .full-width {
-    grid-column: span 1;
-  }
-}
+/* Eliminado para centralizar en la media query del final */
 
 /* --- NUEVOS ESTILOS PARA REGISTRO DINÁMICO --- */
 
@@ -403,4 +395,22 @@ input[name="plan_id"]:checked+.card-plan {
   grid-template-columns: 1fr 1fr;
   gap: 8px 12px;
   padding: 0;
+}
+
+@media (max-width: 600px) {
+  .grid-container, .grid-arrendador, .grid-planes {
+    grid-template-columns: 1fr;
+  }
+
+  .full-width {
+    grid-column: span 1;
+  }
+  
+  .form-content {
+    padding: 24px 16px 16px;
+  }
+  
+  body {
+    padding: 10px;
+  }
 }

@@ -589,4 +589,10 @@
     .kpi-grid-inquilino {
         grid-template-columns: 1fr;
     }
+    .grupo-filtro {
+        padding: 10px 14px;
+    }
+    .input-filtro {
+        width: 100%;
+    }
 }

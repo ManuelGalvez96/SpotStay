@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             PropiedadPermisosSeeder::class,
             AlquilerSeeder::class,
             GastoDemoSeeder::class,
+            GastoSeeder::class,
             ContratoSeeder::class,
             PagoSeeder::class,
             IncidenciaSeeder::class,

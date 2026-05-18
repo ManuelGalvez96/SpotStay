@@ -19,6 +19,42 @@
     border: none;
     width: fit-content;
     box-shadow: none;
+    position: relative;
+}
+
+.btn-cerrar-visor-modal {
+    position: absolute;
+    top: -45px;
+    right: 0;
+    z-index: 1060;
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-cerrar-visor-modal:hover {
+    background: #ffffff;
+    color: #000000;
+    transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+    .btn-cerrar-visor-modal {
+        top: -45px;
+        right: 5px;
+        width: 38px;
+        height: 38px;
+        font-size: 1.1rem;
+    }
 }
 
 .modal-visor-fotos .modal-body {

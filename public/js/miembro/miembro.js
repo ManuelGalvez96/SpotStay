@@ -38,6 +38,7 @@ if (botonPerfil && submenu) {
 
 inicializarMapaDetalle();
 cargarFiltrosInicio();
+centrarNavActivo();
 
 function cargarFiltrosInicio() {
     var formulario = document.getElementById('form-filtros-inicio');
@@ -254,4 +255,27 @@ function inicializarMapaDetalle() {
         .addTo(mapa)
         .bindPopup('<strong>' + escaparHtml(titulo) + '</strong><br>' + escaparHtml(direccion))
         .openPopup();
+}
+
+/* =========================================================
+   SECCIÓN 5: AUTO-CENTRADO DE NAVEGACIÓN
+   Desplaza la barra de navegación horizontal para centrar
+   el elemento activo en la pantalla.
+   ========================================================= */
+
+function centrarNavActivo() {
+    var contenedor = document.querySelector('.contenedor-nav');
+    var enlaceActivo = document.querySelector('.enlace-nav.activo');
+
+    if (contenedor && enlaceActivo) {
+        var offsetLeft = enlaceActivo.offsetLeft;
+        var anchoContenedor = contenedor.clientWidth;
+        var anchoEnlace = enlaceActivo.clientWidth;
+
+        var scrollPos = offsetLeft - (anchoContenedor / 2) + (anchoEnlace / 2);
+        contenedor.scrollTo({
+            left: scrollPos,
+            behavior: 'smooth'
+        });
+    }
 }

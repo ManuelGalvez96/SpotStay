@@ -4,7 +4,7 @@
  
 @section('styles')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <link rel="stylesheet" href="{{ asset('css/visor_fotos.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/visor_fotos.css') }}?v=2" />
 @endsection
  
 @section('content')
@@ -154,6 +154,7 @@
     <div class="modal fade modal-visor-fotos" id="modalVisorFotosMiembro-{{ $index }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content">
+                <button type="button" class="btn-cerrar-visor-modal" data-bs-dismiss="modal" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
                 <div class="modal-body">
                     <img class="imagen-visor-modal" id="imagen-visor-modal-{{ $index }}" src="{{ asset('img/' . $foto->ruta_foto) }}" alt="Vista ampliada {{ $index + 1 }}">
                 </div>

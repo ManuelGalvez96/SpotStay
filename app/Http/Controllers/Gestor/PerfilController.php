@@ -21,15 +21,22 @@ class PerfilController extends Controller
         $datosActualizar = [];
 
         if ($request->has('nombre_usuario')) {
+            if ($request->has('telefono_usuario')) {
+                $request->merge([
+                    'telefono_usuario' => preg_replace('/\s+/', '', $request->telefono_usuario)
+                ]);
+            }
+
             $validado = $request->validate([
                 'nombre_usuario' => 'required|string|max:100',
                 'email_usuario' => 'required|email|max:150|unique:tbl_usuario,email_usuario,' . $gestor->id_usuario . ',id_usuario',
-                'telefono_usuario' => 'nullable|string|max:20',
+                'telefono_usuario' => 'nullable|regex:/^(\+\d{2})?\d{9}$/',
             ], [
                 'nombre_usuario.required' => 'El nombre es obligatorio.',
                 'email_usuario.required' => 'El correo electrónico es obligatorio.',
                 'email_usuario.email' => 'El correo electrónico no es válido.',
                 'email_usuario.unique' => 'Este correo electrónico ya está registrado.',
+                'telefono_usuario.regex' => 'El teléfono debe tener 9 dígitos y un prefijo de 2 dígitos opcional.',
             ]);
             $datosActualizar = array_merge($datosActualizar, $validado);
         }

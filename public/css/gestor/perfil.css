@@ -107,6 +107,10 @@
     box-sizing: border-box;
 }
 
+.input-error {
+    border-color: #EF4444 !important;
+}
+
 .campo-grupo input:focus {
     outline: none;
     border-color: var(--admin-blue);

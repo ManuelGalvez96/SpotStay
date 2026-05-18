@@ -70,16 +70,25 @@ class MiembroSuscripcionController extends Controller
                         'name' => 'Suscripción SpotStay: ' . $suscripcion->plan_suscripcion,
                     ],
                     'unit_amount' => (int)($suscripcion->precio_pagado_suscripcion * 100),
+                    'recurring' => [
+                        'interval' => 'month',
+                    ],
                 ],
                 'quantity' => 1,
             ]],
-            'mode' => 'payment',
+            'mode' => 'subscription',
             'success_url' => route('miembro.suscripcion.success') . '?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => route('miembro.suscripcion.index'),
             'customer_email' => $usuario->email_usuario,
             'metadata' => [
                 'id_suscripcion' => $suscripcion->id_suscripcion,
                 'id_usuario' => $usuario->id_usuario
+            ],
+            'subscription_data' => [
+                'metadata' => [
+                    'id_suscripcion' => $suscripcion->id_suscripcion,
+                    'id_usuario' => $usuario->id_usuario
+                ]
             ]
         ]);
 
@@ -114,12 +123,14 @@ class MiembroSuscripcionController extends Controller
                 $suscripcion->update([
                     'estado_suscripcion' => 'activa',
                     'inicio_suscripcion' => Carbon::now(),
+                    'fin_suscripcion' => Carbon::now()->addMonth(),
                     'actualizado_suscripcion' => Carbon::now()
                 ]);
 
                 // 2. Actualizar estado del usuario
                 $usuario->update([
-                    'stripe_status' => 'active'
+                    'stripe_status' => 'active',
+                    'stripe_subscription_id' => $checkoutSession->subscription ?? null
                 ]);
 
                 // Refrescamos el objeto usuario para que el Middleware vea los cambios inmediatamente
@@ -171,26 +182,34 @@ class MiembroSuscripcionController extends Controller
             $fechaPago = Carbon::parse($pagoInfo->fecha_confirmacion_pago)->format('d/m/Y H:i');
             $mesReferencia = Carbon::parse($pagoInfo->fecha_confirmacion_pago)->translatedFormat('F Y');
 
-            // Payload para PDFMonkey (Adaptado de InquilinoPagoController)
+            $suscripcion = \App\Models\Suscripcion::where('id_usuario_fk', $usuario->id_usuario)->latest('id_suscripcion')->first();
+            $periodoFin = $suscripcion && str_contains(strtolower($suscripcion->plan_suscripcion), 'mensual') 
+                ? Carbon::parse($pagoInfo->fecha_confirmacion_pago)->addMonth()->format('d/m/Y') 
+                : Carbon::parse($pagoInfo->fecha_confirmacion_pago)->addYear()->format('d/m/Y');
+
+            $total = (float) $pagoInfo->importe_pago;
+            $base = $total / 1.21;
+            $iva = $total - $base;
+
+            // Payload específico para la nueva plantilla de Suscripciones en PDFMonkey
             $payload = [
-                'id_pago' => str_pad((string) $idPago, 6, '0', STR_PAD_LEFT),
-                'creado_pago' => $fechaPago,
-                'mes_cuota' => $mesReferencia,
-                'importe_pago' => number_format((float) $pagoInfo->importe_pago, 2, ',', '.') . '€',
+                'nombre_cliente' => $usuario->nombre_usuario,
+                'dni_cliente' => $usuario->dni_usuario ?? 'No especificado',
+                'direccion_cliente' => $usuario->direccion_fiscal_usuario ?? 'Dirección no especificada',
+                'email_cliente' => $usuario->email_usuario,
                 
-                // Datos de SpotStay como Emisor
-                'nombre_arrendador' => 'SpotStay S.L.',
-                'dni_arrendador' => 'B-12345678',
-                'email_arrendador' => 'facturacion@spotstay.com',
-                'iban_arrendador' => 'ES21 0000 0000 0000 0000 0000',
+                'numero_factura' => date('Y') . '-' . str_pad((string) $idPago, 6, '0', STR_PAD_LEFT),
+                'fecha_emision' => $fechaPago,
                 
-                // Datos del Usuario como Receptor
-                'nombre_inquilino' => $usuario->nombre_usuario,
-                'dni_inquilino' => $usuario->dni_usuario ?? 'N/A',
-                'email_inquilino' => $usuario->email_usuario,
-                'calle_propiedad' => 'Suscripción Digital SpotStay',
+                'plan_nombre' => str_replace('Suscripción Plan: ', '', $pagoInfo->concepto_pago),
+                'periodo_inicio' => Carbon::parse($pagoInfo->fecha_confirmacion_pago)->format('d/m/Y'),
+                'periodo_fin' => $periodoFin,
                 
-                'concepto_pago' => $pagoInfo->concepto_pago,
+                'precio_base' => number_format($base, 2, ',', '.') . ' €',
+                'porcentaje_iva' => '21',
+                'importe_iva' => number_format($iva, 2, ',', '.') . ' €',
+                'total_pagado' => number_format($total, 2, ',', '.') . ' €',
+                
                 'referencia_pago' => $pagoInfo->referencia_pago
             ];
 
@@ -198,7 +217,7 @@ class MiembroSuscripcionController extends Controller
                 ->withToken(config('services.pdfmonkey.api_key'))
                 ->post('https://api.pdfmonkey.io/api/v1/documents', [
                     'document' => [
-                        'document_template_id' => config('services.pdfmonkey.template_id'),
+                        'document_template_id' => config('services.pdfmonkey.template_id_suscripciones'),
                         'status' => 'pending',
                         'payload' => $payload
                     ]

@@ -12,6 +12,7 @@ use Illuminate\Validation\ValidationException;
 
 class PropiedadController extends Controller
 {
+    use GestorPermisosTrait;
     /**
      * Muestra el listado de propiedades asignadas al gestor autenticado.
      *
@@ -104,7 +105,7 @@ class PropiedadController extends Controller
         $q = trim((string) $request->query('q', ''));
         $estado = (string) $request->query('estado', '');
         $ciudad = trim((string) $request->query('ciudad', ''));
-        $operativo = (string) $request->query('operativo', '');
+        $estadoPagos = (string) $request->query('estado_pagos', '');
         $sort = (string) $request->query('sort', 'creado_propiedad');
         $dir = strtolower((string) $request->query('dir', 'desc'));
 
@@ -124,17 +125,17 @@ class PropiedadController extends Controller
             $query->where('tbl_propiedad.ciudad_propiedad', 'like', '%' . $ciudad . '%');
         }
 
-        if ($operativo === 'criticas') {
-            $query->whereRaw('COALESCE(inc_criticas.total_incidencias_criticas, 0) > 0');
+        if ($estadoPagos === 'al_dia') {
+            $query->whereRaw('COALESCE(pagos_pendientes.total_pagos_pendientes, 0) = 0')
+                ->whereRaw('COALESCE(pagos_atrasados.total_pagos_atrasados, 0) = 0');
         }
 
-        if ($operativo === 'sin_alquiler') {
-            $query->whereRaw('COALESCE(alq_activos.total_alquileres_activos, 0) = 0');
+        if ($estadoPagos === 'pendiente') {
+            $query->whereRaw('COALESCE(pagos_pendientes.total_pagos_pendientes, 0) > 0');
         }
 
-        if ($operativo === 'estables') {
-            $query->whereRaw('COALESCE(inc_activas.total_incidencias_activas, 0) = 0')
-                ->whereRaw('COALESCE(alq_activos.total_alquileres_activos, 0) > 0');
+        if ($estadoPagos === 'atrasado') {
+            $query->whereRaw('COALESCE(pagos_atrasados.total_pagos_atrasados, 0) > 0');
         }
 
         $allowedSorts = [
@@ -208,6 +209,11 @@ class PropiedadController extends Controller
             })
             ->count();
 
+        $permisosPropiedades = [];
+        foreach ($propiedades as $p) {
+            $permisosPropiedades[$p->id_propiedad] = $this->getPermisosPropiedad($gestorId, (int) $p->id_propiedad);
+        }
+
         return view('gestor.propiedades', compact(
             'propiedades',
             'totalAsignadas',
@@ -215,10 +221,11 @@ class PropiedadController extends Controller
             'totalAlquiladas',
             'totalConCriticas',
             'totalSinAlquiler',
+            'permisosPropiedades',
             'q',
             'estado',
             'ciudad',
-            'operativo',
+            'estadoPagos',
             'sort',
             'dir'
         ));
@@ -274,6 +281,7 @@ class PropiedadController extends Controller
                 'tbl_alquiler.id_alquiler',
                 'tbl_alquiler.fecha_inicio_alquiler',
                 'tbl_alquiler.fecha_fin_alquiler',
+                'tbl_alquiler.id_inquilino_fk',
                 'inquilino.nombre_usuario as nombre_inquilino',
                 'inquilino.email_usuario as email_inquilino'
             )
@@ -300,6 +308,8 @@ class PropiedadController extends Controller
             'resueltas' => DB::table('tbl_incidencia')->where('id_propiedad_fk', $id)->where('estado_incidencia', 'resuelta')->count(),
         ];
 
+        $permisos = $this->getPermisosPropiedad($gestorId, $id);
+
         return view('gestor.propiedad', compact(
             'propiedad',
             'alquileresActivos',
@@ -309,7 +319,8 @@ class PropiedadController extends Controller
             'resumenGastos',
             'pagosPrincipales',
             'cuotasGasto',
-            'cuotasDetallePorId'
+            'cuotasDetallePorId',
+            'permisos'
         ));
     }
 
@@ -345,6 +356,12 @@ class PropiedadController extends Controller
 
         if (!$propiedad) {
             abort(404);
+        }
+
+        $permisos = $this->getPermisosPropiedad($gestorId, $id);
+
+        if (!$permisos->gastos) {
+            return $this->redirigirSinPermiso('gastos');
         }
 
         $gastosData = $this->obtenerDatosGastosPropiedad($propiedad, $gestorId);
@@ -386,6 +403,11 @@ class PropiedadController extends Controller
         $propiedad = $this->getPropiedadDelGestor($id, $gestorId);
         if (!$propiedad) {
             abort(404);
+        }
+
+        $permisos = $this->getPermisosPropiedad($gestorId, $id);
+        if (!$permisos->gastos) {
+            return $this->redirigirSinPermiso('gastos');
         }
 
         $validated = $request->validate([
@@ -442,8 +464,7 @@ class PropiedadController extends Controller
                 'pagador_gasto' => 'inquilino',
                 'periodicidad_gasto' => 'mensual',
                 'fecha_inicio_gasto' => $fechaInicioRecibo->toDateString(),
-                // For recibos added by gestor we treat them as single-event: set fecha_fin to start
-                'fecha_fin_gasto' => $fechaInicioRecibo->toDateString(),
+                'fecha_fin_gasto' => $fechaFinRecibo->toDateString(),
                 'estado_gasto' => 'activo',
                 'creado_gasto' => $ahora,
                 'actualizado_gasto' => $ahora,
@@ -477,50 +498,6 @@ class PropiedadController extends Controller
      *
      * Retorna al formulario con mensaje de éxito.
      */
-    public function marcarPagoGasto(Request $request, int $id, int $cuotaId, int $detalleId)
-    {
-        $gestor = Auth::user();
-        $gestorId = (int) ($gestor?->id_usuario ?? 0);
-
-        if (!Schema::hasTable('tbl_gasto') || !Schema::hasTable('tbl_gasto_cuota') || !Schema::hasTable('tbl_gasto_cuota_detalle')) {
-            return redirect()->back()->with('error', 'La gestión de gastos todavía no está disponible. Ejecuta las migraciones pendientes.');
-        }
-
-        $propiedad = $this->getPropiedadDelGestor($id, $gestorId);
-        if (!$propiedad) {
-            abort(404);
-        }
-
-        DB::transaction(function () use ($id, $cuotaId, $detalleId) {
-            $detalle = DB::table('tbl_gasto_cuota_detalle')
-                ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
-                ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
-                ->where('tbl_gasto.id_propiedad_fk', $id)
-                ->where('tbl_gasto_cuota_detalle.id_gasto_cuota_detalle', $detalleId)
-                ->where('tbl_gasto_cuota_detalle.id_gasto_cuota_fk', $cuotaId)
-                ->select('tbl_gasto_cuota_detalle.id_gasto_cuota_detalle', 'tbl_gasto_cuota_detalle.estado_detalle')
-                ->first();
-
-            if (!$detalle) {
-                abort(404);
-            }
-
-            if ($detalle->estado_detalle !== 'pagado') {
-                DB::table('tbl_gasto_cuota_detalle')
-                    ->where('id_gasto_cuota_detalle', $detalleId)
-                    ->update([
-                        'estado_detalle' => 'pagado',
-                        'pagado_detalle' => now(),
-                        'actualizado_detalle' => now(),
-                    ]);
-            }
-
-            $this->actualizarEstadoCuota($cuotaId);
-        });
-
-        return redirect()->back()->with('success', 'Pago registrado correctamente.');
-    }
-
     /**
      * Actualiza un gasto existente: modifica datos del recibo y regenera sus cuotas.
      *
@@ -546,6 +523,11 @@ class PropiedadController extends Controller
             abort(404);
         }
 
+        $permisos = $this->getPermisosPropiedad($gestorId, $id);
+        if (!$permisos->gastos) {
+            return $this->redirigirSinPermiso('gastos');
+        }
+
         $gasto = DB::table('tbl_gasto')
             ->where('id_gasto', $gastoId)
             ->where('id_propiedad_fk', $id)
@@ -556,11 +538,21 @@ class PropiedadController extends Controller
             abort(404);
         }
 
+        $tieneCuotasPagadas = DB::table('tbl_gasto_cuota')
+            ->where('id_gasto_fk', $gastoId)
+            ->where('estado_cuota', 'pagado')
+            ->exists();
+
+        if ($tieneCuotasPagadas) {
+            return redirect()->back()->with('error', 'No puedes modificar un gasto que ya tiene pagos registrados.');
+        }
+
         $validated = $request->validate([
             'categoria_gasto' => ['required', 'in:luz,agua,gas,internet,comunidad,otros'],
             'concepto_gasto' => ['nullable', 'string', 'max:200'],
             'importe_estimado' => ['required', 'numeric', 'min:0.01'],
             'fecha_inicio_gasto' => ['required', 'date'],
+            'fecha_fin_gasto' => ['required', 'date', 'after_or_equal:fecha_inicio_gasto'],
         ]);
 
         $alquileresActivos = $this->getAlquileresActivos($id);
@@ -573,11 +565,12 @@ class PropiedadController extends Controller
         $conceptoGasto = trim((string) ($validated['concepto_gasto'] ?? ''));
         $conceptoGasto = $conceptoGasto !== '' ? $conceptoGasto : null;
         $fechaInicioRecibo = Carbon::parse($validated['fecha_inicio_gasto']);
+        $fechaFinRecibo = Carbon::parse($validated['fecha_fin_gasto']);
         $importeEstimado = round((float) $validated['importe_estimado'], 2);
         $mesCuota = $fechaInicioRecibo->copy()->startOfMonth();
         $vencimientoFijo = Carbon::today()->addMonth();
 
-        DB::transaction(function () use ($id, $gestorId, $gastoId, $validated, $conceptoGasto, $fechaInicioRecibo, $importeEstimado, $mesCuota, $vencimientoFijo, $alquileresActivos) {
+        DB::transaction(function () use ($id, $gestorId, $gastoId, $validated, $conceptoGasto, $fechaInicioRecibo, $fechaFinRecibo, $importeEstimado, $mesCuota, $vencimientoFijo, $alquileresActivos) {
             $idAlquilerFk = !$alquileresActivos->isEmpty()
                 ? (int) $alquileresActivos->first()->id_alquiler
                 : null;
@@ -590,7 +583,7 @@ class PropiedadController extends Controller
                     'concepto_gasto' => $conceptoGasto,
                     'importe_estimado' => $importeEstimado,
                     'fecha_inicio_gasto' => $fechaInicioRecibo->toDateString(),
-                    'fecha_fin_gasto' => $fechaInicioRecibo->toDateString(),
+                    'fecha_fin_gasto' => $fechaFinRecibo->toDateString(),
                     'actualizado_gasto' => now(),
                 ]);
 
@@ -648,6 +641,11 @@ class PropiedadController extends Controller
             abort(404);
         }
 
+        $permisos = $this->getPermisosPropiedad($gestorId, $id);
+        if (!$permisos->gastos) {
+            return $this->redirigirSinPermiso('gastos');
+        }
+
         $gasto = DB::table('tbl_gasto')
             ->where('id_gasto', $gastoId)
             ->where('id_propiedad_fk', $id)
@@ -656,6 +654,15 @@ class PropiedadController extends Controller
 
         if (!$gasto) {
             abort(404);
+        }
+
+        $tieneCuotasPagadas = DB::table('tbl_gasto_cuota')
+            ->where('id_gasto_fk', $gastoId)
+            ->where('estado_cuota', 'pagado')
+            ->exists();
+
+        if ($tieneCuotasPagadas) {
+            return redirect()->back()->with('error', 'No puedes eliminar un gasto que ya tiene pagos registrados.');
         }
 
         DB::transaction(function () use ($gastoId) {
@@ -1083,7 +1090,7 @@ class PropiedadController extends Controller
                     if ($fechaPagado) {
                         $fechaPagadoCarbon = Carbon::parse((string) $fechaPagado);
                         $actual = $pagosPrincipales[$clave]['detalle'];
-                        if (!$actual || $fechaPagadoCarbon->greaterThan(Carbon::parse((string) $actual['fecha']))) {
+                        if (!$actual || $fechaPagadoCarbon->greaterThan(Carbon::createFromFormat('d/m/Y', (string) $actual['fecha']))) {
                             $pagosPrincipales[$clave]['detalle'] = [
                                 'texto' => 'Pagado',
                                 'fecha' => $fechaPagadoCarbon->format('d/m/Y'),
@@ -1182,10 +1189,12 @@ class PropiedadController extends Controller
                     'tbl_gasto.categoria_gasto',
                     'tbl_gasto.pagador_gasto',
                     'tbl_gasto.ambito_gasto',
-                    'tbl_gasto.id_alquiler_fk'
+                    'tbl_gasto.id_alquiler_fk',
+                    'tbl_gasto.fecha_inicio_gasto',
+                    'tbl_gasto.fecha_fin_gasto'
                 )
-                ->orderBy('tbl_gasto_cuota.mes_cuota', 'desc')
-                ->orderBy('tbl_gasto_cuota.vencimiento_cuota', 'asc')
+                ->orderByRaw("CASE WHEN tbl_gasto_cuota.estado_cuota = 'pagado' THEN 1 ELSE 0 END")
+                ->orderBy('tbl_gasto_cuota.id_gasto_cuota', 'desc')
                 ->limit(24)
                 ->get();
 
@@ -1364,5 +1373,246 @@ class PropiedadController extends Controller
                     ]);
             });
         }
+    }
+
+    public function filtrarGastos(Request $request, int $id)
+    {
+        $gestor = Auth::user();
+        $gestorId = (int) ($gestor?->id_usuario ?? 0);
+
+        $propiedad = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->where('id_gestor_fk', $gestorId)
+            ->exists();
+
+        if (!$propiedad) {
+            return response()->json(['success' => false, 'message' => 'Propiedad no encontrada.'], 404);
+        }
+
+        $permisos = $this->getPermisosPropiedad($gestorId, $id);
+        if (!$permisos->gastos) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para gestionar gastos en esta propiedad.'], 403);
+        }
+
+        $categoria = (string) $request->query('categoria', '');
+        $estado = (string) $request->query('estado', '');
+        $concepto = trim((string) $request->query('concepto', ''));
+        $periodoDesde = (string) $request->query('periodo_desde', '');
+        $periodoHasta = (string) $request->query('periodo_hasta', '');
+
+        $query = DB::table('tbl_gasto_cuota')
+            ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+            ->where('tbl_gasto.id_propiedad_fk', $id)
+            ->select(
+                'tbl_gasto_cuota.id_gasto_cuota',
+                'tbl_gasto_cuota.id_gasto_fk',
+                'tbl_gasto_cuota.mes_cuota',
+                'tbl_gasto_cuota.vencimiento_cuota',
+                'tbl_gasto_cuota.importe_total_cuota',
+                'tbl_gasto_cuota.estado_cuota',
+                'tbl_gasto_cuota.pagado_cuota',
+                'tbl_gasto.concepto_gasto',
+                'tbl_gasto.categoria_gasto',
+                'tbl_gasto.pagador_gasto',
+                'tbl_gasto.ambito_gasto',
+                'tbl_gasto.id_alquiler_fk',
+                'tbl_gasto.fecha_inicio_gasto',
+                'tbl_gasto.fecha_fin_gasto'
+            );
+
+        if ($categoria !== '') {
+            $query->where('tbl_gasto.categoria_gasto', $categoria);
+        }
+
+        if ($estado !== '') {
+            $query->where('tbl_gasto_cuota.estado_cuota', $estado);
+        }
+
+        if ($concepto !== '') {
+            $query->where('tbl_gasto.concepto_gasto', 'like', '%' . $concepto . '%');
+        }
+
+        if ($periodoDesde !== '') {
+            $query->where('tbl_gasto.fecha_fin_gasto', '>=', $periodoDesde);
+        }
+
+        if ($periodoHasta !== '') {
+            $query->where('tbl_gasto.fecha_inicio_gasto', '<=', $periodoHasta);
+        }
+
+        $cuotas = $query
+            ->orderByRaw("CASE WHEN tbl_gasto_cuota.estado_cuota = 'pagado' THEN 1 ELSE 0 END")
+            ->orderBy('tbl_gasto_cuota.id_gasto_cuota', 'desc')
+            ->get();
+
+        $cuotaIds = $cuotas->pluck('id_gasto_cuota')->all();
+        $detalles = collect();
+
+        if (!empty($cuotaIds)) {
+            $detalles = DB::table('tbl_gasto_cuota_detalle')
+                ->join('tbl_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_gasto_cuota_detalle.id_pagador_fk')
+                ->whereIn('tbl_gasto_cuota_detalle.id_gasto_cuota_fk', $cuotaIds)
+                ->select(
+                    'tbl_gasto_cuota_detalle.id_gasto_cuota_detalle',
+                    'tbl_gasto_cuota_detalle.id_gasto_cuota_fk',
+                    'tbl_gasto_cuota_detalle.id_pagador_fk',
+                    'tbl_gasto_cuota_detalle.importe_detalle',
+                    'tbl_gasto_cuota_detalle.estado_detalle',
+                    'tbl_gasto_cuota_detalle.pagado_detalle',
+                    'tbl_usuario.nombre_usuario'
+                )
+                ->get();
+        }
+
+        return response()->json([
+            'success' => true,
+            'cuotas' => $cuotas,
+            'detalles' => $detalles,
+        ]);
+    }
+
+    public function getDatosEdicion(int $id)
+    {
+        $gestor = Auth::user();
+        $gestorId = (int) ($gestor?->id_usuario ?? 0);
+
+        $propiedad = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->where('id_gestor_fk', $gestorId)
+            ->select(
+                'id_propiedad',
+                'titulo_propiedad',
+                'tipo_propiedad',
+                'calle_propiedad',
+                'numero_propiedad',
+                'piso_propiedad',
+                'puerta_propiedad',
+                'ciudad_propiedad',
+                'codigo_postal_propiedad',
+                'descripcion_propiedad',
+                'precio_propiedad',
+                'estado_propiedad',
+                'habitaciones_propiedad',
+                'banos_propiedad',
+                'metros_cuadrados_propiedad',
+                'ascensor_propiedad',
+                'amueblado_propiedad',
+                'piscina_propiedad',
+                'terraza_propiedad',
+                'garaje_propiedad',
+                'aire_acondicionado_propiedad',
+                'calefaccion_propiedad',
+                'trastero_propiedad',
+                'adicional_propiedad'
+            )
+            ->first();
+
+        if (!$propiedad) {
+            return response()->json(['success' => false, 'message' => 'Propiedad no encontrada.'], 404);
+        }
+
+        $permisos = $this->getPermisosPropiedad($gestorId, $id);
+
+        if (!$permisos->editar_propiedad) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para editar esta propiedad.'], 403);
+        }
+
+        return response()->json([
+            'success' => true,
+            'propiedad' => $propiedad,
+            'permisos' => [
+                'puede_editar_precio' => $permisos->gastos,
+            ],
+        ]);
+    }
+
+    public function actualizar(Request $request, int $id)
+    {
+        $gestor = Auth::user();
+        $gestorId = (int) ($gestor?->id_usuario ?? 0);
+
+        $propiedad = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->where('id_gestor_fk', $gestorId)
+            ->first();
+
+        if (!$propiedad) {
+            return response()->json(['success' => false, 'message' => 'Propiedad no encontrada.'], 404);
+        }
+
+        $permisos = $this->getPermisosPropiedad($gestorId, $id);
+
+        if (!$permisos->editar_propiedad) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para editar esta propiedad.'], 403);
+        }
+
+        $validated = $request->validate([
+            'titulo_propiedad' => ['required', 'string', 'max:150'],
+            'tipo_propiedad' => ['required', 'in:piso,casa,estudio,habitacion'],
+            'calle_propiedad' => ['required', 'string', 'max:150'],
+            'numero_propiedad' => ['required', 'string', 'max:20'],
+            'piso_propiedad' => ['nullable', 'string', 'max:20'],
+            'puerta_propiedad' => ['nullable', 'string', 'max:20'],
+            'ciudad_propiedad' => ['required', 'string', 'max:100'],
+            'codigo_postal_propiedad' => ['required', 'string', 'max:10'],
+            'habitaciones_propiedad' => ['nullable', 'string', 'max:20'],
+            'banos_propiedad' => ['nullable', 'integer', 'min:0'],
+            'metros_cuadrados_propiedad' => ['nullable', 'integer', 'min:0'],
+            'ascensor_propiedad' => ['nullable', 'boolean'],
+            'amueblado_propiedad' => ['nullable', 'boolean'],
+            'piscina_propiedad' => ['nullable', 'boolean'],
+            'terraza_propiedad' => ['nullable', 'boolean'],
+            'garaje_propiedad' => ['nullable', 'boolean'],
+            'aire_acondicionado_propiedad' => ['nullable', 'boolean'],
+            'calefaccion_propiedad' => ['nullable', 'boolean'],
+            'trastero_propiedad' => ['nullable', 'boolean'],
+            'adicional_propiedad' => ['nullable', 'string', 'max:255'],
+            'precio_propiedad' => ['required', 'numeric', 'min:0'],
+            'descripcion_propiedad' => ['nullable', 'string'],
+        ]);
+
+        $datosPropiedad = [
+            'titulo_propiedad' => $validated['titulo_propiedad'],
+            'tipo_propiedad' => $validated['tipo_propiedad'],
+            'calle_propiedad' => $validated['calle_propiedad'],
+            'numero_propiedad' => $validated['numero_propiedad'],
+            'piso_propiedad' => $validated['piso_propiedad'] ?? null,
+            'puerta_propiedad' => $validated['puerta_propiedad'] ?? null,
+            'ciudad_propiedad' => $validated['ciudad_propiedad'],
+            'codigo_postal_propiedad' => $validated['codigo_postal_propiedad'],
+            'habitaciones_propiedad' => $validated['habitaciones_propiedad'] ?? null,
+            'banos_propiedad' => $validated['banos_propiedad'] ?? null,
+            'metros_cuadrados_propiedad' => $validated['metros_cuadrados_propiedad'] ?? null,
+            'ascensor_propiedad' => (bool) ($validated['ascensor_propiedad'] ?? false),
+            'amueblado_propiedad' => (bool) ($validated['amueblado_propiedad'] ?? false),
+            'piscina_propiedad' => (bool) ($validated['piscina_propiedad'] ?? false),
+            'terraza_propiedad' => (bool) ($validated['terraza_propiedad'] ?? false),
+            'garaje_propiedad' => (bool) ($validated['garaje_propiedad'] ?? false),
+            'aire_acondicionado_propiedad' => (bool) ($validated['aire_acondicionado_propiedad'] ?? false),
+            'calefaccion_propiedad' => (bool) ($validated['calefaccion_propiedad'] ?? false),
+            'trastero_propiedad' => (bool) ($validated['trastero_propiedad'] ?? false),
+            'adicional_propiedad' => $validated['adicional_propiedad'] ?? null,
+            'descripcion_propiedad' => $validated['descripcion_propiedad'] ?? null,
+            'actualizado_propiedad' => now(),
+        ];
+
+        if ($permisos->gastos) {
+            $datosPropiedad['precio_propiedad'] = $validated['precio_propiedad'];
+        }
+
+        DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->update($datosPropiedad);
+
+        $propiedadActualizada = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->select('id_propiedad', 'titulo_propiedad', 'precio_propiedad', 'estado_propiedad')
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Propiedad actualizada correctamente.',
+            'propiedad' => $propiedadActualizada,
+        ]);
     }
 }

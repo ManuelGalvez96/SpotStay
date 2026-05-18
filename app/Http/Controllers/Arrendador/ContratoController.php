@@ -223,9 +223,96 @@ class ContratoController extends Controller
         return redirect()->away($urlPdf);
     }
 
+    /**
+     * SUBE UN ARCHIVO PDF DESDE EL FORMULARIO DEL ARRENDADOR
+     * Y LO ASOCIA AL CONTRATO INDICADO.
+     *
+     * 1. Valida que el archivo sea un PDF (mimes:pdf, max:10MB).
+     * 2. Lo guarda en storage/app/public/contratos/ con nombre único.
+     * 3. Actualiza url_pdf_contrato en tbl_contrato.
+     * 4. Retorna JSON con la nueva URL y mensaje de éxito.
+     */
+    public function subirPDF(Request $request, int $id)
+    {
+        $arrendadorId = $this->obtenerIdArrendador($request);
+        $columnas = $this->obtenerColumnasContrato();
+
+        // Verificar que el contrato pertenezca a este arrendador
+        $existe = DB::table('tbl_contrato as c')
+            ->join('tbl_alquiler as a', 'a.id_alquiler', '=', 'c.id_alquiler_fk')
+            ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'a.id_propiedad_fk')
+            ->where('c.id_contrato', $id)
+            ->where('p.id_arrendador_fk', $arrendadorId)
+            ->exists();
+
+        if (!$existe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró el contrato.',
+            ], 404);
+        }
+
+        // Validar archivo
+        $request->validate([
+            'pdf_contrato' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+        ]);
+
+        $archivo = $request->file('pdf_contrato');
+        $nombre = now()->format('Ymd_His') . '_contrato_' . $id . '.pdf';
+        $ruta = $archivo->storeAs('contratos', $nombre, 'public');
+
+        if (!$ruta) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo guardar el archivo.',
+            ], 500);
+        }
+
+        // Guarda la ruta relativa estandarizada a public/: "storage/contratos/archivo.pdf"
+        // Usamos basename para evitar dobles prefijos si $ruta ya incluye 'contratos/'.
+        $rutaRelativa = 'storage/contratos/' . basename($ruta);
+
+        // Actualizar la BD
+        $datosActualizar = [];
+        if ($columnas['url_pdf']) {
+            $datosActualizar[$columnas['url_pdf']] = $rutaRelativa;
+        }
+        if ($columnas['actualizado']) {
+            $datosActualizar[$columnas['actualizado']] = Carbon::now();
+        }
+
+        if (!empty($datosActualizar)) {
+            DB::table('tbl_contrato')
+                ->where('id_contrato', $id)
+                ->update($datosActualizar);
+        }
+
+        // Devolver la URL completa para que el JS pueda montar el enlace "Ver PDF"
+        $urlCompleta = $request->getSchemeAndHttpHost() . $request->getBasePath() . '/' . $rutaRelativa;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'PDF subido correctamente.',
+            'url_pdf' => $urlCompleta,
+        ]);
+    }
+
     private function esUrlPdfLocalExistente(string $urlPdf): bool
     {
+        // Si es una URL absoluta, comprobamos si apunta al mismo host.
         if (preg_match('#^https?://#i', $urlPdf)) {
+            $componentes = parse_url($urlPdf);
+            $hostRemoto = $componentes['host'] ?? null;
+
+            // Si la URL absoluta apunta al mismo host que la petición actual,
+            // tratamos la ruta como local y comprobamos la existencia en public/.
+            $requestHost = request()->getHost();
+            if ($hostRemoto && $hostRemoto === $requestHost) {
+                $ruta = ltrim($componentes['path'] ?? '', '/\\');
+                return File::exists(public_path($ruta));
+            }
+
+            // Si es remota y no es el mismo host, verificamos vigencia remota.
             return $this->esUrlRemotaVigente($urlPdf);
         }
 
@@ -265,11 +352,26 @@ class ContratoController extends Controller
 
     private function normalizarUrlPdf(string $urlPdf): string
     {
+        // Si es una URL absoluta, y apunta a este host, reescribimos añadiendo
+        // el basePath actual (útil en instalaciones en subcarpetas).
         if (preg_match('#^https?://#i', $urlPdf)) {
+            $componentes = parse_url($urlPdf);
+            $hostRemoto = $componentes['host'] ?? null;
+            $request = request();
+            $hostLocal = $request->getHost();
+
+            if ($hostRemoto && $hostRemoto === $hostLocal) {
+                $path = ltrim($componentes['path'] ?? '', '/\\');
+                $query = isset($componentes['query']) ? ('?' . $componentes['query']) : '';
+                return $request->getSchemeAndHttpHost() . $request->getBasePath() . '/' . $path . $query;
+            }
+
             return $urlPdf;
         }
 
-        return url('/' . ltrim($urlPdf, '/\\'));
+        // Usa el request real para respetar subdirectorios (WAMP, etc.)
+        $request = request();
+        return $request->getSchemeAndHttpHost() . $request->getBasePath() . '/' . ltrim($urlPdf, '/\\');
     }
 
     /**

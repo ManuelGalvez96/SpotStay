@@ -38,7 +38,8 @@
 
             <table class="properties-table">
                 <thead>
-                        <th>Propiedades</th>
+                    <tr>
+                        <th>Propiedad</th>
                         <th>Estado</th>
                         <th>Incidencias</th>
                         <th>Pagos</th>
@@ -59,38 +60,24 @@
                             <td>
                                 <span class="badge badge-{{ $propiedad->estado_propiedad }}">{{ ucfirst($propiedad->estado_propiedad) }}</span>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 {{ $propiedad->total_incidencias ?? 'Sin incidencias' }}
                             </td>
-                            @php
-                                //Cálculo de las cuotas
-                                $atrasadas = $propiedad->cuotas_atrasadas ?? 0;
-                                $pendientes = $propiedad->cuotas_pendientes ?? 0;
-
-                                if($atrasadas > 0) {
-                                    $estado = 'atrasado';
-                                    $label = 'Atrasado';
-                                } elseif($pendientes > 0) {
-                                    $estado = 'pendiente';
-                                    $label = 'Pendiente';
-                                } else {
-                                    $estado = 'al-dia';
-                                    $label = 'Al día';
-                                }
-                            @endphp
-                            <td>
-                                <span class="badge badge-{{ $estado }}">{{ $label}}</span>
+                            <td class="text-center">
+                                <span class="badge badge-{{ $propiedad->estado_pagos ?? 'al-dia' }}">{{ $propiedad->estado_pagos_label ?? 'Al día' }}</span>
                             </td>
                             <td>
-                                <span class="gestor-nombre">{{ $propiedad->nombre_gestor ?? 'Sin gestor asignado' }}</span>
-                                <button type="button" class="btn-gear" aria-label="Configurar gestor" data-propiedad-id="{{ $propiedad->id_propiedad }}" onclick="abrirModalGestor(this.dataset.propiedadId)">
-                                    <i class="bi bi-gear"></i>
-                                </button>
+                                {{ $propiedad->gestor_nombre ?? 'Sin gestor' }}
                             </td>
                             <td>
                                 <div class="table-actions">
-                                    <button class="action-link" type="button" data-propiedad-id="{{ $propiedad->id_propiedad }}" onclick="fetchEditData(this.dataset.propiedadId)">Editar</button>
-                                    <button class="action-link" type="button" data-propiedad-id="{{ $propiedad->id_propiedad }}" data-arrendador-id="{{ $arrendadorId }}" onclick="abrirModalPropiedad(this.dataset.propiedadId, this.dataset.arrendadorId)">Previsualizar</button>
+                                    <a class="action-link" href="{{ route('arrendador.propiedades', ['arrendador_id' => $arrendadorId, 'editar' => $propiedad->id_propiedad]) }}">Editar</a>
+                                    <button class="action-link" type="button" data-propiedad-id="{{ $propiedad->id_propiedad }}" data-arrendador-id="{{ $arrendadorId }}" onclick="abrirModalPropiedad(this.dataset.propiedadId, this.dataset.arrendadorId)">Ver</button>
+                                    <form method="POST" action="{{ route('arrendador.propiedades.estado', $propiedad->id_propiedad) }}" data-ajax-state-form="true" class="inline-form">
+                                        @csrf
+                                        <input type="hidden" name="arrendador_id" value="{{ $arrendadorId }}" />
+                                        <button class="action-link" type="submit" data-state-button="true">{{ $propiedad->estado_propiedad === 'publicada' ? 'Inactivar' : 'Publicar' }}</button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -115,100 +102,6 @@
             </div>
             <div class="modal-body" id="modal-body">
                 <div class="spinner">Cargando...</div>
-            </div>
-        </div>
-    </div>
-
-<!-- RUTA PARA OBTENER PERMISOS EN EL FETCH -->
- <script>
-    const rutaPermisosGestor = "{{ route('arrendador.permisos.get', ':propiedad') }}";
-    const rutaDatosEdicionPropiedad = "{{ route('arrendador.propiedades.edit-data', ':id') }}";
- </script>
-<!-- MODAL GESTOR -->
-    <div id="modal-gestor-config" class="modal" hidden>
-        <div class="modal-backdrop" onclick="cerrarModalGestor()"></div>
-        <div class="modal-content modal-gestor-panel">
-            <div class="modal-header">
-                <h2>Gestión del gestor</h2>
-                <button class="modal-close" id="btnCerrarModalGestor" type="button" onclick="cerrarModalGestor()">✕</button>
-            </div>
-            <div class="modal-body gestor-config-body">
-                <section class="propiedad-context-card" id="propiedad_contexto_modal" aria-live="polite">
-                    <div class="propiedad-context-main">
-                        <span class="propiedad-context-label">Propiedad seleccionada</span>
-                        <h4 class="propiedad-context-title" id="modal_propiedad_titulo">Cargando propiedad...</h4>
-                        <p class="propiedad-context-address" id="modal_propiedad_direccion">-</p>
-                    </div>
-                    <div class="propiedad-context-meta">
-                        <span class="propiedad-context-chip" id="modal_propiedad_precio">Precio no disponible</span>
-                        <span class="propiedad-context-chip" id="modal_propiedad_estado">Estado no disponible</span>
-                    </div>
-                </section>
-
-                <div class="gestor-config-grid">
-                    <aside class="gestor-left-panel">
-                        <h3>Asignar gestor</h3>
-                        <p class="gestor-panel-help">Selecciona quién administrará esta propiedad.</p>
-
-                        <div class="gestor-selector-wrap">
-                            <span class="gestor-selector-label">Gestor seleccionado</span>
-                            <div class="gestor-selector-box" aria-live="polite">
-                                <div class="gestor-avatar" id="gestor_avatar_inicial">-</div>
-                                <div class="gestor-selector-info">
-                                    <span class="gestor-selector-name" id="nombre_gestor">Sin gestor asignado</span>
-                                    <span class="gestor-selector-email" id="email_gestor">Sin email disponible</span>
-                                </div>
-                                <i class="bi bi-chevron-down"></i>
-                            </div>
-                        </div>
-
-                        <button type="button" class="btn-gestor-profile" id="btnVerPerfilGestor" disabled>Ver perfil del gestor</button>
-                    </aside>
-
-                    <section class="gestor-right-panel">
-                        <h3>Permisos de administración</h3>
-                        <p class="gestor-panel-help">Define exactamente qué acciones puede realizar <strong id="nombre_gestor_subtitulo">el gestor</strong> sobre esta propiedad.</p>
-
-                        <div class="permissions-grid">
-                            <label class="permission-card" for="permiso-gastos">
-                                <input type="checkbox" id="permiso-gastos" value="1">
-                                <div>
-                                    <span class="permission-title">Gestión de gastos</span>
-                                    <span class="permission-desc">Puede registrar y gestionar gastos y recibos.</span>
-                                </div>
-                            </label>
-
-                            <label class="permission-card" for="permiso-incidencias">
-                                <input type="checkbox" id="permiso-incidencias" value="1">
-                                <div>
-                                    <span class="permission-title">Gestión de incidencias</span>
-                                    <span class="permission-desc">Coordina incidencias y reparaciones con los inquilinos.</span>
-                                </div>
-                            </label>
-
-                            <label class="permission-card" for="permiso-editar">
-                                <input type="checkbox" id="permiso-editar" value="1">
-                                <div>
-                                    <span class="permission-title">Edición de propiedad</span>
-                                    <span class="permission-desc">Puede actualizar datos y contenido del anuncio.</span>
-                                </div>
-                            </label>
-
-                            <label class="permission-card" for="permiso-chat">
-                                <input type="checkbox" id="permiso-chat" value="1">
-                                <div>
-                                    <span class="permission-title">Atención al inquilino</span>
-                                    <span class="permission-desc">Gestiona conversaciones y consultas desde el chat.</span>
-                                </div>
-                            </label>
-                        </div>
-                    </section>
-                </div>
-
-                <div class="modal-footer">
-                    <button class="btn-modal-secondary" type="button" onclick="cerrarModalGestor()">Descartar</button>
-                    <button class="btn-primary" id="btnGuardarPermisosGestor" type="button">Guardar permisos</button>
-                </div>
             </div>
         </div>
     </div>
@@ -244,6 +137,13 @@
                                         <option value="casa">Casa</option>
                                         <option value="estudio">Estudio</option>
                                         <option value="habitacion">Habitación</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    <span>Estado</span>
+                                    <select name="estado_propiedad" id="form-estado" required>
+                                        <option value="borrador">Borrador</option>
+                                        <option value="publicada">Publicada</option>
                                     </select>
                                 </label>
                             </div>
@@ -296,9 +196,6 @@
                                     <span>Metros cuadrados</span>
                                     <input type="number" name="metros_cuadrados_propiedad" id="form-metros" value="" min="0">
                                 </label>
-                            </div>
-                            <div class="form-subsection-divider"></div>
-                            <div class="form-subsection form-subsection-checkboxes">
                                 <label class="checkbox-label">
                                     <input type="checkbox" name="ascensor_propiedad" id="form-ascensor" value="1">
                                     <span>Ascensor</span>
@@ -306,36 +203,6 @@
                                 <label class="checkbox-label">
                                     <input type="checkbox" name="amueblado_propiedad" id="form-amueblado" value="1">
                                     <span>Amueblado</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="piscina_propiedad" id="form-piscina" value="1">
-                                    <span>Piscina</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="terraza_propiedad" id="form-terraza" value="1">
-                                    <span>Terraza</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="garaje_propiedad" id="form-garaje" value="1">
-                                    <span>Garaje</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="aire_acondicionado_propiedad" id="form-aire-acondicionado" value="1">
-                                    <span>Aire acondicionado</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="calefaccion_propiedad" id="form-calefaccion" value="1">
-                                    <span>Calefacción</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="trastero_propiedad" id="form-trastero" value="1">
-                                    <span>Trastero</span>
-                                </label>
-                            </div>
-                            <div class="form-subsection" style="margin-top: 10px;">
-                                <label class="full-width">
-                                    <span>Adicional</span>
-                                    <input type="text" name="adicional_propiedad" id="form-adicional" value="" placeholder="Otras características...">
                                 </label>
                             </div>
                         </div>
@@ -381,22 +248,4 @@
 
 @section('scripts')
 <script src="{{ asset('js/arrendador/propiedades.js') }}"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var contenedor = document.getElementById('propiedad-editando-data');
-        if (!contenedor || !window.abrirModalFormulario) {
-            return;
-        }
-
-        try {
-            var datosPropiedad = JSON.parse(contenedor.dataset.propiedad || 'null');
-            var arrendadorId = contenedor.dataset.arrendadorId;
-            if (datosPropiedad && arrendadorId) {
-                abrirModalFormulario(arrendadorId, datosPropiedad);
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    });
-</script>
 @endsection

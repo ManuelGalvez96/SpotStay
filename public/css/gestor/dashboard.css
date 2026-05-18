@@ -5,10 +5,24 @@
     --admin-border: #E5E7EB;
 }
 
-.kpi-grid > .kpi-card-link:nth-child(1) .kpi-card,
-.kpi-grid > .kpi-card-link:nth-child(2) .kpi-card,
-.kpi-grid > .kpi-card-link:nth-child(3) .kpi-card,
-.kpi-grid > .kpi-card-link:nth-child(4) .kpi-card {
+.kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.kpi-grid-header {
+    grid-column: 1 / -1;
+    margin-bottom: 4px;
+}
+
+.seccion-titulo-acciones {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.kpi-grid > .kpi-card-link .kpi-card {
     background: linear-gradient(135deg, #035498, #1AA068);
     border-color: rgba(255, 255, 255, 0.2);
     color: white;
@@ -93,7 +107,7 @@
     }
 
     .kpi-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
         gap: 10px;
         padding: 12px 12px 0;
     }

@@ -35,6 +35,7 @@ use App\Http\Controllers\Gestor\DashboardController as GestorDashboardController
 use App\Http\Controllers\Gestor\IncidenciaController as GestorIncidenciaController;
 use App\Http\Controllers\Gestor\PropiedadController as GestorPropiedadController;
 use App\Http\Controllers\Arrendador\ConfiguracionCobrosController;
+use App\Http\Controllers\Gestor\MensajeController as GestorMensajeController;
 
 // Rutas Públicas
 Route::get('/', function () {
@@ -152,7 +153,6 @@ Route::middleware(['role:gestor'])->group(function () {
     Route::post('/gestor/propiedades/{id}/gastos', [GestorPropiedadController::class, 'storeGasto'])->name('gestor.propiedades.gastos.store');
     Route::post('/gestor/propiedades/{id}/gastos/{gastoId}/editar', [GestorPropiedadController::class, 'updateGasto'])->name('gestor.propiedades.gastos.update');
     Route::post('/gestor/propiedades/{id}/gastos/{gastoId}/eliminar', [GestorPropiedadController::class, 'destroyGasto'])->name('gestor.propiedades.gastos.destroy');
-    Route::post('/gestor/propiedades/{id}/gastos/cuotas/{cuotaId}/pagos/{detalleId}', [GestorPropiedadController::class, 'marcarPagoGasto'])->name('gestor.propiedades.gastos.pago');
     Route::post('/gestor/incidencias/{id}/iniciar', [GestorIncidenciaController::class, 'iniciarGestion'])->name('gestor.incidencias.iniciar');
     Route::post('/gestor/incidencias/{id}/estado', [GestorIncidenciaController::class, 'cambiarEstado'])->name('gestor.incidencias.estado');
     Route::post('/gestor/incidencias/{id}/espera', [GestorIncidenciaController::class, 'marcarEspera'])->name('gestor.incidencias.espera');
@@ -160,6 +160,15 @@ Route::middleware(['role:gestor'])->group(function () {
     Route::post('/gestor/incidencias/{id}/comunicacion', [GestorIncidenciaController::class, 'registrarComunicacion'])->name('gestor.incidencias.comunicacion');
     Route::post('/gestor/incidencias/{id}/documento', [GestorIncidenciaController::class, 'subirDocumento'])->name('gestor.incidencias.documento');
     Route::post('/gestor/incidencias/{id}/presupuesto', [GestorIncidenciaController::class, 'crearPresupuesto'])->name('gestor.incidencias.presupuesto');
+
+    Route::get('/gestor/propiedades/{id}/gastos/filtrar', [GestorPropiedadController::class, 'filtrarGastos'])->name('gestor.propiedades.gastos.filtrar');
+    Route::get('/gestor/propiedades/{id}/editar-datos', [GestorPropiedadController::class, 'getDatosEdicion'])->name('gestor.propiedades.editar-datos');
+    Route::post('/gestor/propiedades/{id}/editar', [GestorPropiedadController::class, 'actualizar'])->name('gestor.propiedades.actualizar');
+
+    Route::get('/gestor/mensajes', [GestorMensajeController::class, 'index'])->name('gestor.mensajes.index');
+    Route::post('/gestor/mensajes/iniciar/{propiedadId}', [GestorMensajeController::class, 'iniciar'])->name('gestor.mensajes.iniciar');
+    Route::get('/gestor/mensajes/{id}', [GestorMensajeController::class, 'mostrar'])->name('gestor.mensajes.mostrar')->whereNumber('id');
+    Route::post('/gestor/mensajes/{id}', [GestorMensajeController::class, 'enviar'])->name('gestor.mensajes.enviar')->whereNumber('id');
 });
 
 // Rutas Arrendador
@@ -168,8 +177,10 @@ Route::middleware(['role:arrendador', 'arrendador.activo'])->group(function () {
 
     Route::get('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'inicio'])->name('arrendador.propiedades');
     Route::post('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'guardar'])->name('arrendador.propiedades.store');
-    Route::get('/arrendador/propiedades/{id}', [ArrendadorPropiedadController::class, 'mostrar'])->name('arrendador.propiedades.show');
-    Route::post('/arrendador/propiedades/{id}/estado', [ArrendadorPropiedadController::class, 'alternarEstado'])->name('arrendador.propiedades.estado');
+    Route::get('/arrendador/propiedades/{id}/editar-datos', [ArrendadorPropiedadController::class, 'datosEdicion'])->whereNumber('id')->name('arrendador.propiedades.edit-data');
+    Route::get('/arrendador/propiedades/{id}', [ArrendadorPropiedadController::class, 'mostrar'])->whereNumber('id')->name('arrendador.propiedades.show');
+    Route::get('/arrendador/propiedades/{propiedad}/gestor/permisos', [ArrendadorPropiedadController::class, 'getPermisosGestor'])->name('arrendador.permisos.get');
+    Route::post('/arrendador/propiedades/{propiedad}/gestor/permisos', [ArrendadorPropiedadController::class, 'updatePermisosGestor'])->name('arrendador.permisos.update');
 
     Route::get('/arrendador/solicitudes', [ArrendadorSolicitudController::class, 'inicio'])->name('arrendador.solicitudes');
     Route::post('/arrendador/solicitudes/{id}/aprobar', [ArrendadorSolicitudController::class, 'aprobar'])->name('arrendador.solicitudes.aprobar');
@@ -191,6 +202,7 @@ Route::middleware(['role:arrendador', 'arrendador.activo'])->group(function () {
     Route::get('/arrendador/contratos', [ArrendadorContratoController::class, 'inicio'])->name('arrendador.contratos');
     Route::post('/arrendador/contratos/{id}/firmar', [ArrendadorContratoController::class, 'firmarArrendador'])->name('arrendador.contratos.firmar');
     Route::get('/arrendador/contratos/{id}/descargar-pdf', [ArrendadorContratoController::class, 'descargarPDF'])->name('arrendador.contratos.descargar-pdf');
+    Route::post('/arrendador/contratos/{id}/subir-pdf', [ArrendadorContratoController::class, 'subirPDF'])->name('arrendador.contratos.subir-pdf');
 
     Route::get('/arrendador/gestor', [ArrendadorGestorController::class, 'inicio'])->name('arrendador.gestor');
     Route::post('/arrendador/gestor/{id}', [ArrendadorGestorController::class, 'actualizar'])->name('arrendador.gestor.actualizar');
@@ -284,4 +296,3 @@ Route::get('/limpiar-cache', function () {
         return "Error al limpiar cachés: " . $e->getMessage();
     }
 });
-

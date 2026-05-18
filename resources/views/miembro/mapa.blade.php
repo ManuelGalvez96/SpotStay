@@ -156,7 +156,6 @@
 					</select>
 				</div>
 
-				<button class="boton-aplicar" id="boton-aplicar-filtros" type="submit">Aplicar filtros</button>
 				<button class="boton-aplicar" id="boton-borrar-filtros" type="reset">Borrar filtros</button>
 				</form>
 			</aside>
@@ -167,7 +166,7 @@
 		</main>
 
 		<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-		<script src="{{ asset('js/miembro/miembro.js') }}"></script>
-		<script src="{{ asset('js/miembro/mapa.js') }}"></script>
+		<script src="{{ asset('js/miembro/miembro.js') }}?v=3"></script>
+		<script src="{{ asset('js/miembro/mapa.js') }}?v=2"></script>
 	</body>
 </html>

@@ -122,14 +122,19 @@ function iniciarMapa() {
 		};
 	}
 
-	if (boton) {
-		// Aplica filtros con un click del usuario.
-		boton.onclick = function (evento) {
-			if (evento) {
-				evento.preventDefault();
-			}
-			ejecutarBusqueda();
-		};
+	var timeoutFiltros;
+	for (var j = 0; j < ids.length; j++) {
+		var campoFiltro = document.getElementById(ids[j]);
+		if (campoFiltro) {
+			campoFiltro.oninput = function () {
+				clearTimeout(timeoutFiltros);
+				timeoutFiltros = setTimeout(ejecutarBusqueda, 300);
+			};
+			campoFiltro.onchange = function () {
+				clearTimeout(timeoutFiltros);
+				timeoutFiltros = setTimeout(ejecutarBusqueda, 300);
+			};
+		}
 	}
 	
 	if (botonBorrar) {

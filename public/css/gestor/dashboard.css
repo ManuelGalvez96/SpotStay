@@ -294,3 +294,30 @@
         margin-left: 0;
     }
 }
+
+.propiedades-resumen {
+    padding: 8px 16px;
+    font-size: 13px;
+    color: var(--admin-muted);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.propiedades-resumen .texto-rojo {
+    color: #EF4444;
+    font-weight: 600;
+}
+
+.propiedad-meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+
+.propiedad-inquilino {
+    font-size: 12px;
+    color: var(--admin-muted);
+}

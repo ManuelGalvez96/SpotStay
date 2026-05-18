@@ -30,6 +30,7 @@ use App\Http\Controllers\Gestor\DashboardController as GestorDashboardController
 use App\Http\Controllers\Gestor\IncidenciaController as GestorIncidenciaController;
 use App\Http\Controllers\Gestor\PropiedadController as GestorPropiedadController;
 use App\Http\Controllers\Gestor\MensajeController as GestorMensajeController;
+use App\Http\Controllers\Gestor\PerfilController as GestorPerfilController;
 
 // Rutas Públicas
 Route::get('/', function () {
@@ -145,6 +146,9 @@ Route::middleware(['role:gestor'])->group(function () {
     Route::post('/gestor/mensajes/iniciar/{propiedadId}', [GestorMensajeController::class, 'iniciar'])->name('gestor.mensajes.iniciar');
     Route::get('/gestor/mensajes/{id}', [GestorMensajeController::class, 'mostrar'])->name('gestor.mensajes.mostrar')->whereNumber('id');
     Route::post('/gestor/mensajes/{id}', [GestorMensajeController::class, 'enviar'])->name('gestor.mensajes.enviar')->whereNumber('id');
+
+    Route::get('/gestor/perfil', [GestorPerfilController::class, 'index'])->name('gestor.perfil');
+    Route::post('/gestor/perfil', [GestorPerfilController::class, 'update'])->name('gestor.perfil.update');
 });
 
 // Rutas Arrendador

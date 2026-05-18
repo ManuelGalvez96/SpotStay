@@ -144,7 +144,10 @@
         <div class="card-franja"></div>
         <div class="card-header-admin card-header-gradient">
             <span>Incidencias urgentes</span>
-            <span class="badge-contador">{{ $incidenciasUrgentes->count() }}</span>
+            <div class="card-header-right">
+                <span class="badge-contador">{{ $incidenciasUrgentes->count() }}</span>
+                <a href="{{ route('gestor.incidencias') }}" class="link-ver-todos">Ver todas →</a>
+            </div>
         </div>
 
         <div class="lista-solicitudes">
@@ -175,6 +178,23 @@
         <div class="card-franja"></div>
         <div class="card-header-admin card-header-gradient">
             <span>Propiedades asignadas</span>
+            <div class="card-header-right">
+                <span class="badge-contador">{{ $totalesPropiedades->total }} propiedades</span>
+                <a href="{{ route('gestor.propiedades') }}" class="link-ver-todos">Ver todas →</a>
+            </div>
+        </div>
+
+        @php
+            $conAtrasados = collect($propiedadesAsignadas)->filter(fn($p) => $p->pagos_atrasados > 0)->count();
+        @endphp
+        <div class="propiedades-resumen">
+            <span>{{ $totalesPropiedades->total }} propiedades</span>
+            <span>·</span>
+            <span>{{ $totalesPropiedades->con_alquiler }} con alquiler activo</span>
+            @if($conAtrasados)
+                <span>·</span>
+                <span class="texto-rojo">{{ $conAtrasados }} con pagos atrasados</span>
+            @endif
         </div>
 
         <div class="lista-solicitudes">
@@ -184,9 +204,25 @@
                     <div class="solicitud-info">
                         <p class="solicitud-nombre">{{ $propiedad->titulo_propiedad }}</p>
                         <p class="solicitud-ciudad">{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }}</p>
+                        <div class="propiedad-meta">
+                            @if($propiedad->fecha_inicio_alquiler)
+                                <span class="badge-estado badge-activo">Alquilado</span>
+                                <span class="propiedad-inquilino">{{ $propiedad->nombre_inquilino }}</span>
+                            @else
+                                <span class="badge-estado badge-rechazado">Sin alquiler</span>
+                            @endif
+                        </div>
                     </div>
                     <div class="solicitud-meta">
-                        <span class="badge-estado badge-pendiente">{{ $propiedad->incidencias_activas }} activas</span>
+                        @if($propiedad->incidencias_activas > 0)
+                            <span class="badge-estado badge-pendiente">{{ $propiedad->incidencias_activas }} incidencias</span>
+                        @endif
+                        @if($propiedad->pagos_pendientes > 0)
+                            <span class="badge-estado badge-pendiente">{{ $propiedad->pagos_pendientes }} pagos pendientes</span>
+                        @endif
+                        @if($propiedad->pagos_atrasados > 0)
+                            <span class="badge-estado badge-rechazado">{{ $propiedad->pagos_atrasados }} atrasados</span>
+                        @endif
                     </div>
                 </a>
             @empty

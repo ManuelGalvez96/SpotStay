@@ -42,7 +42,7 @@
                 <i class="bi bi-chevron-down chevron-admin"></i>
 
                 <div class="admin-dropdown" id="adminDropdown">
-                    <button class="dropdown-item">Perfil</button>
+                    <a class="dropdown-item" href="{{ route('gestor.perfil') }}">Perfil</a>
                     <button class="dropdown-item dropdown-item-logout" id="btnLogout">Cerrar sesión</button>
                 </div>
             </div>

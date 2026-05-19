@@ -2,15 +2,20 @@
 
 namespace App\Services;
 
+use App\Models\Usuario;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ActividadService
 {
-    private function crear(int $gestorId, string $tipo, string $titulo, string $mensaje, ?string $url, string $icono, string $color, ?string $tipoEntidad, ?int $idEntidad): void
+    private function crear(int $usuarioId, string $tipo, string $titulo, string $mensaje, ?string $url, string $icono, string $color, ?string $tipoEntidad, ?int $idEntidad): void
     {
+        if (!Usuario::find($usuarioId)) {
+            return;
+        }
+
         DB::table('tbl_notificacion')->insert([
-            'id_usuario_fk' => $gestorId,
+            'id_usuario_fk' => $usuarioId,
             'tipo_notificacion' => $tipo,
             'titulo_notificacion' => $titulo,
             'mensaje_notificacion' => $mensaje,
@@ -25,10 +30,10 @@ class ActividadService
         ]);
     }
 
-    public function incidenciaCreada(int $gestorId, int $incidenciaId, string $propiedadTitulo, string $incidenciaTitulo, string $reportaNombre = 'Un usuario'): void
+    public function incidenciaCreada(int $usuarioId, int $incidenciaId, string $propiedadTitulo, string $incidenciaTitulo, string $reportaNombre = 'Un usuario'): void
     {
         $this->crear(
-            $gestorId,
+            $usuarioId,
             'nueva_incidencia',
             "Nueva incidencia en {$propiedadTitulo}",
             "{$incidenciaTitulo} — reportada por {$reportaNombre}",
@@ -40,13 +45,13 @@ class ActividadService
         );
     }
 
-    public function incidenciaCambioEstado(int $gestorId, int $incidenciaId, string $propiedadTitulo, string $estadoNuevo): void
+    public function incidenciaCambioEstado(int $usuarioId, int $incidenciaId, string $propiedadTitulo, string $estadoNuevo): void
     {
         $estadoLabel = str_replace('_', ' ', $estadoNuevo);
         $estadoLabel = ucfirst($estadoLabel);
 
         $this->crear(
-            $gestorId,
+            $usuarioId,
             'incidencia_actualizada',
             "Incidencia actualizada en {$propiedadTitulo}",
             "Cambió a {$estadoLabel}",
@@ -58,12 +63,12 @@ class ActividadService
         );
     }
 
-    public function pagoRealizado(int $gestorId, int $propiedadId, string $propiedadTitulo, string $concepto, float $importe): void
+    public function pagoRealizado(int $usuarioId, int $propiedadId, string $propiedadTitulo, string $concepto, float $importe): void
     {
         $this->crear(
-            $gestorId,
+            $usuarioId,
             'pago_realizado',
-            "Pago recibido en {$propiedadTitulo}",
+            "Pago realizado en {$propiedadTitulo}",
             "{$concepto} — " . number_format($importe, 2, ',', '.') . " €",
             "/gestor/propiedades/{$propiedadId}",
             'check-circle',
@@ -73,10 +78,10 @@ class ActividadService
         );
     }
 
-    public function pagoAtrasado(int $gestorId, int $propiedadId, string $propiedadTitulo, string $mes, float $importe): void
+    public function pagoAtrasado(int $usuarioId, int $propiedadId, string $propiedadTitulo, string $mes, float $importe): void
     {
         $this->crear(
-            $gestorId,
+            $usuarioId,
             'pago_atrasado',
             "Pago atrasado en {$propiedadTitulo}",
             "Cuota de {$mes} — " . number_format($importe, 2, ',', '.') . " €",
@@ -88,10 +93,10 @@ class ActividadService
         );
     }
 
-    public function gastoAtrasado(int $gestorId, int $propiedadId, string $propiedadTitulo, string $categoria, float $importe): void
+    public function gastoAtrasado(int $usuarioId, int $propiedadId, string $propiedadTitulo, string $categoria, float $importe): void
     {
         $this->crear(
-            $gestorId,
+            $usuarioId,
             'pago_atrasado',
             "Recibo atrasado en {$propiedadTitulo}",
             ucfirst($categoria) . " — " . number_format($importe, 2, ',', '.') . " €",
@@ -103,10 +108,10 @@ class ActividadService
         );
     }
 
-    public function presupuestoCreado(int $gestorId, int $incidenciaId, string $propiedadTitulo, float $importe): void
+    public function presupuestoCreado(int $usuarioId, int $incidenciaId, string $propiedadTitulo, float $importe): void
     {
         $this->crear(
-            $gestorId,
+            $usuarioId,
             'presupuesto_creado',
             "Presupuesto generado en {$propiedadTitulo}",
             number_format($importe, 2, ',', '.') . " € — pendiente de aprobación",
@@ -118,11 +123,11 @@ class ActividadService
         );
     }
 
-    public function gastoCreado(int $gestorId, int $propiedadId, string $propiedadTitulo, string $categoria, string $concepto, float $importe): void
+    public function gastoCreado(int $usuarioId, int $propiedadId, string $propiedadTitulo, string $categoria, string $concepto, float $importe): void
     {
         $label = $concepto ?: ucfirst($categoria);
         $this->crear(
-            $gestorId,
+            $usuarioId,
             'gasto_creado',
             "Nuevo recibo en {$propiedadTitulo}",
             "{$label} — " . number_format($importe, 2, ',', '.') . " €",
@@ -145,6 +150,73 @@ class ActividadService
             'gasto_creado' => ['label' => 'Recibos creados', 'color' => '#0891B2', 'icono' => 'receipt'],
             'mensaje_nuevo' => ['label' => 'Mensajes', 'color' => '#7C3AED', 'icono' => 'chat-dots'],
             'alquiler_pendiente' => ['label' => 'Alquiler pendiente', 'color' => '#035498', 'icono' => 'calendar-event'],
+            'propiedad_estado' => ['label' => 'Propiedad cambió de estado', 'color' => '#035498', 'icono' => 'building-gear'],
+            'alquiler_creado' => ['label' => 'Nuevo alquiler creado', 'color' => '#059669', 'icono' => 'house-check'],
+            'alquiler_aprobado' => ['label' => 'Alquiler aprobado', 'color' => '#16A34A', 'icono' => 'check-lg'],
+            'contrato_firmado' => ['label' => 'Contrato firmado', 'color' => '#059669', 'icono' => 'file-earmark-check'],
         ];
+    }
+
+    public function propiedadEstadoCambiado(int $usuarioId, int $propiedadId, string $propiedadTitulo, string $estadoAnterior, string $estadoNuevo, string $realizadoPor = 'Admin'): void
+    {
+        $anterior = str_replace('_', ' ', $estadoAnterior);
+        $nuevo = str_replace('_', ' ', $estadoNuevo);
+
+        $this->crear(
+            $usuarioId,
+            'propiedad_estado',
+            "Estado actualizado: {$propiedadTitulo}",
+            "{$realizadoPor} cambió de {$anterior} a {$nuevo}",
+            "/gestor/propiedades/{$propiedadId}",
+            'building-gear',
+            '#035498',
+            'propiedad',
+            $propiedadId
+        );
+    }
+
+    public function alquilerCreado(int $usuarioId, int $propiedadId, string $propiedadTitulo, string $inquilinoNombre): void
+    {
+        $this->crear(
+            $usuarioId,
+            'alquiler_creado',
+            "Nuevo alquiler en {$propiedadTitulo}",
+            "Solicitado por {$inquilinoNombre}",
+            "/gestor/propiedades/{$propiedadId}",
+            'house-check',
+            '#059669',
+            'propiedad',
+            $propiedadId
+        );
+    }
+
+    public function alquilerAprobado(int $usuarioId, int $alquilerId, string $propiedadTitulo, string $inquilinoNombre): void
+    {
+        $this->crear(
+            $usuarioId,
+            'alquiler_aprobado',
+            "Alquiler aprobado en {$propiedadTitulo}",
+            "Aprobado para {$inquilinoNombre}",
+            "/gestor/propiedades/{$alquilerId}",
+            'check-lg',
+            '#16A34A',
+            'alquiler',
+            $alquilerId
+        );
+    }
+
+    public function contratoFirmado(int $usuarioId, int $propiedadId, string $propiedadTitulo, string $firmanteNombre): void
+    {
+        $this->crear(
+            $usuarioId,
+            'contrato_firmado',
+            "Contrato firmado en {$propiedadTitulo}",
+            "Firmado por {$firmanteNombre}",
+            "/gestor/propiedades/{$propiedadId}",
+            'file-earmark-check',
+            '#059669',
+            'propiedad',
+            $propiedadId
+        );
     }
 }

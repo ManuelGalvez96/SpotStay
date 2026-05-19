@@ -13,10 +13,17 @@ use App\Models\Alquiler;
 use App\Models\AlquilerCuota;
 use App\Models\Contrato;
 use App\Models\Pago;
+use App\Services\ActividadService;
 use App\Services\PdfMonkeyService;
 
 class AlquilerController extends Controller
 {
+    private $actividadService;
+
+    public function __construct()
+    {
+        $this->actividadService = new ActividadService();
+    }
     /**
      * Mostrar formulario de nuevo alquiler
      */
@@ -357,6 +364,10 @@ class AlquilerController extends Controller
                 return response()->json(['success' => false, 'error' => 'Alquiler no encontrado']);
             }
 
+            $propiedad = DB::table('tbl_propiedad')->find($alquiler->id_propiedad_fk);
+            $inquilino = DB::table('tbl_usuario')->find($alquiler->id_inquilino_fk);
+            $estadoPropiedadAnterior = $propiedad->estado_propiedad ?? 'publicada';
+
             // Actualizar alquiler a activo
             DB::table('tbl_alquiler')
                 ->where('id_alquiler', $id)
@@ -379,6 +390,27 @@ class AlquilerController extends Controller
             $this->generarContratoConPDF($alquiler);
 
             DB::commit();
+
+            $inquilinoNombre = $inquilino->nombre_usuario ?? 'Inquilino';
+
+            if ($propiedad && $propiedad->id_gestor_fk) {
+                $this->actividadService->alquilerAprobado(
+                    $propiedad->id_gestor_fk,
+                    $id,
+                    $propiedad->titulo_propiedad,
+                    $inquilinoNombre
+                );
+
+                $this->actividadService->propiedadEstadoCambiado(
+                    $propiedad->id_gestor_fk,
+                    $propiedad->id_propiedad,
+                    $propiedad->titulo_propiedad,
+                    $estadoPropiedadAnterior,
+                    'alquilada',
+                    'Admin'
+                );
+            }
+
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -485,6 +517,19 @@ class AlquilerController extends Controller
 
             DB::commit();
 
+            $inquilinoNombre = DB::table('tbl_usuario')
+                ->where('id_usuario', $datos['id_inquilino'])
+                ->value('nombre_usuario') ?? 'Inquilino';
+
+            if ($propiedad->id_gestor_fk) {
+                $this->actividadService->alquilerCreado(
+                    $propiedad->id_gestor_fk,
+                    $datos['id_propiedad'],
+                    $propiedad->titulo_propiedad,
+                    $inquilinoNombre
+                );
+            }
+
             if ($request->expectsJson()) {
                 return response()->json(['success' => true, 'id_alquiler' => $alquilerId]);
             }
@@ -587,6 +632,9 @@ class AlquilerController extends Controller
                 return redirect('/admin/alquileres')->with('error', 'Alquiler no encontrado.');
             }
 
+            $propiedadEliminar = DB::table('tbl_propiedad')->find($alquiler->id_propiedad_fk);
+            $estadoPropiedadAnterior = $propiedadEliminar->estado_propiedad ?? null;
+
             DB::table('tbl_pago')
                 ->where('id_alquiler_fk', $id)
                 ->delete();
@@ -621,6 +669,17 @@ class AlquilerController extends Controller
                         'estado_propiedad' => 'publicada',
                         'actualizado_propiedad' => now(),
                     ]);
+
+                if ($propiedadEliminar && $propiedadEliminar->id_gestor_fk) {
+                    $this->actividadService->propiedadEstadoCambiado(
+                        $propiedadEliminar->id_gestor_fk,
+                        $alquiler->id_propiedad_fk,
+                        $propiedadEliminar->titulo_propiedad,
+                        $estadoPropiedadAnterior,
+                        'publicada',
+                        'Admin'
+                    );
+                }
             }
 
             DB::commit();

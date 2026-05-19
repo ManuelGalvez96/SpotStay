@@ -173,6 +173,10 @@ class DashboardController extends Controller
                 'presupuesto_creado',
                 'gasto_creado',
                 'alquiler_pendiente',
+                'propiedad_estado',
+                'alquiler_creado',
+                'alquiler_aprobado',
+                'contrato_firmado',
             ])
             ->select(
                 'id_notificacion',

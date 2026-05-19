@@ -86,6 +86,27 @@ class SolicitudAlquilerController extends Controller
             return redirect()->back()->with('error', 'No se pudo completar el alquiler.');
         }
 
+        if ($propiedad->id_gestor_fk) {
+            $actividadService = new \App\Services\ActividadService();
+            $inquilinoNombre = $usuario->nombre_usuario ?? 'Inquilino';
+
+            $actividadService->alquilerCreado(
+                $propiedad->id_gestor_fk,
+                $id,
+                $propiedad->titulo_propiedad,
+                $inquilinoNombre
+            );
+
+            $actividadService->propiedadEstadoCambiado(
+                $propiedad->id_gestor_fk,
+                $id,
+                $propiedad->titulo_propiedad,
+                $propiedad->estado_propiedad,
+                'alquilada',
+                $inquilinoNombre
+            );
+        }
+
         if ($debeCerrarSesion) {
             Auth::logout();
             $request->session()->invalidate();

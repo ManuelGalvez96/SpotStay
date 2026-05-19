@@ -270,7 +270,6 @@ class SolicitudController extends Controller
                 'message' => $estado === 'activo' ? 'Solicitud aprobada y alquiler formalizado.' : 'Solicitud rechazada.',
                 'estado' => $estado,
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Error al cambiar estado de solicitud', ['id' => $id, 'error' => $e->getMessage()]);
@@ -285,7 +284,8 @@ class SolicitudController extends Controller
     {
         if (\Illuminate\Support\Facades\Auth::check()) {
             $usuarioAutenticado = \Illuminate\Support\Facades\Auth::user();
-            if ($usuarioAutenticado && DB::table('tbl_rol_usuario as ru')
+            if (
+                $usuarioAutenticado && DB::table('tbl_rol_usuario as ru')
                 ->join('tbl_rol as r', 'r.id_rol', '=', 'ru.id_rol_fk')
                 ->where('ru.id_usuario_fk', $usuarioAutenticado->id_usuario)
                 ->where('r.slug_rol', 'arrendador')

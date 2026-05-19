@@ -16,41 +16,116 @@ class ActividadController extends Controller
 
         $tipos = array_keys(ActividadService::tiposActividad());
 
-        $query = DB::table('tbl_notificacion')
-            ->where('id_usuario_fk', $gestorId)
-            ->whereIn('tipo_notificacion', $tipos);
+        $baseQuery = DB::table('tbl_notificacion as n')
+            ->where('n.id_usuario_fk', $gestorId)
+            ->whereIn('n.tipo_notificacion', $tipos);
+
+        $propiedadId = $request->integer('propiedad');
+        if ($propiedadId) {
+            $baseQuery
+                ->leftJoin('tbl_incidencia as i', function ($join) {
+                    $join->on('n.tipo_entidad_notificacion', '=', DB::raw("'incidencia'"))
+                         ->on('n.id_entidad_notificacion', '=', 'i.id_incidencia');
+                })
+                ->leftJoin('tbl_alquiler as a', function ($join) {
+                    $join->on('n.tipo_entidad_notificacion', '=', DB::raw("'alquiler'"))
+                         ->on('n.id_entidad_notificacion', '=', 'a.id_alquiler');
+                })
+                ->where(function ($q) use ($propiedadId) {
+                    $q->where(function ($sq) use ($propiedadId) {
+                        $sq->where('n.tipo_entidad_notificacion', 'propiedad')
+                           ->where('n.id_entidad_notificacion', $propiedadId);
+                    })->orWhere(function ($sq) use ($propiedadId) {
+                        $sq->where('n.tipo_entidad_notificacion', 'incidencia')
+                           ->where('i.id_propiedad_fk', $propiedadId);
+                    })->orWhere(function ($sq) use ($propiedadId) {
+                        $sq->where('n.tipo_entidad_notificacion', 'alquiler')
+                           ->where('a.id_propiedad_fk', $propiedadId);
+                    });
+                });
+        }
+
+        if ($buscar = $request->query('buscar')) {
+            $baseQuery->where(function ($q) use ($buscar) {
+                $q->where('n.titulo_notificacion', 'like', "%{$buscar}%")
+                  ->orWhere('n.mensaje_notificacion', 'like', "%{$buscar}%");
+            });
+        }
+
+        if ($desde = $request->query('desde')) {
+            $baseQuery->whereDate('n.creado_notificacion', '>=', $desde);
+        }
+
+        if ($hasta = $request->query('hasta')) {
+            $baseQuery->whereDate('n.creado_notificacion', '<=', $hasta);
+        }
+
+        $mainQuery = clone $baseQuery;
 
         $tipo = $request->query('tipo');
         if ($tipo && in_array($tipo, $tipos, true)) {
-            $query->where('tipo_notificacion', $tipo);
+            $mainQuery->where('n.tipo_notificacion', $tipo);
         }
 
-        $actividades = $query
+        $orden = $request->query('orden', 'mas_nuevos');
+        $orderDir = $orden === 'mas_antiguos' ? 'asc' : 'desc';
+
+        $actividades = $mainQuery
             ->select(
-                'id_notificacion',
-                'tipo_notificacion',
-                'titulo_notificacion',
-                'mensaje_notificacion',
-                'url_notificacion',
-                'icono_notificacion',
-                'color_notificacion',
-                'tipo_entidad_notificacion',
-                'id_entidad_notificacion',
-                'creado_notificacion'
+                'n.id_notificacion',
+                'n.tipo_notificacion',
+                'n.titulo_notificacion',
+                'n.mensaje_notificacion',
+                'n.url_notificacion',
+                'n.icono_notificacion',
+                'n.color_notificacion',
+                'n.tipo_entidad_notificacion',
+                'n.id_entidad_notificacion',
+                'n.creado_notificacion'
             )
-            ->orderBy('creado_notificacion', 'desc')
+            ->orderBy('n.creado_notificacion', $orderDir)
             ->paginate(20)
             ->withQueryString();
 
-        $conteos = DB::table('tbl_notificacion')
-            ->where('id_usuario_fk', $gestorId)
-            ->whereIn('tipo_notificacion', $tipos)
-            ->selectRaw('tipo_notificacion, COUNT(*) as total')
-            ->groupBy('tipo_notificacion')
-            ->pluck('total', 'tipo_notificacion');
+        $conteos = $baseQuery
+            ->select('n.tipo_notificacion', DB::raw('COUNT(*) as total'))
+            ->groupBy('n.tipo_notificacion')
+            ->pluck('total', 'n.tipo_notificacion');
+
+        $propiedades = DB::table('tbl_propiedad')
+            ->where('id_gestor_fk', $gestorId)
+            ->select('id_propiedad', 'titulo_propiedad')
+            ->orderBy('titulo_propiedad')
+            ->get();
 
         $tiposInfo = ActividadService::tiposActividad();
 
-        return view('gestor.actividad', compact('actividades', 'conteos', 'tiposInfo', 'tipo'));
+        $grupos = [
+            'Incidencias' => ['nueva_incidencia', 'incidencia_actualizada', 'presupuesto_creado'],
+            'Pagos y recibos' => ['pago_realizado', 'pago_atrasado', 'gasto_creado', 'gasto_atrasado'],
+            'Propiedades' => ['propiedad_estado', 'alquiler_creado', 'alquiler_aprobado', 'alquiler_pendiente'],
+            'Otros' => ['contrato_firmado', 'mensaje_nuevo'],
+        ];
+
+        $filtrosActivos = collect(array_filter([
+            'tipo' => $tipo,
+            'propiedad' => $propiedadId,
+            'buscar' => $request->query('buscar'),
+            'desde' => $request->query('desde'),
+            'hasta' => $request->query('hasta'),
+            'orden' => $orden !== 'mas_nuevos' ? $orden : null,
+        ]));
+
+        return view('gestor.actividad', compact(
+            'actividades',
+            'conteos',
+            'tiposInfo',
+            'tipo',
+            'propiedades',
+            'propiedadId',
+            'grupos',
+            'filtrosActivos',
+            'orden'
+        ));
     }
 }

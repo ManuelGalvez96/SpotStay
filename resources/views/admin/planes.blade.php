@@ -182,7 +182,7 @@
 
                         <p class="plan-descripcion">{{ $plan->descripcion_plan ?: 'Sin descripción' }}</p>
 
-                        <form action="{{ route('admin.planes.actualizar', $plan->id_plan) }}" method="POST" class="plan-form">
+                        <form id="form-actualizar-{{ $plan->id_plan }}" action="{{ route('admin.planes.actualizar', $plan->id_plan) }}" method="POST" class="plan-form">
                             @csrf
 
                             <div class="plan-form-grid">
@@ -226,12 +226,17 @@
                                     </label>
                                 </div>
                             </div>
-
                             <div class="plan-form-footer">
-                                <button type="submit" class="btn-guardar-plan">
-                                    Guardar cambios
-                                </button>
+                                <div style="display:flex;gap:0.5rem;align-items:center;">
+                                    <button type="submit" class="btn-guardar-plan">Guardar cambios</button>
+                                    <button type="button" class="btn-guardar-plan btn-eliminar-plan" data-plan-id="{{ $plan->id_plan }}" aria-label="Eliminar plan">Eliminar</button>
+                                </div>
                             </div>
+                        </form>
+
+                        {{-- Formulario de eliminación oculto (se envía desde el botón anterior) --}}
+                        <form id="form-eliminar-{{ $plan->id_plan }}" action="{{ route('admin.planes.eliminar', $plan->id_plan) }}" method="POST" style="display:none;">
+                            @csrf
                         </form>
                     </article>
                 @endforeach
@@ -242,7 +247,7 @@
 <div id="planes-messages"
     style="display:none"
     data-success="{{ session('mensaje_exito_plan') ? e(session('mensaje_exito_plan')) : '' }}"
-    data-error="{{ $errors->any() ? e($errors->first()) : '' }}">
+    data-error="{{ session('mensaje_error_plan') ? e(session('mensaje_error_plan')) : ($errors->any() ? e($errors->first()) : '') }}">
 </div>
 
 @endsection

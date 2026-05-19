@@ -460,6 +460,18 @@ body {
     filter: brightness(1.03);
 }
 
+/* Asegurar que las acciones del plan (Guardar / Eliminar) estén en la misma línea */
+.plan-actions {
+    display: flex !important;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.plan-actions .btn-guardar-plan {
+    white-space: nowrap;
+}
+
 .configuracion-accion-planes {
     margin-top: 18px;
     display: flex;

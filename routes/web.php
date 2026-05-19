@@ -65,6 +65,7 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/planes', [ConfiguracionController::class, 'planes'])->name('admin.planes');
     Route::post('/admin/planes/crear', [ConfiguracionController::class, 'crearPlan'])->name('admin.planes.crear');
     Route::post('/admin/planes/{id}/actualizar', [ConfiguracionController::class, 'actualizarPlan'])->name('admin.planes.actualizar');
+    Route::post('/admin/planes/{id}/eliminar', [ConfiguracionController::class, 'eliminarPlan'])->name('admin.planes.eliminar');
     Route::post('/admin/alquiler/{id}/aprobar', [DashboardController::class, 'aprobarAlquiler']);
     Route::post('/admin/alquiler/{id}/rechazar', [DashboardController::class, 'rechazarAlquiler']);
 

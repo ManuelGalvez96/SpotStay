@@ -80,4 +80,23 @@ class ConfiguracionController extends Controller
 
         return redirect()->route('admin.planes')->with('mensaje_exito_plan', 'Plan actualizado correctamente.');
     }
+
+    public function eliminarPlan(Request $request, $id)
+    {
+        $plan = Plan::findOrFail($id);
+
+        // No permitir eliminar planes activos
+        if ($plan->activo_plan) {
+            return redirect()->route('admin.planes')->with('mensaje_error_plan', 'No se puede eliminar un plan activo. Desactívalo primero.');
+        }
+
+        // No permitir eliminar si existen suscripciones asociadas
+        if ($plan->suscripciones()->exists()) {
+            return redirect()->route('admin.planes')->with('mensaje_error_plan', 'No se puede eliminar el plan porque hay usuarios suscritos a él.');
+        }
+
+        $plan->delete();
+
+        return redirect()->route('admin.planes')->with('mensaje_exito_plan', 'Plan eliminado correctamente.');
+    }
 }

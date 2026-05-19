@@ -114,12 +114,6 @@
                 </ul>
             </section>
         </div>
-
-        <div class="configuracion-accion-planes">
-            <a href="{{ route('admin.planes') }}" class="btn-guardar-plan btn-ver-planes">
-                Ver y editar planes
-            </a>
-        </div>
     </div>
 </div>
 @endsection

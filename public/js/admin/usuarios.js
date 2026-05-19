@@ -274,6 +274,7 @@ var actualizarTabla = function(data) {
             var inactivaClass = activo === '0' ? 'class="fila-inactiva"' : '';
             
             var rolLabel = usuario.rolLabel || 'Sin rol';
+            var suscripcionLabel = usuario.suscripcionLabel || 'Sin suscripción';
             var rolSlug = usuario.rol || 'usuario';
             var estadoLabel = usuario.estado === 'activo' ? 'Activo' : 'Inactivo';
             var estadoClass = activo === '1' ? 'activo' : 'inactivo';
@@ -290,6 +291,7 @@ var actualizarTabla = function(data) {
                     '</div>' +
                 '</td>' +
                 '<td><span class="badge-rol badge-' + rolSlug + '">' + rolLabel + '</span></td>' +
+                '<td>' + suscripcionLabel + '</td>' +
                 '<td><span class="badge-estado badge-' + estadoClass + '">' + estadoLabel + '</span></td>' +
                 '<td>' + propiedades + '</td>' +
                 '<td>' + usuario.fechaRegistro + '</td>' +
@@ -426,7 +428,7 @@ var abrirModal = function(id) {
         document.getElementById('dataPropiedades').textContent = usuario.total_propiedades || '0';
         document.getElementById('dataAcceso').textContent = 'N/A';
         document.getElementById('dataAlquileres').textContent = usuario.total_alquileres || '0';
-        document.getElementById('dataSuscripcion').textContent = usuario.suscripcion || 'Estándar';
+        document.getElementById('dataSuscripcion').textContent = usuario.suscripcion || 'Sin suscripción';
         
         // Rellenar sección de Propiedades del Usuario
         var listaPropiedades = document.getElementById('listaPropiedades');
@@ -657,6 +659,7 @@ var editarUsuario = function(id) {
         document.getElementById('inputEmail').value = usuario.email_usuario || '';
         document.getElementById('inputTelefono').value = usuario.telefono_usuario || '';
         document.getElementById('selectRolForm').value = usuario.slug_rol || '';
+        document.getElementById('selectSuscripcionForm').value = usuario.id_plan_fk || '';
         document.getElementById('inputPassword').value = '';
         document.getElementById('inputPassword').placeholder = 'Dejar vacío para no cambiar';
         
@@ -1204,6 +1207,7 @@ var guardarUsuario = function() {
     var email = document.getElementById('inputEmail').value.trim();
     var telefono = document.getElementById('inputTelefono').value.trim();
     var rol = document.getElementById('selectRolForm').value;
+    var suscripcion = document.getElementById('selectSuscripcionForm').value;
     var password = document.getElementById('inputPassword').value.trim();
     var usuarioId = form.getAttribute('data-usuario-id');
     
@@ -1250,7 +1254,8 @@ var guardarUsuario = function() {
         nombre: nombre,
         email: email,
         telefono: telefono,
-        rol: rol
+        rol: rol,
+        suscripcion_plan: suscripcion
     };
     
     /* Solo incluir password si no está vacío */

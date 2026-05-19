@@ -21,6 +21,9 @@ class IncidenciaController extends Controller
             ->leftJoin('tbl_usuario as asignado',
               'asignado.id_usuario','=',
               'tbl_incidencia.id_asignado_fk')
+                        ->leftJoin('tbl_usuario as arrendador',
+                            'arrendador.id_usuario','=',
+                            'tbl_propiedad.id_arrendador_fk')
             ->leftJoin('tbl_categoria',
               'tbl_categoria.id_categoria','=',
               'tbl_incidencia.id_categoria_fk')
@@ -30,8 +33,10 @@ class IncidenciaController extends Controller
                             DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
               'tbl_propiedad.ciudad_propiedad',
               'tbl_categoria.nombre_categoria',
-              'reporta.nombre_usuario as nombre_inquilino',
-              'asignado.nombre_usuario as nombre_gestor'
+                            'reporta.nombre_usuario as nombre_inquilino',
+                            'asignado.nombre_usuario as nombre_gestor',
+                            'arrendador.nombre_usuario as nombre_arrendador',
+                            'arrendador.email_usuario as email_arrendador'
             );
 
         $abiertas = (clone $queryBase)
@@ -387,6 +392,16 @@ class IncidenciaController extends Controller
         if ($request->propiedad) {
             $queryBase->where('tbl_incidencia.id_propiedad_fk', $request->propiedad);
         }
+        if ($request->estado) {
+            if ($request->estado === 'inactivas') {
+                // Estados considerados para inactivas
+                $estadosInactivos = ['abierta', 'esperando_decision', 'esperando_pago', 'solucionada'];
+                $queryBase->whereIn('tbl_incidencia.estado_incidencia', $estadosInactivos)
+                          ->where('tbl_incidencia.actualizado_incidencia', '<', Carbon::now()->subWeeks(2));
+            } else {
+                $queryBase->where('tbl_incidencia.estado_incidencia', $request->estado);
+            }
+        }
         if ($request->q) {
             $queryBase->where('titulo_incidencia','like','%' . $request->q . '%');
         }
@@ -420,6 +435,24 @@ class IncidenciaController extends Controller
         // Paginar la tabla combinada
         $allIncidencias = $queryBase->orderBy('tbl_incidencia.creado_incidencia','desc')
             ->paginate($perPage);
+
+        // Añadir campo encargado_pago según reglas de negocio
+        $tabla = $allIncidencias->items();
+        foreach ($tabla as $k => $inc) {
+            $enc = null;
+            try {
+                if (isset($inc->estado_incidencia) && $inc->estado_incidencia === 'esperando_pago') {
+                    if (!empty($inc->id_asignado_fk)) {
+                        $enc = DB::table('tbl_usuario')->where('id_usuario', $inc->id_asignado_fk)->value('nombre_usuario');
+                    } else {
+                        $enc = $inc->nombre_arrendador ?? null;
+                    }
+                }
+            } catch (\Exception $e) {
+                $enc = null;
+            }
+            $tabla[$k]->encargado_pago = $enc;
+        }
 
         return response()->json([
             'abiertas' => $abiertas,

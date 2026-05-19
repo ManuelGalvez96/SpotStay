@@ -73,7 +73,18 @@
         <div class="card-header-admin card-header-gradient">
             <span>Incidencias inactivas</span>
             <div class="card-header-actions">
-                <input type="text" id="buscadorIncidencias" placeholder="Buscar..." class="buscador-input">
+                <div class="input-busqueda" style="min-width:220px;">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="buscadorIncidencias" placeholder="Buscar incidencia...">
+                </div>
+                <select id="filtroEstadoIncidencias" class="select-filtro" style="margin-left:8px;">
+                    <option value="">Todos los estados</option>
+                    <option value="abierta">Abierta</option>
+                    <option value="esperando_decision">Esperando decisión</option>
+                    <option value="esperando_pago">Esperando pago</option>
+                    <option value="solucionada">Solucionada</option>
+                    <option value="inactivas">Inactivas (2+ semanas)</option>
+                </select>
                 <a href="/admin/incidencias" class="link-ver-todos">Ver todas →</a>
             </div>
         </div>

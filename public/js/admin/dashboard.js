@@ -26,7 +26,100 @@ window.onload = function() {
     asignarEventosNavIconos();
     asignarEventosModalSolicitudes();
     asignarEventosContactarIncidencias();
+    asignarEventoBuscadorIncidencias();
+    asignarEventoFiltroEstadoIncidencias();
 };
+
+/* ================================================
+   FUNCIÓN: asignarEventoBuscadorIncidencias
+   Asigna evento al buscador de incidencias
+   ================================================ */
+function asignarEventoBuscadorIncidencias() {
+    var buscador = document.getElementById('buscadorIncidencias');
+    if (!buscador) return;
+    buscador.oninput = function() {
+        filtrarTablaIncidencias();
+    };
+}
+
+/* ================================================
+   FUNCIÓN: asignarEventoFiltroEstadoIncidencias
+   Asigna evento al select de estado
+   ================================================ */
+function asignarEventoFiltroEstadoIncidencias() {
+    var filtro = document.getElementById('filtroEstadoIncidencias');
+    if (!filtro) return;
+    filtro.onchange = function() {
+        filtrarTablaIncidencias();
+    };
+}
+
+/* ================================================
+   FUNCIÓN: filtrarTablaIncidencias
+   Filtra filas por texto y estado seleccionado
+   ================================================ */
+function filtrarTablaIncidencias() {
+    var texto = (document.getElementById('buscadorIncidencias') || { value: '' }).value.trim();
+    var estadoSel = (document.getElementById('filtroEstadoIncidencias') || { value: '' }).value;
+
+    var url = '/admin/incidencias/filtrar?q=' + encodeURIComponent(texto) + '&estado=' + encodeURIComponent(estadoSel);
+
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken
+        }
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+        var filas = data.tabla || [];
+        var tbody = document.getElementById('tbodyIncidencias');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        if (filas.length === 0) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td colspan="6" class="tabla-vacia-cell">No hay incidencias</td>';
+            tbody.appendChild(tr);
+            return;
+        }
+
+        filas.forEach(function(inc) {
+            var tr = document.createElement('tr');
+            tr.setAttribute('data-id', inc.id_incidencia);
+            tr.setAttribute('data-titulo', inc.titulo_incidencia || '');
+            tr.setAttribute('data-propiedad', inc.titulo_propiedad || '');
+            tr.setAttribute('data-estado', inc.estado_incidencia || '');
+            tr.setAttribute('data-inquilino', inc.nombre_inquilino || '—');
+            tr.setAttribute('data-arrendador', inc.nombre_arrendador || '—');
+            tr.setAttribute('data-gestor', inc.nombre_gestor || 'Sin asignar');
+            tr.setAttribute('data-encargado-pago', inc.encargado_pago || '—');
+
+            var prioridad = inc.prioridad_incidencia || '';
+            var prioridadClass = 'badge-' + (prioridad || 'baja');
+            var prioridadLabel = prioridad ? prioridad.charAt(0).toUpperCase() + prioridad.slice(1) : '—';
+
+            var categoriaHtml = inc.nombre_categoria ? '<span class="badge bg-info">' + inc.nombre_categoria + '</span>' : '<span class="text-muted">—</span>';
+
+            var estadoLabel = (inc.estado_incidencia || '').replace('_', ' ');
+
+            tr.innerHTML = '<td>' + (inc.titulo_propiedad ? inc.titulo_propiedad + ', ' + (inc.ciudad_propiedad || '') : '—') + '</td>' +
+                '<td>' + categoriaHtml + '</td>' +
+                '<td><span class="badge badge-prioridad ' + prioridadClass + '">' + prioridadLabel + '</span></td>' +
+                '<td><span class="badge-estado badge-' + (inc.estado_incidencia || '').replace('_','-') + '">' + (estadoLabel.charAt(0).toUpperCase() + estadoLabel.slice(1)) + '</span></td>' +
+                '<td class="col-mobile-hide"><small class="text-muted">' + (inc.actualizado_incidencia ? new Date(inc.actualizado_incidencia).toLocaleString() : '—') + '</small></td>' +
+                '<td class="col-mobile-hide"><button class="btn-contactar-inc" data-id="' + inc.id_incidencia + '">📧 Contactar</button></td>';
+
+            tbody.appendChild(tr);
+        });
+
+        // Reasignar eventos de botones contactar en las nuevas filas
+        asignarEventosContactarIncidencias();
+    })
+    .catch(function(error) {
+        console.error('Error al filtrar incidencias:', error);
+    });
+}
 
 /* ================================================
    FUNCIÓN: iniciarDonut
@@ -663,7 +756,11 @@ function rellenarModalIncidencia(id) {
    ================================================ */
 function enviarContactoIncidencia() {
     if (!incidenciaActualId) {
-        alert('Error: No hay incidencia seleccionada');
+        if (window.swalError) {
+            window.swalError('Error', 'No hay incidencia seleccionada');
+        } else {
+            alert('Error: No hay incidencia seleccionada');
+        }
         return;
     }
 
@@ -672,21 +769,40 @@ function enviarContactoIncidencia() {
     var mensaje = document.getElementById('modalMensajeContacto').value;
 
     if (!destino) {
-        alert('Por favor, selecciona un destinatario');
+        if (window.swalError) {
+            window.swalError('Falta destinatario', 'Por favor, selecciona un destinatario');
+        } else {
+            alert('Por favor, selecciona un destinatario');
+        }
         return;
     }
 
     if (!asunto.trim()) {
-        alert('Por favor, escribe un asunto');
+        if (window.swalError) {
+            window.swalError('Falta asunto', 'Por favor, escribe un asunto');
+        } else {
+            alert('Por favor, escribe un asunto');
+        }
         return;
     }
 
     if (!mensaje.trim()) {
-        alert('Por favor, escribe un mensaje');
+        if (window.swalError) {
+            window.swalError('Falta mensaje', 'Por favor, escribe un mensaje');
+        } else {
+            alert('Por favor, escribe un mensaje');
+        }
         return;
     }
 
     var url = '/admin/incidencias/' + incidenciaActualId + '/contactar';
+
+    var btnEnviar = document.getElementById('btnEnviarContactoIncidencia');
+    var btnHtmlOriginal = btnEnviar ? btnEnviar.innerHTML : null;
+    if (btnEnviar) {
+        btnEnviar.disabled = true;
+        btnEnviar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando...';
+    }
 
     fetch(url, {
         method: 'POST',
@@ -705,18 +821,52 @@ function enviarContactoIncidencia() {
     })
     .then(function(data) {
         if (data.success) {
-            alert('Correo enviado correctamente');
-            var modal = document.getElementById('modalContactarIncidencia');
-            if (modal && typeof bootstrap !== 'undefined') {
-                var bsModal = bootstrap.Modal.getInstance(modal);
-                if (bsModal) bsModal.hide();
+            var promise = null;
+            if (window.swalSuccess) {
+                promise = window.swalSuccess('Correo enviado', 'Correo enviado correctamente');
+            } else {
+                alert('Correo enviado correctamente');
+                promise = Promise.resolve();
             }
+
+            promise.then(function() {
+                var modal = document.getElementById('modalContactarIncidencia');
+                if (modal && typeof bootstrap !== 'undefined') {
+                    var bsModal = bootstrap.Modal.getInstance(modal);
+                    if (bsModal) bsModal.hide();
+                }
+            });
         } else {
-            alert('Error al enviar correo: ' + (data.error || 'Error desconocido'));
+            var msg = data.error || data.message || 'Error desconocido';
+            if (window.swalError) {
+                window.swalError('Error al enviar correo', msg);
+            } else {
+                alert('Error al enviar correo: ' + msg);
+            }
+        }
+        // Restaurar botón
+        if (btnEnviar) {
+            btnEnviar.disabled = false;
+            if (btnHtmlOriginal !== null) btnEnviar.innerHTML = btnHtmlOriginal;
         }
     })
     .catch(function(error) {
         console.error('Error:', error);
-        alert('Error al enviar correo: ' + error.message);
+        var msg = (error && error.message) ? error.message : 'Error en la petición';
+        var promiseErr = null;
+        if (window.swalError) {
+            promiseErr = window.swalError('Error al enviar correo', msg);
+        } else {
+            alert('Error al enviar correo: ' + msg);
+            promiseErr = Promise.resolve();
+        }
+
+        // Restaurar botón en caso de error tras cerrar el modal de alerta
+        promiseErr.then(function() {
+            if (btnEnviar) {
+                btnEnviar.disabled = false;
+                if (btnHtmlOriginal !== null) btnEnviar.innerHTML = btnHtmlOriginal;
+            }
+        });
     });
 }

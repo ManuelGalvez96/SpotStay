@@ -1013,3 +1013,49 @@ body {
     margin-top: 12px;
     margin-bottom: 0;
 }
+
+/* ── Shared filter styles (match Incidencias) ── */
+.input-busqueda {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 220px;
+    background: #F3F4F6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.input-busqueda i {
+    position: absolute;
+    left: 12px;
+    color: #9CA3AF;
+    pointer-events: none;
+}
+
+.input-busqueda input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 8px 12px 8px 36px;
+    font-size: 14px;
+}
+
+.input-busqueda input:focus {
+    outline: none;
+}
+
+.select-filtro {
+    padding: 8px 12px;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    font-size: 13px;
+    background: white;
+    cursor: pointer;
+    min-width: 140px;
+}
+
+.select-filtro:focus {
+    outline: none;
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
+}

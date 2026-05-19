@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Gestor;
 
 use App\Http\Controllers\Controller;
+use App\Services\ActividadService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -437,6 +438,11 @@ class IncidenciaController extends Controller
             'actualizado_historial' => now(),
         ]);
 
+        $propTitulo = DB::table('tbl_propiedad')->where('id_propiedad', $incidencia->id_propiedad_fk)->value('titulo_propiedad');
+        if ($propTitulo) {
+            (new ActividadService())->presupuestoCreado($this->obtenerIdGestor(), $id, $propTitulo, (float) $request->importe);
+        }
+
         return redirect()->back()->with('ok', 'Presupuesto enviado. La incidencia queda pendiente de decisión del arrendador.');
     }
 
@@ -484,6 +490,11 @@ class IncidenciaController extends Controller
             'creado_historial' => Carbon::now(),
             'actualizado_historial' => Carbon::now(),
         ]);
+
+        $propTitulo = DB::table('tbl_propiedad')->where('id_propiedad', $incidencia->id_propiedad_fk)->value('titulo_propiedad');
+        if ($propTitulo) {
+            (new ActividadService())->incidenciaCambioEstado($idGestor, $id, $propTitulo, $estado);
+        }
 
         return redirect()->back()->with('ok', 'Incidencia actualizada correctamente.');
     }

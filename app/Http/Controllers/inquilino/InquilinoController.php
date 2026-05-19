@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Alquiler;
 use App\Models\AlquilerCuota;
 use App\Models\Pago;
+use App\Services\ActividadService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -523,6 +524,26 @@ class InquilinoController extends Controller
 
             DB::commit();
 
+            if ($propiedad && !empty($propiedad->id_gestor_fk) && (int)$propiedad->id_gestor_fk > 0) {
+                $esGestor = DB::table('tbl_rol_usuario')
+                    ->join('tbl_rol', 'tbl_rol.id_rol', '=', 'tbl_rol_usuario.id_rol_fk')
+                    ->where('tbl_rol_usuario.id_usuario_fk', (int)$propiedad->id_gestor_fk)
+                    ->where('tbl_rol.slug_rol', 'gestor')
+                    ->exists();
+                if ($esGestor) {
+                    $propData = DB::table('tbl_propiedad')->where('id_propiedad', $id)->select('titulo_propiedad')->first();
+                    if ($propData) {
+                        (new ActividadService())->incidenciaCreada(
+                            (int)$propiedad->id_gestor_fk,
+                            $idIncidencia,
+                            $propData->titulo_propiedad,
+                            $request->titulo,
+                            $usuario->nombre_usuario ?? 'Inquilino'
+                        );
+                    }
+                }
+            }
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
@@ -754,6 +775,42 @@ class InquilinoController extends Controller
             }
 
             DB::commit();
+
+            if ($alquilerActivo && isset($alquilerActivo->id_propiedad_fk)) {
+                $propData = DB::table('tbl_propiedad')
+                    ->where('id_propiedad', $alquilerActivo->id_propiedad_fk)
+                    ->select('id_propiedad', 'titulo_propiedad', 'id_gestor_fk')
+                    ->first();
+                if ($propData && !empty($propData->id_gestor_fk) && (int)$propData->id_gestor_fk > 0) {
+                    $esGestor = DB::table('tbl_rol_usuario')
+                        ->join('tbl_rol', 'tbl_rol.id_rol', '=', 'tbl_rol_usuario.id_rol_fk')
+                        ->where('tbl_rol_usuario.id_usuario_fk', (int)$propData->id_gestor_fk)
+                        ->where('tbl_rol.slug_rol', 'gestor')
+                        ->exists();
+                    if ($esGestor) {
+                        $actividad = new ActividadService();
+                        foreach ($cuotasAPagar ?? [] as $cuota) {
+                            $actividad->pagoRealizado(
+                                (int)$propData->id_gestor_fk,
+                                (int)$propData->id_propiedad,
+                                $propData->titulo_propiedad,
+                                'Cuota alquiler ' . Carbon::parse($cuota->mes_cuota)->format('m/Y'),
+                                (float)$cuota->importe_base
+                            );
+                        }
+                        foreach ($gastosAPagar ?? [] as $gasto) {
+                            $actividad->pagoRealizado(
+                                (int)$propData->id_gestor_fk,
+                                (int)$propData->id_propiedad,
+                                $propData->titulo_propiedad,
+                                ucfirst($gasto->categoria_gasto ?? 'Gasto'),
+                                (float)$gasto->importe_detalle
+                            );
+                        }
+                    }
+                }
+            }
+
             return response()->json(['success' => true, 'message' => 'Pagos procesados correctamente.']);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -763,6 +820,24 @@ class InquilinoController extends Controller
 
     private function actualizarCuotasAtrasadas(int $userId): void
     {
+        $propiedadesAfectadas = AlquilerCuota::query()
+            ->join('tbl_alquiler', 'tbl_alquiler.id_alquiler', '=', 'tbl_alquiler_cuota.id_alquiler_fk')
+            ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
+            ->where('tbl_alquiler.id_inquilino_fk', $userId)
+            ->where('tbl_alquiler.estado_alquiler', 'activo')
+            ->where('tbl_alquiler_cuota.estado', 'pendiente')
+            ->whereDate('tbl_alquiler_cuota.fecha_vencimiento', '<', Carbon::today()->toDateString())
+            ->select(
+                'tbl_propiedad.id_propiedad',
+                'tbl_propiedad.titulo_propiedad',
+                'tbl_propiedad.id_gestor_fk',
+                'tbl_alquiler_cuota.mes_cuota',
+                'tbl_alquiler_cuota.importe_base',
+                'tbl_alquiler_cuota.id_alquiler_cuota'
+            )
+            ->distinct()
+            ->get();
+
         AlquilerCuota::query()
             ->join('tbl_alquiler', 'tbl_alquiler.id_alquiler', '=', 'tbl_alquiler_cuota.id_alquiler_fk')
             ->where('tbl_alquiler.id_inquilino_fk', $userId)
@@ -774,7 +849,28 @@ class InquilinoController extends Controller
                 'tbl_alquiler_cuota.updated_at' => now(),
             ]);
 
+        $gastosAfectados = collect();
+
         if (Schema::hasTable('tbl_gasto_cuota') && Schema::hasTable('tbl_gasto_cuota_detalle')) {
+            $gastosAfectados = DB::table('tbl_gasto_cuota_detalle')
+                ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
+                ->join('tbl_alquiler', 'tbl_alquiler.id_alquiler', '=', 'tbl_gasto_cuota_detalle.id_alquiler_fk')
+                ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
+                ->where('tbl_alquiler.id_inquilino_fk', $userId)
+                ->where('tbl_alquiler.estado_alquiler', 'activo')
+                ->where('tbl_gasto_cuota_detalle.estado_detalle', 'pendiente')
+                ->whereDate('tbl_gasto_cuota.vencimiento_cuota', '<', Carbon::today()->toDateString())
+                ->select(
+                    'tbl_propiedad.id_propiedad',
+                    'tbl_propiedad.titulo_propiedad',
+                    'tbl_propiedad.id_gestor_fk',
+                    'tbl_gasto.categoria_gasto',
+                    'tbl_gasto_cuota_detalle.importe_detalle'
+                )
+                ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+                ->distinct()
+                ->get();
+
             DB::table('tbl_gasto_cuota_detalle')
                 ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
                 ->join('tbl_alquiler', 'tbl_alquiler.id_alquiler', '=', 'tbl_gasto_cuota_detalle.id_alquiler_fk')
@@ -798,6 +894,44 @@ class InquilinoController extends Controller
                     'tbl_gasto_cuota.estado_cuota' => 'atrasado',
                     'tbl_gasto_cuota.actualizado_cuota' => now(),
                 ]);
+        }
+
+        foreach ($propiedadesAfectadas as $prop) {
+            if (!empty($prop->id_gestor_fk) && (int)$prop->id_gestor_fk > 0) {
+                $esGestor = DB::table('tbl_rol_usuario')
+                    ->join('tbl_rol', 'tbl_rol.id_rol', '=', 'tbl_rol_usuario.id_rol_fk')
+                    ->where('tbl_rol_usuario.id_usuario_fk', (int)$prop->id_gestor_fk)
+                    ->where('tbl_rol.slug_rol', 'gestor')
+                    ->exists();
+                if ($esGestor) {
+                    (new ActividadService())->pagoAtrasado(
+                        (int)$prop->id_gestor_fk,
+                        (int)$prop->id_propiedad,
+                        $prop->titulo_propiedad,
+                        Carbon::parse($prop->mes_cuota)->format('m/Y'),
+                        (float)$prop->importe_base
+                    );
+                }
+            }
+        }
+
+        foreach ($gastosAfectados as $gasto) {
+            if (!empty($gasto->id_gestor_fk) && (int)$gasto->id_gestor_fk > 0) {
+                $esGestor = DB::table('tbl_rol_usuario')
+                    ->join('tbl_rol', 'tbl_rol.id_rol', '=', 'tbl_rol_usuario.id_rol_fk')
+                    ->where('tbl_rol_usuario.id_usuario_fk', (int)$gasto->id_gestor_fk)
+                    ->where('tbl_rol.slug_rol', 'gestor')
+                    ->exists();
+                if ($esGestor) {
+                    (new ActividadService())->gastoAtrasado(
+                        (int)$gasto->id_gestor_fk,
+                        (int)$gasto->id_propiedad,
+                        $gasto->titulo_propiedad,
+                        $gasto->categoria_gasto ?? 'Gasto',
+                        (float)$gasto->importe_detalle
+                    );
+                }
+            }
         }
     }
 

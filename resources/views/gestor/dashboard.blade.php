@@ -345,20 +345,33 @@
         <div class="card-franja"></div>
         <div class="card-header-admin card-header-gradient">
             <span>Actividad reciente</span>
+            @if($notificaciones->count() > 0)
+                <span class="badge-contador">{{ $notificaciones->count() }}</span>
+            @endif
         </div>
 
         <div class="timeline">
             <div class="timeline-linea"></div>
             @forelse($notificaciones as $notificacion)
-                <div class="timeline-item">
-                    <div class="timeline-punto" style="background:{{ $notificacion->color_notificacion ?? '#035498' }};"></div>
-                    <div class="timeline-contenido">
-                        <p class="timeline-texto">{{ $notificacion->titulo_notificacion ?? 'Actualización operativa' }}</p>
-                        <span class="timeline-hora">{{ \Carbon\Carbon::parse($notificacion->creado_notificacion)->diffForHumans() }}</span>
+                @php
+                    $icono = $notificacion->icono_notificacion ?? 'circle-fill';
+                    $color = $notificacion->color_notificacion ?? '#035498';
+                    $url = $notificacion->url_notificacion ?? '#';
+                @endphp
+                <a href="{{ $url }}" class="timeline-link">
+                    <div class="timeline-item">
+                        <div class="timeline-punto" style="background:{{ $color }};">
+                            <i class="bi bi-{{ $icono }}"></i>
+                        </div>
+                        <div class="timeline-contenido">
+                            <p class="timeline-texto">{{ $notificacion->titulo_notificacion ?? 'Actualización' }}</p>
+                            <span class="timeline-desc">{{ $notificacion->mensaje_notificacion ?? '' }}</span>
+                            <span class="timeline-hora">{{ \Carbon\Carbon::parse($notificacion->creado_notificacion)->diffForHumans() }}</span>
+                        </div>
                     </div>
-                </div>
+                </a>
             @empty
-                <p class="tarjeta-vacia">No hay notificaciones recientes.</p>
+                <p class="tarjeta-vacia">No hay actividad reciente.</p>
             @endforelse
         </div>
     </div>

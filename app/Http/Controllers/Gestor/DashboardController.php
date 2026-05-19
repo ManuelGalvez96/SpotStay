@@ -164,9 +164,29 @@ class DashboardController extends Controller
             ->when($gestorId, function ($query) use ($gestorId) {
                 $query->where('id_usuario_fk', $gestorId);
             })
-            ->whereIn('tipo_notificacion', ['nueva_incidencia', 'mensaje_nuevo', 'incidencia_actualizada', 'alquiler_pendiente'])
+            ->whereIn('tipo_notificacion', [
+                'nueva_incidencia',
+                'incidencia_actualizada',
+                'pago_realizado',
+                'pago_atrasado',
+                'mensaje_nuevo',
+                'presupuesto_creado',
+                'alquiler_pendiente',
+            ])
+            ->select(
+                'id_notificacion',
+                'tipo_notificacion',
+                'titulo_notificacion',
+                'mensaje_notificacion',
+                'url_notificacion',
+                'icono_notificacion',
+                'color_notificacion',
+                'tipo_entidad_notificacion',
+                'id_entidad_notificacion',
+                'creado_notificacion'
+            )
             ->orderBy('creado_notificacion', 'desc')
-            ->limit(6)
+            ->limit(10)
             ->get();
 
         $mensajesSinLeer = DB::table('tbl_conversacion')

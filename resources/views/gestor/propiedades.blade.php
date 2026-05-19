@@ -18,46 +18,6 @@
     <div class="hero-deco hero-deco-3"></div>
 </div>
 
-<div class="resumen-kpis-gestor">
-    <div class="resumen-kpis-label">
-        <strong>{{ $totalAsignadas }}</strong> propiedades gestionadas
-    </div>
-
-    <div class="kpi-grid-pequeno gestor-kpis" id="propiedadesKpiGrid">
-        <div class="kpi-mini kpi-clickable" data-filter-key="estado" data-filter-value="publicada">
-            <div class="kpi-mini-icono kpi-mini-verde"><i class="bi bi-megaphone"></i></div>
-            <div class="kpi-mini-datos">
-                <span class="kpi-mini-numero">{{ $totalPublicadas }}</span>
-                <span class="kpi-mini-label">Publicadas</span>
-            </div>
-        </div>
-
-        <div class="kpi-mini kpi-clickable" data-filter-key="estado" data-filter-value="alquilada">
-            <div class="kpi-mini-icono kpi-mini-naranja"><i class="bi bi-key"></i></div>
-            <div class="kpi-mini-datos">
-                <span class="kpi-mini-numero">{{ $totalAlquiladas }}</span>
-                <span class="kpi-mini-label">Alquiladas</span>
-            </div>
-        </div>
-
-        <div class="kpi-mini kpi-clickable" data-filter-key="operativo" data-filter-value="criticas">
-            <div class="kpi-mini-icono kpi-mini-rojo"><i class="bi bi-exclamation-triangle"></i></div>
-            <div class="kpi-mini-datos">
-                <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ $totalConCriticas }}</span>
-                <span class="kpi-mini-label">Con incidencias críticas</span>
-            </div>
-        </div>
-
-        <div class="kpi-mini kpi-clickable" data-filter-key="operativo" data-filter-value="sin_alquiler">
-            <div class="kpi-mini-icono kpi-mini-azul"><i class="bi bi-person-x"></i></div>
-            <div class="kpi-mini-datos">
-                <span class="kpi-mini-numero">{{ $totalSinAlquiler }}</span>
-                <span class="kpi-mini-label">Sin alquiler activo</span>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="card-admin filtros-card-gestor card-con-franja">
     <div class="card-franja"></div>
     <div class="card-header-admin card-header-gradient">

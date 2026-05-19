@@ -1,37 +1,3 @@
-.resumen-kpis-gestor {
-    margin: 24px 40px 0;
-    padding: 14px;
-    border: 1px solid #dbe4ea;
-    border-radius: 14px;
-    background: #f8fbff;
-}
-
-.resumen-kpis-label {
-    margin-bottom: 10px;
-    color: #415362;
-    font-weight: 600;
-    font-size: 0.95rem;
-}
-
-.resumen-kpis-label strong {
-    color: #0f3554;
-    font-size: 1.1rem;
-}
-
-.gestor-kpis {
-    padding: 0;
-}
-
-.kpi-clickable {
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.kpi-clickable:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-}
-
 .filtros-card-gestor {
     margin: 16px 40px 0;
 }
@@ -288,11 +254,6 @@
 }
 
 @media (max-width: 1024px) {
-    .resumen-kpis-gestor {
-        margin-left: 16px;
-        margin-right: 16px;
-    }
-
     .filtros-card-gestor,
     .tabla-propiedades-card {
         margin-left: 16px;
@@ -317,44 +278,6 @@
 
     .hero-admin p {
         font-size: 13px;
-    }
-
-    .resumen-kpis-gestor {
-        margin: 12px;
-        padding: 12px;
-    }
-
-    .resumen-kpis-label {
-        font-size: 0.9rem;
-        margin-bottom: 8px;
-    }
-
-    .kpi-grid-pequeno {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-        margin-bottom: 0;
-    }
-
-    .kpi-mini {
-        padding: 10px;
-        gap: 8px;
-        border-radius: 10px;
-    }
-
-    .kpi-mini-icono {
-        width: 34px;
-        height: 34px;
-        font-size: 15px;
-        border-radius: 8px;
-    }
-
-    .kpi-mini-numero {
-        font-size: 15px;
-    }
-
-    .kpi-mini-label {
-        font-size: 10px;
-        letter-spacing: 0.2px;
     }
 
     .filtros-card-gestor,
@@ -444,8 +367,4 @@
     }
 }
 
-@media (max-width: 480px) {
-    .kpi-grid-pequeno {
-        grid-template-columns: 1fr;
-    }
-}
+

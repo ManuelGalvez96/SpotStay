@@ -112,17 +112,12 @@
                         @php
                             $prioridad = strtolower($incidencia->prioridad_incidencia);
                             $badgePrioridad = $prioridad === 'urgente' ? 'alta' : $prioridad;
-                            $badgeEstado = match($incidencia->estado_incidencia) {
-                                'abierta' => 'pendiente',
-                                'en_proceso' => 'activo',
-                                'resuelta' => 'activo',
-                                default => 'rechazado'
-                            };
-                        @endphp
-                        <tr>
-                            <td>{{ $incidencia->titulo_incidencia }}</td>
-                            <td>{{ $incidencia->direccion_propiedad }}</td>
-                            <td><span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span></td>
+                        $badgeEstado = str_replace('_', '-', $incidencia->estado_incidencia);
+                    @endphp
+                    <tr>
+                        <td>{{ $incidencia->titulo_incidencia }}</td>
+                        <td>{{ $incidencia->direccion_propiedad }}</td>
+                        <td><span class="badge-estado badge-estado-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span></td>
                             <td><span class="badge-prioridad badge-prioridad-{{ $badgePrioridad }}">{{ ucfirst($prioridad) }}</span></td>
                             <td>{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y') }}</td>
                             <td><a class="link-ver-todos" href="{{ route('gestor.incidencias.show', ['id' => $incidencia->id_incidencia]) }}">Ver</a></td>
@@ -141,18 +136,13 @@
             @forelse($incidenciasRecientes as $incidencia)
                 @php
                     $prioridad = strtolower($incidencia->prioridad_incidencia);
-                    $badgeEstado = match($incidencia->estado_incidencia) {
-                        'abierta' => 'pendiente',
-                        'en_proceso' => 'activo',
-                        'resuelta' => 'activo',
-                        default => 'rechazado'
-                    };
-                @endphp
-                <a href="{{ route('gestor.incidencias.show', ['id' => $incidencia->id_incidencia]) }}" class="incidencia-card">
-                    <div class="incidencia-card-header">
-                        <span class="incidencia-card-titulo">{{ $incidencia->titulo_incidencia }}</span>
-                        <span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span>
-                    </div>
+                $badgeEstado = str_replace('_', '-', $incidencia->estado_incidencia);
+            @endphp
+            <a href="{{ route('gestor.incidencias.show', ['id' => $incidencia->id_incidencia]) }}" class="incidencia-card">
+                <div class="incidencia-card-header">
+                    <span class="incidencia-card-titulo">{{ $incidencia->titulo_incidencia }}</span>
+                    <span class="badge-estado badge-estado-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span>
+                </div>
                     <p class="incidencia-card-dir">{{ $incidencia->direccion_propiedad }}</p>
                     <div class="incidencia-card-divider"></div>
                     <div class="incidencia-card-footer">
@@ -184,17 +174,12 @@
             @forelse($incidenciasUrgentes as $urgente)
                 @php
                     $prioridad = strtolower($urgente->prioridad_incidencia);
-                    $badgeEstado = match($urgente->estado_incidencia) {
-                        'abierta' => 'pendiente',
-                        'en_proceso' => 'activo',
-                        'resuelta' => 'activo',
-                        default => 'rechazado'
-                    };
+                    $badgeEstado = str_replace('_', '-', $urgente->estado_incidencia);
                 @endphp
                 <a href="{{ route('gestor.incidencias.show', ['id' => $urgente->id_incidencia]) }}" class="incidencia-card">
                     <div class="incidencia-card-header">
                         <span class="incidencia-card-titulo">{{ $urgente->titulo_incidencia }}</span>
-                        <span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $urgente->estado_incidencia)) }}</span>
+                        <span class="badge-estado badge-estado-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $urgente->estado_incidencia)) }}</span>
                     </div>
                     <p class="incidencia-card-dir">{{ $urgente->direccion_propiedad }}</p>
                     <div class="incidencia-card-footer">
@@ -212,17 +197,12 @@
             @forelse($incidenciasUrgentes as $urgente)
                 @php
                     $prioridad = strtolower($urgente->prioridad_incidencia);
-                    $badgeEstado = match($urgente->estado_incidencia) {
-                        'abierta' => 'pendiente',
-                        'en_proceso' => 'activo',
-                        'resuelta' => 'activo',
-                        default => 'rechazado'
-                    };
+                    $badgeEstado = str_replace('_', '-', $urgente->estado_incidencia);
                 @endphp
                 <a href="{{ route('gestor.incidencias.show', ['id' => $urgente->id_incidencia]) }}" class="incidencia-card">
                     <div class="incidencia-card-header">
                         <span class="incidencia-card-titulo">{{ $urgente->titulo_incidencia }}</span>
-                        <span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $urgente->estado_incidencia)) }}</span>
+                        <span class="badge-estado badge-estado-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $urgente->estado_incidencia)) }}</span>
                     </div>
                     <p class="incidencia-card-dir">{{ $urgente->direccion_propiedad }}</p>
                     <div class="incidencia-card-divider"></div>

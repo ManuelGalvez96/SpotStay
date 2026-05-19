@@ -109,21 +109,13 @@
                         @php
                             $prioridad = strtolower($incidencia->prioridad_incidencia);
                             $badgePrioridad = $prioridad === 'urgente' ? 'alta' : $prioridad;
-                            $badgeEstado = match($incidencia->estado_incidencia) {
-                                'abierta' => 'pendiente',
-                                'en_proceso' => 'activo',
-                                'esperando_decision' => 'pendiente',
-                                'esperando_pago' => 'pendiente',
-                                'resuelta' => 'activo',
-                                'cerrada' => 'activo',
-                                default => 'rechazado'
-                            };
+                            $badgeEstado = str_replace('_', '-', $incidencia->estado_incidencia);
                         @endphp
                         <tr>
                             <td>{{ $incidencia->titulo_incidencia }}</td>
                             <td>{{ $incidencia->direccion_propiedad }}</td>
                             <td>{{ $incidencia->nombre_arrendador }}</td>
-                            <td><span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span></td>
+                            <td><span class="badge-estado badge-estado-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span></td>
                             <td><span class="badge-prioridad badge-prioridad-{{ $badgePrioridad }}">{{ ucfirst($prioridad) }}</span></td>
                             <td>{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y') }}</td>
                             <td><a class="link-ver-todos" href="{{ route('gestor.incidencias.show', ['id' => $incidencia->id_incidencia]) }}">Ver</a></td>
@@ -143,20 +135,12 @@
                 @php
                     $prioridad = strtolower($incidencia->prioridad_incidencia);
                     $badgePrioridad = $prioridad === 'urgente' ? 'alta' : $prioridad;
-                    $badgeEstado = match($incidencia->estado_incidencia) {
-                        'abierta' => 'pendiente',
-                        'en_proceso' => 'activo',
-                        'esperando_decision' => 'pendiente',
-                        'esperando_pago' => 'pendiente',
-                        'resuelta' => 'activo',
-                        'cerrada' => 'activo',
-                        default => 'rechazado'
-                    };
+                    $badgeEstado = str_replace('_', '-', $incidencia->estado_incidencia);
                 @endphp
                 <a href="{{ route('gestor.incidencias.show', ['id' => $incidencia->id_incidencia]) }}" class="incidencia-card">
                     <div class="incidencia-card-header">
                         <span class="incidencia-card-titulo">{{ $incidencia->titulo_incidencia }}</span>
-                        <span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span>
+                        <span class="badge-estado badge-estado-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span>
                     </div>
                     <p class="incidencia-card-dir">{{ $incidencia->direccion_propiedad }}</p>
                     <p class="incidencia-card-persona">{{ $incidencia->nombre_arrendador }}</p>

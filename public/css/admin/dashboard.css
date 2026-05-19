@@ -382,7 +382,16 @@ body {
     border-radius: 20px;
     font-weight: 500;
     display: inline-block;
+    white-space: nowrap;
 }
+
+.badge-estado-abierta { background: #DBEAFE; color: #1E40AF; }
+.badge-estado-en-proceso { background: #FEF3C7; color: #92400E; }
+.badge-estado-esperando-decision { background: #FFEDD5; color: #C2410C; }
+.badge-estado-esperando-pago { background: #EDE9FE; color: #6D21D9; }
+.badge-estado-solucionada { background: #CCFBF1; color: #0F766E; }
+.badge-estado-resuelta { background: #D1FAE5; color: #065F46; }
+.badge-estado-cerrada { background: #F1F5F9; color: #475569; }
 
 .badge-pendiente {
     background: #FEF3C7;

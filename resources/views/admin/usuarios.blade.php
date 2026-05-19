@@ -125,6 +125,7 @@
             <tr>
                 <th>USUARIO</th>
                 <th>ROL</th>
+                <th>SUSCRIPCIÓN</th>
                 <th class="col-mobile-hide">ESTADO</th>
                 <th class="col-tablet-hide">PROPIEDADES</th>
                 <th class="col-tablet-hide">FECHA REGISTRO</th>
@@ -147,6 +148,7 @@
                     $activo = $usuario->activo_usuario ? '1' : '0';
                     $inactivaClass = $activo === '0' ? 'class="fila-inactiva"' : '';
                     $rolLabel = $usuario->nombre_rol ?? 'Sin rol';
+                    $suscripcionLabel = $usuario->suscripcion_label ?? 'Sin suscripción';
                     $estadoLabel = $usuario->activo_usuario ? 'Activo' : 'Inactivo';
                     $estadoClass = $usuario->activo_usuario ? 'activo' : 'inactivo';
                     $propiedades = $usuario->total_propiedades ?? 0;
@@ -163,6 +165,7 @@
                         </div>
                     </td>
                     <td data-label="ROL"><span class="badge-rol badge-usuario">{{ $rolLabel }}</span></td>
+                    <td data-label="SUSCRIPCIÓN">{{ $suscripcionLabel }}</td>
                     <td data-label="ESTADO" class="col-mobile-hide"><span class="badge-estado badge-{{ $estadoClass }}">{{ $estadoLabel }}</span></td>
                     <td data-label="PROPIEDADES" class="col-tablet-hide">{{ $propiedadesText }}</td>
                     <td data-label="FECHA REGISTRO" class="col-tablet-hide">{{ \Carbon\Carbon::parse($usuario->creado_usuario)->format('d M Y') }}</td>
@@ -182,7 +185,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" style="text-align: center; color: #999; padding: 20px;">No hay usuarios para mostrar</td>
+                    <td colspan="7" style="text-align: center; color: #999; padding: 20px;">No hay usuarios para mostrar</td>
                 </tr>
             @endforelse
         </tbody>
@@ -303,6 +306,19 @@
                             <option value="miembro">Miembro</option>
                         </select>
                         <small class="text-danger d-block mt-1" id="errorRolUsuario"></small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="selectSuscripcionForm" class="form-label">Suscripción</label>
+                        <select class="form-select" id="selectSuscripcionForm" name="suscripcion_plan">
+                            <option value="">Sin suscripción</option>
+                            @foreach($planesSuscripcion as $planSuscripcion)
+                                <option value="{{ $planSuscripcion->id_plan }}">
+                                    {{ $planSuscripcion->nombre_plan }}{{ $planSuscripcion->activo_plan ? '' : ' (inactivo)' }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted d-block mt-1">Si se deja vacío, el usuario mantendrá o no tendrá suscripción.</small>
                     </div>
                     
                     <div class="mb-3">

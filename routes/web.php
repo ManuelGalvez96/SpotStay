@@ -16,8 +16,10 @@ use App\Http\Controllers\Admin\SolicitudController;
 use App\Http\Controllers\Admin\IncidenciaController;
 use App\Http\Controllers\Admin\AlquilerController;
 use App\Http\Controllers\Admin\SuscripcionController;
+use App\Http\Controllers\Admin\ConfiguracionController;
 use App\Http\Controllers\Admin\CodigoGestorController;
 use App\Http\Controllers\Admin\CodigoPropiedadController;
+use App\Http\Controllers\Admin\CategoriaController;
 use App\Http\Controllers\inquilino\InquilinoController;
 use App\Http\Controllers\inquilino\InquilinoIncidenciaController;
 use App\Http\Controllers\inquilino\InquilinoPagoController;
@@ -60,9 +62,11 @@ Route::middleware(['role:admin'])->group(function () {
 
     // Dashboard
     Route::get('/admin/dashboard', [DashboardController::class, 'index']);
-    Route::get('/admin/configuracion', function () {
-        return view('admin.configuracion');
-    });
+    Route::get('/admin/configuracion', [ConfiguracionController::class, 'index']);
+    Route::get('/admin/planes', [ConfiguracionController::class, 'planes'])->name('admin.planes');
+    Route::post('/admin/planes/crear', [ConfiguracionController::class, 'crearPlan'])->name('admin.planes.crear');
+    Route::post('/admin/planes/{id}/actualizar', [ConfiguracionController::class, 'actualizarPlan'])->name('admin.planes.actualizar');
+    Route::post('/admin/planes/{id}/eliminar', [ConfiguracionController::class, 'eliminarPlan'])->name('admin.planes.eliminar');
     Route::post('/admin/alquiler/{id}/aprobar', [DashboardController::class, 'aprobarAlquiler']);
     Route::post('/admin/alquiler/{id}/rechazar', [DashboardController::class, 'rechazarAlquiler']);
 
@@ -105,6 +109,14 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/incidencias/{id}', [IncidenciaController::class, 'show']);
     Route::post('/admin/incidencias/{id}/estado', [IncidenciaController::class, 'cambiarEstado']);
     Route::post('/admin/incidencias/{id}/asignar', [IncidenciaController::class, 'asignar']);
+    Route::post('/admin/incidencias/{id}/contactar', [IncidenciaController::class, 'contactar']);
+
+    // Categorías
+    Route::get('/admin/categorias', [CategoriaController::class, 'index']);
+    Route::get('/admin/categorias/obtener', [CategoriaController::class, 'obtenerCategorias']);
+    Route::post('/admin/categorias/crear', [CategoriaController::class, 'crear']);
+    Route::put('/admin/categorias/{id}', [CategoriaController::class, 'editar']);
+    Route::delete('/admin/categorias/{id}', [CategoriaController::class, 'eliminar']);
 
     // Códigos de Gestor
     Route::get('/admin/codigos-gestores', [CodigoGestorController::class, 'index']);
@@ -181,10 +193,13 @@ Route::middleware(['role:arrendador', 'arrendador.activo'])->group(function () {
 
     Route::get('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'inicio'])->name('arrendador.propiedades');
     Route::post('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'guardar'])->name('arrendador.propiedades.store');
+    Route::get('/arrendador/propiedades/datos', [ArrendadorPropiedadController::class, 'datosPropiedades'])->name('arrendador.propiedades.datos');
     Route::get('/arrendador/propiedades/{id}/editar-datos', [ArrendadorPropiedadController::class, 'datosEdicion'])->whereNumber('id')->name('arrendador.propiedades.edit-data');
     Route::get('/arrendador/propiedades/{id}', [ArrendadorPropiedadController::class, 'mostrar'])->whereNumber('id')->name('arrendador.propiedades.show');
+    Route::get('/arrendador/gestores/disponibles', [ArrendadorGestorController::class, 'obtenerGestoresDisponibles'])->name('arrendador.gestores.disponibles');
     Route::get('/arrendador/propiedades/{propiedad}/gestor/permisos', [ArrendadorPropiedadController::class, 'getPermisosGestor'])->name('arrendador.permisos.get');
     Route::post('/arrendador/propiedades/{propiedad}/gestor/permisos', [ArrendadorPropiedadController::class, 'updatePermisosGestor'])->name('arrendador.permisos.update');
+    Route::post('/arrendador/propiedades/{propiedad}/gestor/desasignar', [ArrendadorPropiedadController::class, 'desasignarGestor'])->name('arrendador.permisos.desasignar');
 
     Route::get('/arrendador/solicitudes', [ArrendadorSolicitudController::class, 'inicio'])->name('arrendador.solicitudes');
     Route::post('/arrendador/solicitudes/{id}/aprobar', [ArrendadorSolicitudController::class, 'aprobar'])->name('arrendador.solicitudes.aprobar');
@@ -300,4 +315,3 @@ Route::get('/limpiar-cache', function () {
         return "Error al limpiar cachés: " . $e->getMessage();
     }
 });
-

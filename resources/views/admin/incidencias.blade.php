@@ -31,11 +31,21 @@
 
     <div class="kpi-mini">
         <div class="kpi-mini-icono kpi-mini-naranja">
-            <i class="bi bi-tools"></i>
+            <i class="bi bi-hourglass"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-naranja" id="kpiEnProcesoIncidencias">{{ $totalEnProceso }}</span>
-            <span class="kpi-mini-label">En proceso</span>
+            <span class="kpi-mini-numero kpi-mini-numero-naranja" id="kpiEsperandoDecisionIncidencias">{{ $totalEsperandoDecision }}</span>
+            <span class="kpi-mini-label">Esperando decisión</span>
+        </div>
+    </div>
+
+    <div class="kpi-mini">
+        <div class="kpi-mini-icono kpi-mini-amarillo">
+            <i class="bi bi-cash-coin"></i>
+        </div>
+        <div class="kpi-mini-datos">
+            <span class="kpi-mini-numero kpi-mini-numero-amarillo" id="kpiEsperandoPagoIncidencias">{{ $totalEsperandoPago }}</span>
+            <span class="kpi-mini-label">Esperando pago</span>
         </div>
     </div>
 
@@ -44,8 +54,8 @@
             <i class="bi bi-check-circle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero" id="kpiResueltasIncidencias">{{ $totalResueltas }}</span>
-            <span class="kpi-mini-label">Resueltas este mes</span>
+            <span class="kpi-mini-numero" id="kpiSolucionadasIncidencias">{{ $totalSolucionadas }}</span>
+            <span class="kpi-mini-label">Solucionadas</span>
         </div>
     </div>
 
@@ -71,13 +81,9 @@
         </div>
         <select id="selectCategoria" class="select-filtro">
             <option value="">Todas las categorías</option>
-            <option value="fontaneria">Fontanería</option>
-            <option value="electricidad">Electricidad</option>
-            <option value="calefaccion">Calefacción</option>
-            <option value="climatizacion">Climatización</option>
-            <option value="humedades">Humedades</option>
-            <option value="cerrajeria">Cerrajería</option>
-            <option value="otro">Otro</option>
+            @foreach($categorias as $cat)
+                <option value="{{ $cat->id_categoria }}">{{ $cat->nombre_categoria }}</option>
+            @endforeach
         </select>
         <select id="selectPrioridad" class="select-filtro">
             <option value="">Todas las prioridades</option>
@@ -109,6 +115,10 @@
             <span>Nueva incidencia</span>
         </button>
         --}}
+        <button id="btnCrearCategoria" class="btn-primario" data-bs-toggle="modal" data-bs-target="#modalCrearCategoria">
+            <i class="bi bi-plus"></i>
+            <span>Nueva categoría</span>
+        </button>
     </div>
 </div>
 
@@ -118,10 +128,10 @@
         <div class="kanban-col-header">
             <span class="kanban-punto kanban-punto-rojo"></span>
             <span>Abierta</span>
-            <span class="badge-kanban badge-kanban-rojo">{{ $totalAbiertas }}</span>
+            <span class="badge-kanban badge-kanban-rojo">{{ count($abiertas ?? []) }}</span>
         </div>
         <div class="kanban-col-body">
-            @forelse($abiertas as $inc)
+            @forelse($abiertas ?? [] as $inc)
                 @php
                     $bordeColor = match($inc->prioridad_incidencia) {
                         'urgente' => '#EF4444',
@@ -132,13 +142,13 @@
                     };
                     $partesInc = explode(' ', $inc->nombre_inquilino ?? '');
                     $inicialesInc = strtoupper(substr($partesInc[0] ?? '', 0, 1)) . strtoupper(substr($partesInc[1] ?? '', 0, 1));
-                    $iconoCat = match($inc->categoria_incidencia) {
-                        'fontaneria'   => 'bi-droplet',
-                        'electricidad' => 'bi-lightning',
-                        'calefaccion'  => 'bi-thermometer',
-                        'climatizacion' => 'bi-fan',
-                        'humedades'    => 'bi-cloud-rain',
-                        'cerrajeria'   => 'bi-key',
+                    $iconoCat = match($inc->nombre_categoria) {
+                        'Fontanería'   => 'bi-droplet',
+                        'Electricidad' => 'bi-lightning',
+                        'Calefacción'  => 'bi-thermometer',
+                        'Climatización' => 'bi-fan',
+                        'Humedades'    => 'bi-cloud-rain',
+                        'Cerrajería'   => 'bi-key',
                         default        => 'bi-wrench'
                     };
                 @endphp
@@ -158,7 +168,7 @@
                     </div>
                     <div class="tarjeta-categoria">
                         <i class="bi {{ $iconoCat }}"></i>
-                        <span>{{ ucfirst($inc->categoria_incidencia) }}</span>
+                        <span>{{ $inc->nombre_categoria }}</span>
                     </div>
                 </div>
             @empty
@@ -167,14 +177,14 @@
         </div>
     </div>
 
-    <div class="kanban-col kanban-col-proceso">
+    <div class="kanban-col kanban-col-esperando-decision">
         <div class="kanban-col-header">
             <span class="kanban-punto kanban-punto-naranja"></span>
-            <span>En proceso</span>
-            <span class="badge-kanban badge-kanban-naranja">{{ $totalEnProceso }}</span>
+            <span>Esperando decisión</span>
+            <span class="badge-kanban badge-kanban-naranja">{{ count($esperandoDecision ?? []) }}</span>
         </div>
         <div class="kanban-col-body">
-            @forelse($enProceso as $inc)
+            @forelse($esperandoDecision ?? [] as $inc)
                 @php
                     $bordeColor = match($inc->prioridad_incidencia) {
                         'urgente' => '#EF4444',
@@ -185,13 +195,13 @@
                     };
                     $partesInc = explode(' ', $inc->nombre_inquilino ?? '');
                     $inicialesInc = strtoupper(substr($partesInc[0] ?? '', 0, 1)) . strtoupper(substr($partesInc[1] ?? '', 0, 1));
-                    $iconoCat = match($inc->categoria_incidencia) {
-                        'fontaneria'   => 'bi-droplet',
-                        'electricidad' => 'bi-lightning',
-                        'calefaccion'  => 'bi-thermometer',
-                        'climatizacion' => 'bi-fan',
-                        'humedades'    => 'bi-cloud-rain',
-                        'cerrajeria'   => 'bi-key',
+                    $iconoCat = match($inc->nombre_categoria) {
+                        'Fontanería'   => 'bi-droplet',
+                        'Electricidad' => 'bi-lightning',
+                        'Calefacción'  => 'bi-thermometer',
+                        'Climatización' => 'bi-fan',
+                        'Humedades'    => 'bi-cloud-rain',
+                        'Cerrajería'   => 'bi-key',
                         default        => 'bi-wrench'
                     };
                 @endphp
@@ -211,60 +221,113 @@
                     </div>
                     <div class="tarjeta-categoria">
                         <i class="bi {{ $iconoCat }}"></i>
-                        <span>{{ ucfirst($inc->categoria_incidencia) }}</span>
+                        <span>{{ $inc->nombre_categoria }}</span>
                     </div>
                     @if($inc->nombre_gestor)
                         <div class="tarjeta-gestor">
                             <span class="gestor-label">Asignado a:</span>
-                            <div class="avatar-mini avatar-mini-gestor">MG</div>
+                            <div class="avatar-mini avatar-mini-gestor">{{ strtoupper(substr($inc->nombre_gestor, 0, 2)) }}</div>
                             <span class="gestor-nombre">{{ $inc->nombre_gestor }} (gestor)</span>
                         </div>
                     @endif
                 </div>
             @empty
-                <p class="kanban-vacio">Sin incidencias en proceso</p>
+                <p class="kanban-vacio">Sin incidencias esperando decisión</p>
+            @endforelse
+        </div>
+    </div>
+
+    <div class="kanban-col kanban-col-esperando-pago">
+        <div class="kanban-col-header">
+            <span class="kanban-punto kanban-punto-amarillo"></span>
+            <span>Esperando pago</span>
+            <span class="badge-kanban badge-kanban-amarillo">{{ count($esperandoPago ?? []) }}</span>
+        </div>
+        <div class="kanban-col-body">
+            @forelse($esperandoPago ?? [] as $inc)
+                @php
+                    $bordeColor = match($inc->prioridad_incidencia) {
+                        'urgente' => '#EF4444',
+                        'alta'    => '#D97706',
+                        'media'   => '#6B7280',
+                        'baja'    => '#1AA068',
+                        default   => '#6B7280'
+                    };
+                    $partesInc = explode(' ', $inc->nombre_inquilino ?? '');
+                    $inicialesInc = strtoupper(substr($partesInc[0] ?? '', 0, 1)) . strtoupper(substr($partesInc[1] ?? '', 0, 1));
+                    $iconoCat = match($inc->nombre_categoria) {
+                        'Fontanería'   => 'bi-droplet',
+                        'Electricidad' => 'bi-lightning',
+                        'Calefacción'  => 'bi-thermometer',
+                        'Climatización' => 'bi-fan',
+                        'Humedades'    => 'bi-cloud-rain',
+                        'Cerrajería'   => 'bi-key',
+                        default        => 'bi-wrench'
+                    };
+                @endphp
+                <div class="tarjeta-inc" data-id="{{ $inc->id_incidencia }}" style="border-left: 3px solid {{ $bordeColor }}">
+                    <div class="tarjeta-inc-top">
+                        <span class="badge-prioridad badge-prioridad-{{ $inc->prioridad_incidencia }}">{{ ucfirst($inc->prioridad_incidencia) }}</span>
+                        <span class="tarjeta-tiempo">{{ \Carbon\Carbon::parse($inc->creado_incidencia)->diffForHumans() }}</span>
+                    </div>
+                    <p class="tarjeta-titulo">{{ $inc->titulo_incidencia }}</p>
+                    <p class="tarjeta-desc">{{ \Illuminate\Support\Str::limit($inc->descripcion_incidencia, 60) }}</p>
+                    <div class="tarjeta-inc-bottom">
+                        <span class="tarjeta-propiedad">{{ \Illuminate\Support\Str::limit($inc->direccion_propiedad ?? '', 15) }}</span>
+                        <div class="tarjeta-inquilino">
+                            <div class="avatar-mini">{{ $inicialesInc }}</div>
+                            <span>{{ explode(' ', $inc->nombre_inquilino ?? '')[0] }} {{ strtoupper(substr(explode(' ', $inc->nombre_inquilino ?? '')[1] ?? '', 0, 1)) }}.</span>
+                        </div>
+                    </div>
+                    <div class="tarjeta-categoria">
+                        <i class="bi {{ $iconoCat }}"></i>
+                        <span>{{ $inc->nombre_categoria }}</span>
+                    </div>
+                </div>
+            @empty
+                <p class="kanban-vacio">Sin incidencias esperando pago</p>
+            @endforelse
+        </div>
+    </div>
+
+    <div class="kanban-col kanban-col-solucionada">
+        <div class="kanban-col-header">
+            <span class="kanban-punto kanban-punto-verde"></span>
+            <span>Solucionada</span>
+            <span class="badge-kanban badge-kanban-verde">{{ count($solucionadas ?? []) }}</span>
+        </div>
+        <div class="kanban-col-body">
+            @forelse($solucionadas ?? [] as $inc)
+                <div class="tarjeta-inc tarjeta-inc-solucionada" data-id="{{ $inc->id_incidencia }}" style="position:relative">
+                    <i class="bi bi-check-circle-fill check-solucionada"></i>
+                    <p class="tarjeta-titulo">{{ $inc->titulo_incidencia }}</p>
+                    <div class="tarjeta-inc-bottom">
+                        <span class="tarjeta-propiedad">{{ \Illuminate\Support\Str::limit($inc->direccion_propiedad ?? '', 15) }}</span>
+                    </div>
+                    <p class="tarjeta-tiempo-resolucion">Solucionada · {{ \Carbon\Carbon::parse($inc->creado_incidencia)->diffForHumans() }}</p>
+                </div>
+            @empty
+                <p class="kanban-vacio">Sin incidencias solucionadas</p>
             @endforelse
         </div>
     </div>
 
     <div class="kanban-col kanban-col-resuelta">
         <div class="kanban-col-header">
-            <span class="kanban-punto kanban-punto-verde"></span>
+            <span class="kanban-punto kanban-punto-gris"></span>
             <span>Resuelta</span>
-            <span class="badge-kanban badge-kanban-verde">{{ $totalResueltas }}</span>
+            <span class="badge-kanban badge-kanban-gris">{{ count($resueltas ?? []) }}</span>
         </div>
         <div class="kanban-col-body">
-            @forelse($resueltas as $inc)
+            @forelse($resueltas ?? [] as $inc)
                 <div class="tarjeta-inc tarjeta-inc-resuelta" data-id="{{ $inc->id_incidencia }}" style="position:relative">
-                    <i class="bi bi-check-circle-fill check-resuelta"></i>
-                    <p class="tarjeta-titulo">{{ $inc->titulo_incidencia }}</p>
-                    <div class="tarjeta-inc-bottom">
-                        <span class="tarjeta-propiedad">{{ \Illuminate\Support\Str::limit($inc->direccion_propiedad ?? '', 15) }}</span>
-                    </div>
-                    <p class="tarjeta-tiempo-resolucion">Resuelto · {{ \Carbon\Carbon::parse($inc->creado_incidencia)->diffForHumans() }}</p>
+                    <i class="bi bi-lock-fill lock-resuelta"></i>
+                    <p class="tarjeta-titulo tarjeta-titulo-resuelta">{{ $inc->titulo_incidencia }}</p>
+                    <p class="tarjeta-propiedad">{{ \Illuminate\Support\Str::limit($inc->direccion_propiedad ?? '', 20) }}</p>
+                    <p class="tarjeta-tiempo">Resuelta · {{ \Carbon\Carbon::parse($inc->creado_incidencia)->diffForHumans() }}</p>
                 </div>
             @empty
                 <p class="kanban-vacio">Sin incidencias resueltas</p>
-            @endforelse
-        </div>
-    </div>
-
-    <div class="kanban-col kanban-col-cerrada">
-        <div class="kanban-col-header">
-            <span class="kanban-punto kanban-punto-gris"></span>
-            <span>Cerrada</span>
-            <span class="badge-kanban badge-kanban-gris">{{ $totalCerradas }}</span>
-        </div>
-        <div class="kanban-col-body">
-            @forelse($cerradas as $inc)
-                <div class="tarjeta-inc tarjeta-inc-cerrada" data-id="{{ $inc->id_incidencia }}" style="position:relative">
-                    <i class="bi bi-lock-fill lock-cerrada"></i>
-                    <p class="tarjeta-titulo tarjeta-titulo-cerrada">{{ $inc->titulo_incidencia }}</p>
-                    <p class="tarjeta-propiedad">{{ \Illuminate\Support\Str::limit($inc->direccion_propiedad ?? '', 20) }}</p>
-                    <p class="tarjeta-tiempo">Cerrada · {{ \Carbon\Carbon::parse($inc->creado_incidencia)->diffForHumans() }}</p>
-                </div>
-            @empty
-                <p class="kanban-vacio">Sin incidencias cerradas</p>
             @endforelse
         </div>
     </div>
@@ -337,12 +400,20 @@
                         <p id="modalCategoriaInc" class="fw-500"></p>
                     </div>
                     <div class="col-md-6">
+                        <small class="text-muted d-block">Arrendador</small>
+                        <p id="modalArrendadorInc" class="fw-500">-</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Gestor</small>
+                        <p id="modalGestorInc" class="fw-500">-</p>
+                    </div>
+                    <div class="col-md-6">
                         <small class="text-muted d-block">Prioridad</small>
                         <span id="modalPrioridadInc"></span>
                     </div>
                     <div class="col-md-6">
-                        <small class="text-muted d-block">Estado actual</small>
-                        <span id="modalEstadoInc"></span>
+                        <small class="text-muted d-block">Encargado de pago</small>
+                        <span id="modalEncargadoPago">-</span>
                     </div>
                 </div>
 
@@ -351,8 +422,16 @@
             </div>
 
             <div class="modal-footer">
+                <div style="flex:1; text-align:left;">
+                    <select id="modalContactarDestino" class="form-select form-select-sm mb-2">
+                        <option value="inquilino">Contactar inquilino</option>
+                        <option value="arrendador">Contactar arrendador</option>
+                        <option value="gestor">Contactar gestor</option>
+                    </select>
+                    <textarea id="modalMensajeContacto" class="form-control form-control-sm" rows="2" placeholder="Mensaje opcional (puede personalizarse)">Hola, te contactamos respecto a la incidencia reportada. Por favor, revisa la incidencia y responde.</textarea>
+                </div>
                 <button type="button" class="btn btn-outline-secondary" id="btnContactarInquilino">
-                    <i class="bi bi-chat"></i> Contactar
+                    <i class="bi bi-chat"></i> Enviar correo
                 </button>
             </div>
         </div>
@@ -428,8 +507,43 @@
     </div>
 </div>
 
+<!-- Modal Crear Categoría -->
+<div class="modal fade" id="modalCrearCategoria" tabindex="-1" aria-labelledby="modalCrearCategoriaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCrearCategoriaLabel">
+                    <i class="bi bi-plus-circle"></i> Nueva Categoría de Incidencia
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCrearCategoria">
+                    <div class="mb-3">
+                        <label for="nombreCategoria" class="form-label">Nombre de la categoría</label>
+                        <input type="text" class="form-control" id="nombreCategoria" name="nombre_categoria" placeholder="Ej: Fontanería" required maxlength="100">
+                        <small class="text-danger" id="errorNombreCategoria"></small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcionCategoria" class="form-label">Descripción (opcional)</label>
+                        <textarea class="form-control" id="descripcionCategoria" name="descripcion_categoria" rows="3" placeholder="Describe esta categoría..." maxlength="500"></textarea>
+                        <small class="text-muted">Máximo 500 caracteres</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarCategoria">
+                    <i class="bi bi-check"></i> Crear Categoría
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
 <script src="{{ asset('js/admin/incidencias.js') }}"></script>
+<script src="{{ asset('js/admin/categorias.js') }}"></script>
 @endsection

@@ -345,9 +345,12 @@
         <div class="card-franja"></div>
         <div class="card-header-admin card-header-gradient">
             <span>Actividad reciente</span>
-            @if($notificaciones->count() > 0)
-                <span class="badge-contador">{{ $notificaciones->count() }}</span>
-            @endif
+            <div class="card-header-right">
+                @if($notificaciones->count() > 0)
+                    <span class="badge-contador">{{ $notificaciones->count() }}</span>
+                @endif
+                <a href="{{ route('gestor.actividad') }}" class="link-ver-todos">Ver todo →</a>
+            </div>
         </div>
 
         <div class="timeline">

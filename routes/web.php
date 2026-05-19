@@ -31,6 +31,7 @@ use App\Http\Controllers\Gestor\IncidenciaController as GestorIncidenciaControll
 use App\Http\Controllers\Gestor\PropiedadController as GestorPropiedadController;
 use App\Http\Controllers\Gestor\MensajeController as GestorMensajeController;
 use App\Http\Controllers\Gestor\PerfilController as GestorPerfilController;
+use App\Http\Controllers\Gestor\ActividadController as GestorActividadController;
 
 // Rutas Públicas
 Route::get('/', function () {
@@ -122,6 +123,7 @@ Route::middleware(['role:admin'])->group(function () {
 // Rutas Gestor
 Route::middleware(['role:gestor'])->group(function () {
     Route::get('/gestor/dashboard', [GestorDashboardController::class, 'index'])->name('gestor.dashboard');
+    Route::get('/gestor/actividad', [GestorActividadController::class, 'index'])->name('gestor.actividad');
     Route::get('/gestor/incidencias', [GestorIncidenciaController::class, 'index'])->name('gestor.incidencias');
     Route::get('/gestor/incidencias/{id}', [GestorIncidenciaController::class, 'show'])->name('gestor.incidencias.show');
     Route::get('/gestor/propiedades', [GestorPropiedadController::class, 'index'])->name('gestor.propiedades');

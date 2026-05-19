@@ -171,6 +171,7 @@ class DashboardController extends Controller
                 'pago_atrasado',
                 'mensaje_nuevo',
                 'presupuesto_creado',
+                'gasto_creado',
                 'alquiler_pendiente',
             ])
             ->select(

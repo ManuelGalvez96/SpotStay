@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Gestor;
 
 use App\Http\Controllers\Controller;
+use App\Services\ActividadService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -500,6 +501,11 @@ class PropiedadController extends Controller
                 $vencimientoFijo
             );
         });
+
+        $propTitulo = DB::table('tbl_propiedad')->where('id_propiedad', $id)->value('titulo_propiedad');
+        if ($propTitulo) {
+            (new ActividadService())->gastoCreado($gestorId, $id, $propTitulo, $categoriaGasto, $conceptoGasto ?? '', $importeEstimado);
+        }
 
         return redirect()->back()->with('success', 'Recibo añadido correctamente y cuotas generadas.');
     }

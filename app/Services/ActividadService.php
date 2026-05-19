@@ -117,4 +117,34 @@ class ActividadService
             $incidenciaId
         );
     }
+
+    public function gastoCreado(int $gestorId, int $propiedadId, string $propiedadTitulo, string $categoria, string $concepto, float $importe): void
+    {
+        $label = $concepto ?: ucfirst($categoria);
+        $this->crear(
+            $gestorId,
+            'gasto_creado',
+            "Nuevo recibo en {$propiedadTitulo}",
+            "{$label} — " . number_format($importe, 2, ',', '.') . " €",
+            "/gestor/propiedades/{$propiedadId}",
+            'receipt',
+            '#0891B2',
+            'propiedad',
+            $propiedadId
+        );
+    }
+
+    public static function tiposActividad(): array
+    {
+        return [
+            'nueva_incidencia' => ['label' => 'Incidencias nuevas', 'color' => '#DC2626', 'icono' => 'exclamation-triangle'],
+            'incidencia_actualizada' => ['label' => 'Cambios de estado', 'color' => '#2563EB', 'icono' => 'arrow-left-right'],
+            'pago_realizado' => ['label' => 'Pagos recibidos', 'color' => '#16A34A', 'icono' => 'check-circle'],
+            'pago_atrasado' => ['label' => 'Pagos atrasados', 'color' => '#EA580C', 'icono' => 'clock-history'],
+            'presupuesto_creado' => ['label' => 'Presupuestos', 'color' => '#D97706', 'icono' => 'cash-coin'],
+            'gasto_creado' => ['label' => 'Recibos creados', 'color' => '#0891B2', 'icono' => 'receipt'],
+            'mensaje_nuevo' => ['label' => 'Mensajes', 'color' => '#7C3AED', 'icono' => 'chat-dots'],
+            'alquiler_pendiente' => ['label' => 'Alquiler pendiente', 'color' => '#035498', 'icono' => 'calendar-event'],
+        ];
+    }
 }

@@ -38,7 +38,7 @@ class GestorController extends Controller
             ->orderByDesc('p.creado_propiedad')
             ->paginate(10);
 
-        $gestoresDisponibles = $this->obtenerGestoresDisponibles($arrendadorId, $arrendador?->nombre_usuario, $arrendador?->email_usuario);
+        $gestoresDisponibles = $this->obtenerGestoresPrivados($arrendadorId, $arrendador?->nombre_usuario, $arrendador?->email_usuario);
 
         $totalPropiedades = DB::table('tbl_propiedad')
             ->where('id_arrendador_fk', $arrendadorId)
@@ -57,6 +57,20 @@ class GestorController extends Controller
             'totalPropiedades' => $totalPropiedades,
             'conGestorExterno' => $conGestorExterno,
         ]);
+    }
+
+    public function obtenerGestoresDisponibles(Request $request): JsonResponse
+    {
+        $arrendadorId = $this->obtenerIdArrendador($request);
+
+        $arrendador = DB::table('tbl_usuario')
+            ->where('id_usuario', $arrendadorId)
+            ->select('id_usuario', 'nombre_usuario', 'email_usuario')
+            ->first();
+
+        $gestores = $this->obtenerGestoresPrivados($arrendadorId, $arrendador?->nombre_usuario, $arrendador?->email_usuario);
+
+        return response()->json($gestores);
     }
 
     public function actualizar(Request $request, int $id): JsonResponse
@@ -127,7 +141,7 @@ class GestorController extends Controller
             ->value('u.id_usuario');
     }
 
-    private function obtenerGestoresDisponibles(int $arrendadorId, ?string $nombreArrendador, ?string $emailArrendador): Collection
+    private function obtenerGestoresPrivados(int $arrendadorId, ?string $nombreArrendador, ?string $emailArrendador): Collection
     {
         $rolGestorId = DB::table('tbl_rol')
             ->where('slug_rol', 'gestor')

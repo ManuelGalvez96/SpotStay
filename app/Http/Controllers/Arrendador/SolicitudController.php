@@ -63,6 +63,7 @@ class SolicitudController extends Controller
         return view('arrendador.solicitudes', [
             'arrendador' => $arrendador,
             'arrendadorId' => $arrendadorId,
+            'avatarInicial' => $this->obtenerInicialAvatar($arrendador?->nombre_usuario),
             'solicitudes' => $solicitudes,
             'totales' => [
                 'total' => $total,
@@ -329,5 +330,14 @@ class SolicitudController extends Controller
         }
 
         return 'TRIM(CONCAT_WS(\' \' , ' . implode(', ', $partes) . ')) as direccion_propiedad';
+    }
+
+    private function obtenerInicialAvatar(?string $nombre): string
+    {
+        if (empty($nombre)) {
+            return 'A';
+        }
+
+        return mb_strtoupper(mb_substr(trim($nombre), 0, 1));
     }
 }

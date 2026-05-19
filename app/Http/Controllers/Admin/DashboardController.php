@@ -90,6 +90,63 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // Incidencias inactivas (sin cambios hace 2+ semanas) en estados específicos
+        $incidenciasInactivas = DB::table('tbl_incidencia')
+            ->join('tbl_propiedad',
+              'tbl_propiedad.id_propiedad', '=',
+              'tbl_incidencia.id_propiedad_fk')
+            ->join('tbl_usuario as inquilino',
+              'inquilino.id_usuario', '=',
+              'tbl_incidencia.id_reporta_fk')
+            ->join('tbl_usuario as arrendador',
+              'arrendador.id_usuario', '=',
+              'tbl_propiedad.id_arrendador_fk')
+            ->leftJoin('tbl_usuario as gestor',
+              'gestor.id_usuario', '=',
+              'tbl_incidencia.id_asignado_fk')
+            ->leftJoin('tbl_categoria',
+              'tbl_categoria.id_categoria', '=',
+              'tbl_incidencia.id_categoria_fk')
+            ->select(
+              'tbl_incidencia.id_incidencia',
+              'tbl_incidencia.titulo_incidencia',
+              'tbl_incidencia.prioridad_incidencia',
+              'tbl_incidencia.estado_incidencia',
+              'tbl_incidencia.actualizado_incidencia',
+              'tbl_propiedad.titulo_propiedad',
+              DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
+              'tbl_propiedad.ciudad_propiedad',
+              'tbl_categoria.nombre_categoria',
+              'inquilino.nombre_usuario as nombre_inquilino',
+              'inquilino.email_usuario as email_inquilino',
+              'arrendador.nombre_usuario as nombre_arrendador',
+              'arrendador.email_usuario as email_arrendador',
+              'gestor.nombre_usuario as nombre_gestor',
+              'gestor.email_usuario as email_gestor'
+            )
+            ->whereIn('tbl_incidencia.estado_incidencia', ['abierta', 'esperando_decision', 'esperando_pago', 'solucionada'])
+            ->orderBy('tbl_incidencia.actualizado_incidencia', 'asc')
+            ->limit(10)
+            ->get();
+
+        // Marcar como inactivas las que hace 2+ semanas que no cambian
+        $ultimasIncidenciasInactivas = collect($incidenciasInactivas)->map(function($inc) {
+            $diferencia = Carbon::parse($inc->actualizado_incidencia)->diffInWeeks(Carbon::now());
+            $inc->inactivo = $diferencia >= 2;
+            
+            // Determinar encargado de pago
+            $encargadoPago = null;
+            if ($inc->estado_incidencia === 'esperando_pago') {
+                // Lógica: si el gestor existe, es el gestor; si no, es el arrendador
+                $encargadoPago = $inc->nombre_gestor ? $inc->nombre_gestor : $inc->nombre_arrendador;
+            }
+            $inc->encargado_pago = $encargadoPago;
+            
+            return $inc;
+        })->filter(function($inc) {
+            return $inc->inactivo === true;
+        })->take(5);
+
         return view('admin.dashboard', compact(
             'totalUsuarios',
             'propiedadesActivas',
@@ -98,7 +155,8 @@ class DashboardController extends Controller
             'ultimosAlquileres',
             'ultimasSolicitudes',
             'usuariosPorRol',
-            'actividadReciente'
+            'actividadReciente',
+            'ultimasIncidenciasInactivas'
         ));
     }
 

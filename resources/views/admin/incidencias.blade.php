@@ -81,13 +81,9 @@
         </div>
         <select id="selectCategoria" class="select-filtro">
             <option value="">Todas las categorías</option>
-            <option value="fontaneria">Fontanería</option>
-            <option value="electricidad">Electricidad</option>
-            <option value="calefaccion">Calefacción</option>
-            <option value="climatizacion">Climatización</option>
-            <option value="humedades">Humedades</option>
-            <option value="cerrajeria">Cerrajería</option>
-            <option value="otro">Otro</option>
+            @foreach($categorias as $cat)
+                <option value="{{ $cat->id_categoria }}">{{ $cat->nombre_categoria }}</option>
+            @endforeach
         </select>
         <select id="selectPrioridad" class="select-filtro">
             <option value="">Todas las prioridades</option>
@@ -119,6 +115,10 @@
             <span>Nueva incidencia</span>
         </button>
         --}}
+        <button id="btnCrearCategoria" class="btn-primario" data-bs-toggle="modal" data-bs-target="#modalCrearCategoria">
+            <i class="bi bi-plus"></i>
+            <span>Nueva categoría</span>
+        </button>
     </div>
 </div>
 
@@ -142,13 +142,13 @@
                     };
                     $partesInc = explode(' ', $inc->nombre_inquilino ?? '');
                     $inicialesInc = strtoupper(substr($partesInc[0] ?? '', 0, 1)) . strtoupper(substr($partesInc[1] ?? '', 0, 1));
-                    $iconoCat = match($inc->categoria_incidencia) {
-                        'fontaneria'   => 'bi-droplet',
-                        'electricidad' => 'bi-lightning',
-                        'calefaccion'  => 'bi-thermometer',
-                        'climatizacion' => 'bi-fan',
-                        'humedades'    => 'bi-cloud-rain',
-                        'cerrajeria'   => 'bi-key',
+                    $iconoCat = match($inc->nombre_categoria) {
+                        'Fontanería'   => 'bi-droplet',
+                        'Electricidad' => 'bi-lightning',
+                        'Calefacción'  => 'bi-thermometer',
+                        'Climatización' => 'bi-fan',
+                        'Humedades'    => 'bi-cloud-rain',
+                        'Cerrajería'   => 'bi-key',
                         default        => 'bi-wrench'
                     };
                 @endphp
@@ -168,7 +168,7 @@
                     </div>
                     <div class="tarjeta-categoria">
                         <i class="bi {{ $iconoCat }}"></i>
-                        <span>{{ ucfirst($inc->categoria_incidencia) }}</span>
+                        <span>{{ $inc->nombre_categoria }}</span>
                     </div>
                 </div>
             @empty
@@ -195,13 +195,13 @@
                     };
                     $partesInc = explode(' ', $inc->nombre_inquilino ?? '');
                     $inicialesInc = strtoupper(substr($partesInc[0] ?? '', 0, 1)) . strtoupper(substr($partesInc[1] ?? '', 0, 1));
-                    $iconoCat = match($inc->categoria_incidencia) {
-                        'fontaneria'   => 'bi-droplet',
-                        'electricidad' => 'bi-lightning',
-                        'calefaccion'  => 'bi-thermometer',
-                        'climatizacion' => 'bi-fan',
-                        'humedades'    => 'bi-cloud-rain',
-                        'cerrajeria'   => 'bi-key',
+                    $iconoCat = match($inc->nombre_categoria) {
+                        'Fontanería'   => 'bi-droplet',
+                        'Electricidad' => 'bi-lightning',
+                        'Calefacción'  => 'bi-thermometer',
+                        'Climatización' => 'bi-fan',
+                        'Humedades'    => 'bi-cloud-rain',
+                        'Cerrajería'   => 'bi-key',
                         default        => 'bi-wrench'
                     };
                 @endphp
@@ -221,7 +221,7 @@
                     </div>
                     <div class="tarjeta-categoria">
                         <i class="bi {{ $iconoCat }}"></i>
-                        <span>{{ ucfirst($inc->categoria_incidencia) }}</span>
+                        <span>{{ $inc->nombre_categoria }}</span>
                     </div>
                     @if($inc->nombre_gestor)
                         <div class="tarjeta-gestor">
@@ -255,13 +255,13 @@
                     };
                     $partesInc = explode(' ', $inc->nombre_inquilino ?? '');
                     $inicialesInc = strtoupper(substr($partesInc[0] ?? '', 0, 1)) . strtoupper(substr($partesInc[1] ?? '', 0, 1));
-                    $iconoCat = match($inc->categoria_incidencia) {
-                        'fontaneria'   => 'bi-droplet',
-                        'electricidad' => 'bi-lightning',
-                        'calefaccion'  => 'bi-thermometer',
-                        'climatizacion' => 'bi-fan',
-                        'humedades'    => 'bi-cloud-rain',
-                        'cerrajeria'   => 'bi-key',
+                    $iconoCat = match($inc->nombre_categoria) {
+                        'Fontanería'   => 'bi-droplet',
+                        'Electricidad' => 'bi-lightning',
+                        'Calefacción'  => 'bi-thermometer',
+                        'Climatización' => 'bi-fan',
+                        'Humedades'    => 'bi-cloud-rain',
+                        'Cerrajería'   => 'bi-key',
                         default        => 'bi-wrench'
                     };
                 @endphp
@@ -281,7 +281,7 @@
                     </div>
                     <div class="tarjeta-categoria">
                         <i class="bi {{ $iconoCat }}"></i>
-                        <span>{{ ucfirst($inc->categoria_incidencia) }}</span>
+                        <span>{{ $inc->nombre_categoria }}</span>
                     </div>
                 </div>
             @empty
@@ -400,12 +400,20 @@
                         <p id="modalCategoriaInc" class="fw-500"></p>
                     </div>
                     <div class="col-md-6">
+                        <small class="text-muted d-block">Arrendador</small>
+                        <p id="modalArrendadorInc" class="fw-500">-</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Gestor</small>
+                        <p id="modalGestorInc" class="fw-500">-</p>
+                    </div>
+                    <div class="col-md-6">
                         <small class="text-muted d-block">Prioridad</small>
                         <span id="modalPrioridadInc"></span>
                     </div>
                     <div class="col-md-6">
-                        <small class="text-muted d-block">Estado actual</small>
-                        <span id="modalEstadoInc"></span>
+                        <small class="text-muted d-block">Encargado de pago</small>
+                        <span id="modalEncargadoPago">-</span>
                     </div>
                 </div>
 
@@ -414,8 +422,16 @@
             </div>
 
             <div class="modal-footer">
+                <div style="flex:1; text-align:left;">
+                    <select id="modalContactarDestino" class="form-select form-select-sm mb-2">
+                        <option value="inquilino">Contactar inquilino</option>
+                        <option value="arrendador">Contactar arrendador</option>
+                        <option value="gestor">Contactar gestor</option>
+                    </select>
+                    <textarea id="modalMensajeContacto" class="form-control form-control-sm" rows="2" placeholder="Mensaje opcional (puede personalizarse)">Hola, te contactamos respecto a la incidencia reportada. Por favor, revisa la incidencia y responde.</textarea>
+                </div>
                 <button type="button" class="btn btn-outline-secondary" id="btnContactarInquilino">
-                    <i class="bi bi-chat"></i> Contactar
+                    <i class="bi bi-chat"></i> Enviar correo
                 </button>
             </div>
         </div>
@@ -491,8 +507,43 @@
     </div>
 </div>
 
+<!-- Modal Crear Categoría -->
+<div class="modal fade" id="modalCrearCategoria" tabindex="-1" aria-labelledby="modalCrearCategoriaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCrearCategoriaLabel">
+                    <i class="bi bi-plus-circle"></i> Nueva Categoría de Incidencia
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCrearCategoria">
+                    <div class="mb-3">
+                        <label for="nombreCategoria" class="form-label">Nombre de la categoría</label>
+                        <input type="text" class="form-control" id="nombreCategoria" name="nombre_categoria" placeholder="Ej: Fontanería" required maxlength="100">
+                        <small class="text-danger" id="errorNombreCategoria"></small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcionCategoria" class="form-label">Descripción (opcional)</label>
+                        <textarea class="form-control" id="descripcionCategoria" name="descripcion_categoria" rows="3" placeholder="Describe esta categoría..." maxlength="500"></textarea>
+                        <small class="text-muted">Máximo 500 caracteres</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarCategoria">
+                    <i class="bi bi-check"></i> Crear Categoría
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
 <script src="{{ asset('js/admin/incidencias.js') }}"></script>
+<script src="{{ asset('js/admin/categorias.js') }}"></script>
 @endsection

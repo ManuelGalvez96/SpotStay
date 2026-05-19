@@ -147,6 +147,7 @@ class DashboardController extends Controller
         }
 
         return view('arrendador.dashboard', [
+            'arrendadorId' => $arrendadorId,
             'arrendador' => $arrendador,
             'avatarInicial' => $this->obtenerInicialAvatar($arrendador?->nombre_usuario),
             'propiedadesActivas' => $propiedadesActivas,

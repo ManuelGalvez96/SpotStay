@@ -1,18 +1,14 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Incidencia #{{ $incidencia->id_incidencia }} - Arrendador</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{{ asset('css/arrendador/incidencias.css') }}" />
-</head>
-<body>
-<div class="pagina">
-    <header class="cabecera">
+@extends('layouts.arrendador')
+
+@section('titulo', 'Incidencia #' . $incidencia->id_incidencia . ' - Arrendador')
+
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/arrendador/incidencias.css') }}?v=1" />
+@endsection
+
+@section('content')
+<div class="pagina" style="padding-top: 0;">
+    <header class="cabecera" style="padding-top: 0; padding-bottom: 20px;">
         <div>
             <p class="etiqueta">Arrendador</p>
             <h1>{{ $incidencia->titulo_incidencia }}</h1>
@@ -106,8 +102,10 @@
                             @csrf
                             <button type="submit" class="btn-accion btn-primario">Pagar</button>
                         </form>
-                    @else
+                    @elseif($incidencia->responsable_pago_incidencia === 'inquilino')
                         <p class="nota-pago">El inquilino es responsable del pago de esta incidencia.</p>
+                    @else
+                        <p class="nota-pago" style="background-color: rgba(255, 193, 7, 0.15); color: #856404; border: 1px solid #ffeeba; padding: 12px; border-radius: 8px;">El responsable del pago aún no ha sido definido.</p>
                     @endif
                 </div>
             @elseif($accionActual === 'resuelta')
@@ -150,12 +148,28 @@
                 <h3>Documentación</h3>
                 <div class="docs-lista">
                     @forelse($documentos as $doc)
-                        <div class="doc-item">
-                            <p>{{ $doc->nombre_documento }}</p>
-                            <div class="doc-meta">
-                                <span>{{ str_replace('_', ' ', $doc->tipo_documento) }}</span>
+                        <div class="doc-item" style="border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 12px;">
+                            <p style="font-weight: 600; margin-bottom: 6px;">{{ $doc->nombre_documento }}</p>
+                            
+                            @php
+                                $extension = strtolower(pathinfo($doc->url_documento, PATHINFO_EXTENSION));
+                                $esImagen = in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']);
+                            @endphp
+
+                            @if($esImagen && $doc->url_documento && $doc->url_documento !== 'sin-archivo')
+                                <div class="doc-preview-img" style="margin-top: 8px; margin-bottom: 12px;">
+                                    <a href="{{ $doc->url_documento }}" target="_blank" rel="noopener">
+                                        <img src="{{ $doc->url_documento }}" alt="{{ $doc->nombre_documento }}" style="max-width: 100%; max-height: 220px; border-radius: 8px; border: 1px solid #e2e8f0; object-fit: cover; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);" />
+                                    </a>
+                                </div>
+                            @endif
+
+                            <div class="doc-meta" style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                                <span style="font-size: 12px; color: #718096; text-transform: uppercase;">{{ str_replace('_', ' ', $doc->tipo_documento) }}</span>
                                 @if($doc->url_documento && $doc->url_documento !== 'sin-archivo')
-                                    <a href="{{ $doc->url_documento }}" target="_blank" rel="noopener">Abrir</a>
+                                    <a href="{{ $doc->url_documento }}" target="_blank" rel="noopener" class="btn-abrir-doc" style="font-weight: 600; color: #0f4c81; text-decoration: none; font-size: 13px;">
+                                        <i class="bi bi-box-arrow-up-right"></i> Abrir
+                                    </a>
                                 @endif
                             </div>
                         </div>
@@ -167,5 +181,4 @@
         </aside>
     </section>
 </div>
-</body>
-</html>
+@endsection

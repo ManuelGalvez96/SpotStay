@@ -121,14 +121,6 @@ var actualizarTablaAlquileres = function(alquileres) {
         var accionesPendiente = '';
         var accionesBase = '';
 
-        accionesBase = '<button class="btn-accion btn-editar-alq" data-id="' + a.id + '" title="Editar"><i class="bi bi-pencil"></i></button>' +
-                       '<button class="btn-accion btn-eliminar-alq" data-id="' + a.id + '" title="Eliminar"><i class="bi bi-trash"></i></button>';
-
-        if (a.estado_alquiler === 'pendiente') {
-            accionesPendiente = '<button class="btn-accion btn-editar btn-aprobar-alq" data-id="' + a.id + '" title="Aprobar"><i class="bi bi-pencil"></i></button>' +
-                               '<div class="toggle-switch activo btn-rechazar-alq" data-id="' + a.id + '" title="Rechazar"><div class="toggle-circulo"></div></div>';
-        }
-
         filas += '<tr data-id="' + a.id + '" class="' + filaInactiva + '">' +
             '<td><div class="propiedad-celda"><div class="thumb-propiedad" style="background:' + a.color_prop + '"></div><div><p class="propiedad-nombre">' + (a.titulo_propiedad || '') + '</p><p class="propiedad-ciudad">' + (a.ciudad_propiedad || '') + '</p></div></div></td>' +
             '<td><div class="usuario-celda-mini"><div class="avatar-tabla avatar-sm" style="background:' + a.color_inq + '">' + (a.iniciales_inq || '') + '</div><span class="nombre-mini">' + (a.nombre_inquilino || '') + '</span></div></td>' +
@@ -136,7 +128,7 @@ var actualizarTablaAlquileres = function(alquileres) {
             '<td><span class="texto-fecha">' + formatearFecha(a.fecha_inicio_alquiler) + '</span></td>' +
             '<td><span class="texto-fecha">' + fin + '</span></td>' +
             '<td><span class="badge-estado badge-estado-' + a.estado_alquiler + '">' + capitalizar(a.estado_alquiler) + '</span></td>' +
-                '<td><div class="acciones-tabla"><button class="btn-accion btn-ver-alq" data-id="' + a.id + '" title="Ver detalle"><i class="bi bi-eye"></i></button>' + accionesBase + accionesPendiente + '</div></td>' +
+                (a.url_pdf_contrato ? '<td><a href="' + a.url_pdf_contrato + '" target="_blank" class="btn-exportar"><i class="bi bi-file-earmark-pdf"></i><span>Ver PDF</span></a></td>' : '<td><span class="text-muted">Sin contrato</span></td>') +
             '</tr>';
     }
 

@@ -191,7 +191,7 @@
         <span>Filtros</span>
     </div>
 
-    <form method="GET" action="{{ route('gestor.actividad') }}" class="filtros-avanzados">
+    <form method="GET" action="{{ route('gestor.actividad') }}" class="filtros-avanzados" id="actividadFiltrosForm">
         @if($tipo)
             <input type="hidden" name="tipo" value="{{ $tipo }}">
         @endif
@@ -227,12 +227,6 @@
                     <option value="mas_antiguos" @selected($orden === 'mas_antiguos')>Más antiguos</option>
                 </select>
             </div>
-            <div class="filtro-grupo">
-                <label>&nbsp;</label>
-                <button type="submit" class="btn-filtrar">
-                    <i class="bi bi-funnel"></i> Filtrar
-                </button>
-            </div>
             @if($filtrosActivos->isNotEmpty())
                 <div class="filtro-grupo">
                     <label>&nbsp;</label>
@@ -267,7 +261,7 @@
         @endif
     </form>
 
-    <div class="card-filtros-body">
+    <div id="actividadFiltrosWrap">
         @foreach($grupos as $grupoLabel => $grupoTipos)
             @php
                 $grupoConteo = collect($grupoTipos)->sum(fn($tk) => $conteos[$tk] ?? 0);
@@ -303,6 +297,7 @@
         @endif
     </div>
 
+<div id="actividadTimelineWrap">
     <div class="timeline">
         <div class="timeline-linea"></div>
         @forelse($actividades as $notificacion)
@@ -336,5 +331,24 @@
             {{ $actividades->links() }}
         </div>
     @endif
+
+    @if($actividades->lastPage() > 1)
+        <div class="paginacion-cargar-mas"
+             data-current-page="{{ $actividades->currentPage() }}"
+             data-last-page="{{ $actividades->lastPage() }}">
+            @if($actividades->hasMorePages())
+                <button class="btn-cargar-mas" data-next-url="{{ $actividades->nextPageUrl() }}" type="button">
+                    Cargar más ({{ $actividades->currentPage() }} / {{ $actividades->lastPage() }})
+                </button>
+            @else
+                <span class="cargar-mas-fin">Toda la actividad cargada</span>
+            @endif
+        </div>
+    @endif
 </div>
+</div>
+@endsection
+
+@section('scripts')
+<script src="{{ asset('js/gestor/actividad-filtros.js') }}"></script>
 @endsection

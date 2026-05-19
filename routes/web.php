@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\SolicitudController;
 use App\Http\Controllers\Admin\IncidenciaController;
 use App\Http\Controllers\Admin\AlquilerController;
 use App\Http\Controllers\Admin\SuscripcionController;
+use App\Http\Controllers\Admin\ConfiguracionController;
 use App\Http\Controllers\Admin\CodigoGestorController;
 use App\Http\Controllers\Admin\CodigoPropiedadController;
 use App\Http\Controllers\Admin\CategoriaController;
@@ -60,9 +61,9 @@ Route::middleware(['role:admin'])->group(function () {
 
     // Dashboard
     Route::get('/admin/dashboard', [DashboardController::class, 'index']);
-    Route::get('/admin/configuracion', function () {
-        return view('admin.configuracion');
-    });
+    Route::get('/admin/configuracion', [ConfiguracionController::class, 'index']);
+    Route::get('/admin/planes', [ConfiguracionController::class, 'planes'])->name('admin.planes');
+    Route::post('/admin/planes/{id}/actualizar', [ConfiguracionController::class, 'actualizarPlan'])->name('admin.planes.actualizar');
     Route::post('/admin/alquiler/{id}/aprobar', [DashboardController::class, 'aprobarAlquiler']);
     Route::post('/admin/alquiler/{id}/rechazar', [DashboardController::class, 'rechazarAlquiler']);
 

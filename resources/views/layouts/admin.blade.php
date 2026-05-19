@@ -46,6 +46,9 @@
             <button class="btn-nav-icon {{ request()->is('admin/incidencias*') ? 'activo' : '' }}" data-ruta="/admin/incidencias" title="Incidencias">
                 <i class="bi bi-exclamation-triangle"></i>
             </button>
+            <button class="btn-nav-icon {{ request()->is('admin/planes*') ? 'activo' : '' }}" data-ruta="/admin/planes" title="Planes">
+                <i class="bi bi-card-list"></i>
+            </button>
             {{-- <button class="btn-nav-icon {{ request()->is('admin/suscripciones*') ? 'activo' : '' }}" data-ruta="/admin/suscripciones" title="Suscripciones">
                 <i class="bi bi-credit-card"></i>
             </button> --}}

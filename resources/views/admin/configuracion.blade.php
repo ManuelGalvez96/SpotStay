@@ -24,7 +24,7 @@
         </div>
         <div class="kpi-mini-datos">
             <span class="kpi-mini-numero">4</span>
-            <span class="kpi-mini-label">Bloques de apariencia</span>
+            <span class="kpi-mini-label">Bloques visuales</span>
         </div>
     </div>
 
@@ -33,8 +33,8 @@
             <i class="bi bi-person-badge"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">3</span>
-            <span class="kpi-mini-label">Ajustes de cuenta</span>
+            <span class="kpi-mini-numero">2</span>
+            <span class="kpi-mini-label">Ajustes de perfil</span>
         </div>
     </div>
 
@@ -43,7 +43,7 @@
             <i class="bi bi-bell"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-naranja">5</span>
+            <span class="kpi-mini-numero kpi-mini-numero-naranja">3</span>
             <span class="kpi-mini-label">Reglas de notificación</span>
         </div>
     </div>
@@ -53,8 +53,8 @@
             <i class="bi bi-cpu"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-rojo">6</span>
-            <span class="kpi-mini-label">Parámetros de sistema</span>
+            <span class="kpi-mini-numero kpi-mini-numero-rojo">1</span>
+            <span class="kpi-mini-label">Tema activo</span>
         </div>
     </div>
 </div>
@@ -72,21 +72,21 @@
                     <h2>Apariencia</h2>
                 </div>
                 <ul>
-                    <li>Colores y estilo visual del panel.</li>
-                    <li>Comportamiento visual de cabecera y navegación.</li>
-                    <li>Consistencia de componentes de interfaz.</li>
+                    <li>Temas claro y oscuro del panel.</li>
+                    <li>Plantilla de color y estilo visual.</li>
+                    <li>Componentes y contraste general.</li>
                 </ul>
             </section>
 
             <section class="configuracion-card-seccion">
                 <div class="configuracion-cabecera-seccion">
                     <span class="configuracion-icono icono-verde"><i class="bi bi-person-badge"></i></span>
-                    <h2>Cuenta</h2>
+                    <h2>Perfil</h2>
                 </div>
                 <ul>
-                    <li>Información del perfil administrativo.</li>
-                    <li>Seguridad básica de acceso y sesión.</li>
-                    <li>Preferencias operativas de la cuenta.</li>
+                    <li>Datos del perfil administrativo.</li>
+                    <li>Correo, contraseña y seguridad.</li>
+                    <li>Preferencias de sesión y acceso.</li>
                 </ul>
             </section>
 
@@ -96,9 +96,9 @@
                     <h2>Notificaciones</h2>
                 </div>
                 <ul>
-                    <li>Alertas internas de solicitudes e incidencias.</li>
-                    <li>Canales y frecuencia de avisos.</li>
-                    <li>Prioridades y umbrales de comunicación.</li>
+                    <li>Notificaciones predefinidas del sistema.</li>
+                    <li>Alertas de incidencias y solicitudes.</li>
+                    <li>Plantillas y avisos automáticos.</li>
                 </ul>
             </section>
 
@@ -108,11 +108,17 @@
                     <h2>Sistema</h2>
                 </div>
                 <ul>
-                    <li>Parámetros generales de operación.</li>
-                    <li>Mantenimiento y estado del entorno.</li>
-                    <li>Reglas globales del panel administrativo.</li>
+                    <li>Parámetros globales del panel.</li>
+                    <li>Mantenimiento y estado técnico.</li>
+                    <li>Reglas generales de funcionamiento.</li>
                 </ul>
             </section>
+        </div>
+
+        <div class="configuracion-accion-planes">
+            <a href="{{ route('admin.planes') }}" class="btn-guardar-plan btn-ver-planes">
+                Ver y editar planes
+            </a>
         </div>
     </div>
 </div>

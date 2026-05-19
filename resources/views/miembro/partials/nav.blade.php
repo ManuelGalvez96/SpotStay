@@ -2,11 +2,11 @@
     <div class="contenedor-nav">
         <ul class="lista-nav">
             <li><a href="/miembro/inicio" class="enlace-nav {{ request()->is('miembro/inicio') ? 'activo' : '' }}"><i class="bi bi-house-door"></i> Inicio</a></li>
-            
+
             @if (!$esArrendador && !$esGestor)
             <li><a href="{{ route('miembro.arrendador.formulario') }}" class="enlace-nav {{ request()->routeIs('miembro.arrendador.formulario') ? 'activo' : '' }}"><i class="bi bi-plus-circle"></i> Conviertete en Arrendador</a></li>
             @endif
-            
+
             <li><a href="{{ route('miembro.mensajes.index') }}" class="enlace-nav {{ request()->is('miembro/chat*') ? 'activo' : '' }}"><i class="bi bi-chat-dots"></i> Mensajes</a></li>
 
             @if ($esInquilino)
@@ -19,10 +19,6 @@
 
             @if ($esArrendador)
             <li><a href="{{ route('arrendador.dashboard') }}" class="enlace-nav {{ request()->is('arrendador*') ? 'activo' : '' }}"><i class="bi bi-person-workspace"></i> Panel Arrendador</a></li>
-            @endif
-
-            @if ($esGestor)
-            <li><a href="{{ route('gestor.dashboard') }}" class="enlace-nav {{ request()->is('gestor*') ? 'activo' : '' }}"><i class="bi bi-person-workspace"></i> Panel Gestor</a></li>
             @endif
         </ul>
     </div>
@@ -39,19 +35,6 @@
                 <li><a href="{{ route('arrendador.incidencias') }}" class="enlace-sub-nav {{ request()->is('arrendador/incidencias*') ? 'activo' : '' }}"><i class="bi bi-exclamation-triangle"></i> Incidencias</a></li>
                 <li><a href="{{ route('arrendador.gestor') }}" class="enlace-sub-nav {{ request()->is('arrendador/gestor*') ? 'activo' : '' }}"><i class="bi bi-person-gear"></i> Gestores</a></li>
                 <li><a href="{{ route('arrendador.precios-gastos') }}" class="enlace-sub-nav {{ request()->is('arrendador/precios-gastos*') ? 'activo' : '' }}"><i class="bi bi-cash-coin"></i> Precios/Gastos</a></li>
-            </ul>
-        </div>
-    </div>
-    @endif
-
-    @if ($esGestor && request()->is('gestor*'))
-    <div class="sub-nav-arrendador">
-        <div class="contenedor-sub-nav">
-            <ul class="lista-sub-nav">
-                <li><a href="{{ route('gestor.dashboard') }}" class="enlace-sub-nav {{ request()->routeIs('gestor.dashboard') ? 'activo' : '' }}"><i class="bi bi-grid"></i> Resumen</a></li>
-                <li><a href="{{ route('gestor.incidencias') }}" class="enlace-sub-nav {{ request()->is('gestor/incidencias*') ? 'activo' : '' }}"><i class="bi bi-exclamation-triangle"></i> Incidencias</a></li>
-                <li><a href="{{ route('gestor.propiedades') }}" class="enlace-sub-nav {{ request()->is('gestor/propiedades*') ? 'activo' : '' }}"><i class="bi bi-house"></i> Propiedades</a></li>
-                <li><a href="{{ route('gestor.mensajes.index') }}" class="enlace-sub-nav {{ request()->is('gestor/mensajes*') ? 'activo' : '' }}"><i class="bi bi-chat-dots"></i> Mensajes</a></li>
             </ul>
         </div>
     </div>

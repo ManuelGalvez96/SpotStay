@@ -183,6 +183,24 @@ class DashboardController extends Controller
             })
             ->count();
 
+        $pagosPendientesTotal = DB::table('tbl_alquiler_cuota')
+            ->join('tbl_alquiler', 'tbl_alquiler.id_alquiler', '=', 'tbl_alquiler_cuota.id_alquiler_fk')
+            ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
+            ->where('tbl_propiedad.id_gestor_fk', $gestorId)
+            ->where('tbl_alquiler.estado_alquiler', 'activo')
+            ->where('tbl_alquiler_cuota.estado', 'pendiente')
+            ->count();
+
+        $contratosPorVencer = DB::table('tbl_alquiler')
+            ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
+            ->where('tbl_propiedad.id_gestor_fk', $gestorId)
+            ->where('tbl_alquiler.estado_alquiler', 'activo')
+            ->whereBetween('tbl_alquiler.fecha_fin_alquiler', [
+                Carbon::now()->startOfDay(),
+                Carbon::now()->addDays(30)->endOfDay()
+            ])
+            ->count();
+
         $resumenEstados = [
             'abierta' => (clone $baseIncidencias)->where('tbl_incidencia.estado_incidencia', 'abierta')->count(),
             'en_proceso' => (clone $baseIncidencias)->where('tbl_incidencia.estado_incidencia', 'en_proceso')->count(),
@@ -216,6 +234,8 @@ class DashboardController extends Controller
             'totalEsperandoDetalle',
             'notificaciones',
             'mensajesSinLeer',
+            'pagosPendientesTotal',
+            'contratosPorVencer',
             'resumenEstados',
             'totalesPropiedades',
             'permisosDashboard'

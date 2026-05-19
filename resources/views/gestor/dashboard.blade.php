@@ -26,7 +26,7 @@
     $tieneChat = collect($permisosDashboard)->contains(fn($p) => $p->chat);
 @endphp
 
-@if($tieneIncidencias || $tieneChat)
+@if($tieneIncidencias || $tieneChat || $pagosPendientesTotal > 0 || $contratosPorVencer > 0)
 <div class="kpi-grid">
     <div class="kpi-grid-header">
         <h2 class="seccion-titulo-acciones">Acciones necesarias</h2>
@@ -57,8 +57,34 @@
         </div>
     </a>
     @endif
+
+    <a class="kpi-card-link" href="{{ route('gestor.propiedades', ['estado_pagos' => 'pendiente']) }}">
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-label">PAGOS PENDIENTES</span>
+                <div class="kpi-icon kpi-icon-orange"><i class="bi bi-credit-card"></i></div>
+            </div>
+            <div class="kpi-numero kpi-numero-orange">{{ $pagosPendientesTotal }}</div>
+            <div class="kpi-sub">Recibos pendientes de cobro</div>
+        </div>
+    </a>
+
+    <a class="kpi-card-link" href="{{ route('gestor.propiedades', ['proximo_vencimiento' => 30]) }}">
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-label">CONTRATOS POR VENCER</span>
+                <div class="kpi-icon kpi-icon-red"><i class="bi bi-calendar-event"></i></div>
+            </div>
+            <div class="kpi-numero kpi-numero-red">{{ $contratosPorVencer }}</div>
+            <div class="kpi-sub">Finalizan en menos de 30 días</div>
+        </div>
+    </a>
 </div>
 @endif
+
+@php
+    $tienePermisos = collect($permisosDashboard)->contains(fn($p) => $p->incidencias || $p->chat);
+@endphp
 
 <div class="central-grid">
     <div class="card-admin card-con-franja">

@@ -45,6 +45,10 @@
                 <option value="atrasado" {{ $estadoPagos === 'atrasado' ? 'selected' : '' }}>Atrasado</option>
             </select>
 
+            @if($proximoVencimiento > 0)
+                <input type="hidden" name="proximo_vencimiento" value="{{ $proximoVencimiento }}">
+            @endif
+
             <div class="acciones-filtros-mobile">
                 <button type="submit" class="btn-aplicar-admin">Filtrar</button>
                 <a href="{{ route('gestor.propiedades') }}" class="btn-limpiar-admin">Limpiar</a>
@@ -63,7 +67,11 @@
 <div class="card-admin tabla-propiedades-card card-con-franja" id="propiedadesTablaCard">
     <div class="card-franja"></div>
     <div class="card-header-admin card-header-gradient">
-        <span>{{ $propiedades->total() }} propiedades encontradas</span>
+        <span>{{ $propiedades->total() }} propiedades encontradas
+            @if($proximoVencimiento > 0)
+                <span class="badge-estado badge-pendiente" style="margin-left:8px;font-weight:500;">Próximas a vencer ({{ $proximoVencimiento }} días)</span>
+            @endif
+        </span>
     </div>
 
     @php

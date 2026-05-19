@@ -138,6 +138,21 @@ class PropiedadController extends Controller
             $query->whereRaw('COALESCE(pagos_atrasados.total_pagos_atrasados, 0) > 0');
         }
 
+        $proximoVencimiento = (int) $request->query('proximo_vencimiento', 0);
+
+        if ($proximoVencimiento > 0) {
+            $query->whereExists(function ($q) use ($proximoVencimiento) {
+                $q->select(DB::raw(1))
+                    ->from('tbl_alquiler')
+                    ->whereColumn('tbl_alquiler.id_propiedad_fk', 'tbl_propiedad.id_propiedad')
+                    ->where('tbl_alquiler.estado_alquiler', 'activo')
+                    ->whereBetween('tbl_alquiler.fecha_fin_alquiler', [
+                        Carbon::now()->startOfDay(),
+                        Carbon::now()->addDays($proximoVencimiento)->endOfDay()
+                    ]);
+            });
+        }
+
         $allowedSorts = [
             'titulo_propiedad' => 'tbl_propiedad.titulo_propiedad',
             'precio_propiedad' => 'tbl_propiedad.precio_propiedad',
@@ -226,6 +241,7 @@ class PropiedadController extends Controller
             'estado',
             'ciudad',
             'estadoPagos',
+            'proximoVencimiento',
             'sort',
             'dir'
         ));

@@ -168,7 +168,15 @@ body.pagina-miembro {
 .grupo-filtro {
 	display: flex;
 	flex-direction: column;
+	gap: 10px;
+	margin-bottom: 22px;
+}
+
+.filtros-propiedad-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
 	gap: 12px;
+	margin-bottom: 22px;
 }
 
 .etiqueta-filtro {
@@ -191,6 +199,7 @@ body.pagina-miembro {
 	border-radius: var(--radio);
 	border: 1px solid var(--borde);
 	background: var(--fondo-panel);
+	font: inherit;
 	font-size: 14px;
 	color: var(--texto);
 	outline: none;
@@ -255,6 +264,59 @@ body.pagina-miembro {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
+}
+
+/* Permite que el desplegable se vea encima del mapa */
+body.pagina-mapa .encabezado-mapa { z-index: 2000; }
+body.pagina-mapa .submenu-perfil { z-index: 3000; }
+
+/* Filtros */
+body.pagina-mapa .panel-filtros-encabezado {
+	position: relative;
+	padding-right: 44px;
+}
+
+body.pagina-mapa .panel-filtros-encabezado .detalle-volver {
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
+body.pagina-mapa .boton-filtros-header {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	height: 40px;
+	padding: 0 14px;
+	border-radius: 999px;
+	border: 1px solid var(--borde);
+	background: #ffffff;
+	color: var(--texto);
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+body.pagina-mapa .boton-filtros-header i {
+	font-size: 16px;
+}
+
+body.pagina-mapa.filtros-ocultos .boton-filtros-header {
+	background: var(--primario);
+	color: #ffffff;
+	border-color: var(--primario);
+}
+
+body.pagina-mapa.filtros-ocultos .panel-filtros {
+	display: none;
+}
+
+body.pagina-mapa.filtros-ocultos .contenido-mapa {
+	height: calc(100vh - var(--alto-encabezado));
+}
+
+body.pagina-mapa.filtros-ocultos .contenedor-mapa {
+	min-height: calc(100vh - var(--alto-encabezado));
 }
 
 .titulo-filtros {
@@ -336,6 +398,11 @@ body.pagina-miembro {
 }
 
 /* Popup grande de propiedad para el mapa */
+.popup-propiedad-contenedor .leaflet-popup-content-wrapper,
+.popup-propiedad-contenedor .leaflet-popup-content {
+	overflow: visible;
+}
+
 .popup-propiedad-contenedor .leaflet-popup-content {
 	margin: 12px 14px;
 }
@@ -343,6 +410,29 @@ body.pagina-miembro {
 .popup-propiedad {
 	min-width: 250px;
 	max-width: 320px;
+	position: relative;
+	padding-top: 40px;
+	overflow: visible;
+}
+
+.popup-propiedad-oso {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	transform: translate(-50%, -65%);
+	width: 96px;
+	height: 96px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+	z-index: 3;
+}
+
+.popup-propiedad-oso .oso-popup-svg {
+	width: 90px;
+	height: 90px;
+	display: block;
 }
 
 .popup-propiedad-titulo {
@@ -376,7 +466,7 @@ body.pagina-miembro {
 	border-radius: 999px;
 	text-decoration: none;
 	background: var(--primario);
-	color: #ffffff;
+	color: #ffffff !important;
 	font-size: 13px;
 	font-weight: 600;
 }
@@ -800,7 +890,7 @@ body.pagina-miembro {
 	padding: 14px 12px;
 	text-align: center;
 	border-right: 1px solid var(--borde);
-	background: var(--fondo-suave);
+	background: ffffff;
 }
 
 .detalle-resumen-item:last-child {
@@ -1030,10 +1120,12 @@ body.pagina-miembro {
 		border-right: none;
 		border-bottom: 1px solid var(--borde);
 		box-shadow: none;
+		max-height: 45vh;
+		overflow-y: auto;
 	}
 
 	.contenedor-mapa {
-		min-height: 60vh;
+		min-height: 45vh;
 	}
 }
 
@@ -1277,6 +1369,64 @@ body.pagina-miembro {
    ========================================================= */
 
 /* ===== PAGINA CHAT ===== */
+body.pagina-miembro.pagina-mensajes {
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+	width: 100%;
+}
+
+body.pagina-miembro.pagina-mensajes .contenido-miembro {
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+	width: 100%;
+	max-width: none;
+	padding: 24px 28px 20px;
+}
+
+body.pagina-miembro.pagina-mensajes .mensajes-layout {
+	height: 100%;
+	min-height: 0;
+}
+
+body.pagina-miembro.pagina-mensajes .mensajes-lista,
+body.pagina-miembro.pagina-mensajes .mensajes-panel {
+	height: 100%;
+	min-height: 0;
+}
+
+body.pagina-miembro.pagina-mensajes .mensajes-lista {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+body.pagina-miembro.pagina-mensajes .mensajes-panel {
+	display: grid;
+	grid-template-rows: auto 1fr auto;
+	gap: 14px;
+}
+
+body.pagina-miembro.pagina-mensajes .panel-filtros-miembro {
+	flex-direction: column;
+	flex-wrap: nowrap;
+}
+
+body.pagina-miembro.pagina-mensajes .mensajes-item {
+	width: 100%;
+	margin-bottom: 0;
+}
+
+body.pagina-miembro.pagina-mensajes .mensajes-mensajes {
+	min-height: 0;
+}
+
+body.pagina-miembro.pagina-mensajes .mensajes-formulario {
+	margin-top: 0;
+}
+
 .mensajes-layout {
 	display: grid;
 	grid-template-columns: 320px 1fr;
@@ -1392,14 +1542,35 @@ body.pagina-miembro {
 }
 
 @media (max-width: 980px) {
-	.mensajes-layout {
+	body.pagina-miembro.pagina-mensajes .mensajes-layout {
 		grid-template-columns: 1fr;
+		grid-template-rows: minmax(160px, 28vh) minmax(300px, 1fr);
 	}
 
-	.mensajes-lista,
-	.mensajes-panel {
-		height: auto;
+	body.pagina-miembro.pagina-mensajes .mensajes-lista,
+	body.pagina-miembro.pagina-mensajes .mensajes-panel {
+		height: 100%;
 		min-height: 0;
+	}
+}
+
+@media (max-width: 720px) {
+	body.pagina-miembro.pagina-mensajes .mensajes-layout {
+		grid-template-rows: minmax(140px, 24vh) minmax(320px, 1fr);
+	}
+
+	body.pagina-miembro.pagina-mensajes .mensajes-lista {
+		max-height: 26vh;
+	}
+}
+
+@media (max-width: 520px) {
+	body.pagina-miembro.pagina-mensajes .mensajes-layout {
+		grid-template-rows: minmax(120px, 22vh) minmax(340px, 1fr);
+	}
+
+	body.pagina-miembro.pagina-mensajes .mensajes-lista {
+		max-height: 24vh;
 	}
 }
 
@@ -1518,12 +1689,105 @@ body.pagina-miembro {
 
 	.solicitud-columna-doble,
 	.solicitud-columna-completa,
-	.filtros-propiedad-grid,
 	.solicitud-boton {
 		grid-column: 1 / -1;
 	}
+}
 
-	.filtros-propiedad-grid {
+/* =========================================================
+   SECCIÓN RESPONSIVE INTEGRAL (MÓVILES Y TABLETS)
+   ========================================================= */
+@media (max-width: 992px) {
+	.contenedor-encabezado, .contenedor-encabezado-miembro {
+		padding: 0 16px;
+	}
+	.contenido-mapa {
+		flex-direction: column;
+		height: auto;
+	}
+	.contenedor-mapa, #mapa {
+		min-height: 55vh;
+		width: 100%;
+	}
+	.panel-filtros {
+		width: 100%;
+		max-height: 40vh;
+		border-right: none;
+		border-bottom: 1px solid var(--borde);
+	}
+	body.pagina-mapa.filtros-ocultos .contenido-mapa,
+	body.pagina-mapa.filtros-ocultos .contenedor-mapa,
+	body.pagina-mapa.filtros-ocultos #mapa {
+		height: calc(100vh - 72px) !important;
+		min-height: calc(100vh - 72px) !important;
+	}
+	.contenedor-listado {
 		grid-template-columns: 1fr;
+	}
+	.grid-propiedades {
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	}
+	.contenido-miembro {
+		padding: 20px 16px;
+	}
+}
+
+@media (max-width: 768px) {
+	.contenedor-encabezado, .contenedor-encabezado-miembro {
+		padding: 0 12px;
+	}
+	.contenedor-nav {
+		justify-content: flex-start !important;
+		padding-left: 0;
+	}
+	.lista-nav {
+		gap: 4px;
+	}
+	.enlace-nav {
+		padding: 12px 10px;
+		font-size: 13px;
+	}
+	.boton-filtros-header span {
+		display: none;
+	}
+	.boton-filtros-header {
+		padding: 0 12px !important;
+		height: 34px !important;
+	}
+	.contenido-miembro {
+		padding: 16px 12px 40px;
+	}
+	.solicitud-panel {
+		padding: 16px;
+	}
+	.nombre-miembro {
+		display: none; /* En móviles ocultamos el nombre para dejar solo foto y campana */
+	}
+	.acciones-miembro {
+		gap: 10px;
+	}
+	.logo-spotstay img, .marca-miembro img {
+		height: 32px;
+	}
+	.grid-propiedades {
+		grid-template-columns: 1fr;
+	}
+	.detalle-cabecera {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+	.detalle-resumen {
+		grid-template-columns: 1fr !important;
+		display: flex;
+		flex-direction: column;
+	}
+	.detalle-info {
+		grid-template-columns: 1fr !important;
+		display: flex;
+		flex-direction: column;
+	}
+	.fila-campos,
+	.filtros-propiedad-grid {
+		grid-template-columns: repeat(2, 1fr) !important;
 	}
 }

@@ -173,8 +173,6 @@ function cargarDetalleIncidencia(idIncidencia) {
                 console.error(data.error);
                 return;
             }
-            // Aquí puedes rellenar el modal con los datos si existe
-            // Para ahora, simplemente log
             console.log("Detalle de incidencia:", data);
         })
         .catch(error => console.error("Error cargando detalle:", error));

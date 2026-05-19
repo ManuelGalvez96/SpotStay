@@ -111,6 +111,8 @@ function iniciarMapa() {
 	var formulario = document.getElementById('form-filtros-mapa');
 	var boton = document.getElementById('boton-aplicar-filtros');
 	var botonBorrar = document.getElementById('boton-borrar-filtros');
+	var botonToggleFiltros = document.getElementById('boton-toggle-filtros');
+	var textoToggleFiltros = document.getElementById('texto-boton-filtros');
 
 	if (formulario) {
 		// Evita recargar pagina y aplica filtros con fetch.
@@ -120,38 +122,62 @@ function iniciarMapa() {
 		};
 	}
 
-	if (boton) {
-		// Aplica filtros con un click del usuario.
-		boton.onclick = function (evento) {
-			if (evento) {
-				evento.preventDefault();
-			}
-			ejecutarBusqueda();
-		};
+	var timeoutFiltros;
+	for (var j = 0; j < ids.length; j++) {
+		var campoFiltro = document.getElementById(ids[j]);
+		if (campoFiltro) {
+			campoFiltro.oninput = function () {
+				clearTimeout(timeoutFiltros);
+				timeoutFiltros = setTimeout(ejecutarBusqueda, 300);
+			};
+			campoFiltro.onchange = function () {
+				clearTimeout(timeoutFiltros);
+				timeoutFiltros = setTimeout(ejecutarBusqueda, 300);
+			};
+		}
 	}
-
-			ejecutarBusqueda();
-
-
+	
 	if (botonBorrar) {
 		// Limpia los campos y vuelve a cargar el mapa.
 		botonBorrar.onclick = function (evento) {
 			var i;
-
+			
 			if (evento) {
 				evento.preventDefault();
 			}
-
+			
 			for (i = 0; i < ids.length; i++) {
 				var campo = document.getElementById(ids[i]);
 				if (campo) {
 					campo.value = '';
 				}
 			}
-
+			
 			ejecutarBusqueda();
 		};
 	}
+
+	if (botonToggleFiltros) {
+		botonToggleFiltros.onclick = function () {
+			var ocultos = document.body.classList.toggle('filtros-ocultos');
+			var texto = ocultos ? 'Mostrar filtros' : 'Ocultar filtros';
+			if (textoToggleFiltros) {
+				textoToggleFiltros.textContent = texto;
+			}
+			botonToggleFiltros.setAttribute('aria-label', texto);
+			if (mapa) {
+				setTimeout(function () {
+					mapa.invalidateSize();
+				}, 120);
+			}
+		};
+	}
+	
+	// Carga los puntos al cargar la pagina por primera vez
+	ejecutarBusqueda();
+	
+	// Carga los puntos al cambiar el zoom o mover el mapa
+	mapa.on('moveend', ejecutarBusqueda);
 
 	/* =========================================================
 	   SECCIÓN 3: RENDERIZADO DE MARCADORES
@@ -203,6 +229,7 @@ function construirPopupPropiedad(propiedad) {
 
 	return (
 		"<div class='popup-propiedad'>" +
+		"<div class='popup-propiedad-oso'>" + obtenerSvgOsoPopup() + "</div>" +
 		"<h3 class='popup-propiedad-titulo'>" + escaparHtml(titulo) + "</h3>" +
 		"<p class='popup-propiedad-precio'>" + precio + " / mes</p>" +
 		"<p class='popup-propiedad-linea'><strong>Ciudad:</strong> " + escaparHtml(ciudad) + "</p>" +
@@ -210,6 +237,26 @@ function construirPopupPropiedad(propiedad) {
 		"<p class='popup-propiedad-linea'><strong>Estado:</strong> " + escaparHtml(estado) + "</p>" +
 		"<a class='popup-propiedad-boton' href='" + urlDetalle + "'>Ver detalle</a>" +
 		"</div>"
+	);
+}
+
+function obtenerSvgOsoPopup() {
+	return (
+		"<svg class='oso-popup-svg' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg' aria-hidden='true' focusable='false'>" +
+		"<circle cx='62' cy='52' r='14' fill='#ffffff' stroke='#000' stroke-width='2' />" +
+		"<circle cx='138' cy='52' r='14' fill='#ffffff' stroke='#000' stroke-width='2' />" +
+		"<path d='M40,200 Q40,55 100,55 Q160,55 160,200 Z' fill='#ffffff' stroke='#000' stroke-width='2' />" +
+		"<path d='M30,200 L170,200 L160,152 Q100,132 40,152 Z' fill='#035498' stroke='#000' stroke-width='2' />" +
+		"<path d='M100,140 L120,168 L100,200 L80,168 Z' fill='#ffffff' stroke='#000' stroke-width='2' />" +
+		"<path d='M100,146 L113,164 L100,190 L87,164 Z' fill='#1AA068' stroke='#000' stroke-width='2' />" +
+		"<g>" +
+		"<circle cx='82' cy='105' r='5' fill='#000' />" +
+		"<circle cx='118' cy='105' r='5' fill='#000' />" +
+		"<path d='M92 128 Q100 133 108 128' stroke='#000' stroke-width='2.5' fill='none' stroke-linecap='round' />" +
+		"</g>" +
+		"<circle cx='48' cy='180' r='19' fill='#ffffff' stroke='#000' stroke-width='2' />" +
+		"<circle cx='152' cy='180' r='19' fill='#ffffff' stroke='#000' stroke-width='2' />" +
+		"</svg>"
 	);
 }
 
@@ -273,24 +320,3 @@ function escaparHtml(texto) {
 		return mapaCaracteres[caracter];
 	});
 }
-
-// function dibujarPoligonoEjemplo() {
-// 	var coordenadas = [
-// 		[41.3706, 2.0932],
-// 		[41.3792, 2.1216],
-// 		[41.3722, 2.1527],
-// 		[41.3509, 2.1514],
-// 		[41.3402, 2.1204],
-// 		[41.3503, 2.0944],
-// 	];
-
-// 	var poligono = L.polygon(coordenadas, {
-// 		color: "#2b62a8",
-// 		weight: 2,
-// 		fillColor: "#2b62a8",
-// 		fillOpacity: 0.15,
-// 	});
-
-// 	poligono.addTo(capaPoligonos);
-// }
-

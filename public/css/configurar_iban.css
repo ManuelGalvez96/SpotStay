@@ -1,0 +1,53 @@
+:root {
+    --text-dim: #757575;
+    --corp-blue: #035498;
+    --input-bg: #242424;
+}
+
+.form-label {
+    color: var(--text-dim);
+    font-size: 0.65rem; /* Reducido de 0.75rem */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px; /* Reducido */
+    display: block;
+    text-align: left;
+    font-weight: 700;
+}
+
+.input-custom {
+    background: var(--input-bg);
+    border: 2px solid #2a2a2a;
+    color: white;
+    border-radius: 10px;
+    padding: 10px 12px; /* Reducido */
+    width: 100%;
+    transition: all 0.3s ease;
+    font-size: 0.85rem; /* Reducido de 0.95rem */
+}
+
+.input-custom:focus {
+    border-color: var(--corp-blue);
+    outline: none;
+    background: #2a2a2a;
+}
+
+.helper-text {
+    color: #555;
+    font-size: 0.65rem; /* Reducido */
+    margin-top: 4px;
+    text-align: left;
+}
+
+.card-body {
+    padding: 15px 30px 20px !important; /* Más compacto */
+}
+
+textarea.input-custom {
+    resize: none;
+    height: 60px; /* Altura fija para ahorrar espacio */
+}
+
+.mb-4 {
+    margin-bottom: 0.8rem !important; /* Reducido de 1.5rem aprox */
+}

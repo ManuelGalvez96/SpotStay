@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_plan')->autoIncrement()->primary();
             $table->string('nombre_plan', 50);
             $table->string('slug_plan', 30)->unique();
+            $table->enum('rol_destino', ['miembro', 'arrendador'])->default('arrendador');
             $table->decimal('precio_plan', 8, 2)->default(0.00);
             $table->unsignedTinyInteger('max_propiedades_plan')->default(1);
             $table->text('descripcion_plan')->nullable();
@@ -33,6 +34,7 @@ return new class extends Migration {
             [
                 'nombre_plan' => 'Gratuito',
                 'slug_plan' => 'gratuito',
+                'rol_destino' => 'miembro',
                 'precio_plan' => 0.00,
                 'max_propiedades_plan' => 1,
                 'descripcion_plan' => 'Plan básico sin coste para empezar',
@@ -43,6 +45,7 @@ return new class extends Migration {
             [
                 'nombre_plan' => 'Básico',
                 'slug_plan' => 'basico',
+                'rol_destino' => 'arrendador',
                 'precio_plan' => 9.99,
                 'max_propiedades_plan' => 3,
                 'descripcion_plan' => 'Plan para arrendadores con pocas propiedades',
@@ -53,6 +56,7 @@ return new class extends Migration {
             [
                 'nombre_plan' => 'Pro',
                 'slug_plan' => 'pro',
+                'rol_destino' => 'arrendador',
                 'precio_plan' => 29.99,
                 'max_propiedades_plan' => 10,
                 'descripcion_plan' => 'Plan para arrendadores con muchas propiedades',

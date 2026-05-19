@@ -20,6 +20,14 @@ return new class extends Migration {
             $table->string('categoria_incidencia', 50);
             $table->string('prioridad_incidencia', 20)->default('media');
             $table->string('estado_incidencia', 30)->default('abierta');
+            $table->string('esperando_de_incidencia', 30)->nullable();
+            $table->decimal('presupuesto_importe_incidencia', 10, 2)->nullable();
+            $table->text('detalle_presupuesto_incidencia')->nullable();
+            $table->string('responsable_pago_incidencia', 30)->nullable();
+            $table->boolean('pagado_presupuesto_incidencia')->default(false);
+            $table->timestamp('pagado_incidencia')->nullable();
+            $table->timestamp('resuelto_incidencia')->nullable();
+            $table->timestamp('cerrado_incidencia')->nullable();
             $table->timestamp('creado_incidencia')->nullable();
             $table->timestamp('actualizado_incidencia')->nullable();
 

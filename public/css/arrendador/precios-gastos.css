@@ -101,16 +101,17 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
   font-size: 11px;
 }
 .btn-guardar {
-  border: 1px solid var(--primario);
-  border-radius: 10px;
-  background: var(--primario);
+  border: none;
+  border-radius: 8px;
+  background: #035498;
   color: #fff;
-  padding: 10px 16px;
+  padding: 8px 14px;
   cursor: pointer;
   font-weight: 600;
-  min-width: 150px;
+  font-size: 13px;
+  transition: all 0.15s ease;
 }
-.btn-guardar:hover { filter: brightness(.95); }
+.btn-guardar:hover { background: #024080; }
 .btn-guardar:disabled {
   opacity: .7;
   cursor: wait;

@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    'stripe' => [
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+    ],
+
+    'pdfmonkey' => [
+        'api_key' => env('PDFMONKEY_API_KEY'),
+        'template_id' => env('PDFMONKEY_TEMPLATE_ID'),
+        'template_id_suscripciones' => env('PDFMONKEY_TEMPLATE_ID_SUSCRIPCIONES'),
+    ],
 ];
+

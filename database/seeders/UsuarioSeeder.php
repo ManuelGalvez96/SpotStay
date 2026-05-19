@@ -63,7 +63,7 @@ class UsuarioSeeder extends Seeder
             ['nombre' => 'Pablo', 'apellido' => 'López', 'email' => 'plopez@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 003'],
             ['nombre' => 'Marta', 'apellido' => 'Sánchez', 'email' => 'msanchez@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 004'],
             ['nombre' => 'Fernando', 'apellido' => 'Pérez', 'email' => 'fperez@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 005'],
-            ['nombre' => 'Amanda', 'apellido' => 'García', 'email' => 'agarcia@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 006'],
+            ['nombre' => 'Amanda', 'apellido' => 'García', 'email' => 'amagarcia@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 006'],
             ['nombre' => 'Juan', 'apellido' => 'González', 'email' => 'jgonzalez@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 007'],
             ['nombre' => 'Victoria', 'apellido' => 'Rodríguez', 'email' => 'vrodriguez@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 008'],
             ['nombre' => 'Pepe', 'apellido' => 'Fernández', 'email' => 'pfernandez@spotstay.com', 'rol' => 'inquilino', 'tel' => '+34 602 222 009'],
@@ -80,7 +80,7 @@ class UsuarioSeeder extends Seeder
             // Generar datos ficticios para nuevos campos
             $dni = str_pad(rand(10000000, 99999999), 8, '0', STR_PAD_LEFT) . strtoupper(chr(rand(65, 90)));
             $fechaNacimiento = \Carbon\Carbon::now()->subYears(rand(25, 65))->format('Y-m-d');
-            $iban = 'ES' . str_pad(rand(0, 9999999999999999), 16, '0', STR_PAD_LEFT);
+            $iban = $data['rol'] === 'arrendador' ? 'ES' . str_pad(rand(0, 9999999999999999), 16, '0', STR_PAD_LEFT) : null;
             $es_admin = in_array($data['email'], ['agarcia@spotstay.com', 'alopez@spotstay.com', 'amartinez@spotstay.com']);
             
             $usuario = Usuario::firstOrCreate(
@@ -94,6 +94,8 @@ class UsuarioSeeder extends Seeder
                     'iban_usuario' => $iban,
                     'direccion_fiscal_usuario' => 'Calle Test ' . rand(1, 999) . ', ' . rand(28001, 28099),
                     'tipo_arrendador_usuario' => $data['rol'] === 'arrendador' ? 'individual' : null,
+                    'stripe_account_id' => $data['rol'] === 'arrendador' ? 'acct_manual_' . uniqid() : null,
+                    'stripe_status' => $data['rol'] === 'admin' ? null : 'active',
                     'verificado_identidad_usuario' => $es_admin ? true : false,
                     'activo_usuario' => true,
                     'creado_usuario' => now(),

@@ -36,8 +36,13 @@ class SolicitudArrendadorSeeder extends Seeder
         $adminIndex = 0;
 
         foreach ($solicitudes as $data) {
-            $usuario = Usuario::where('email_usuario', $data['email'])->first();
-            if ($usuario) {
+            // Ajuste para el nuevo correo de Amanda García si es necesario
+            $email = ($data['email'] === 'agarcia@spotstay.com') ? 'amagarcia@spotstay.com' : $data['email'];
+            
+            $usuario = Usuario::where('email_usuario', $email)->first();
+            
+            // SOLO creamos solicitud si el usuario NO es admin
+            if ($usuario && !$usuario->roles()->where('slug_rol', 'admin')->exists()) {
                 $admin = null;
                 if (!$admins->isEmpty()) {
                     $admin = $admins->get($adminIndex % $admins->count());

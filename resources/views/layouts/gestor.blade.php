@@ -30,6 +30,9 @@
             <button class="btn-nav-icon {{ request()->is('gestor/propiedades*') ? 'activo' : '' }}" data-ruta="/gestor/propiedades" title="Propiedades asignadas">
                 <i class="bi bi-house"></i>
             </button>
+            <button class="btn-nav-icon {{ request()->is('gestor/mensajes*') ? 'activo' : '' }}" data-ruta="/gestor/mensajes" title="Mensajes">
+                <i class="bi bi-chat-dots"></i>
+            </button>
         </div>
 
         <div class="topbar-der">

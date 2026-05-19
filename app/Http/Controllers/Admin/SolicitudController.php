@@ -25,7 +25,8 @@ class SolicitudController extends Controller
               'tbl_solicitud_arrendador.*',
               'tbl_usuario.nombre_usuario',
               'tbl_usuario.email_usuario',
-              'tbl_usuario.telefono_usuario'
+              'tbl_usuario.telefono_usuario',
+              'tbl_usuario.stripe_status'
             )
             ->orderBy('tbl_solicitud_arrendador.creado_solicitud_arrendador','desc')
             ->paginate(7);
@@ -200,8 +201,8 @@ class SolicitudController extends Controller
 
     public function filtrar(Request $request)
     {
-        $query = SolicitudArrendador::with('usuario:id_usuario,nombre_usuario,email_usuario')
-            ->select('tbl_solicitud_arrendador.*');
+        $query = SolicitudArrendador::join('tbl_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_solicitud_arrendador.id_usuario_fk')
+            ->select('tbl_solicitud_arrendador.*', 'tbl_usuario.stripe_status');
 
         if ($request->estado) {
             $query->where('estado_solicitud_arrendador', $request->estado);
@@ -256,6 +257,7 @@ class SolicitudController extends Controller
                 'actualizado_solicitud_arrendador' => $solicitud->actualizado_solicitud_arrendador,
                 'nombre_usuario' => $solicitud->usuario?->nombre_usuario ?? '—',
                 'email_usuario' => $solicitud->usuario?->email_usuario ?? '—',
+                'stripe_status' => $solicitud->stripe_status,
             ];
         }, $items);
 

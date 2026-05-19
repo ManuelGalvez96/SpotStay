@@ -17,7 +17,8 @@ class ArrendadorDemoSeeder extends Seeder
         $carlosId = $this->upsertUsuario(
             'Carlos Garcia',
             'carlos@spotstay.com',
-            '+34 611 222 333'
+            '+34 611 222 333',
+            'ES' . str_pad(rand(0, 9999999999999999), 16, '0', STR_PAD_LEFT)
         );
 
         if ($rolArrendador) {
@@ -131,7 +132,7 @@ class ArrendadorDemoSeeder extends Seeder
         );
     }
 
-    private function upsertUsuario(string $nombre, string $email, string $telefono): int
+    private function upsertUsuario(string $nombre, string $email, string $telefono, string $iban = null): int
     {
         DB::table('tbl_usuario')->updateOrInsert(
             ['email_usuario' => $email],
@@ -139,6 +140,9 @@ class ArrendadorDemoSeeder extends Seeder
                 'nombre_usuario' => $nombre,
                 'contrasena_usuario' => Hash::make('password123'),
                 'telefono_usuario' => $telefono,
+                'iban_usuario' => $iban,
+                'stripe_account_id' => 'acct_manual_' . uniqid(),
+                'stripe_status' => 'active',
                 'activo_usuario' => true,
                 'creado_usuario' => Carbon::now(),
                 'actualizado_usuario' => Carbon::now(),

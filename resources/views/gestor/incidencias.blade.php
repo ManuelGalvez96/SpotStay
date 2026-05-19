@@ -68,6 +68,13 @@
     </div>
 </div>
 
+@if(session('error'))
+    <div class="mensaje-estado mensaje-error" data-flash-error="{{ session('error') }}">{{ session('error') }}</div>
+@endif
+@if(session('success'))
+    <div class="mensaje-estado mensaje-ok" data-flash-success="{{ session('success') }}">{{ session('success') }}</div>
+@endif
+
 <div class="incidencias-tabla-wrap" id="incidenciasTablaWrap">
     <div class="card-admin card-con-franja">
         <div class="card-franja"></div>
@@ -178,4 +185,16 @@
 
 @section('scripts')
 <script src="{{ asset('js/gestor/incidencias-filtros.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const flashSuccess = document.querySelector('[data-flash-success]');
+    const flashError = document.querySelector('[data-flash-error]');
+    if (flashSuccess && flashSuccess.dataset.flashSuccess && window.swalSuccess) {
+        swalSuccess('Éxito', flashSuccess.dataset.flashSuccess);
+    }
+    if (flashError && flashError.dataset.flashError && window.swalError) {
+        swalError('Error', flashError.dataset.flashError);
+    }
+});
+</script>
 @endsection

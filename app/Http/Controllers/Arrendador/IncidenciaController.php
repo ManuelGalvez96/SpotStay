@@ -366,8 +366,8 @@ class IncidenciaController extends Controller
         $idGasto = DB::table('tbl_gasto')->insertGetId([
             'id_propiedad_fk' => $incidencia->id_propiedad,
             'id_gestor_fk' => $incidencia->id_gestor,
-            'concepto_gasto' => 'Incidencia #' . $idIncidencia,
-            'categoria_gasto' => 'incidencia',
+            'concepto_gasto' => 'Reparación: ' . $incidencia->titulo_incidencia,
+            'categoria_gasto' => 'reparacion',
             'importe_estimado' => $incidencia->presupuesto_importe_incidencia,
             'ambito_gasto' => 'propiedad',
             'pagador_gasto' => $responsablePago,

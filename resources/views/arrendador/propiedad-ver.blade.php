@@ -170,13 +170,13 @@
     @if (count($fotos) > 0)
         <div class="gallery">
             <div class="gallery-main" id="galeria-principal">
-                <img src="{{ asset('storage/' . $fotos->first()->ruta_foto) }}" alt="{{ $propiedad->titulo_propiedad }}" />
+                <img src="{{ asset('img/' . $fotos->first()->ruta_foto) }}" alt="{{ $propiedad->titulo_propiedad }}" />
             </div>
             @if (count($fotos) > 1)
                 <div class="gallery-thumbnails">
                     @foreach ($fotos as $foto)
-                        <div class="thumbnail" onclick="cambiarGaleria('{{ asset('storage/' . $foto->ruta_foto) }}')">
-                            <img src="{{ asset('storage/' . $foto->ruta_foto) }}" alt="Miniatura" />
+                        <div class="thumbnail" onclick="cambiarGaleria('{{ asset('img/' . $foto->ruta_foto) }}')">
+                            <img src="{{ asset('img/' . $foto->ruta_foto) }}" alt="Miniatura" />
                         </div>
                     @endforeach
                 </div>

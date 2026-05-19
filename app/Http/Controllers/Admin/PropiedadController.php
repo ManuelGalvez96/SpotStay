@@ -8,10 +8,18 @@ use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Services\ActividadService;
 use App\Services\PdfMonkeyService;
 
 class PropiedadController extends Controller
 {
+    private $actividadService;
+
+    public function __construct()
+    {
+        $this->actividadService = new ActividadService();
+    }
+
     public function nueva()
     {
         return view('admin.propiedades-crear');
@@ -222,6 +230,17 @@ class PropiedadController extends Controller
                 'actualizado_propiedad' => Carbon::now(),
             ]);
 
+        if ($propiedadExistente->estado_propiedad !== $datos['estado'] && $propiedadExistente->id_gestor_fk) {
+            $this->actividadService->propiedadEstadoCambiado(
+                $propiedadExistente->id_gestor_fk,
+                $id,
+                $datos['titulo'],
+                $propiedadExistente->estado_propiedad,
+                $datos['estado'],
+                'Admin'
+            );
+        }
+
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
@@ -418,6 +437,17 @@ class PropiedadController extends Controller
             ->where('id_propiedad', $id)
             ->update(['estado_propiedad' => 'inactiva']);
 
+        if ($propiedad->id_gestor_fk) {
+            $this->actividadService->propiedadEstadoCambiado(
+                $propiedad->id_gestor_fk,
+                $id,
+                $propiedad->titulo_propiedad,
+                $propiedad->estado_propiedad,
+                'inactiva',
+                'Admin'
+            );
+        }
+
         return response()->json(['success' => true]);
     }
 
@@ -605,7 +635,7 @@ class PropiedadController extends Controller
     {
         $propiedad = DB::table('tbl_propiedad')
             ->where('id_propiedad', $id)
-            ->select('id_propiedad')
+            ->select('id_propiedad', 'estado_propiedad', 'id_gestor_fk', 'titulo_propiedad')
             ->first();
 
         if (!$propiedad) {

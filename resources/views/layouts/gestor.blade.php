@@ -37,6 +37,15 @@
             <button class="btn-nav-icon {{ request()->is('gestor/propiedades*') ? 'activo' : '' }}" data-ruta="/gestor/propiedades" title="Propiedades asignadas">
                 <i class="bi bi-house"></i>
             </button>
+<<<<<<< HEAD
+=======
+            <button class="btn-nav-icon {{ request()->is('gestor/mensajes*') ? 'activo' : '' }}" data-ruta="/gestor/mensajes" title="Mensajes">
+                <i class="bi bi-chat-dots"></i>
+            </button>
+            <button class="btn-nav-icon {{ request()->is('gestor/actividad*') ? 'activo' : '' }}" data-ruta="/gestor/actividad" title="Actividad">
+                <i class="bi bi-activity"></i>
+            </button>
+>>>>>>> 6129907e97013f3e80a43b475b48bc4a6d9c434e
         </div>
 
         <div class="topbar-der">
@@ -50,7 +59,7 @@
                 <i class="bi bi-chevron-down chevron-admin"></i>
 
                 <div class="admin-dropdown" id="adminDropdown">
-                    <button class="dropdown-item">Perfil</button>
+                    <a class="dropdown-item" href="{{ route('gestor.perfil') }}">Perfil</a>
                     <button class="dropdown-item dropdown-item-logout" id="btnLogout">Cerrar sesión</button>
                 </div>
             </div>

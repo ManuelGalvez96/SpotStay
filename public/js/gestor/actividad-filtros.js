@@ -1,8 +1,8 @@
 (function () {
-    var formId = 'incidenciasFiltrosForm';
-    var filtersWrapId = 'incidenciasFiltrosWrap';
-    var tableWrapId = 'incidenciasTablaWrap';
-    var mobileListSelector = '.incidencias-lista-mobile';
+    var formId = 'actividadFiltrosForm';
+    var filtersWrapId = 'actividadFiltrosWrap';
+    var timelineWrapId = 'actividadTimelineWrap';
+    var timelineSelector = '.timeline';
     var debounceTimer = null;
 
     function getForm() {
@@ -33,25 +33,25 @@
             currentFilters.replaceWith(nextFilters);
         }
 
-        var currentTable = document.getElementById(tableWrapId);
-        var nextTable = doc.getElementById(tableWrapId);
-        if (currentTable && nextTable) {
+        var currentTimeline = document.getElementById(timelineWrapId);
+        var nextTimeline = doc.getElementById(timelineWrapId);
+        if (currentTimeline && nextTimeline) {
             if (appendCards) {
-                var currentList = currentTable.querySelector(mobileListSelector);
-                var nextList = nextTable.querySelector(mobileListSelector);
-                if (currentList && nextList) {
-                    var cards = nextList.querySelectorAll('.incidencia-card');
-                    cards.forEach(function (card) {
-                        currentList.appendChild(card);
+                var currentTimelineDiv = currentTimeline.querySelector(timelineSelector);
+                var nextTimelineDiv = nextTimeline.querySelector(timelineSelector);
+                if (currentTimelineDiv && nextTimelineDiv) {
+                    var items = nextTimelineDiv.querySelectorAll('.timeline-link');
+                    items.forEach(function (item) {
+                        currentTimelineDiv.appendChild(item);
                     });
                 }
-                var currentPagination = currentTable.querySelector('.paginacion-cargar-mas');
-                var nextPagination = nextTable.querySelector('.paginacion-cargar-mas');
+                var currentPagination = currentTimeline.querySelector('.paginacion-cargar-mas');
+                var nextPagination = nextTimeline.querySelector('.paginacion-cargar-mas');
                 if (currentPagination && nextPagination) {
                     currentPagination.replaceWith(nextPagination);
                 }
             } else {
-                currentTable.replaceWith(nextTable);
+                currentTimeline.replaceWith(nextTimeline);
             }
         }
     }
@@ -100,22 +100,22 @@
             fetchAndRender(buildUrlFromForm(form), false);
         };
 
-        var textInputs = form.querySelectorAll('input[type="text"]');
-        textInputs.forEach(function (input) {
-            input.oninput = function () {
+        var searchInput = form.querySelector('input[type="search"]');
+        if (searchInput) {
+            searchInput.oninput = function () {
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(function () {
                     fetchAndRender(buildUrlFromForm(form), false);
                 }, 350);
             };
-        });
+        }
 
-        var dateInput = form.querySelector('input[type="date"]');
-        if (dateInput) {
-            dateInput.onchange = function () {
+        var dateInputs = form.querySelectorAll('input[type="date"]');
+        dateInputs.forEach(function (input) {
+            input.onchange = function () {
                 fetchAndRender(buildUrlFromForm(form), false);
             };
-        }
+        });
 
         var selects = form.querySelectorAll('select');
         selects.forEach(function (select) {

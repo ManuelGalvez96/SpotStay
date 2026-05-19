@@ -20,10 +20,12 @@
 <div class="central-grid incidencias-filtros-wrap" id="incidenciasFiltrosWrap">
     <div class="card-admin card-con-franja">
         <div class="card-franja"></div>
-        <div class="card-header-admin card-header-gradient">
-            <span>Filtros</span>
+        <div class="card-header-admin card-header-gradient" onclick="toggleFiltros()" style="cursor:pointer;">
+            <span><i class="bi bi-funnel"></i> Filtros de incidencias</span>
+            <span class="filtros-toggle" id="filtrosToggleIcon"><i class="bi bi-chevron-down"></i></span>
         </div>
 
+        <div id="filtrosBody">
         <form method="GET" action="{{ route('gestor.incidencias') }}" class="form-filtros-admin" id="incidenciasFiltrosForm">
             @if(($propiedadId ?? 0) > 0)
                 <input type="hidden" name="propiedad_id" value="{{ $propiedadId }}">
@@ -51,7 +53,12 @@
 
             <input type="date" name="fecha" value="{{ $fecha }}">
 
+            <div class="acciones-filtros-admin acciones-filtros-mobile">
+                <button type="submit" class="btn-aplicar-admin">Filtrar</button>
+                <a href="{{ route('gestor.incidencias') }}" class="btn-limpiar-admin">Limpiar</a>
+            </div>
         </form>
+        </div>
     </div>
 
     <div class="card-admin card-con-franja">
@@ -130,12 +137,12 @@
             </table>
         </div>
 
-        <!-- Vista mobile: lista compacta -->
+        <!-- Vista mobile: cards -->
         <div class="incidencias-lista-mobile">
             @forelse($incidencias as $incidencia)
                 @php
-                    $iniciales = strtoupper(substr($incidencia->titulo_incidencia, 0, 2));
                     $prioridad = strtolower($incidencia->prioridad_incidencia);
+                    $badgePrioridad = $prioridad === 'urgente' ? 'alta' : $prioridad;
                     $badgeEstado = match($incidencia->estado_incidencia) {
                         'abierta' => 'pendiente',
                         'en_proceso' => 'activo',
@@ -146,36 +153,37 @@
                         default => 'rechazado'
                     };
                 @endphp
-                <div class="solicitud-item">
-                    <div class="solicitud-avatar" style="background:#EF4444;">{{ $iniciales }}</div>
-                    <div class="solicitud-info">
-                        <p class="solicitud-nombre">{{ $incidencia->titulo_incidencia }}</p>
-                        <p class="solicitud-ciudad">{{ $incidencia->direccion_propiedad }}</p>
+                <a href="{{ route('gestor.incidencias.show', ['id' => $incidencia->id_incidencia]) }}" class="incidencia-card">
+                    <div class="incidencia-card-header">
+                        <span class="incidencia-card-titulo">{{ $incidencia->titulo_incidencia }}</span>
+                        <span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span>
                     </div>
-                    <div class="solicitud-meta">
-                        <span class="solicitud-tiempo">{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->diffForHumans() }}</span>
-                        <a href="{{ route('gestor.incidencias.show', ['id' => $incidencia->id_incidencia]) }}" class="btn-revisar">Abrir →</a>
+                    <p class="incidencia-card-dir">{{ $incidencia->direccion_propiedad }}</p>
+                    <p class="incidencia-card-persona">{{ $incidencia->nombre_arrendador }}</p>
+                    <div class="incidencia-card-divider"></div>
+                    <div class="incidencia-card-footer">
+                        <div class="incidencia-card-meta">
+                            <span class="incidencia-card-prioridad">Prioridad: <strong>{{ ucfirst($prioridad) }}</strong></span>
+                            <span class="incidencia-card-fecha">{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y') }}</span>
+                        </div>
+                        <span class="btn-revisar">Ver detalle →</span>
                     </div>
-                </div>
+                </a>
             @empty
                 <p class="tarjeta-vacia">No hay incidencias con los filtros seleccionados.</p>
             @endforelse
         </div>
 
         @if($incidencias->lastPage() > 1)
-            <div class="paginacion-admin">
-                @if($incidencias->onFirstPage())
-                    <span class="pagina-btn-admin disabled">Anterior</span>
-                @else
-                    <a class="pagina-btn-admin" href="{{ $incidencias->previousPageUrl() }}">Anterior</a>
-                @endif
-
-                <span class="pagina-info-admin">Página {{ $incidencias->currentPage() }} de {{ $incidencias->lastPage() }}</span>
-
+            <div class="paginacion-admin paginacion-cargar-mas"
+                 data-current-page="{{ $incidencias->currentPage() }}"
+                 data-last-page="{{ $incidencias->lastPage() }}">
                 @if($incidencias->hasMorePages())
-                    <a class="pagina-btn-admin" href="{{ $incidencias->nextPageUrl() }}">Siguiente</a>
+                    <button class="btn-cargar-mas" data-next-url="{{ $incidencias->nextPageUrl() }}" type="button">
+                        Cargar más ({{ $incidencias->currentPage() }} / {{ $incidencias->lastPage() }})
+                    </button>
                 @else
-                    <span class="pagina-btn-admin disabled">Siguiente</span>
+                    <span class="cargar-mas-fin">Todas las incidencias cargadas</span>
                 @endif
             </div>
         @endif
@@ -195,6 +203,20 @@ document.addEventListener('DOMContentLoaded', function() {
     if (flashError && flashError.dataset.flashError && window.swalError) {
         swalError('Error', flashError.dataset.flashError);
     }
+
+    const filtrosBody = document.getElementById('filtrosBody');
+    if (filtrosBody && window.innerWidth <= 768) {
+        filtrosBody.classList.add('collapsed');
+    }
 });
+
+function toggleFiltros() {
+    const body = document.getElementById('filtrosBody');
+    const icon = document.getElementById('filtrosToggleIcon');
+    if (body && icon) {
+        body.classList.toggle('collapsed');
+        icon.classList.toggle('rotated');
+    }
+}
 </script>
 @endsection

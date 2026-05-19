@@ -53,27 +53,52 @@ class PropiedadSeeder extends Seeder
             return;
         }
 
+        $mGestor = $gestores->firstWhere('email_usuario', 'mgestor@spotstay.com');
+        $otrosGestores = $gestores->filter(function ($g) {
+            return $g->email_usuario !== 'mgestor@spotstay.com';
+        })->values();
+
+        $this->crearPropiedadesParaArrendadores($arrendadores, $mGestor, $otrosGestores, $ciudades);
+    }
+
+    private function crearPropiedadesParaArrendadores(
+        array $arrendadores,
+        ?Usuario $mGestor,
+        $otrosGestores,
+        array $ciudades
+    ): void {
         $propiedadesData = [];
         $counter = 0;
+        $estados = ['publicada', 'alquilada', 'borrador', 'publicada', 'alquilada'];
 
-        foreach ($arrendadores as $arrendadorData) {
+        foreach ($arrendadores as $i => $arrendadorData) {
             $arrendador = Usuario::where('email_usuario', $arrendadorData['email'])->first();
-
             if (!$arrendador) {
                 continue;
             }
 
-            $gestor = $gestores->get($counter % $gestores->count());
+            $esPar = $i % 2 === 0;
 
-            // Primera: estado 'borrador'
+            if ($mGestor && ($i < 10 || $esPar)) {
+                $gestor = $mGestor;
+            } else {
+                $gestor = $otrosGestores->get($i % max($otrosGestores->count(), 1));
+            }
+
             $ciudad1 = $ciudades[$counter % count($ciudades)];
+            $estado1 = $mGestor && $gestor->id_usuario === $mGestor->id_usuario && $i < 8
+                ? $estados[$i % count($estados)]
+                : 'borrador';
+
+            $baños1 = rand(1, 3);
+
             $propiedadesData[] = [
                 'arrendador_id' => $arrendador->id_usuario,
                 'gestor_id' => $gestor->id_usuario,
                 'titulo' => $this->generarTitulo($counter),
                 'calle' => $this->generarCalle($counter),
-                'numero' => rand(1, 999),
-                'piso' => rand(0, 6),
+                'numero' => 100 + $counter,
+                'piso' => rand(0, 5),
                 'puerta' => chr(65 + rand(0, 4)),
                 'ciudad' => $ciudad1,
                 'cp' => $this->generarCP($ciudad1),
@@ -83,21 +108,39 @@ class PropiedadSeeder extends Seeder
                 'precio' => rand(60, 250) * 10,
                 'tipo' => $this->generarTipo($counter),
                 'habitaciones' => rand(1, 4),
+                'banos' => $baños1,
                 'metros' => rand(45, 120),
-                'estado' => 'borrador',
+                'estado' => $estado1,
+                'amueblado' => (bool) rand(0, 1),
+                'ascensor' => (bool) rand(0, 1),
+                'piscina' => (bool) rand(0, 1),
+                'terraza' => (bool) rand(0, 1),
+                'garaje' => (bool) rand(0, 1),
+                'aire_acondicionado' => (bool) rand(0, 1),
+                'calefaccion' => (bool) rand(0, 1),
+                'trastero' => (bool) rand(0, 1),
+                'adicional' => rand(0, 3) === 0 ? 'Trastero incluido. Zona tranquila.' : null,
                 'creado' => now()->subDays(rand(30, 90)),
             ];
 
-            // Segunda: estado 'alquilada' o 'publicada'
-            $gestor2 = $gestores->get(($counter + 1) % $gestores->count());
+            $gestor2 = $mGestor && ($i < 8 || ($i >= 10 && !$esPar))
+                ? $mGestor
+                : $otrosGestores->get(($i + 1) % max($otrosGestores->count(), 1));
+
             $ciudad2 = $ciudades[($counter + 1) % count($ciudades)];
+            $estado2 = $mGestor && $gestor2->id_usuario === $mGestor->id_usuario && $i < 6
+                ? ($i % 2 === 0 ? 'alquilada' : 'publicada')
+                : ($counter % 2 === 0 ? 'alquilada' : 'publicada');
+
+            $baños2 = rand(1, 3);
+
             $propiedadesData[] = [
                 'arrendador_id' => $arrendador->id_usuario,
                 'gestor_id' => $gestor2->id_usuario,
                 'titulo' => $this->generarTitulo($counter + 1),
                 'calle' => $this->generarCalle($counter + 1),
-                'numero' => rand(1, 999),
-                'piso' => rand(0, 6),
+                'numero' => 200 + $counter,
+                'piso' => rand(0, 5),
                 'puerta' => chr(65 + rand(0, 4)),
                 'ciudad' => $ciudad2,
                 'cp' => $this->generarCP($ciudad2),
@@ -107,22 +150,36 @@ class PropiedadSeeder extends Seeder
                 'precio' => rand(60, 250) * 10,
                 'tipo' => $this->generarTipo($counter + 1),
                 'habitaciones' => rand(2, 5),
+                'banos' => $baños2,
                 'metros' => rand(60, 180),
-                'estado' => $counter % 2 === 0 ? 'alquilada' : 'publicada',
+                'estado' => $estado2,
+                'amueblado' => (bool) rand(0, 1),
+                'ascensor' => true,
+                'piscina' => $i % 3 === 0,
+                'terraza' => $i % 2 === 0,
+                'garaje' => (bool) rand(0, 1),
+                'aire_acondicionado' => true,
+                'calefaccion' => true,
+                'trastero' => $i % 4 === 0,
+                'adicional' => rand(0, 2) === 0 ? 'Aire acondicionado y calefacción central.' : null,
                 'creado' => now()->subDays(rand(5, 60)),
             ];
 
-            // Tercera propiedad
             if ($counter % 3 === 0) {
-                $gestor3 = $gestores->get(($counter + 2) % $gestores->count());
+                $gestor3 = $mGestor && $i < 5
+                    ? $mGestor
+                    : $otrosGestores->get(($i + 2) % max($otrosGestores->count(), 1));
+
                 $ciudad3 = $ciudades[($counter + 2) % count($ciudades)];
+                $baños3 = rand(1, 4);
+
                 $propiedadesData[] = [
                     'arrendador_id' => $arrendador->id_usuario,
                     'gestor_id' => $gestor3->id_usuario,
                     'titulo' => $this->generarTitulo($counter + 2) . ' Premium',
                     'calle' => $this->generarCalle($counter + 2),
-                    'numero' => rand(1, 999),
-                    'piso' => rand(0, 6),
+                    'numero' => 300 + $counter,
+                    'piso' => rand(0, 4),
                     'puerta' => chr(65 + rand(0, 4)),
                     'ciudad' => $ciudad3,
                     'cp' => $this->generarCP($ciudad3),
@@ -132,8 +189,18 @@ class PropiedadSeeder extends Seeder
                     'precio' => rand(60, 180) * 10,
                     'tipo' => 'Casa',
                     'habitaciones' => rand(4, 6),
+                    'banos' => $baños3,
                     'metros' => rand(150, 250),
                     'estado' => 'alquilada',
+                    'amueblado' => true,
+                    'ascensor' => false,
+                    'piscina' => true,
+                    'terraza' => true,
+                    'garaje' => true,
+                    'aire_acondicionado' => true,
+                    'calefaccion' => true,
+                    'trastero' => true,
+                    'adicional' => 'Jardín privado y piscina comunitaria.',
                     'creado' => now()->subDays(rand(10, 120)),
                 ];
             }
@@ -146,12 +213,12 @@ class PropiedadSeeder extends Seeder
                 [
                     'titulo_propiedad' => $data['titulo'],
                     'calle_propiedad' => $data['calle'],
-                    'numero_propiedad' => $data['numero'],
+                    'numero_propiedad' => (string) $data['numero'],
                 ],
                 [
                     'id_arrendador_fk' => $data['arrendador_id'],
                     'id_gestor_fk' => $data['gestor_id'],
-                    'piso_propiedad' => $data['piso'],
+                    'piso_propiedad' => (string) $data['piso'],
                     'puerta_propiedad' => $data['puerta'],
                     'ciudad_propiedad' => $data['ciudad'],
                     'codigo_postal_propiedad' => $data['cp'],
@@ -160,9 +227,19 @@ class PropiedadSeeder extends Seeder
                     'descripcion_propiedad' => $data['descripcion'],
                     'precio_propiedad' => $data['precio'],
                     'tipo_propiedad' => $data['tipo'],
-                    'habitaciones_propiedad' => $data['habitaciones'],
+                    'habitaciones_propiedad' => (string) $data['habitaciones'],
+                    'banos_propiedad' => $data['banos'],
                     'metros_cuadrados_propiedad' => $data['metros'],
                     'estado_propiedad' => $data['estado'],
+                    'amueblado_propiedad' => $data['amueblado'],
+                    'ascensor_propiedad' => $data['ascensor'],
+                    'piscina_propiedad' => $data['piscina'],
+                    'terraza_propiedad' => $data['terraza'],
+                    'garaje_propiedad' => $data['garaje'],
+                    'aire_acondicionado_propiedad' => $data['aire_acondicionado'],
+                    'calefaccion_propiedad' => $data['calefaccion'],
+                    'trastero_propiedad' => $data['trastero'],
+                    'adicional_propiedad' => $data['adicional'],
                     'creado_propiedad' => $data['creado'],
                     'actualizado_propiedad' => $data['creado'],
                 ]

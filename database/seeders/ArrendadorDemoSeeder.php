@@ -17,7 +17,8 @@ class ArrendadorDemoSeeder extends Seeder
         $carlosId = $this->upsertUsuario(
             'Carlos Garcia',
             'carlos@spotstay.com',
-            '+34 611 222 333'
+            '+34 611 222 333',
+            'ES' . str_pad(rand(0, 9999999999999999), 16, '0', STR_PAD_LEFT)
         );
 
         if ($rolArrendador) {
@@ -114,24 +115,22 @@ class ArrendadorDemoSeeder extends Seeder
             ]
         );
 
-        DB::table('tbl_alquiler')->updateOrInsert(
+        DB::table('tbl_solicitud_alquiler')->updateOrInsert(
             [
                 'id_propiedad_fk' => $propiedad2Id,
-                'id_inquilino_fk' => $pedroId,
+                'id_usuario_fk' => $pedroId,
             ],
             [
-                'id_admin_aprueba_fk' => DB::table('tbl_usuario')->where('email_usuario', 'admin@spotstay.com')->value('id_usuario'),
-                'fecha_inicio_alquiler' => '2025-02-01',
-                'fecha_fin_alquiler' => '2026-02-01',
-                'estado_alquiler' => 'pendiente',
-                'aprobado_alquiler' => null,
-                'creado_alquiler' => Carbon::now(),
-                'actualizado_alquiler' => Carbon::now(),
+                'fecha_inicio_solicitud_alquiler' => '2025-02-01',
+                'mensaje_solicitud_alquiler' => 'Hola Carlos, me gustaría mucho alquilar este estudio en Fuencarral. Tengo contrato indefinido y solvencia demostrable. ¡Saludos!',
+                'estado_solicitud_alquiler' => 'pendiente',
+                'creado_solicitud_alquiler' => Carbon::now(),
+                'actualizado_solicitud_alquiler' => Carbon::now(),
             ]
         );
     }
 
-    private function upsertUsuario(string $nombre, string $email, string $telefono): int
+    private function upsertUsuario(string $nombre, string $email, string $telefono, string $iban = null): int
     {
         DB::table('tbl_usuario')->updateOrInsert(
             ['email_usuario' => $email],
@@ -139,6 +138,9 @@ class ArrendadorDemoSeeder extends Seeder
                 'nombre_usuario' => $nombre,
                 'contrasena_usuario' => Hash::make('password123'),
                 'telefono_usuario' => $telefono,
+                'iban_usuario' => $iban,
+                'stripe_account_id' => 'acct_manual_' . uniqid(),
+                'stripe_status' => 'active',
                 'activo_usuario' => true,
                 'creado_usuario' => Carbon::now(),
                 'actualizado_usuario' => Carbon::now(),

@@ -1,0 +1,103 @@
+.imagen-carrusel-ampliable {
+    cursor: pointer;
+    height: 400px;
+    object-fit: cover;
+    transition: opacity 0.3s ease;
+}
+
+/* Modal Visor de Fotos */
+.modal-visor-fotos .modal-dialog {
+    max-width: fit-content !important;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    min-height: 100vh; /* Asegura el centrado vertical estricto */
+}
+
+.modal-visor-fotos .modal-content {
+    background-color: transparent;
+    border: none;
+    width: fit-content;
+    box-shadow: none;
+    position: relative;
+}
+
+.btn-cerrar-visor-modal {
+    position: absolute;
+    top: -45px;
+    right: 0;
+    z-index: 1060;
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-cerrar-visor-modal:hover {
+    background: #ffffff;
+    color: #000000;
+    transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+    .btn-cerrar-visor-modal {
+        top: -45px;
+        right: 5px;
+        width: 38px;
+        height: 38px;
+        font-size: 1.1rem;
+    }
+}
+
+.modal-visor-fotos .modal-body {
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: fit-content;
+}
+
+.imagen-visor-modal {
+    max-width: 90vw; /* Deja un margen del 10% del ancho de la pantalla */
+    max-height: 85vh; /* Deja un margen arriba y abajo */
+    border-radius: 8px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+    object-fit: contain;
+}
+
+/* Estilos de botones de carrusel extraídos de la vista */
+.carrusel-btn-navegacion {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    padding: 20px;
+}
+
+.carrusel-contenedor-inner {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.carrusel-estado-vacio {
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 12px;
+    color: #6c757d;
+}
+
+.carrusel-estado-vacio i {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}

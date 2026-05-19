@@ -123,7 +123,6 @@
                             </select>
                         </div>
 
-                        <button class="boton-aplicar" type="button" id="boton-aplicar-filtros">Aplicar filtros</button>
                         <button class="boton-aplicar" type="button" id="boton-borrar-filtros">Borrar filtros</button>
                     </div>
                 </form>

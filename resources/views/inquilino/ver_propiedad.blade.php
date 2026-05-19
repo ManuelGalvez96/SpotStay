@@ -4,10 +4,13 @@
 
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/inquilino/ver_propiedad.css') }}" />
+<link rel="stylesheet" href="{{ asset('css/visor_fotos.css') }}?v=2" />
 @endsection
 
 @section('content')
-<div class="contenedor-ver-propiedad">
+<div class="contenedor-ver-propiedad"
+    data-mensaje-exito="{{ session('success') }}"
+    data-mensaje-error="{{ session('error') }}">
     <!-- Botón Volver -->
     <div class="navegacion-superior">
         <a href="{{ route('gestionar_propiedades') }}" class="btn-volver">
@@ -37,21 +40,36 @@
 
         <!-- Columna Izquierda: Info y Fotos -->
         <div class="columna-izquierda">
-            <!-- Galería Simple -->
-            <div class="galeria-detalle">
+            <!-- Carrusel de Fotos Bootstrap -->
+            <div class="galeria-detalle mb-4">
                 @if ($fotos->count() > 0)
-                <div class="foto-principal">
-                    <img src="{{ $fotoPrincipal }}" alt="Imagen principal de {{ $alquiler->titulo_propiedad }}" class="foto-principal-imagen">
-                </div>
-                <div class="miniaturas">
-                    @foreach ($fotos as $foto)
-                    <div class="miniatura">
-                        <img src="{{ $foto->url_foto }}" alt="Miniatura de {{ $alquiler->titulo_propiedad }}" class="miniatura-imagen">
+                <div id="carouselPropiedadInquilino" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-indicators">
+                        @foreach ($fotos as $index => $foto)
+                            <button type="button" data-bs-target="#carouselPropiedadInquilino" data-bs-slide-to="{{ $index }}" class="{{ $index == 0 ? 'active' : '' }}" aria-current="{{ $index == 0 ? 'true' : 'false' }}" aria-label="Slide {{ $index + 1 }}"></button>
+                        @endforeach
                     </div>
-                    @endforeach
+                    <div class="carousel-inner carrusel-contenedor-inner">
+                        @foreach ($fotos as $index => $foto)
+                            <div class="carousel-item {{ $index == 0 ? 'active' : '' }}">
+                                <img src="{{ $foto->url_foto }}" class="d-block w-100 imagen-carrusel-ampliable" alt="Imagen {{ $index + 1 }} de {{ $alquiler->titulo_propiedad }}" data-bs-toggle="modal" data-bs-target="#modalVisorFotos-{{ $index }}">
+                            </div>
+                        @endforeach
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselPropiedadInquilino" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon carrusel-btn-navegacion" aria-hidden="true"></span>
+                        <span class="visually-hidden">Anterior</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselPropiedadInquilino" data-bs-slide="next">
+                        <span class="carousel-control-next-icon carrusel-btn-navegacion" aria-hidden="true"></span>
+                        <span class="visually-hidden">Siguiente</span>
+                    </button>
                 </div>
                 @else
-                <div class="foto-principal placeholder">No hay fotos disponibles</div>
+                <div class="carrusel-estado-vacio">
+                    <i class="bi bi-image text-muted"></i>
+                    <span>No hay fotos disponibles para esta propiedad.</span>
+                </div>
                 @endif
             </div>
 
@@ -114,126 +132,26 @@
                         </div>
                 </div>
             </div>
-            @elseif ($esIndefinido)
-            {{-- KPI Pagos Indefinido --}}
-            <div class="card-gestion pago">
-                <div class="card-icon">
-                    <i class="bi bi-calendar-check"></i>
-                </div>
-                <div class="card-body">
-                    @if ($diasRestantesMes === 0 && $estadoPagoActual === 'pendiente')
-                    <span class="label pago-requerido">¡PAGO REQUERIDO!</span>
-                    <span class="valor-kpi pago-requerido">HOY</span>
-                    @if ($numPagosAtrasados > 0)
-                    <p class="nota pago-requerido"><strong>¡Paga ya!</strong> Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso más este mes (Cuota: <strong>{{ number_format($montoCuotaActual, 2, ',', '.') }}€</strong>).</p>
-                    @else
-                    <p class="nota pago-requerido"><strong>¡Paga ya!</strong> El plazo de este mes vence hoy.</p>
-                    @endif
-                    <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId ?? 0) }}?tipo=alquiler" class="form-pago-cuota" data-monto="{{ number_format($montoCuotaActual, 2, ',', '.') }}€">
-                        @csrf
-                        <button type="button" id="boton-pagar" class="btn-accion btn-pago bg-pago-requerido" {{ empty($cuotaPendienteId) ? 'disabled' : '' }}>Pagar Cuota Ahora</button>
-                    </form>
-                    @elseif ($estadoPagoActual === 'pagado')
-                    <span class="label pago-exito">¡ESTÁS AL DÍA!</span>
-                    <span class="valor-kpi pago-exito"><i class="bi bi-check-circle-fill icono-check-pago"></i></span>
-                    <p class="nota pago-exito">Pago del mes actual confirmado.<br>Próximo recibo: <strong>{{ \Carbon\Carbon::parse($fechaProximoPago)->format('d/m/Y') }}</strong></p>
-                    <p class="nota mt-10 pago-exito">Estado de cuenta: <strong>Excelente</strong></p>
-                    @else
-                    <span class="label">PRÓXIMO PAGO EN</span>
-                    <span class="valor-kpi">{{ $diasRestantesMes }} días</span>
-                    @if ($numPagosAtrasados > 0)
-                    <p class="nota pago-aviso">⚠️ Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso.<br> El pago pendiente es de <strong>{{ number_format($montoCuotaActual, 2, ',', '.') }}€</strong>.</p>
-                    @else
-                    <p class="nota pago-aviso">Vence a final de mes.</p>
-                    @endif
-                    <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId ?? 0) }}?tipo=alquiler" class="form-pago-cuota" data-monto="{{ number_format($montoCuotaActual, 2, ',', '.') }}€">
-                        @csrf
-                        <button type="button" id="boton-pagar" class="btn-accion btn-pago" {{ empty($cuotaPendienteId) ? 'disabled' : '' }}>Pagar Ahora</button>
-                    </form>
-                    @endif
-                    <button type="button" class="btn-accion w-100 mt-3 btn-ver-historial" data-bs-toggle="modal" data-bs-target="#modalHistorialPagos">
-                        <i class="bi bi-clock-history"></i> Ver Historial de Pagos
-                    </button>
-                </div>
-            </div>
-            @else
-            {{-- KPI Pagos normal --}}
-            <div class="card-gestion pago">
-                <div class="card-icon">
-                    <i class="bi bi-calendar-check"></i>
-                </div>
-                <div class="card-body">
-                    @if ($diasParaPago === 0 && $estadoPagoActual === 'pendiente')
-                    <span class="label pago-requerido">¡PAGO REQUERIDO!</span>
-                    <span class="valor-kpi pago-requerido">HOY</span>
-                    @if ($numPagosAtrasados > 0)
-                    <p class="nota pago-requerido"><strong>¡Paga ya!</strong> Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso más este mes (Cuota: <strong>{{ number_format($montoCuotaActual, 2, ',', '.') }}€</strong>).</p>
-                    @else
-                    <p class="nota pago-requerido"><strong>¡Paga ya!</strong> El plazo vence hoy.</p>
-                    @endif
-                    <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId ?? 0) }}?tipo=alquiler" class="form-pago-cuota" data-monto="{{ number_format($montoCuotaActual, 2, ',', '.') }}€">
-                        @csrf
-                        <button type="button" id="boton-pagar" class="btn-accion btn-pago bg-pago-requerido" {{ empty($cuotaPendienteId) ? 'disabled' : '' }}>Pagar Cuota Ahora</button>
-                    </form>
-                    @elseif ($estadoPagoActual === 'pagado')
-                    <span class="label pago-exito">¡ESTÁS AL DÍA!</span>
-                    <span class="valor-kpi pago-exito"><i class="bi bi-check-circle-fill icono-check-pago"></i></span>
-                    <p class="nota pago-exito">Pago confirmado. No tienes deudas pendientes.<br>Próximo recibo: <strong>{{ \Carbon\Carbon::parse($fechaProximoPago)->format('d/m/Y') }}</strong></p>
-                    <p class="nota mt-10 pago-exito">Estado de cuenta: <strong>Excelente</strong></p>
-                    @else
-                    <span class="label">PRÓXIMO PAGO EN</span>
-                    <span class="valor-kpi">{{ $diasParaPago }} días</span>
-                    @if ($numPagosAtrasados > 0)
-                    <p class="nota pago-aviso">⚠️ Tienes <strong>{{ $numPagosAtrasados }} meses</strong> de retraso. Se acumulará un total de <strong>{{ number_format($totalDeuda, 2, ',', '.') }}€</strong>.</p>
-                    @else
-                    <p class="nota">Vence el {{ \Carbon\Carbon::parse($fechaProximoPago)->format('d/m/Y') }}</p>
-                    @endif
-
-                    @if (!empty($cuotaPendienteId))
-                    <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId) }}?tipo=alquiler" class="form-pago-cuota" data-monto="{{ number_format($montoCuotaActual, 2, ',', '.') }}€">
-                        @csrf
-                        <button class="btn-accion btn-pago" type="button">Pagar Cuota Ahora</button>
-                    </form>
-                    @else
-                    <button class="btn-accion btn-pago" type="button" disabled>Sin cuotas pendientes</button>
-                    @endif
-                    @endif
-                    <button type="button" class="btn-accion w-100 mt-3 btn-ver-historial" data-bs-toggle="modal" data-bs-target="#modalHistorialPagos">
-                        <i class="bi bi-clock-history"></i> Ver Historial de Pagos
-                    </button>
-                </div>
-            </div>
             @endif
 
-            {{-- Tarjeta de Pagos Extras (Suministros) --}}
-            <div class="card-gestion pago suministros">
+            {{-- Tarjeta Única de Pagos y Gastos --}}
+            <div class="card-gestion pago">
                 <div class="card-icon">
-                    <i class="bi bi-lightning-charge"></i>
+                    <i class="bi bi-wallet2"></i>
                 </div>
                 <div class="card-body">
-                    <span class="label">PAGOS EXTRAS / SUMINISTROS</span>
-                    @if ($numGastosPendientes > 0)
-                    <span class="valor-kpi">{{ number_format($totalGastosPendientes, 2, ',', '.') }}€</span>
-                    <p class="nota">Tienes <strong>{{ $numGastosPendientes }} suministros</strong> pendientes:</p>
-                    <ul class="lista-suministros-limpia">
-                        @foreach($listaGastos as $gasto)
-                        <li class="item-suministro-pendiente-limpio">
-                            <span><i class="bi bi-dot"></i> {{ ucfirst($gasto->categoria_gasto) }}{{ !empty($gasto->concepto_gasto) ? ' - ' . $gasto->concepto_gasto : '' }}</span>
-                            @php
-                            $importeInd = $numInquilinos > 1 ? ($gasto->importe_detalle / $numInquilinos) : $gasto->importe_detalle;
-                            @endphp
-                            <strong>{{ number_format($importeInd, 2, ',', '.') }}€</strong>
-                        </li>
-                        @endforeach
-                    </ul>
-                    <form method="POST" action="{{ route('inquilino.pagar_cuota', $cuotaPendienteId ?? 0) }}?tipo=gasto" class="form-pago-cuota" data-monto="{{ number_format($totalGastosPendientes, 2, ',', '.') }}€">
-                        @csrf
-                        <button type="button" class="btn-accion btn-pago">Pagar Gastos Ahora</button>
-                    </form>
+                    <span class="label">PAGOS Y SUMINISTROS</span>
+                    @if ($totalDeuda > 0 || $totalGastosPendientes > 0)
+                        <span class="valor-kpi pago-requerido">{{ number_format($totalDeuda + $totalGastosPendientes, 2, ',', '.') }}€</span>
+                        <p class="nota">Tienes pagos pendientes de alquiler o suministros.</p>
                     @else
-                    <span class="valor-kpi pago-exito"><i class="bi bi-check-circle-fill"></i></span>
-                    <p class="nota pago-exito">No tienes suministros pendientes. ¡Al día!</p>
+                        <span class="valor-kpi pago-exito"><i class="bi bi-check-circle-fill"></i></span>
+                        <p class="nota pago-exito">Estás al día con todos tus pagos en esta propiedad.</p>
                     @endif
+                    
+                    <a href="{{ route('inquilino.historial_pagos', ['propiedad_id' => $alquiler->id_propiedad]) }}" class="btn-accion btn-pago mt-3" style="text-decoration: none; display: flex; justify-content: center; align-items: center;">
+                        <i class="bi bi-arrow-right-circle me-2"></i> Gestionar mis Gastos
+                    </a>
                 </div>
             </div>
 
@@ -355,74 +273,22 @@
     </div>
 </div>
 
-<!-- MODAL HISTORIAL DE PAGOS -->
-<div class="modal fade" id="modalHistorialPagos" tabindex="-1" aria-labelledby="modalHistorialPagosLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalHistorialPagosLabel"><i class="bi bi-clock-history"></i> Historial de Pagos</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-0">
-                <ul class="nav nav-tabs nav-fill" id="tabHistorial" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active tab-historial-btn" id="alquiler-tab" data-bs-toggle="tab" data-bs-target="#alquiler-history" type="button" role="tab" aria-controls="alquiler-history" aria-selected="true">
-                            <i class="bi bi-house-door"></i> Alquiler
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link tab-historial-btn" id="gastos-tab" data-bs-toggle="tab" data-bs-target="#gastos-history" type="button" role="tab" aria-controls="gastos-history" aria-selected="false">
-                            <i class="bi bi-lightning-charge"></i> Suministros
-                        </button>
-                    </li>
-                </ul>
-
-                <div class="tab-content" id="tabHistorialContent" data-id-alquiler="{{ $alquiler->id_alquiler }}">
-                    {{-- Historial Alquiler --}}
-                    <div class="tab-pane fade show active" id="alquiler-history" role="tabpanel" aria-labelledby="alquiler-tab">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="ps-3">Fecha</th>
-                                        <th>Concepto</th>
-                                        <th class="text-end">Importe</th>
-                                        <th class="text-center pe-3">Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {{-- Se carga vía fetch --}}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {{-- Historial Gastos --}}
-                    <div class="tab-pane fade" id="gastos-history" role="tabpanel" aria-labelledby="gastos-tab">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="ps-3">Fecha</th>
-                                        <th>Categoria(Concepto)</th>
-                                        <th class="text-end">Importe</th>
-                                        <th class="text-center pe-3">Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {{-- Se carga vía fetch --}}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+<!-- MODALES VISOR DE FOTOS BOOTSTRAP NATIVO -->
+@if ($fotos->count() > 0)
+    @foreach ($fotos as $index => $foto)
+    <div class="modal fade modal-visor-fotos" id="modalVisorFotos-{{ $index }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <button type="button" class="btn-cerrar-visor-modal" data-bs-dismiss="modal" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
+                <div class="modal-body">
+                    <img class="imagen-visor-modal" id="imagen-visor-modal-{{ $index }}" src="{{ $foto->url_foto }}" alt="Vista ampliada {{ $index + 1 }}">
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">Cerrar Historial</button>
             </div>
         </div>
     </div>
-</div>
+    @endforeach
+@endif
+
 @endsection
 
 @section('scripts')

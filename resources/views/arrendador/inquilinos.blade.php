@@ -1,27 +1,18 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inquilinos - Arrendador</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{{ asset('css/arrendador/inquilinos.css') }}" />
-</head>
-<body>
-<div class="pagina">
-    <header class="cabecera">
+@extends('layouts.arrendador')
+
+@section('titulo', 'Inquilinos - Arrendador')
+
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/arrendador/inquilinos.css') }}" />
+@endsection
+
+@section('content')
+<div class="pagina" style="padding-top: 0;">
+    <header class="cabecera" style="padding-top: 0; padding-bottom: 20px;">
         <div>
             <p class="etiqueta">Arrendador</p>
             <h1>Información de inquilinos</h1>
             <p class="subtitulo">Consulta datos de contacto y alquileres activos.</p>
-        </div>
-        <div class="acciones-cabecera">
-            <div class="avatar">{{ $avatarInicial }}</div>
-            <a class="btn-volver" href="{{ route('arrendador.dashboard', ['arrendador_id' => $arrendadorId]) }}">Volver al dashboard</a>
-            <a class="btn-volver" href="{{ route('logout') }}">Cerrar sesion</a>
         </div>
     </header>
 
@@ -45,18 +36,20 @@
             </thead>
             <tbody>
                 @forelse ($inquilinos as $inquilino)
-                    <tr>
-                        <td>{{ $inquilino->nombre_usuario }}</td>
-                        <td>{{ $inquilino->email_usuario }}</td>
-                        <td>{{ $inquilino->telefono_usuario ?? 'Sin teléfono' }}</td>
-                        <td>{{ $inquilino->total_propiedades }}</td>
-                        <td>{{ $inquilino->fecha_inicio_reciente ? \Carbon\Carbon::parse($inquilino->fecha_inicio_reciente)->format('d/m/Y') : '-' }}</td>
-                        <td>
-                            <button class="btn-detalle" data-ver-inquilino="{{ $inquilino->id_usuario }}" data-arrendador="{{ $arrendadorId }}">Ver detalle</button>
-                        </td>
-                    </tr>
+                <tr>
+                    <td>{{ $inquilino->nombre_usuario }}</td>
+                    <td>{{ $inquilino->email_usuario }}</td>
+                    <td>{{ $inquilino->telefono_usuario ?? 'Sin teléfono' }}</td>
+                    <td>{{ $inquilino->total_propiedades }}</td>
+                    <td>{{ $inquilino->fecha_inicio_reciente ? \Carbon\Carbon::parse($inquilino->fecha_inicio_reciente)->format('d/m/Y') : '-' }}</td>
+                    <td>
+                        <button class="btn-detalle" data-ver-inquilino="{{ $inquilino->id_usuario }}" data-arrendador="{{ $arrendadorId }}">Ver detalle</button>
+                    </td>
+                </tr>
                 @empty
-                    <tr><td colspan="6">No hay inquilinos activos para este arrendador.</td></tr>
+                <tr>
+                    <td colspan="6">No hay inquilinos activos para este arrendador.</td>
+                </tr>
                 @endforelse
             </tbody>
         </table>
@@ -73,7 +66,8 @@
         <div id="listaPropiedades"></div>
     </div>
 </div>
+@endsection
 
+@section('scripts')
 <script src="{{ asset('js/arrendador/inquilinos.js') }}"></script>
-</body>
-</html>
+@endsection

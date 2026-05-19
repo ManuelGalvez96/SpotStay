@@ -1,0 +1,109 @@
+name: Deploy Laravel via FTP
+
+on:
+  push:
+    branches: [server]
+
+jobs:
+  web-deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    env:
+      APP_DIR: ./laravel/
+      WEB_DIR: ./
+
+    steps:
+      - name: Obtener codigo fuente
+        uses: actions/checkout@v4
+
+      - name: Configurar PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, xml, ctype, iconv, mysql, bcmath, curl, gd, dom
+          coverage: none
+
+      - name: Instalar Dependencias (Composer)
+        run: composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Compilar CSS y JS (Vite)
+        run: |
+          npm ci
+          npm run build
+
+      - name: Preparar estructura para hosting compartido
+        run: |
+          rm -rf deploy
+          mkdir -p deploy/laravel deploy/public
+
+          rsync -av ./ deploy/laravel/ \
+            --exclude '.git*' \
+            --exclude 'node_modules' \
+            --exclude 'tests' \
+            --exclude '.github' \
+            --exclude '.env' \
+            --exclude 'README.md' \
+            --exclude 'README_*.md' \
+            --exclude 'ANALISIS_*.md' \
+            --exclude 'CAMBIOS_*.md' \
+            --exclude 'RESUMEN_*.md' \
+            --exclude 'CHANGELOG_*.md' \
+            --exclude 'phpunit.xml' \
+            --exclude 'deploy' \
+            --exclude 'public' \
+            --exclude 'database_spotStay.sql' \
+            --exclude 'cleanup_tables.php' \
+            --exclude '*.lock' \
+            --exclude '.editorconfig'
+
+          rsync -av ./public/ deploy/public/
+
+          sed -i "s|__DIR__.'/../storage|__DIR__.'/laravel/storage|g" deploy/public/index.php
+          sed -i "s|__DIR__.'/../vendor/autoload.php|__DIR__.'/laravel/vendor/autoload.php|g" deploy/public/index.php
+          sed -i "s|__DIR__.'/../bootstrap/app.php|__DIR__.'/laravel/bootstrap/app.php|g" deploy/public/index.php
+
+          rm -f deploy/laravel/bootstrap/cache/*.php
+
+          cat > deploy/laravel/.htaccess << 'EOF'
+          Require all denied
+          EOF
+
+      - name: Subir app Laravel (privada)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
+          local-dir: ./deploy/laravel/
+          server-dir: ${{ env.APP_DIR }}
+          dry-run: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/tests/**
+            **/phpunit.xml
+            **/.env.example
+            **/README.md
+            .env
+            storage/logs/**
+
+      - name: Subir carpeta publica
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
+          local-dir: ./deploy/public/
+          server-dir: ${{ env.WEB_DIR }}
+          dry-run: false
+          exclude: |
+            **/.DS_Store

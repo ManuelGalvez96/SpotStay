@@ -100,24 +100,24 @@ class DashboardController extends Controller
                 ->where('i.estado_incidencia', 'abierta')
                 ->count();
 
-            $solicitudesPendientes = DB::table('tbl_alquiler as a')
-                ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'a.id_propiedad_fk')
+            $solicitudesPendientes = DB::table('tbl_solicitud_alquiler as s')
+                ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 's.id_propiedad_fk')
                 ->where('p.id_arrendador_fk', $arrendadorId)
-                ->where('a.estado_alquiler', 'pendiente')
+                ->where('s.estado_solicitud_alquiler', 'pendiente')
                 ->count();
 
-            $ultimasSolicitudes = DB::table('tbl_alquiler as a')
-                ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'a.id_propiedad_fk')
-                ->join('tbl_usuario as inquilino', 'inquilino.id_usuario', '=', 'a.id_inquilino_fk')
+            $ultimasSolicitudes = DB::table('tbl_solicitud_alquiler as s')
+                ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 's.id_propiedad_fk')
+                ->join('tbl_usuario as inquilino', 'inquilino.id_usuario', '=', 's.id_usuario_fk')
                 ->where('p.id_arrendador_fk', $arrendadorId)
                 ->select(
-                    'a.id_alquiler',
+                    's.id_solicitud_alquiler as id_alquiler',
                     'p.titulo_propiedad',
                     'inquilino.nombre_usuario as nombre_solicitante',
-                    'a.estado_alquiler',
-                    'a.creado_alquiler'
+                    's.estado_solicitud_alquiler as estado_alquiler',
+                    's.creado_solicitud_alquiler as creado_alquiler'
                 )
-                ->orderBy('a.creado_alquiler', 'desc')
+                ->orderBy('s.creado_solicitud_alquiler', 'desc')
                 ->limit(5)
                 ->get();
 
@@ -147,6 +147,7 @@ class DashboardController extends Controller
         }
 
         return view('arrendador.dashboard', [
+            'arrendadorId' => $arrendadorId,
             'arrendador' => $arrendador,
             'avatarInicial' => $this->obtenerInicialAvatar($arrendador?->nombre_usuario),
             'propiedadesActivas' => $propiedadesActivas,

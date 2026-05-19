@@ -24,9 +24,9 @@ class Incidencia extends Model
         'id_propiedad_fk',
         'id_reporta_fk',
         'id_asignado_fk',
+        'id_categoria_fk',
         'titulo_incidencia',
         'descripcion_incidencia',
-        'categoria_incidencia',
         'prioridad_incidencia',
         'estado_incidencia',
         'creado_incidencia',
@@ -54,6 +54,12 @@ class Incidencia extends Model
     public function asignadaA(): BelongsTo
     {
         return $this->belongsTo(Usuario::class, 'id_asignado_fk', 'id_usuario');
+    }
+
+    // Categoría de la incidencia
+    public function categoria(): BelongsTo
+    {
+        return $this->belongsTo(Categoria::class, 'id_categoria_fk', 'id_categoria');
     }
 
     // Historial de actualizaciones de la incidencia ordenado por fecha de creación ascendente

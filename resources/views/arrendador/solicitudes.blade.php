@@ -1,27 +1,18 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solicitudes - Arrendador</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{{ asset('css/arrendador/solicitudes.css') }}" />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
-<body>
-<div class="pagina">
-    <header class="cabecera">
+@extends('layouts.arrendador')
+
+@section('titulo', 'Solicitudes - Arrendador')
+
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/arrendador/solicitudes.css') }}" />
+@endsection
+
+@section('content')
+<div class="pagina" style="padding-top: 0;">
+    <header class="cabecera" style="padding-top: 0; padding-bottom: 20px;">
         <div>
             <p class="etiqueta">Arrendador</p>
             <h1>Solicitudes de alquiler</h1>
             <p class="subtitulo">Revisa y decide las solicitudes de tus propiedades.</p>
-        </div>
-        <div class="acciones-cabecera">
-            <a class="btn-volver" href="{{ route('arrendador.dashboard', ['arrendador_id' => $arrendadorId]) }}">Volver al dashboard</a>
-            <a class="btn-volver" href="{{ route('logout') }}">Cerrar sesion</a>
         </div>
     </header>
 
@@ -85,7 +76,9 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6">No hay solicitudes para este arrendador.</td></tr>
+                <tr>
+                    <td colspan="6">No hay solicitudes para este arrendador.</td>
+                </tr>
                 @endforelse
             </tbody>
         </table>
@@ -93,7 +86,8 @@
         <div class="paginacion">{{ $solicitudes->withQueryString()->links() }}</div>
     </section>
 </div>
+@endsection
 
+@section('scripts')
 <script src="{{ asset('js/arrendador/solicitudes.js') }}"></script>
-</body>
-</html>
+@endsection

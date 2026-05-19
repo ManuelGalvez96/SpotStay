@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    use GestorPermisosTrait;
     public function index()
     {
         $gestor = Auth::user();
@@ -24,6 +25,13 @@ class DashboardController extends Controller
                                 ->where('tbl_propiedad.id_gestor_fk', $gestorId);
                         });
                 });
+            })
+            ->whereExists(function ($query) use ($gestorId) {
+                $query->selectRaw(1)
+                    ->from('tbl_propiedad_permisos')
+                    ->whereColumn('tbl_propiedad_permisos.id_propiedad_fk', 'tbl_propiedad.id_propiedad')
+                    ->where('tbl_propiedad_permisos.id_gestor_fk', $gestorId)
+                    ->where('tbl_propiedad_permisos.incidencias', true);
             });
 
         $incidenciasNuevas = (clone $baseIncidencias)
@@ -126,11 +134,30 @@ class DashboardController extends Controller
             ->limit(6)
             ->get();
 
+        $mensajesSinLeer = DB::table('tbl_conversacion')
+            ->join('tbl_conversacion_usuario', function ($join) use ($gestorId) {
+                $join->on('tbl_conversacion_usuario.id_conversacion_fk', '=', 'tbl_conversacion.id_conversacion')
+                    ->where('tbl_conversacion_usuario.id_usuario_fk', $gestorId);
+            })
+            ->leftJoin(DB::raw('(SELECT id_conversacion_fk, MAX(creado_mensaje) as ultimo_creado FROM tbl_mensaje GROUP BY id_conversacion_fk) as ult'), function ($join) {
+                $join->on('ult.id_conversacion_fk', '=', 'tbl_conversacion.id_conversacion');
+            })
+            ->where(function ($query) {
+                $query->whereNull('tbl_conversacion_usuario.ultima_lectura_conv_usuario')
+                    ->orWhereColumn('ult.ultimo_creado', '>', 'tbl_conversacion_usuario.ultima_lectura_conv_usuario');
+            })
+            ->count();
+
         $resumenEstados = [
             'abierta' => (clone $baseIncidencias)->where('tbl_incidencia.estado_incidencia', 'abierta')->count(),
             'en_proceso' => (clone $baseIncidencias)->where('tbl_incidencia.estado_incidencia', 'en_proceso')->count(),
             'esperando' => (clone $baseIncidencias)->where('tbl_incidencia.estado_incidencia', 'esperando')->count(),
         ];
+
+        $permisosDashboard = [];
+        foreach ($propiedadesAsignadas as $p) {
+            $permisosDashboard[$p->id_propiedad] = $this->getPermisosPropiedad($gestorId, (int) $p->id_propiedad);
+        }
 
         return view('gestor.dashboard', compact(
             'incidenciasNuevas',
@@ -144,7 +171,9 @@ class DashboardController extends Controller
             'esperandoInquilino',
             'totalEsperandoDetalle',
             'notificaciones',
-            'resumenEstados'
+            'mensajesSinLeer',
+            'resumenEstados',
+            'permisosDashboard'
         ));
     }
 }

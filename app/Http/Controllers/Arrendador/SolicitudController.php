@@ -7,6 +7,7 @@ use App\Models\AlquilerCuota;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class SolicitudController extends Controller
@@ -63,6 +64,7 @@ class SolicitudController extends Controller
         return view('arrendador.solicitudes', [
             'arrendador' => $arrendador,
             'arrendadorId' => $arrendadorId,
+            'avatarInicial' => $this->obtenerInicialAvatar($arrendador?->nombre_usuario),
             'solicitudes' => $solicitudes,
             'totales' => [
                 'total' => $total,
@@ -182,29 +184,21 @@ class SolicitudController extends Controller
             ->first();
 
         if (!$solicitud) {
-            \Log::info('Solicitud no encontrada', ['id' => $id, 'arrendadorId' => $arrendadorId]);
+            Log::info('Solicitud no encontrada', ['id' => $id, 'arrendadorId' => $arrendadorId]);
             return response()->json([
                 'success' => false,
                 'message' => 'No se encontró la solicitud.',
             ], 404);
         }
 
-        try {
-            DB::table('tbl_solicitud_alquiler')
-                ->where('id_solicitud_alquiler', $id)
-                ->delete();
+        DB::table('tbl_solicitud_alquiler')
+            ->where('id_solicitud_alquiler', $id)
+            ->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Solicitud eliminada correctamente.',
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Error al eliminar solicitud', ['id' => $id, 'error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al eliminar la solicitud: ' . $e->getMessage(),
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Solicitud eliminada correctamente.',
+        ]);
     }
 
     private function cambiarEstado(Request $request, int $id, string $estado)
@@ -323,6 +317,13 @@ class SolicitudController extends Controller
                     'actualizado_solicitud_alquiler' => Carbon::now(),
                 ]);
 
+            DB::table('tbl_propiedad')
+                ->where('id_propiedad', $solicitud->id_propiedad_fk)
+                ->update([
+                    'estado_propiedad' => 'alquilada',
+                    'actualizado_propiedad' => Carbon::now(),
+                ]);
+
             if ($debeCerrarSesion) {
                 DB::table('sessions')
                     ->where('user_id', $solicitud->id_usuario_fk)
@@ -332,15 +333,16 @@ class SolicitudController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Error al aprobar solicitud', ['id' => $id, 'error' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
-                'message' => 'No se pudo aprobar la solicitud.',
+                'message' => 'No se pudo aprobar la solicitud: ' . $e->getMessage(),
             ], 500);
         }
 
         return response()->json([
             'success' => true,
-            'message' => $estado === 'activo' ? 'Solicitud aprobada.' : 'Solicitud rechazada.',
+            'message' => 'Solicitud aprobada.',
             'estado' => $estado,
         ]);
     }
@@ -397,6 +399,19 @@ class SolicitudController extends Controller
 
     private function obtenerIdArrendador(Request $request): int
     {
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            $usuarioAutenticado = \Illuminate\Support\Facades\Auth::user();
+            if (
+                $usuarioAutenticado && DB::table('tbl_rol_usuario as ru')
+                ->join('tbl_rol as r', 'r.id_rol', '=', 'ru.id_rol_fk')
+                ->where('ru.id_usuario_fk', $usuarioAutenticado->id_usuario)
+                ->where('r.slug_rol', 'arrendador')
+                ->exists()
+            ) {
+                return (int) $usuarioAutenticado->id_usuario;
+            }
+        }
+
         $arrendadorId = (int) $request->query('arrendador_id', $request->input('arrendador_id', 0));
 
         if ($arrendadorId > 0) {
@@ -431,5 +446,14 @@ class SolicitudController extends Controller
         }
 
         return 'TRIM(CONCAT_WS(\' \' , ' . implode(', ', $partes) . ')) as direccion_propiedad';
+    }
+
+    private function obtenerInicialAvatar(?string $nombre): string
+    {
+        if (empty($nombre)) {
+            return 'A';
+        }
+
+        return mb_strtoupper(mb_substr(trim($nombre), 0, 1));
     }
 }

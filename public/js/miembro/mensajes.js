@@ -63,6 +63,13 @@ function inicializarChatFetch() {
 		enviarMensaje(campoMensaje, listaMensajes);
 	};
 
+	campoMensaje.onkeydown = function (evento) {
+		if (evento.key === "Enter" && !evento.shiftKey) {
+			evento.preventDefault();
+			enviarMensaje(campoMensaje, listaMensajes);
+		}
+	};
+
 	cargarMensajes(listaMensajes);
 
 	intervaloMensajes = window.setInterval(function () {
@@ -150,6 +157,7 @@ function enviarMensaje(campoMensaje, listaMensajes) {
 		})
 		.then(function () {
 			campoMensaje.value = "";
+			campoMensaje.focus();
 			cargarMensajes(listaMensajes);
 		})
 		.catch(function () {

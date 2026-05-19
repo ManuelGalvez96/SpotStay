@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>SpotStay | Solicitud Arrendador</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-    <link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}?v=8" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
     <link rel="stylesheet" href="{{ asset('css/shared/sweetalert-oso.css') }}" />
 </head>
@@ -74,29 +74,7 @@
                             <small id="error-numero-documento-solicitud" class="solicitud-error"></small>
                         </div>
 
-                        <div class="grupo-filtro">
-                            <label class="etiqueta-filtro" for="iban-solicitud">IBAN</label>
-                            <input class="campo-filtro" id="iban-solicitud" name="iban_solicitud" type="text" value="{{ old('iban_solicitud') }}">
-                            <small id="error-iban-solicitud" class="solicitud-error"></small>
-                        </div>
 
-                        <div class="grupo-filtro">
-                            <label class="etiqueta-filtro" for="titular-cuenta-solicitud">Titular de la cuenta</label>
-                            <input class="campo-filtro" id="titular-cuenta-solicitud" name="titular_cuenta_solicitud" type="text" value="{{ old('titular_cuenta_solicitud') }}">
-                            <small id="error-titular-cuenta-solicitud" class="solicitud-error"></small>
-                        </div>
-
-                        <div class="grupo-filtro">
-                            <label class="etiqueta-filtro" for="nif-solicitud">NIF</label>
-                            <input class="campo-filtro" id="nif-solicitud" name="nif_solicitud" type="text" value="{{ old('nif_solicitud') }}">
-                            <small id="error-nif-solicitud" class="solicitud-error"></small>
-                        </div>
-
-                        <div class="grupo-filtro solicitud-columna-doble">
-                            <label class="etiqueta-filtro" for="direccion-fiscal-solicitud">Direccion fiscal</label>
-                            <input class="campo-filtro" id="direccion-fiscal-solicitud" name="direccion_fiscal_solicitud" type="text" value="{{ old('direccion_fiscal_solicitud') }}">
-                            <small id="error-direccion-fiscal-solicitud" class="solicitud-error"></small>
-                        </div>
 
                         <div class="grupo-filtro">
                             <label class="etiqueta-filtro" for="tipo-arrendador-solicitud">Tipo de arrendador</label>

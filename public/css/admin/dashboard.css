@@ -399,6 +399,26 @@ body {
     color: #991B1B;
 }
 
+.badge-abierta {
+    background: #DBEAFE;
+    color: #1E40AF;
+}
+
+.badge-esperando-decision {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.badge-esperando-pago {
+    background: #F8D7DA;
+    color: #8B0000;
+}
+
+.badge-solucionada {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
 /* ── Acciones tabla ── */
 .acciones-tabla {
     display: flex;
@@ -910,4 +930,132 @@ body {
 
 .lista-solicitudes-scroll::-webkit-scrollbar-thumb:hover {
     background: #9CA3AF;
+}
+
+/* ── Badges de prioridad ── */
+.badge-prioridad {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.badge-baja {
+    background: #DBEAFE;
+    color: #1E40AF;
+}
+
+.badge-media {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.badge-alta {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.badge-urgente {
+    background: #F8D7DA;
+    color: #8B0000;
+}
+
+/* ── Botón contactar incidencia ── */
+.btn-contactar-inc {
+    background: linear-gradient(135deg, #035498 0%, #1565c0 100%);
+    border: none;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.btn-contactar-inc:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(3, 84, 152, 0.3);
+}
+
+.btn-contactar-inc:active {
+    transform: translateY(0);
+}
+
+/* ── Modal Incidencia Info ── */
+.modal-incidencia-info-dash {
+    background: #F8FAFC;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border-left: 4px solid #035498;
+}
+
+.modal-incidencia-titulo-dash {
+    margin: 0 0 8px 0;
+    font-weight: 600;
+    font-size: 15px;
+    color: #111827;
+}
+
+.modal-incidencia-propiedad-dash {
+    display: block;
+    color: #666;
+    font-size: 13px;
+    margin: 0;
+}
+
+.modal-incidencia-nota-dash {
+    color: #999;
+    font-size: 12px;
+    margin-top: 12px;
+    margin-bottom: 0;
+}
+
+/* ── Shared filter styles (match Incidencias) ── */
+.input-busqueda {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 220px;
+    background: #F3F4F6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.input-busqueda i {
+    position: absolute;
+    left: 12px;
+    color: #9CA3AF;
+    pointer-events: none;
+}
+
+.input-busqueda input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 8px 12px 8px 36px;
+    font-size: 14px;
+}
+
+.input-busqueda input:focus {
+    outline: none;
+}
+
+.select-filtro {
+    padding: 8px 12px;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    font-size: 13px;
+    background: white;
+    cursor: pointer;
+    min-width: 140px;
+}
+
+.select-filtro:focus {
+    outline: none;
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
 }

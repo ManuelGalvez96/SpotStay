@@ -92,8 +92,10 @@ body {
 }
 
 .login-card {
-  width: 380px;
+  width: 100%;
+  max-width: 380px;
   position: relative;
+  padding: 0 16px;
 }
 
 /* --- MASCOTA --- */
@@ -235,4 +237,10 @@ input:focus {
 
 .nav-link b {
   color: var(--corp-blue);
+}
+
+@media (max-width: 480px) {
+  .form-content {
+    padding: 30px 20px 20px;
+  }
 }

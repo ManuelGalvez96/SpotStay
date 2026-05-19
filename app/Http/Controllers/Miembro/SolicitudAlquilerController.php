@@ -60,7 +60,7 @@ class SolicitudAlquilerController extends Controller
                 'actualizado_solicitud_alquiler' => Carbon::now(),
             ]);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'No se pudo enviar la solicitud de alquiler.');
+            return redirect()->back()->with('error', 'No se pudo enviar la solicitud de alquiler. Detalle: ' . $e->getMessage());
         }
 
         return redirect()->back()->with('success', 'Solicitud enviada correctamente.');

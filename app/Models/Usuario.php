@@ -29,6 +29,9 @@ class Usuario extends Authenticatable
     protected $fillable = [
         'nombre_usuario',
         'email_usuario',
+        'stripe_id',
+        'stripe_account_id',
+        'stripe_status',
         'contrasena_usuario',
         'telefono_usuario',
         'dni_usuario',

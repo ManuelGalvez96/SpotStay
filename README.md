@@ -97,6 +97,22 @@ Sigue estos pasos para levantar el proyecto localmente:
    * Crea una copia de `.env.example` y nómbrala `.env`.
    * Configura tu base de datos en las variables `DB_DATABASE`, `DB_USERNAME`, etc.
    * Genera la clave de aplicación: `php artisan key:generate`.
+   * Si vas a enviar correos desde la app, configura también las variables SMTP en `.env`:
+
+   ```env
+   MAIL_MAILER=smtp
+   MAIL_HOST=smtp.gmail.com
+   MAIL_PORT=587
+   MAIL_USERNAME=spotstayy@gmail.com
+   MAIL_PASSWORD=tu_contraseña_de_app
+   MAIL_ENCRYPTION=tls
+   MAIL_FROM_ADDRESS=spotstayy@gmail.com
+   MAIL_FROM_NAME="SpotStay"
+   ```
+
+   * `MAIL_FROM_ADDRESS` solo define el remitente visible del correo.
+   * El destinatario real se elige en `app/Http/Controllers/Admin/IncidenciaController.php`, dentro del método `contactar()`, según el usuario seleccionado o el rol correspondiente.
+   * Si quieres que un correo llegue a varios usuarios a la vez, ese comportamiento se debe añadir en ese método usando `cc()`, `bcc()` o enviando el mensaje a más de un destinatario.
 4. **Base de Datos y Datos de Prueba**:
 
    ```bash

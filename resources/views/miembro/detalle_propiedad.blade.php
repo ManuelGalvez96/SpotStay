@@ -4,6 +4,7 @@
  
 @section('styles')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="{{ asset('css/visor_fotos.css') }}?v=2" />
 @endsection
  
 @section('content')
@@ -15,28 +16,35 @@
             <h1 class="detalle-titulo">{{ $propiedad->titulo_propiedad }}</h1>
         </section>
 
-        <section class="detalle-seccion detalle-collage">
+        <section class="detalle-seccion detalle-collage mb-4">
             @if (isset($fotosPropiedad) && $fotosPropiedad->count() > 0)
-                @php
-                    $fotoPrincipal = $fotosPropiedad->first();
-                    $fotosSecundarias = $fotosPropiedad->slice(1, 4);
-                @endphp
-
-                <div class="collage-grid">
-                    <div class="collage-principal">
-                        <img src="{{ asset('storage/' . $fotoPrincipal->ruta_foto) }}" alt="Imagen principal de la propiedad" />
+                <div id="carouselPropiedadMiembro" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-indicators">
+                        @foreach ($fotosPropiedad as $index => $foto)
+                            <button type="button" data-bs-target="#carouselPropiedadMiembro" data-bs-slide-to="{{ $index }}" class="{{ $index == 0 ? 'active' : '' }}" aria-current="{{ $index == 0 ? 'true' : 'false' }}" aria-label="Slide {{ $index + 1 }}"></button>
+                        @endforeach
                     </div>
-
-                    <div class="collage-secundarias">
-                        @foreach ($fotosSecundarias as $foto)
-                            <div class="collage-miniatura">
-                                <img src="{{ asset('storage/' . $foto->ruta_foto) }}" alt="Imagen de la propiedad" />
+                    <div class="carousel-inner carrusel-contenedor-inner">
+                        @foreach ($fotosPropiedad as $index => $foto)
+                            <div class="carousel-item {{ $index == 0 ? 'active' : '' }}">
+                                <img src="{{ asset('img/' . $foto->ruta_foto) }}" class="d-block w-100 imagen-carrusel-ampliable" alt="Imagen {{ $index + 1 }} de la propiedad" data-bs-toggle="modal" data-bs-target="#modalVisorFotosMiembro-{{ $index }}">
                             </div>
                         @endforeach
                     </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselPropiedadMiembro" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon carrusel-btn-navegacion" aria-hidden="true"></span>
+                        <span class="visually-hidden">Anterior</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselPropiedadMiembro" data-bs-slide="next">
+                        <span class="carousel-control-next-icon carrusel-btn-navegacion" aria-hidden="true"></span>
+                        <span class="visually-hidden">Siguiente</span>
+                    </button>
                 </div>
             @else
-                <span>Esta propiedad aun no tiene imagenes.</span>
+                <div class="carrusel-estado-vacio">
+                    <i class="bi bi-image text-muted"></i>
+                    <span>Esta propiedad aun no tiene imagenes.</span>
+                </div>
             @endif
         </section>
 
@@ -148,6 +156,22 @@
             <p>No se encontro la propiedad solicitada.</p>
         </div>
     @endif
+<!-- MODALES VISOR DE FOTOS BOOTSTRAP NATIVO -->
+@if (isset($fotosPropiedad) && $fotosPropiedad->count() > 0)
+    @foreach ($fotosPropiedad as $index => $foto)
+    <div class="modal fade modal-visor-fotos" id="modalVisorFotosMiembro-{{ $index }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <button type="button" class="btn-cerrar-visor-modal" data-bs-dismiss="modal" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
+                <div class="modal-body">
+                    <img class="imagen-visor-modal" id="imagen-visor-modal-{{ $index }}" src="{{ asset('img/' . $foto->ruta_foto) }}" alt="Vista ampliada {{ $index + 1 }}">
+                </div>
+            </div>
+        </div>
+    </div>
+    @endforeach
+@endif
+
 @endsection
  
 @section('scripts')

@@ -8,6 +8,7 @@ use App\Models\Alquiler;
 use App\Models\Usuario;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class IncidenciaSeeder extends Seeder
 {
@@ -21,6 +22,17 @@ class IncidenciaSeeder extends Seeder
         if ($propiedades->isEmpty() || $gestores->isEmpty()) {
             return;
         }
+
+        // Mapeo de nombres string a IDs de categoría
+        $mapeoCategoria = [
+            'fontaneria' => DB::table('tbl_categoria')->where('nombre_categoria', 'Fontanería')->value('id_categoria'),
+            'electricidad' => DB::table('tbl_categoria')->where('nombre_categoria', 'Electricidad')->value('id_categoria'),
+            'calefaccion' => DB::table('tbl_categoria')->where('nombre_categoria', 'Calefacción')->value('id_categoria'),
+            'climatizacion' => DB::table('tbl_categoria')->where('nombre_categoria', 'Climatización')->value('id_categoria'),
+            'humedades' => DB::table('tbl_categoria')->where('nombre_categoria', 'Humedades')->value('id_categoria'),
+            'cerrajeria' => DB::table('tbl_categoria')->where('nombre_categoria', 'Cerrajería')->value('id_categoria'),
+            'otro' => DB::table('tbl_categoria')->where('nombre_categoria', 'Otro')->value('id_categoria'),
+        ];
 
         $incidenciasData = [
             ['titulo' => 'Grifo roto', 'descripcion' => 'El grifo de la cocina gotea constantemente', 'categoria' => 'fontaneria', 'prioridad' => 'media'],
@@ -71,6 +83,27 @@ class IncidenciaSeeder extends Seeder
 
                 $asignado = $gestores->random();
                 $fechaCreacion = now()->subDays(rand(1, 30));
+                $idCategoriaFk = $mapeoCategoria[$incidenciaData['categoria']] ?? null;
+
+                $presupuesto = null;
+                $detallePresupuesto = null;
+                $responsablePago = null;
+                $pagadoPresupuesto = false;
+                $pagadoIncidencia = null;
+
+                if (in_array($estado, ['esperando_decision', 'esperando_pago', 'solucionada', 'resuelta'])) {
+                    $presupuesto = rand(80, 600);
+                    $detallePresupuesto = 'Reparación de materiales, mano de obra y desplazamiento.';
+                }
+
+                if (in_array($estado, ['esperando_pago', 'solucionada', 'resuelta'])) {
+                    $responsablePago = rand(0, 1) ? 'arrendador' : 'inquilino';
+                }
+
+                if (in_array($estado, ['solucionada', 'resuelta'])) {
+                    $pagadoPresupuesto = true;
+                    $pagadoIncidencia = $fechaCreacion->copy()->addDays(rand(1, 5));
+                }
 
                 Incidencia::firstOrCreate(
                     [
@@ -79,11 +112,16 @@ class IncidenciaSeeder extends Seeder
                     ],
                     [
                         'descripcion_incidencia' => $incidenciaData['descripcion'],
-                        'categoria_incidencia' => $incidenciaData['categoria'],
+                        'id_categoria_fk' => $idCategoriaFk,
                         'prioridad_incidencia' => $prioridad,
                         'estado_incidencia' => $estado,
                         'id_reporta_fk' => $reportador->id_usuario,
                         'id_asignado_fk' => $asignado->id_usuario,
+                        'presupuesto_importe_incidencia' => $presupuesto,
+                        'detalle_presupuesto_incidencia' => $detallePresupuesto,
+                        'responsable_pago_incidencia' => $responsablePago,
+                        'pagado_presupuesto_incidencia' => $pagadoPresupuesto,
+                        'pagado_incidencia' => $pagadoIncidencia,
                         'creado_incidencia' => $fechaCreacion,
                         'actualizado_incidencia' => in_array($estado, ['solucionada', 'resuelta']) ? $fechaCreacion->copy()->addDays(rand(1, 10)) : now(),
                     ]

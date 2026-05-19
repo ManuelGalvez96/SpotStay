@@ -6,7 +6,7 @@
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
 		<title>SpotStay | Mapa</title>
 		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-		<link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}" />
+		<link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}?v=8" />
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 	</head>
 	<body class="pagina-mapa">
@@ -14,10 +14,6 @@
 			<div class="contenedor-encabezado">
 				<div class="logo-spotstay">
 					<img src="/img/logo.png"/>
-					<button class="boton-filtros-header" id="boton-toggle-filtros" type="button" aria-label="Ocultar filtros">
-						<i class="bi bi-funnel" aria-hidden="true"></i>
-						<span id="texto-boton-filtros">Ocultar filtros</span>
-					</button>
 				</div>
 				<div class="acciones-miembro">
 					<button class="boton-icono" type="button" aria-label="Notificaciones">
@@ -160,7 +156,6 @@
 					</select>
 				</div>
 
-				<button class="boton-aplicar" id="boton-aplicar-filtros" type="submit">Aplicar filtros</button>
 				<button class="boton-aplicar" id="boton-borrar-filtros" type="reset">Borrar filtros</button>
 				</form>
 			</aside>
@@ -171,7 +166,7 @@
 		</main>
 
 		<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-		<script src="{{ asset('js/miembro/miembro.js') }}"></script>
-		<script src="{{ asset('js/miembro/mapa.js') }}"></script>
+		<script src="{{ asset('js/miembro/miembro.js') }}?v=3"></script>
+		<script src="{{ asset('js/miembro/mapa.js') }}?v=2"></script>
 	</body>
 </html>

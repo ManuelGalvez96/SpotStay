@@ -63,7 +63,11 @@ function inicializarPagosInquilino() {
     const botonesPagar = document.querySelectorAll('.btn-pago');
     
     botonesPagar.forEach(botonPagar => {
+        let pagoEnCurso = false;
+
         botonPagar.onclick = () => {
+            if (pagoEnCurso) return;
+
             const formulario = botonPagar.closest('form');
             if (!formulario) return;
 
@@ -88,12 +92,14 @@ function inicializarPagosInquilino() {
                 cancelButtonColor: '#6B7280'
             }).then((resultado) => {
                 if (resultado.isConfirmed) {
+                    pagoEnCurso = true;
                     const textoOriginal = botonPagar.innerText;
                     botonPagar.disabled = true;
                     botonPagar.innerText = 'Procesando...';
 
                     const rutaEnvio = formulario.getAttribute('action');
                     const fichaToken = document.querySelector('input[name="_token"]')?.value;
+                    const datosFormulario = new FormData(formulario);
 
                     fetch(rutaEnvio, {
                         method: 'POST',
@@ -101,20 +107,14 @@ function inicializarPagosInquilino() {
                             'X-CSRF-TOKEN': fichaToken,
                             'X-Requested-With': 'XMLHttpRequest',
                             'Accept': 'application/json'
-                        }
+                        },
+                        body: datosFormulario
                     })
                     .then(respuesta => respuesta.json())
                     .then(datos => {
-                        if (datos.success) {
-                            Swal.fire({
-                                title: '¡Pago realizado!',
-                                text: 'Tu cuota ha sido abonada correctamente. ¡Muchas gracias!',
-                                iconHtml: crearOsoExito(),
-                                customClass: { icon: 'oso-icon' },
-                                confirmButtonColor: '#035498'
-                            }).then(() => {
-                                window.location.reload();
-                            });
+                        if (datos.success && datos.url) {
+                            // REDIRECCIÓN A STRIPE
+                            window.location.href = datos.url;
                         } else {
                             Swal.fire({
                                 title: 'Error en el pago',
@@ -123,6 +123,7 @@ function inicializarPagosInquilino() {
                                 customClass: { icon: 'oso-icon' },
                                 confirmButtonColor: '#d9534f'
                             });
+                            pagoEnCurso = false;
                             botonPagar.disabled = false;
                             botonPagar.innerText = textoOriginal;
                         }
@@ -136,6 +137,7 @@ function inicializarPagosInquilino() {
                             customClass: { icon: 'oso-icon' },
                             confirmButtonColor: '#d9534f'
                         });
+                        pagoEnCurso = false;
                         botonPagar.disabled = false;
                         botonPagar.innerText = textoOriginal;
                     });
@@ -168,12 +170,81 @@ function cargarDetalleIncidencia(idIncidencia) {
                 <div class="row mb-3">
                     <div class="col-md-6"><strong>Fecha:</strong> ${datos.fecha || '-'}</div>
                     <div class="col-md-6"><strong>Estado:</strong> ${datos.estado || '-'}</div>
-                </div>`;
+                </div>
+                ${datos.presupuesto ? `
+                    <div class="tarjeta-presupuesto mt-3 p-3 bg-light rounded border">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1"><i class="bi bi-wallet2"></i> Presupuesto de Reparación</h6>
+                                <p class="mb-0 text-muted small">Importe total a abonar</p>
+                            </div>
+                            <div class="text-end">
+                                <span class="fs-4 fw-bold text-primary">${parseFloat(datos.presupuesto).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+                            </div>
+                        </div>
+                        ${datos.estado_workflow === 'esperando_pago' ? `
+                            <button class="btn btn-primary w-100 mt-3 btn-pagar-incidencia" onclick="pagarPresupuestoStripe(${datos.id})">
+                                <i class="bi bi-credit-card"></i> Pagar Reparación Ahora
+                            </button>
+                        ` : (datos.estado_workflow === 'pagado' ? `
+                            <div class="alert alert-success mb-0 mt-3 py-2 text-center">
+                                <i class="bi bi-check-circle"></i> Pago completado
+                            </div>
+                        ` : '')}
+                    </div>
+                ` : ''}`;
         })
         .catch(error => {
             console.error('Error:', error);
             cuerpoModal.innerHTML = '<div class="alert alert-danger">Error al cargar los detalles.</div>';
         });
+}
+
+/**
+ * Redirige al pago de un presupuesto de incidencia vía Stripe
+ */
+function pagarPresupuestoStripe(idIncidencia) {
+    const boton = document.querySelector('.btn-pagar-incidencia');
+    if (boton) {
+        boton.disabled = true;
+        boton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Redirigiendo a Stripe...';
+    }
+
+    const token = document.querySelector('input[name="_token"]')?.value;
+
+    fetch(`../incidencia/${idIncidencia}/pagar-presupuesto`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': token,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(r => r.json())
+    .then(datos => {
+        if (datos.success && datos.url) {
+            window.location.href = datos.url;
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: datos.message || 'No se pudo iniciar el pago.',
+                iconHtml: crearOsoError(),
+                customClass: { icon: 'oso-icon' },
+                confirmButtonColor: '#d33'
+            });
+            if (boton) {
+                boton.disabled = false;
+                boton.innerHTML = '<i class="bi bi-credit-card"></i> Pagar Reparación Ahora';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (boton) {
+            boton.disabled = false;
+            boton.innerHTML = '<i class="bi bi-credit-card"></i> Pagar Reparación Ahora';
+        }
+    });
 }
 
 /**
@@ -221,8 +292,41 @@ function cerrarIncidencia(idIncidencia) {
     });
 }
 
+/**
+ * Comprueba si hay mensajes de éxito o error inyectados desde Laravel (Session)
+ * y muestra el SweetAlert correspondiente con la mascota.
+ */
+function comprobarAlertasSesion() {
+    const contenedor = document.querySelector('.contenedor-ver-propiedad');
+    if (!contenedor) return;
+
+    const exito = contenedor.getAttribute('data-mensaje-exito');
+    const error = contenedor.getAttribute('data-mensaje-error');
+
+    if (exito && exito.trim() !== "") {
+        Swal.fire({
+            title: '¡Operación con éxito!',
+            text: exito,
+            iconHtml: crearOsoExito(),
+            customClass: { icon: 'oso-icon' },
+            confirmButtonColor: '#035498'
+        });
+    }
+
+    if (error && error.trim() !== "") {
+        Swal.fire({
+            title: 'Ups...',
+            text: error,
+            iconHtml: crearOsoError(),
+            customClass: { icon: 'oso-icon' },
+            confirmButtonColor: '#d33'
+        });
+    }
+}
+
 // Inicialización directa (los scripts se cargan al final del body en el layout)
 inicializarPagosInquilino();
+comprobarAlertasSesion();
 
 // Si existen temporizadores en la página
 if (typeof iniciarTemporizadorAlquileres === 'function') {
@@ -444,34 +548,37 @@ function cargarHistorialPagosFetch(tipo) {
     const tabPane = document.getElementById(idTab);
     const endpoint = tipo === 'alquiler' ? 'historial-alquiler' : 'historial-suministros';
     
-    // Configuraciones visuales según tipo (Colores de SpotStay)
+    // Configuraciones visuales según tipo
     const colorTexto = tipo === 'alquiler' ? '' : 'texto-suministro';
     const colorBadge = tipo === 'alquiler' ? 'bg-success' : 'badge-suministro-abonado';
     const textoBadge = tipo === 'alquiler' ? 'Pagado' : 'Abonado';
     const spinnerColor = tipo === 'alquiler' ? 'text-primary' : 'text-info';
 
-    // Asegurar que la tabla existe antes de buscar el cuerpo (tbody)
-    let cuerpoTabla = tabPane.querySelector('tbody');
-    if (!cuerpoTabla) {
-        tabPane.innerHTML = `
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-3">Fecha</th>
-                            <th>${tipo === 'alquiler' ? 'Concepto' : 'Categoría(Concepto)'}</th>
-                            <th class="text-end">Importe</th>
-                            <th class="text-center pe-3">Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>`;
-        cuerpoTabla = tabPane.querySelector('tbody');
-    }
+    // REGENERACIÓN TOTAL: Aseguramos que la tabla siempre tenga 5 columnas y cabecera correcta
+    tabPane.innerHTML = `
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Fecha</th>
+                        <th>${tipo === 'alquiler' ? 'Concepto' : 'Categoría(Concepto)'}</th>
+                        <th class="text-end">Importe</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center pe-3">Factura</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="5" class="text-center p-5">
+                            <div class="spinner-border ${spinnerColor}" role="status"></div>
+                            <p class="mt-2 small text-muted">Cargando ${tipo}...</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>`;
 
-    // Spinner de carga dinámico dentro de la tabla
-    cuerpoTabla.innerHTML = `<tr><td colspan="4" class="text-center p-5"><div class="spinner-border ${spinnerColor}" role="status"></div><p class="mt-2 small text-muted">Cargando ${tipo}...</p></td></tr>`;
+    const cuerpoTabla = tabPane.querySelector('tbody');
 
     // Petición fetch para obtener datos JSON
     fetch(`/inquilino/alquiler/${idAlquiler}/${endpoint}`, {
@@ -480,7 +587,7 @@ function cargarHistorialPagosFetch(tipo) {
     .then(respuesta => respuesta.json())
     .then(datos => {
         if (!datos || datos.length === 0) {
-            cuerpoTabla.innerHTML = `<tr><td colspan="4" class="p-5 text-center text-muted">No hay registros de ${tipo} en este alquiler todavía.</td></tr>`;
+            cuerpoTabla.innerHTML = `<tr><td colspan="5" class="p-5 text-center text-muted">No hay registros de ${tipo} en este alquiler todavía.</td></tr>`;
             return;
         }
 
@@ -490,20 +597,30 @@ function cargarHistorialPagosFetch(tipo) {
             const fechaFormateada = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
             const importe = parseFloat(pago.importe_pago).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             
+            // Lógica para el botón de factura
+            const btnFactura = pago.factura_url 
+                ? `<a href="${pago.factura_url}" target="_blank" class="btn btn-sm btn-outline-danger" title="Descargar Factura">
+                    <i class="bi bi-file-pdf"></i> PDF
+                   </a>`
+                : `<span class="text-muted small">N/A</span>`;
+
             return `
             <tr>
                 <td class="ps-3 align-middle">${fechaFormateada}</td>
                 <td class="align-middle">${pago.concepto_pago}</td>
                 <td class="text-end fw-bold align-middle ${colorTexto}">${importe} €</td>
-                <td class="text-center pe-3 align-middle">
+                <td class="text-center align-middle">
                     <span class="badge ${colorBadge}">${textoBadge}</span>
+                </td>
+                <td class="text-center pe-3 align-middle">
+                    ${btnFactura}
                 </td>
             </tr>`;
         }).join('');
     })
     .catch(error => {
         console.error('Error crítico al cargar el historial:', error);
-        cuerpoTabla.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-danger">Error de conexión con el servidor.</td></tr>`;
+        cuerpoTabla.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-danger">Error de conexión con el servidor.</td></tr>`;
     });
 }
 

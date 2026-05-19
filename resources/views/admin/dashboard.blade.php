@@ -67,47 +67,69 @@
 
 <!-- BLOQUE CENTRAL -->
 <div class="central-grid">
-    <!-- TARJETA TABLA ALQUILERES -->
+    <!-- TARJETA TABLA INCIDENCIAS INACTIVAS -->
     <div class="card-admin card-con-franja">
         <div class="card-franja"></div>
         <div class="card-header-admin card-header-gradient">
-            <span>Alquileres pendientes</span>
+            <span>Incidencias inactivas</span>
             <div class="card-header-actions">
-                <input type="text" id="buscadorAlquileres" placeholder="Buscar..." class="buscador-input">
-                <a href="/admin/alquileres" class="link-ver-todos">Ver todos →</a>
+                <input type="text" id="buscadorIncidencias" placeholder="Buscar..." class="buscador-input">
+                <a href="/admin/incidencias" class="link-ver-todos">Ver todas →</a>
             </div>
         </div>
         
         <div class="tabla-contenedor-scroll">
-            <table class="tabla-admin" id="tablaAlquileres">
+            <table class="tabla-admin" id="tablaIncidencias">
                 <thead>
                     <tr>
                         <th>PROPIEDAD</th>
-                        <th>INQUILINO</th>
+                        <th>CATEGORÍA</th>
+                        <th>PRIORIDAD</th>
                         <th>ESTADO</th>
+                        <th class="col-mobile-hide">ÚLTIMA ACTIVIDAD</th>
                         <th class="col-mobile-hide">ACCIÓN</th>
                     </tr>
                 </thead>
-                <tbody id="tbodyAlquileres">
-                    @forelse($ultimosAlquileres as $alquiler)
-                    <tr data-id="{{ $alquiler->id_alquiler }}" data-nombre="{{ $alquiler->titulo_propiedad }}, {{ $alquiler->ciudad_propiedad }}" data-inquilino="{{ $alquiler->nombre_inquilino }}" data-estado="{{ $alquiler->estado_alquiler }}">
-                        <td>{{ $alquiler->titulo_propiedad }}, {{ $alquiler->ciudad_propiedad }}</td>
-                        <td>{{ $alquiler->nombre_inquilino }}</td>
-                        <td><span class="badge-estado badge-{{ str_replace('_', '-', $alquiler->estado_alquiler) }}">{{ ucfirst($alquiler->estado_alquiler) }}</span></td>
-                        <td class="col-mobile-hide">
-                            @if($alquiler->estado_alquiler === 'pendiente')
-                            <div class="acciones-tabla">
-                                <button class="btn-aprobar" data-id="{{ $alquiler->id_alquiler }}">✓ Aprobar</button>
-                                <button class="btn-rechazar" data-id="{{ $alquiler->id_alquiler }}">✕ Rechazar</button>
-                            </div>
+                <tbody id="tbodyIncidencias">
+                    @forelse($ultimasIncidenciasInactivas as $incidencia)
+                    <tr data-id="{{ $incidencia->id_incidencia }}" 
+                        data-titulo="{{ $incidencia->titulo_incidencia }}" 
+                        data-propiedad="{{ $incidencia->titulo_propiedad }}"
+                        data-estado="{{ $incidencia->estado_incidencia }}"
+                        data-inquilino="{{ $incidencia->nombre_inquilino }}"
+                        data-arrendador="{{ $incidencia->nombre_arrendador }}"
+                        data-gestor="{{ $incidencia->nombre_gestor ?? 'Sin asignar' }}"
+                        data-encargado-pago="{{ $incidencia->encargado_pago }}">
+                        <td>{{ $incidencia->titulo_propiedad }}, {{ $incidencia->ciudad_propiedad }}</td>
+                        <td>
+                            @if($incidencia->nombre_categoria)
+                                <span class="badge bg-info">{{ $incidencia->nombre_categoria }}</span>
                             @else
-                            <span class="sin-accion">—</span>
+                                <span class="text-muted">—</span>
                             @endif
+                        </td>
+                        <td>
+                            <span class="badge badge-prioridad badge-{{ strtolower($incidencia->prioridad_incidencia) }}">
+                                {{ ucfirst($incidencia->prioridad_incidencia) }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge-estado badge-{{ str_replace('_', '-', $incidencia->estado_incidencia) }}">
+                                {{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}
+                            </span>
+                        </td>
+                        <td class="col-mobile-hide">
+                            <small class="text-muted">{{ \Carbon\Carbon::parse($incidencia->actualizado_incidencia)->diffForHumans() }}</small>
+                        </td>
+                        <td class="col-mobile-hide">
+                            <button class="btn-contactar-inc" data-id="{{ $incidencia->id_incidencia }}" data-toggle="modal" data-target="#modalContactarIncidencia">
+                                📧 Contactar
+                            </button>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="tabla-vacia-cell">No hay alquileres pendientes</td>
+                        <td colspan="6" class="tabla-vacia-cell">No hay incidencias inactivas</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -343,6 +365,85 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                 <button type="button" class="btn btn-danger" id="btnRechazarSolicitudDash">Rechazar</button>
                 <button type="button" class="btn btn-primary" id="btnAprobarSolicitudDash">Aprobar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CONTACTAR INCIDENCIA -->
+<div class="modal fade" id="modalContactarIncidencia" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Contactar sobre incidencia inactiva</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Info incidencia -->
+                <div class="modal-incidencia-info-dash">
+                    <p class="modal-incidencia-titulo-dash" id="modalTituloIncidencia">—</p>
+                    <small class="modal-incidencia-propiedad-dash" id="modalPropiedadIncidencia">—</small>
+                </div>
+                
+                <hr class="modal-separator-dash">
+
+                <!-- Información de personas involucradas -->
+                <h6 class="modal-seccion-titulo-dash">Personas involucradas</h6>
+                
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Inquilino</label>
+                    <p class="modal-data-dash" id="modalInquilinoIncidencia">—</p>
+                </div>
+
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Arrendador</label>
+                    <p class="modal-data-dash" id="modalArrendadorIncidencia">—</p>
+                </div>
+
+                <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Gestor asignado</label>
+                    <p class="modal-data-dash" id="modalGestorIncidencia">—</p>
+                </div>
+
+                <div class="modal-seccion-dash" id="modalEncargadoPagoSeccion" style="display: none;">
+                    <label class="modal-label-dash">Encargado de pago</label>
+                    <p class="modal-data-dash" id="modalEncargadoPagoIncidencia">—</p>
+                </div>
+
+                <hr class="modal-separator-dash">
+
+                <!-- Campo destinatario -->
+                <div class="modal-seccion-dash">
+                    <label for="modalDestinoContacto" class="modal-label-dash">Enviar a:</label>
+                    <select id="modalDestinoContacto" class="form-select" required>
+                        <option value="">— Selecciona destinatario —</option>
+                        <option value="inquilino">Inquilino</option>
+                        <option value="arrendador">Arrendador</option>
+                        <option value="gestor">Gestor asignado</option>
+                    </select>
+                </div>
+
+                <!-- Campo asunto -->
+                <div class="modal-seccion-dash">
+                    <label for="modalAsuntoContacto" class="modal-label-dash">Asunto:</label>
+                    <input type="text" id="modalAsuntoContacto" class="form-control" value="Incidencia inactiva — Requiere atención" required>
+                </div>
+
+                <!-- Campo mensaje -->
+                <div class="modal-seccion-dash">
+                    <label for="modalMensajeContacto" class="modal-label-dash">Mensaje:</label>
+                    <textarea id="modalMensajeContacto" class="form-control" rows="5" placeholder="Escribe tu mensaje..." required></textarea>
+                </div>
+
+                <p class="modal-incidencia-nota-dash">Se enviará un correo con los detalles de la incidencia.</p>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnEnviarContactoIncidencia">
+                    <i class="bi bi-send"></i> Enviar correo
+                </button>
             </div>
         </div>
     </div>

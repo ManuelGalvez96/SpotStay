@@ -25,6 +25,7 @@ window.onload = function() {
     asignarEventosBotonesSolicitudes();
     asignarEventosNavIconos();
     asignarEventosModalSolicitudes();
+    asignarEventosContactarIncidencias();
 };
 
 /* ================================================
@@ -567,5 +568,155 @@ function rechazarSolicitudModal() {
     })
     .catch(function (error) {
         console.error('Error en fetch al rechazar solicitud:', error);
+    });
+}
+
+/* ================================================
+   FUNCIÓN: asignarEventosContactarIncidencias
+   Asigna eventos a los botones contactar incidencias
+   ================================================ */
+function asignarEventosContactarIncidencias() {
+    var botonesContactar = document.querySelectorAll('.btn-contactar-inc');
+    var btnEnviar = document.getElementById('btnEnviarContactoIncidencia');
+
+    // Asignar onclick a botones "Contactar"
+    for (var i = 0; i < botonesContactar.length; i++) {
+        var btn = botonesContactar[i];
+        btn.onclick = function(event) {
+            event.preventDefault();
+            var id = this.getAttribute('data-id');
+            rellenarModalIncidencia(id);
+        };
+    }
+
+    // Asignar onclick al botón enviar
+    if (btnEnviar) {
+        btnEnviar.onclick = function(event) {
+            event.preventDefault();
+            enviarContactoIncidencia();
+        };
+    }
+}
+
+/* ================================================
+   FUNCIÓN: rellenarModalIncidencia
+   Rellena el modal con datos de la incidencia
+   ================================================ */
+var incidenciaActualId = null;
+
+function rellenarModalIncidencia(id) {
+    incidenciaActualId = id;
+
+    // Obtener fila de la tabla
+    var fila = document.querySelector('tr[data-id="' + id + '"]');
+    if (!fila) return;
+
+    var titulo = fila.getAttribute('data-titulo') || '—';
+    var propiedad = fila.getAttribute('data-propiedad') || '—';
+    var estado = fila.getAttribute('data-estado') || '';
+    var inquilino = fila.getAttribute('data-inquilino') || '—';
+    var arrendador = fila.getAttribute('data-arrendador') || '—';
+    var gestor = fila.getAttribute('data-gestor') || '—';
+    var encargadoPago = fila.getAttribute('data-encargado-pago') || '—';
+
+    // Rellenar campos del modal
+    var modalTitulo = document.getElementById('modalTituloIncidencia');
+    var modalPropiedad = document.getElementById('modalPropiedadIncidencia');
+    var modalInquilino = document.getElementById('modalInquilinoIncidencia');
+    var modalArrendador = document.getElementById('modalArrendadorIncidencia');
+    var modalGestor = document.getElementById('modalGestorIncidencia');
+    var modalEncargadoPagoSeccion = document.getElementById('modalEncargadoPagoSeccion');
+    var modalEncargadoPago = document.getElementById('modalEncargadoPagoIncidencia');
+    var modalDestino = document.getElementById('modalDestinoContacto');
+    var modalAsunto = document.getElementById('modalAsuntoContacto');
+    var modalMensaje = document.getElementById('modalMensajeContacto');
+
+    if (modalTitulo) modalTitulo.textContent = titulo;
+    if (modalPropiedad) modalPropiedad.textContent = propiedad;
+    if (modalInquilino) modalInquilino.textContent = inquilino;
+    if (modalArrendador) modalArrendador.textContent = arrendador;
+    if (modalGestor) modalGestor.textContent = gestor;
+    
+    // Mostrar/ocultar sección de encargado de pago
+    if (estado === 'esperando_pago' && modalEncargadoPagoSeccion) {
+        modalEncargadoPagoSeccion.style.display = 'block';
+        if (modalEncargadoPago) modalEncargadoPago.textContent = encargadoPago;
+    } else if (modalEncargadoPagoSeccion) {
+        modalEncargadoPagoSeccion.style.display = 'none';
+    }
+    
+    if (modalDestino) modalDestino.value = '';
+    if (modalAsunto) modalAsunto.value = 'Incidencia inactiva — Requiere atención';
+    if (modalMensaje) modalMensaje.value = '';
+
+    // Mostrar modal
+    var modal = document.getElementById('modalContactarIncidencia');
+    if (modal && typeof bootstrap !== 'undefined') {
+        var bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+    }
+}
+
+/* ================================================
+   FUNCIÓN: enviarContactoIncidencia
+   Envía el correo de contacto sobre la incidencia
+   ================================================ */
+function enviarContactoIncidencia() {
+    if (!incidenciaActualId) {
+        alert('Error: No hay incidencia seleccionada');
+        return;
+    }
+
+    var destino = document.getElementById('modalDestinoContacto').value;
+    var asunto = document.getElementById('modalAsuntoContacto').value;
+    var mensaje = document.getElementById('modalMensajeContacto').value;
+
+    if (!destino) {
+        alert('Por favor, selecciona un destinatario');
+        return;
+    }
+
+    if (!asunto.trim()) {
+        alert('Por favor, escribe un asunto');
+        return;
+    }
+
+    if (!mensaje.trim()) {
+        alert('Por favor, escribe un mensaje');
+        return;
+    }
+
+    var url = '/admin/incidencias/' + incidenciaActualId + '/contactar';
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: JSON.stringify({
+            destino: destino,
+            asunto: asunto,
+            mensaje: mensaje
+        })
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        if (data.success) {
+            alert('Correo enviado correctamente');
+            var modal = document.getElementById('modalContactarIncidencia');
+            if (modal && typeof bootstrap !== 'undefined') {
+                var bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) bsModal.hide();
+            }
+        } else {
+            alert('Error al enviar correo: ' + (data.error || 'Error desconocido'));
+        }
+    })
+    .catch(function(error) {
+        console.error('Error:', error);
+        alert('Error al enviar correo: ' + error.message);
     });
 }

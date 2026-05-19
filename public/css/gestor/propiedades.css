@@ -1,37 +1,3 @@
-.resumen-kpis-gestor {
-    margin: 24px 40px 0;
-    padding: 14px;
-    border: 1px solid #dbe4ea;
-    border-radius: 14px;
-    background: #f8fbff;
-}
-
-.resumen-kpis-label {
-    margin-bottom: 10px;
-    color: #415362;
-    font-weight: 600;
-    font-size: 0.95rem;
-}
-
-.resumen-kpis-label strong {
-    color: #0f3554;
-    font-size: 1.1rem;
-}
-
-.gestor-kpis {
-    padding: 0;
-}
-
-.kpi-clickable {
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.kpi-clickable:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-}
-
 .filtros-card-gestor {
     margin: 16px 40px 0;
 }
@@ -56,6 +22,21 @@
 .filtros-propiedades select:focus {
     border-color: #035498;
     box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
+}
+
+.filtros-toggle {
+    display: none;
+    font-size: 14px;
+    transition: transform 0.2s;
+    line-height: 1;
+}
+
+.filtros-toggle.rotated {
+    transform: rotate(180deg);
+}
+
+.acciones-filtros-mobile {
+    display: none;
 }
 
 .tabla-propiedades-card {
@@ -248,36 +229,6 @@
     padding: 24px;
 }
 
-.paginacion-admin {
-    border-top: 1px solid #F3F4F6;
-    padding: 14px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-}
-
-.pagina-btn-admin {
-    text-decoration: none;
-    border: 1px solid #E2E8F0;
-    background: #F8FAFC;
-    color: #035498;
-    border-radius: 8px;
-    font-size: 13px;
-    padding: 7px 12px;
-    font-weight: 600;
-}
-
-.pagina-btn-admin.disabled {
-    color: #94A3B8;
-    background: #F8FAFC;
-}
-
-.pagina-info-admin {
-    font-size: 13px;
-    color: #6B7280;
-}
-
 /* Desktop: mostrar tabla, ocultar lista */
 .propiedades-tabla-desktop {
     display: block;
@@ -287,12 +238,118 @@
     display: none;
 }
 
-@media (max-width: 1024px) {
-    .resumen-kpis-gestor {
-        margin-left: 16px;
-        margin-right: 16px;
-    }
+/* ── Propiedad card mobile ── */
+.propiedad-card {
+    display: block;
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 14px;
+    text-decoration: none;
+    color: inherit;
+    margin-bottom: 12px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
 
+.propiedad-card:hover {
+    border-color: #035498;
+    box-shadow: 0 2px 8px rgba(3, 84, 152, 0.1);
+}
+
+.propiedad-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.propiedad-card-titulo {
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
+    flex: 1;
+    line-height: 1.3;
+}
+
+.propiedad-card-dir,
+.propiedad-card-persona {
+    font-size: 13px;
+    color: #6B7280;
+    margin: 0 0 2px;
+    line-height: 1.4;
+}
+
+.propiedad-card-persona {
+    margin-bottom: 0;
+}
+
+.propiedad-card-divider {
+    height: 1px;
+    background: #F3F4F6;
+    margin: 10px 0;
+}
+
+.propiedad-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.propiedad-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.propiedad-card-precio {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.propiedad-card-incidencias {
+    font-size: 12px;
+    color: #9CA3AF;
+}
+
+/* ── Cargar más ── */
+.paginacion-cargar-mas {
+    justify-content: center;
+}
+
+.btn-cargar-mas {
+    border: 2px solid #035498;
+    background: #fff;
+    color: #035498;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+
+.btn-cargar-mas:hover {
+    background: #EEF4FF;
+}
+
+.btn-cargar-mas:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.cargar-mas-fin {
+    color: #9CA3AF;
+    font-size: 13px;
+    text-align: center;
+    padding: 14px;
+}
+
+@media (max-width: 1024px) {
     .filtros-card-gestor,
     .tabla-propiedades-card {
         margin-left: 16px;
@@ -305,6 +362,26 @@
 }
 
 @media (max-width: 768px) {
+    .filtros-toggle {
+        display: inline-block;
+    }
+
+    #filtrosBody.collapsed {
+        display: none;
+    }
+
+    .acciones-filtros-mobile {
+        display: flex;
+        gap: 8px;
+        flex-direction: column;
+    }
+
+    .acciones-filtros-mobile .btn-aplicar-admin,
+    .acciones-filtros-mobile .btn-limpiar-admin {
+        width: 100%;
+        text-align: center;
+    }
+
     .hero-admin {
         padding: 20px 16px;
         border-radius: 0 0 14px 14px;
@@ -317,44 +394,6 @@
 
     .hero-admin p {
         font-size: 13px;
-    }
-
-    .resumen-kpis-gestor {
-        margin: 12px;
-        padding: 12px;
-    }
-
-    .resumen-kpis-label {
-        font-size: 0.9rem;
-        margin-bottom: 8px;
-    }
-
-    .kpi-grid-pequeno {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-        margin-bottom: 0;
-    }
-
-    .kpi-mini {
-        padding: 10px;
-        gap: 8px;
-        border-radius: 10px;
-    }
-
-    .kpi-mini-icono {
-        width: 34px;
-        height: 34px;
-        font-size: 15px;
-        border-radius: 8px;
-    }
-
-    .kpi-mini-numero {
-        font-size: 15px;
-    }
-
-    .kpi-mini-label {
-        font-size: 10px;
-        letter-spacing: 0.2px;
     }
 
     .filtros-card-gestor,
@@ -370,8 +409,8 @@
 
     .card-header-admin {
         gap: 8px;
-        align-items: flex-start;
-        flex-direction: column;
+        align-items: center;
+        flex-direction: row;
         padding: 12px 14px;
         font-size: 14px;
     }
@@ -387,32 +426,7 @@
 
     .propiedades-lista-mobile {
         display: block;
-        padding: 0 4px;
-    }
-
-    .propiedades-lista-mobile .solicitud-item {
-        gap: 10px;
-        padding: 12px 10px;
-    }
-
-    .propiedades-lista-mobile .solicitud-avatar {
-        width: 34px;
-        height: 34px;
-        font-size: 11px;
-    }
-
-    .propiedades-lista-mobile .solicitud-nombre {
-        font-size: 13px;
-    }
-
-    .propiedades-lista-mobile .solicitud-ciudad {
-        font-size: 11px;
-    }
-
-    .propiedades-lista-mobile .solicitud-meta {
-        gap: 6px;
-        flex-direction: column;
-        align-items: flex-end;
+        padding: 0 12px 12px;
     }
 
     .pagos-legend-box {
@@ -420,30 +434,13 @@
         left: 0;
     }
 
-    .acciones-filtros-propiedades {
-        justify-content: flex-start;
+    .paginacion-cargar-mas {
+        padding: 12px;
     }
 
-    .acciones-rapidas {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-    }
-
-    .paginacion-admin {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 12px 14px;
-    }
-
-    .pagina-btn-admin,
-    .pagina-btn-admin.disabled {
-        text-align: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .kpi-grid-pequeno {
-        grid-template-columns: 1fr;
+    .btn-cargar-mas {
+        width: 100%;
+        padding: 14px 24px;
+        font-size: 15px;
     }
 }

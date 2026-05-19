@@ -1,6 +1,7 @@
 (function () {
     var formId = 'propiedadesFiltrosForm';
     var cardId = 'propiedadesTablaCard';
+    var mobileListSelector = '.propiedades-lista-mobile';
     var debounceTimer = null;
 
     function getForm() {
@@ -25,18 +26,34 @@
         return query ? form.action + '?' + query : form.action;
     }
 
-    function replaceResultsFromHtml(html) {
+    function replaceResultsFromHtml(html, appendCards) {
         var parser = new DOMParser();
         var doc = parser.parseFromString(html, 'text/html');
         var currentCard = getCard();
         var nextCard = doc.getElementById(cardId);
 
         if (currentCard && nextCard) {
-            currentCard.replaceWith(nextCard);
+            if (appendCards) {
+                var currentList = currentCard.querySelector(mobileListSelector);
+                var nextList = nextCard.querySelector(mobileListSelector);
+                if (currentList && nextList) {
+                    var cards = nextList.querySelectorAll('.propiedad-card');
+                    cards.forEach(function (card) {
+                        currentList.appendChild(card);
+                    });
+                }
+                var currentPagination = currentCard.querySelector('.paginacion-cargar-mas');
+                var nextPagination = nextCard.querySelector('.paginacion-cargar-mas');
+                if (currentPagination && nextPagination) {
+                    currentPagination.replaceWith(nextPagination);
+                }
+            } else {
+                currentCard.replaceWith(nextCard);
+            }
         }
     }
 
-    function fetchAndRender(url) {
+    function fetchAndRender(url, appendCards) {
         fetch(url, {
             method: 'GET',
             headers: {
@@ -47,12 +64,26 @@
                 return response.text();
             })
             .then(function (html) {
-                replaceResultsFromHtml(html);
+                replaceResultsFromHtml(html, appendCards);
                 bindEvents();
             })
             .catch(function () {
                 window.location.href = url;
             });
+    }
+
+    function cargarMas() {
+        var pagination = document.querySelector('.paginacion-cargar-mas');
+        if (!pagination) return;
+        var btn = pagination.querySelector('.btn-cargar-mas');
+        if (!btn || btn.disabled) return;
+        var url = btn.getAttribute('data-next-url');
+        if (!url) return;
+
+        btn.disabled = true;
+        btn.textContent = 'Cargando...';
+
+        fetchAndRender(url, true);
     }
 
     function bindEvents() {
@@ -61,34 +92,9 @@
             return;
         }
 
-        var kpiCards = document.querySelectorAll('.kpi-clickable');
-        kpiCards.forEach(function (card) {
-            card.onclick = function () {
-                var filterKey = card.getAttribute('data-filter-key');
-                var filterValue = card.getAttribute('data-filter-value') || '';
-
-                var estadoSelect = form.querySelector('select[name="estado"]');
-                var operativoSelect = form.querySelector('select[name="operativo"]');
-
-                if (estadoSelect && filterKey !== 'estado') {
-                    estadoSelect.value = '';
-                }
-
-                if (operativoSelect && filterKey !== 'operativo') {
-                    operativoSelect.value = '';
-                }
-
-                var target = form.querySelector('[name="' + filterKey + '"]');
-                if (target) {
-                    target.value = filterValue;
-                    fetchAndRender(buildUrlFromForm(form));
-                }
-            };
-        });
-
         form.onsubmit = function (e) {
             e.preventDefault();
-            fetchAndRender(buildUrlFromForm(form));
+            fetchAndRender(buildUrlFromForm(form), false);
         };
 
         var textInputs = form.querySelectorAll('input[type="text"]');
@@ -96,7 +102,7 @@
             input.oninput = function () {
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(function () {
-                    fetchAndRender(buildUrlFromForm(form));
+                    fetchAndRender(buildUrlFromForm(form), false);
                 }, 350);
             };
         });
@@ -104,26 +110,14 @@
         var selects = form.querySelectorAll('select');
         selects.forEach(function (select) {
             select.onchange = function () {
-                fetchAndRender(buildUrlFromForm(form));
+                fetchAndRender(buildUrlFromForm(form), false);
             };
         });
 
-        var card = getCard();
-        if (!card) {
-            return;
+        var cargarMasBtn = document.querySelector('.btn-cargar-mas');
+        if (cargarMasBtn) {
+            cargarMasBtn.onclick = cargarMas;
         }
-
-        var linkSelector = '.paginacion-admin a, .th-sort';
-        var links = card.querySelectorAll(linkSelector);
-        links.forEach(function (link) {
-            link.onclick = function (e) {
-                e.preventDefault();
-                var href = link.getAttribute('href');
-                if (href) {
-                    fetchAndRender(href);
-                }
-            };
-        });
     }
 
     bindEvents();

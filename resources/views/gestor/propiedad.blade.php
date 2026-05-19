@@ -124,12 +124,12 @@
             <tbody>
                 @forelse($alquileresActivos as $alquiler)
                     <tr>
-                        <td>{{ $alquiler->nombre_inquilino }}</td>
-                        <td>{{ $alquiler->email_inquilino }}</td>
-                        <td>{{ \Carbon\Carbon::parse($alquiler->fecha_inicio_alquiler)->format('d/m/Y') }}</td>
-                        <td>{{ $alquiler->fecha_fin_alquiler ? \Carbon\Carbon::parse($alquiler->fecha_fin_alquiler)->format('d/m/Y') : 'Indefinido' }}</td>
+                        <td data-label="Inquilino">{{ $alquiler->nombre_inquilino }}</td>
+                        <td data-label="Email">{{ $alquiler->email_inquilino }}</td>
+                        <td data-label="Inicio">{{ \Carbon\Carbon::parse($alquiler->fecha_inicio_alquiler)->format('d/m/Y') }}</td>
+                        <td data-label="Fin">{{ $alquiler->fecha_fin_alquiler ? \Carbon\Carbon::parse($alquiler->fecha_fin_alquiler)->format('d/m/Y') : 'Indefinido' }}</td>
                         @if($permisos->chat)
-                            <td>
+                            <td data-label="Chat">
                                 <form method="POST" action="{{ route('gestor.mensajes.iniciar', ['propiedadId' => $propiedad->id_propiedad]) }}" style="display:inline">
                                     @csrf
                                     <input type="hidden" name="tipo" value="inquilino">
@@ -172,11 +172,11 @@
             <tbody>
                 @forelse($incidenciasRecientes as $incidencia)
                     <tr>
-                        <td>{{ $incidencia->titulo_incidencia }}</td>
-                        <td>{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</td>
-                        <td>{{ ucfirst($incidencia->prioridad_incidencia) }}</td>
-                        <td>{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y') }}</td>
-                        <td><a href="{{ route('gestor.incidencias.show', ['id' => $incidencia->id_incidencia]) }}" class="link-ver-todos">Abrir</a></td>
+                        <td data-label="Título">{{ $incidencia->titulo_incidencia }}</td>
+                        <td data-label="Estado">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</td>
+                        <td data-label="Prioridad">{{ ucfirst($incidencia->prioridad_incidencia) }}</td>
+                        <td data-label="Fecha">{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y') }}</td>
+                        <td data-label="Acción"><a href="{{ route('gestor.incidencias.show', ['id' => $incidencia->id_incidencia]) }}" class="link-ver-todos">Abrir</a></td>
                     </tr>
                 @empty
                     <tr>

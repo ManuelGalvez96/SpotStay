@@ -11,10 +11,17 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
+use App\Services\ActividadService;
 use App\Services\PdfMonkeyService;
 
 class ContratoController extends Controller
 {
+    private $actividadService;
+
+    public function __construct()
+    {
+        $this->actividadService = new ActividadService();
+    }
     public function inicio(Request $request): View
     {
         $arrendadorId = $this->obtenerIdArrendador($request);
@@ -80,6 +87,9 @@ class ContratoController extends Controller
             ->where('p.id_arrendador_fk', $arrendadorId)
             ->select(
                 'c.id_contrato',
+                'p.id_gestor_fk',
+                'p.titulo_propiedad',
+                'a.id_propiedad_fk',
                 DB::raw($this->seleccionarColumnaContrato($columnas['firmado_arrendador'], 'firmado_arrendador', '0')),
                 DB::raw($this->seleccionarColumnaContrato($columnas['firmado_inquilino'], 'firmado_inquilino', '0'))
             )
@@ -127,6 +137,19 @@ class ContratoController extends Controller
         DB::table('tbl_contrato')
             ->where('id_contrato', $id)
             ->update($datosActualizar);
+
+        $arrendador = DB::table('tbl_usuario')
+            ->where('id_usuario', $arrendadorId)
+            ->value('nombre_usuario');
+
+        if ($contrato->id_gestor_fk) {
+            $this->actividadService->contratoFirmado(
+                $contrato->id_gestor_fk,
+                $contrato->id_propiedad_fk,
+                $contrato->titulo_propiedad,
+                $arrendador ?? 'Arrendador'
+            );
+        }
 
         return response()->json([
             'success' => true,

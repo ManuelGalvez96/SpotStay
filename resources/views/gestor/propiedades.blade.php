@@ -18,73 +18,44 @@
     <div class="hero-deco hero-deco-3"></div>
 </div>
 
-<div class="resumen-kpis-gestor">
-    <div class="resumen-kpis-label">
-        <strong>{{ $totalAsignadas }}</strong> propiedades gestionadas
+    <div class="card-admin filtros-card-gestor card-con-franja">
+        <div class="card-franja"></div>
+        <div class="card-header-admin card-header-gradient" onclick="toggleFiltros()" style="cursor:pointer;">
+            <span><i class="bi bi-funnel"></i> Filtros de propiedades</span>
+            <span class="filtros-toggle" id="filtrosToggleIcon"><i class="bi bi-chevron-down"></i></span>
+        </div>
+
+        <div id="filtrosBody">
+        <form method="GET" action="{{ route('gestor.propiedades') }}" class="filtros-propiedades" id="propiedadesFiltrosForm">
+            <input type="text" name="q" value="{{ $q }}" placeholder="Buscar por título, dirección o arrendador">
+
+            <select name="estado">
+                <option value="">Todos los estados</option>
+                <option value="publicada" {{ $estado === 'publicada' ? 'selected' : '' }}>Publicada</option>
+                <option value="alquilada" {{ $estado === 'alquilada' ? 'selected' : '' }}>Alquilada</option>
+                <option value="inactiva" {{ $estado === 'inactiva' ? 'selected' : '' }}>Inactiva</option>
+            </select>
+
+            <input type="text" name="ciudad" value="{{ $ciudad }}" placeholder="Filtrar por ciudad">
+
+            <select name="estado_pagos">
+                <option value="" {{ $estadoPagos === '' ? 'selected' : '' }}>Estado de pagos: todos</option>
+                <option value="al_dia" {{ $estadoPagos === 'al_dia' ? 'selected' : '' }}>Al día</option>
+                <option value="pendiente" {{ $estadoPagos === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                <option value="atrasado" {{ $estadoPagos === 'atrasado' ? 'selected' : '' }}>Atrasado</option>
+            </select>
+
+            @if($proximoVencimiento > 0)
+                <input type="hidden" name="proximo_vencimiento" value="{{ $proximoVencimiento }}">
+            @endif
+
+            <div class="acciones-filtros-mobile">
+                <button type="submit" class="btn-aplicar-admin">Filtrar</button>
+                <a href="{{ route('gestor.propiedades') }}" class="btn-limpiar-admin">Limpiar</a>
+            </div>
+        </form>
+        </div>
     </div>
-
-    <div class="kpi-grid-pequeno gestor-kpis" id="propiedadesKpiGrid">
-        <div class="kpi-mini kpi-clickable" data-filter-key="estado" data-filter-value="publicada">
-            <div class="kpi-mini-icono kpi-mini-verde"><i class="bi bi-megaphone"></i></div>
-            <div class="kpi-mini-datos">
-                <span class="kpi-mini-numero">{{ $totalPublicadas }}</span>
-                <span class="kpi-mini-label">Publicadas</span>
-            </div>
-        </div>
-
-        <div class="kpi-mini kpi-clickable" data-filter-key="estado" data-filter-value="alquilada">
-            <div class="kpi-mini-icono kpi-mini-naranja"><i class="bi bi-key"></i></div>
-            <div class="kpi-mini-datos">
-                <span class="kpi-mini-numero">{{ $totalAlquiladas }}</span>
-                <span class="kpi-mini-label">Alquiladas</span>
-            </div>
-        </div>
-
-        <div class="kpi-mini kpi-clickable" data-filter-key="operativo" data-filter-value="criticas">
-            <div class="kpi-mini-icono kpi-mini-rojo"><i class="bi bi-exclamation-triangle"></i></div>
-            <div class="kpi-mini-datos">
-                <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ $totalConCriticas }}</span>
-                <span class="kpi-mini-label">Con incidencias críticas</span>
-            </div>
-        </div>
-
-        <div class="kpi-mini kpi-clickable" data-filter-key="operativo" data-filter-value="sin_alquiler">
-            <div class="kpi-mini-icono kpi-mini-azul"><i class="bi bi-person-x"></i></div>
-            <div class="kpi-mini-datos">
-                <span class="kpi-mini-numero">{{ $totalSinAlquiler }}</span>
-                <span class="kpi-mini-label">Sin alquiler activo</span>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="card-admin filtros-card-gestor card-con-franja">
-    <div class="card-franja"></div>
-    <div class="card-header-admin card-header-gradient">
-        <span>Filtros de propiedades</span>
-    </div>
-
-    <form method="GET" action="{{ route('gestor.propiedades') }}" class="filtros-propiedades" id="propiedadesFiltrosForm">
-        <input type="text" name="q" value="{{ $q }}" placeholder="Buscar por título, dirección o arrendador">
-
-        <select name="estado">
-            <option value="">Todos los estados</option>
-            <option value="publicada" {{ $estado === 'publicada' ? 'selected' : '' }}>Publicada</option>
-            <option value="alquilada" {{ $estado === 'alquilada' ? 'selected' : '' }}>Alquilada</option>
-            <option value="inactiva" {{ $estado === 'inactiva' ? 'selected' : '' }}>Inactiva</option>
-        </select>
-
-        <input type="text" name="ciudad" value="{{ $ciudad }}" placeholder="Filtrar por ciudad">
-
-        <select name="estado_pagos">
-            <option value="" {{ $estadoPagos === '' ? 'selected' : '' }}>Estado de pagos: todos</option>
-            <option value="al_dia" {{ $estadoPagos === 'al_dia' ? 'selected' : '' }}>Al día</option>
-            <option value="pendiente" {{ $estadoPagos === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-            <option value="atrasado" {{ $estadoPagos === 'atrasado' ? 'selected' : '' }}>Atrasado</option>
-        </select>
-
-    </form>
-</div>
 
 @if(session('error'))
     <div class="mensaje-estado mensaje-error" data-flash-error="{{ session('error') }}">{{ session('error') }}</div>
@@ -96,7 +67,11 @@
 <div class="card-admin tabla-propiedades-card card-con-franja" id="propiedadesTablaCard">
     <div class="card-franja"></div>
     <div class="card-header-admin card-header-gradient">
-        <span>{{ $propiedades->total() }} propiedades encontradas</span>
+        <span>{{ $propiedades->total() }} propiedades encontradas
+            @if($proximoVencimiento > 0)
+                <span class="badge-estado badge-pendiente" style="margin-left:8px;font-weight:500;">Próximas a vencer ({{ $proximoVencimiento }} días)</span>
+            @endif
+        </span>
     </div>
 
     @php
@@ -207,11 +182,10 @@
         </table>
     </div>
 
-    <!-- Vista mobile: lista compacta -->
+    <!-- Vista mobile: cards -->
     <div class="propiedades-lista-mobile">
         @forelse($propiedades as $propiedad)
             @php
-                $iniciales = strtoupper(substr($propiedad->titulo_propiedad, 0, 2));
                 $badgeEstado = match($propiedad->estado_propiedad) {
                     'publicada' => 'pendiente',
                     'alquilada' => 'activo',
@@ -228,42 +202,40 @@
                     $textoPagos = 'Pendiente';
                 }
             @endphp
-            <div class="solicitud-item">
-                <div class="solicitud-avatar" style="background:#035498;">{{ $iniciales }}</div>
-                <div class="solicitud-info">
-                    <p class="solicitud-nombre">{{ $propiedad->titulo_propiedad }}</p>
-                    <p class="solicitud-ciudad">{{ $propiedad->direccion_propiedad }}</p>
+            <a href="{{ route('gestor.propiedades.show', ['id' => $propiedad->id_propiedad]) }}" class="propiedad-card">
+                <div class="propiedad-card-header">
+                    <span class="propiedad-card-titulo">{{ $propiedad->titulo_propiedad }}</span>
+                    <span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst($propiedad->estado_propiedad) }}</span>
                 </div>
-                <div class="solicitud-meta">
+                <p class="propiedad-card-dir">{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }}</p>
+                <p class="propiedad-card-persona">{{ $propiedad->nombre_arrendador }}</p>
+                <div class="propiedad-card-divider"></div>
+                <div class="propiedad-card-footer">
+                    <div class="propiedad-card-meta">
+                        <span class="propiedad-card-precio">{{ number_format((float) $propiedad->precio_propiedad, 2, ',', '.') }} EUR/mes</span>
+                        <span class="propiedad-card-incidencias">{{ $propiedad->total_incidencias_activas }} incidencias</span>
+                    </div>
                     <span class="pagos-chip pagos-{{ $estadoPagos }}">
                         <span class="pagos-punto"></span>
                         {{ $textoPagos }}
                     </span>
-                    <a href="{{ route('gestor.propiedades.show', ['id' => $propiedad->id_propiedad]) }}" class="btn-revisar">Detalle →</a>
-                    @if(!empty($permisosPropiedades[$propiedad->id_propiedad] ?? null) && $permisosPropiedades[$propiedad->id_propiedad]->incidencias)
-                        <a href="{{ route('gestor.incidencias', ['propiedad_id' => $propiedad->id_propiedad]) }}" class="link-secundario">Incidencias</a>
-                    @endif
                 </div>
-            </div>
+            </a>
         @empty
             <p class="tarjeta-vacia">No tienes propiedades asignadas con esos filtros.</p>
         @endforelse
     </div>
 
     @if($propiedades->lastPage() > 1)
-        <div class="paginacion-admin">
-            @if($propiedades->onFirstPage())
-                <span class="pagina-btn-admin disabled">Anterior</span>
-            @else
-                <a class="pagina-btn-admin" href="{{ $propiedades->previousPageUrl() }}">Anterior</a>
-            @endif
-
-            <span class="pagina-info-admin">Página {{ $propiedades->currentPage() }} de {{ $propiedades->lastPage() }}</span>
-
+        <div class="paginacion-admin paginacion-cargar-mas"
+             data-current-page="{{ $propiedades->currentPage() }}"
+             data-last-page="{{ $propiedades->lastPage() }}">
             @if($propiedades->hasMorePages())
-                <a class="pagina-btn-admin" href="{{ $propiedades->nextPageUrl() }}">Siguiente</a>
+                <button class="btn-cargar-mas" data-next-url="{{ $propiedades->nextPageUrl() }}" type="button">
+                    Cargar más ({{ $propiedades->currentPage() }} / {{ $propiedades->lastPage() }})
+                </button>
             @else
-                <span class="pagina-btn-admin disabled">Siguiente</span>
+                <span class="cargar-mas-fin">Todas las propiedades cargadas</span>
             @endif
         </div>
     @endif
@@ -282,6 +254,20 @@ document.addEventListener('DOMContentLoaded', function() {
     if (flashError && flashError.dataset.flashError && window.swalError) {
         swalError('Error', flashError.dataset.flashError);
     }
+
+    const filtrosBody = document.getElementById('filtrosBody');
+    if (filtrosBody && window.innerWidth <= 768) {
+        filtrosBody.classList.add('collapsed');
+    }
 });
+
+function toggleFiltros() {
+    const body = document.getElementById('filtrosBody');
+    const icon = document.getElementById('filtrosToggleIcon');
+    if (body && icon) {
+        body.classList.toggle('collapsed');
+        icon.classList.toggle('rotated');
+    }
+}
 </script>
 @endsection

@@ -26,7 +26,7 @@
     $tieneChat = collect($permisosDashboard)->contains(fn($p) => $p->chat);
 @endphp
 
-@if($tieneIncidencias || $tieneChat)
+@if($tieneIncidencias || $tieneChat || $pagosPendientesTotal > 0 || $contratosPorVencer > 0)
 <div class="kpi-grid">
     <div class="kpi-grid-header">
         <h2 class="seccion-titulo-acciones">Acciones necesarias</h2>
@@ -57,8 +57,34 @@
         </div>
     </a>
     @endif
+
+    <a class="kpi-card-link" href="{{ route('gestor.propiedades', ['estado_pagos' => 'pendiente']) }}">
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-label">PAGOS PENDIENTES</span>
+                <div class="kpi-icon kpi-icon-orange"><i class="bi bi-credit-card"></i></div>
+            </div>
+            <div class="kpi-numero kpi-numero-orange">{{ $pagosPendientesTotal }}</div>
+            <div class="kpi-sub">Recibos pendientes de cobro</div>
+        </div>
+    </a>
+
+    <a class="kpi-card-link" href="{{ route('gestor.propiedades', ['proximo_vencimiento' => 30]) }}">
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-label">CONTRATOS POR VENCER</span>
+                <div class="kpi-icon kpi-icon-red"><i class="bi bi-calendar-event"></i></div>
+            </div>
+            <div class="kpi-numero kpi-numero-red">{{ $contratosPorVencer }}</div>
+            <div class="kpi-sub">Finalizan en menos de 30 días</div>
+        </div>
+    </a>
 </div>
 @endif
+
+@php
+    $tienePermisos = collect($permisosDashboard)->contains(fn($p) => $p->incidencias || $p->chat);
+@endphp
 
 <div class="central-grid">
     <div class="card-admin card-con-franja">
@@ -110,11 +136,10 @@
             </table>
         </div>
 
-        <!-- Vista mobile: lista compacta -->
+        <!-- Vista mobile: cards -->
         <div class="incidencias-lista-mobile">
             @forelse($incidenciasRecientes as $incidencia)
                 @php
-                    $iniciales = strtoupper(substr($incidencia->titulo_incidencia, 0, 2));
                     $prioridad = strtolower($incidencia->prioridad_incidencia);
                     $badgeEstado = match($incidencia->estado_incidencia) {
                         'abierta' => 'pendiente',
@@ -123,17 +148,21 @@
                         default => 'rechazado'
                     };
                 @endphp
-                <div class="solicitud-item">
-                    <div class="solicitud-avatar" style="background:#EF4444;">{{ $iniciales }}</div>
-                    <div class="solicitud-info">
-                        <p class="solicitud-nombre">{{ $incidencia->titulo_incidencia }}</p>
-                        <p class="solicitud-ciudad">{{ $incidencia->direccion_propiedad }}</p>
+                <a href="{{ route('gestor.incidencias.show', ['id' => $incidencia->id_incidencia]) }}" class="incidencia-card">
+                    <div class="incidencia-card-header">
+                        <span class="incidencia-card-titulo">{{ $incidencia->titulo_incidencia }}</span>
+                        <span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span>
                     </div>
-                    <div class="solicitud-meta">
-                        <span class="solicitud-tiempo">{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->diffForHumans() }}</span>
-                        <a href="{{ route('gestor.incidencias.show', ['id' => $incidencia->id_incidencia]) }}" class="btn-revisar">Abrir →</a>
+                    <p class="incidencia-card-dir">{{ $incidencia->direccion_propiedad }}</p>
+                    <div class="incidencia-card-divider"></div>
+                    <div class="incidencia-card-footer">
+                        <div class="incidencia-card-meta">
+                            <span class="incidencia-card-prioridad">Prioridad: <strong>{{ ucfirst($prioridad) }}</strong></span>
+                            <span class="incidencia-card-fecha">{{ \Carbon\Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y') }}</span>
+                        </div>
+                        <span class="btn-revisar">Abrir →</span>
                     </div>
-                </div>
+                </a>
             @empty
                 <p class="tarjeta-vacia">No hay incidencias registradas.</p>
             @endforelse
@@ -150,22 +179,61 @@
             </div>
         </div>
 
-        <div class="lista-solicitudes">
+        <!-- Vista desktop: mini-cards -->
+        <div class="urgentes-grid lista-solicitudes-desktop">
             @forelse($incidenciasUrgentes as $urgente)
                 @php
-                    $iniciales = strtoupper(substr($urgente->titulo_incidencia, 0, 2));
+                    $prioridad = strtolower($urgente->prioridad_incidencia);
+                    $badgeEstado = match($urgente->estado_incidencia) {
+                        'abierta' => 'pendiente',
+                        'en_proceso' => 'activo',
+                        'resuelta' => 'activo',
+                        default => 'rechazado'
+                    };
                 @endphp
-                <div class="solicitud-item">
-                    <div class="solicitud-avatar" style="background:#EF4444;">{{ $iniciales }}</div>
-                    <div class="solicitud-info">
-                        <p class="solicitud-nombre">{{ $urgente->titulo_incidencia }}</p>
-                        <p class="solicitud-ciudad">{{ $urgente->direccion_propiedad }}</p>
+                <a href="{{ route('gestor.incidencias.show', ['id' => $urgente->id_incidencia]) }}" class="incidencia-card">
+                    <div class="incidencia-card-header">
+                        <span class="incidencia-card-titulo">{{ $urgente->titulo_incidencia }}</span>
+                        <span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $urgente->estado_incidencia)) }}</span>
                     </div>
-                    <div class="solicitud-meta">
-                        <span class="solicitud-tiempo">{{ \Carbon\Carbon::parse($urgente->creado_incidencia)->diffForHumans() }}</span>
-                        <a href="{{ route('gestor.incidencias.show', ['id' => $urgente->id_incidencia]) }}" class="btn-revisar">Abrir →</a>
+                    <p class="incidencia-card-dir">{{ $urgente->direccion_propiedad }}</p>
+                    <div class="incidencia-card-footer">
+                        <span class="incidencia-card-fecha">{{ \Carbon\Carbon::parse($urgente->creado_incidencia)->format('d/m/Y') }}</span>
+                        <span class="btn-revisar">Abrir →</span>
                     </div>
-                </div>
+                </a>
+            @empty
+                <p class="tarjeta-vacia">No hay incidencias urgentes.</p>
+            @endforelse
+        </div>
+
+        <!-- Vista mobile: cards -->
+        <div class="incidencias-lista-mobile">
+            @forelse($incidenciasUrgentes as $urgente)
+                @php
+                    $prioridad = strtolower($urgente->prioridad_incidencia);
+                    $badgeEstado = match($urgente->estado_incidencia) {
+                        'abierta' => 'pendiente',
+                        'en_proceso' => 'activo',
+                        'resuelta' => 'activo',
+                        default => 'rechazado'
+                    };
+                @endphp
+                <a href="{{ route('gestor.incidencias.show', ['id' => $urgente->id_incidencia]) }}" class="incidencia-card">
+                    <div class="incidencia-card-header">
+                        <span class="incidencia-card-titulo">{{ $urgente->titulo_incidencia }}</span>
+                        <span class="badge-estado badge-{{ $badgeEstado }}">{{ ucfirst(str_replace('_', ' ', $urgente->estado_incidencia)) }}</span>
+                    </div>
+                    <p class="incidencia-card-dir">{{ $urgente->direccion_propiedad }}</p>
+                    <div class="incidencia-card-divider"></div>
+                    <div class="incidencia-card-footer">
+                        <div class="incidencia-card-meta">
+                            <span class="incidencia-card-prioridad">Prioridad: <strong>{{ ucfirst($prioridad) }}</strong></span>
+                            <span class="incidencia-card-fecha">{{ \Carbon\Carbon::parse($urgente->creado_incidencia)->format('d/m/Y') }}</span>
+                        </div>
+                        <span class="btn-revisar">Abrir →</span>
+                    </div>
+                </a>
             @empty
                 <p class="tarjeta-vacia">No hay incidencias urgentes.</p>
             @endforelse
@@ -187,42 +255,84 @@
         @php
             $conAtrasados = collect($propiedadesAsignadas)->filter(fn($p) => $p->pagos_atrasados > 0)->count();
         @endphp
-        <div class="propiedades-resumen">
-            <span>{{ $totalesPropiedades->total }} propiedades</span>
-            <span>·</span>
-            <span>{{ $totalesPropiedades->con_alquiler }} con alquiler activo</span>
+        <div class="propiedades-resumen-pills">
+            <span class="resumen-pill">{{ $totalesPropiedades->total }} propiedades</span>
+            <span class="resumen-pill resumen-pill-verde">{{ $totalesPropiedades->con_alquiler }} alquiladas</span>
             @if($conAtrasados)
-                <span>·</span>
-                <span class="texto-rojo">{{ $conAtrasados }} con pagos atrasados</span>
+                <span class="resumen-pill resumen-pill-rojo">{{ $conAtrasados }} con pagos atrasados</span>
             @endif
         </div>
 
-        <div class="lista-solicitudes">
+        <!-- Vista desktop: grid cards -->
+        <div class="propiedades-grid-desktop lista-solicitudes-desktop">
             @forelse($propiedadesAsignadas as $propiedad)
-                <a class="solicitud-item solicitud-item-link" href="{{ route('gestor.propiedades.show', ['id' => $propiedad->id_propiedad]) }}">
-                    <div class="solicitud-avatar" style="background:#035498;">{{ strtoupper(substr($propiedad->titulo_propiedad, 0, 2)) }}</div>
-                    <div class="solicitud-info">
-                        <p class="solicitud-nombre">{{ $propiedad->titulo_propiedad }}</p>
-                        <p class="solicitud-ciudad">{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }}</p>
-                        <div class="propiedad-meta">
-                            @if($propiedad->fecha_inicio_alquiler)
-                                <span class="badge-estado badge-activo">Alquilado</span>
-                                <span class="propiedad-inquilino">{{ $propiedad->nombre_inquilino }}</span>
-                            @else
-                                <span class="badge-estado badge-rechazado">Sin alquiler</span>
+                @php
+                    $tieneAlquiler = !is_null($propiedad->fecha_inicio_alquiler);
+                @endphp
+                <a href="{{ route('gestor.propiedades.show', ['id' => $propiedad->id_propiedad]) }}" class="propiedad-card">
+                    <div class="propiedad-card-header">
+                        <span class="propiedad-card-titulo">{{ $propiedad->titulo_propiedad }}</span>
+                        @if($tieneAlquiler)
+                            <span class="badge-estado badge-activo">Alquilado</span>
+                        @else
+                            <span class="badge-estado badge-rechazado">Sin alquiler</span>
+                        @endif
+                    </div>
+                    <p class="propiedad-card-dir">{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }}</p>
+                    @if($tieneAlquiler && $propiedad->nombre_inquilino)
+                        <p class="incidencia-card-dir" style="margin-top:4px;color:#374151;">Inquilino: {{ $propiedad->nombre_inquilino }}</p>
+                    @endif
+                    <div class="propiedad-card-divider"></div>
+                    <div class="propiedad-card-footer">
+                        <div class="propiedad-card-meta">
+                            @if($propiedad->incidencias_activas > 0)
+                                <span>{{ $propiedad->incidencias_activas }} incidencias</span>
+                            @endif
+                            @if($propiedad->pagos_pendientes > 0)
+                                <span>{{ $propiedad->pagos_pendientes }} pagos pend.</span>
+                            @endif
+                            @if($propiedad->pagos_atrasados > 0)
+                                <span style="color:#991B1B;">{{ $propiedad->pagos_atrasados }} atrasados</span>
                             @endif
                         </div>
+                        <span class="btn-revisar">Ver →</span>
                     </div>
-                    <div class="solicitud-meta">
-                        @if($propiedad->incidencias_activas > 0)
-                            <span class="badge-estado badge-pendiente">{{ $propiedad->incidencias_activas }} incidencias</span>
+                </a>
+            @empty
+                <p class="tarjeta-vacia">No hay propiedades asignadas.</p>
+            @endforelse
+        </div>
+
+        <!-- Vista mobile: cards -->
+        <div class="propiedades-lista-mobile">
+            @forelse($propiedadesAsignadas as $propiedad)
+                @php
+                    $tieneAlquiler = !is_null($propiedad->fecha_inicio_alquiler);
+                @endphp
+                <a href="{{ route('gestor.propiedades.show', ['id' => $propiedad->id_propiedad]) }}" class="propiedad-card">
+                    <div class="propiedad-card-header">
+                        <span class="propiedad-card-titulo">{{ $propiedad->titulo_propiedad }}</span>
+                        @if($tieneAlquiler)
+                            <span class="badge-estado badge-activo">Alquilado</span>
+                        @else
+                            <span class="badge-estado badge-rechazado">Sin alquiler</span>
                         @endif
-                        @if($propiedad->pagos_pendientes > 0)
-                            <span class="badge-estado badge-pendiente">{{ $propiedad->pagos_pendientes }} pagos pendientes</span>
-                        @endif
-                        @if($propiedad->pagos_atrasados > 0)
-                            <span class="badge-estado badge-rechazado">{{ $propiedad->pagos_atrasados }} atrasados</span>
-                        @endif
+                    </div>
+                    <p class="propiedad-card-dir">{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }}</p>
+                    <div class="propiedad-card-divider"></div>
+                    <div class="propiedad-card-footer">
+                        <div class="propiedad-card-meta">
+                            @if($propiedad->incidencias_activas > 0)
+                                <span>{{ $propiedad->incidencias_activas }} incidencias</span>
+                            @endif
+                            @if($propiedad->pagos_pendientes > 0)
+                                <span>{{ $propiedad->pagos_pendientes }} pagos pend.</span>
+                            @endif
+                            @if($propiedad->pagos_atrasados > 0)
+                                <span style="color:#991B1B;">{{ $propiedad->pagos_atrasados }} atrasados</span>
+                            @endif
+                        </div>
+                        <span class="btn-revisar">Ver →</span>
                     </div>
                 </a>
             @empty
@@ -235,20 +345,36 @@
         <div class="card-franja"></div>
         <div class="card-header-admin card-header-gradient">
             <span>Actividad reciente</span>
+            <div class="card-header-right">
+                @if($notificaciones->count() > 0)
+                    <span class="badge-contador">{{ $notificaciones->count() }}</span>
+                @endif
+                <a href="{{ route('gestor.actividad') }}" class="link-ver-todos">Ver todo →</a>
+            </div>
         </div>
 
         <div class="timeline">
             <div class="timeline-linea"></div>
             @forelse($notificaciones as $notificacion)
-                <div class="timeline-item">
-                    <div class="timeline-punto" style="background:{{ $notificacion->color_notificacion ?? '#035498' }};"></div>
-                    <div class="timeline-contenido">
-                        <p class="timeline-texto">{{ $notificacion->titulo_notificacion ?? 'Actualización operativa' }}</p>
-                        <span class="timeline-hora">{{ \Carbon\Carbon::parse($notificacion->creado_notificacion)->diffForHumans() }}</span>
+                @php
+                    $icono = $notificacion->icono_notificacion ?? 'circle-fill';
+                    $color = $notificacion->color_notificacion ?? '#035498';
+                    $url = $notificacion->url_notificacion ?? '#';
+                @endphp
+                <a href="{{ $url }}" class="timeline-link">
+                    <div class="timeline-item">
+                        <div class="timeline-punto" style="background:{{ $color }};">
+                            <i class="bi bi-{{ $icono }}"></i>
+                        </div>
+                        <div class="timeline-contenido">
+                            <p class="timeline-texto">{{ $notificacion->titulo_notificacion ?? 'Actualización' }}</p>
+                            <span class="timeline-desc">{{ $notificacion->mensaje_notificacion ?? '' }}</span>
+                            <span class="timeline-hora">{{ \Carbon\Carbon::parse($notificacion->creado_notificacion)->diffForHumans() }}</span>
+                        </div>
                     </div>
-                </div>
+                </a>
             @empty
-                <p class="tarjeta-vacia">No hay notificaciones recientes.</p>
+                <p class="tarjeta-vacia">No hay actividad reciente.</p>
             @endforelse
         </div>
     </div>

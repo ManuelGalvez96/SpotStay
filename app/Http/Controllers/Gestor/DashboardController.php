@@ -65,6 +65,7 @@ class DashboardController extends Controller
             ->select(
                 'tbl_incidencia.id_incidencia',
                 'tbl_incidencia.titulo_incidencia',
+                'tbl_incidencia.estado_incidencia',
                 'tbl_incidencia.prioridad_incidencia',
                 'tbl_incidencia.creado_incidencia',
                 'tbl_propiedad.titulo_propiedad',
@@ -163,9 +164,34 @@ class DashboardController extends Controller
             ->when($gestorId, function ($query) use ($gestorId) {
                 $query->where('id_usuario_fk', $gestorId);
             })
-            ->whereIn('tipo_notificacion', ['nueva_incidencia', 'mensaje_nuevo', 'incidencia_actualizada', 'alquiler_pendiente'])
+            ->whereIn('tipo_notificacion', [
+                'nueva_incidencia',
+                'incidencia_actualizada',
+                'pago_realizado',
+                'pago_atrasado',
+                'mensaje_nuevo',
+                'presupuesto_creado',
+                'gasto_creado',
+                'alquiler_pendiente',
+                'propiedad_estado',
+                'alquiler_creado',
+                'alquiler_aprobado',
+                'contrato_firmado',
+            ])
+            ->select(
+                'id_notificacion',
+                'tipo_notificacion',
+                'titulo_notificacion',
+                'mensaje_notificacion',
+                'url_notificacion',
+                'icono_notificacion',
+                'color_notificacion',
+                'tipo_entidad_notificacion',
+                'id_entidad_notificacion',
+                'creado_notificacion'
+            )
             ->orderBy('creado_notificacion', 'desc')
-            ->limit(6)
+            ->limit(10)
             ->get();
 
         $mensajesSinLeer = DB::table('tbl_conversacion')
@@ -180,6 +206,24 @@ class DashboardController extends Controller
                 $query->whereNull('tbl_conversacion_usuario.ultima_lectura_conv_usuario')
                     ->orWhereColumn('ult.ultimo_creado', '>', 'tbl_conversacion_usuario.ultima_lectura_conv_usuario');
             })
+            ->count();
+
+        $pagosPendientesTotal = DB::table('tbl_alquiler_cuota')
+            ->join('tbl_alquiler', 'tbl_alquiler.id_alquiler', '=', 'tbl_alquiler_cuota.id_alquiler_fk')
+            ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
+            ->where('tbl_propiedad.id_gestor_fk', $gestorId)
+            ->where('tbl_alquiler.estado_alquiler', 'activo')
+            ->where('tbl_alquiler_cuota.estado', 'pendiente')
+            ->count();
+
+        $contratosPorVencer = DB::table('tbl_alquiler')
+            ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
+            ->where('tbl_propiedad.id_gestor_fk', $gestorId)
+            ->where('tbl_alquiler.estado_alquiler', 'activo')
+            ->whereBetween('tbl_alquiler.fecha_fin_alquiler', [
+                Carbon::now()->startOfDay(),
+                Carbon::now()->addDays(30)->endOfDay()
+            ])
             ->count();
 
         $resumenEstados = [
@@ -215,6 +259,8 @@ class DashboardController extends Controller
             'totalEsperandoDetalle',
             'notificaciones',
             'mensajesSinLeer',
+            'pagosPendientesTotal',
+            'contratosPorVencer',
             'resumenEstados',
             'totalesPropiedades',
             'permisosDashboard'

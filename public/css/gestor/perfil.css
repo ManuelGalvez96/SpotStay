@@ -158,3 +158,33 @@
         padding: 16px;
     }
 }
+
+@media (max-width: 480px) {
+    .perfil-avatar-section {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+    }
+
+    .perfil-avatar-upload {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .btn-avatar {
+        padding: 12px 24px;
+        font-size: 14px;
+    }
+
+    .campo-grupo input {
+        padding: 12px 14px;
+        font-size: 16px;
+    }
+
+    .btn-submit {
+        padding: 14px;
+        font-size: 15px;
+    }
+}

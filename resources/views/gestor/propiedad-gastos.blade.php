@@ -130,23 +130,23 @@
                         };
                     @endphp
                     <tr class="cuota-row" data-gasto-id="{{ $cuota->id_gasto_fk }}" data-propiedad-id="{{ $propiedad->id_propiedad }}" data-importe="{{ $cuota->importe_total_cuota }}" data-mes="{{ $cuota->mes_cuota }}" data-fecha-inicio="{{ $cuota->fecha_inicio_gasto ?? '' }}" data-fecha-fin="{{ $cuota->fecha_fin_gasto ?? '' }}">
-                        <td class="display-mes">@if($cuota->fecha_inicio_gasto && $cuota->fecha_fin_gasto){{ \Carbon\Carbon::parse($cuota->fecha_inicio_gasto)->format('d/m/Y') }} → {{ \Carbon\Carbon::parse($cuota->fecha_fin_gasto)->format('d/m/Y') }}@else{{ \Carbon\Carbon::parse($cuota->mes_cuota)->translatedFormat('m/Y') }}@endif</td>
-                        <td class="display-concepto">{{ $cuota->concepto_gasto ?: 'Sin concepto' }}</td>
-                        <td class="display-categoria">{{ $categoriaLabel }}</td>
-                        <td class="display-ambito">
+                        <td data-label="Periodo" class="display-mes">@if($cuota->fecha_inicio_gasto && $cuota->fecha_fin_gasto){{ \Carbon\Carbon::parse($cuota->fecha_inicio_gasto)->format('d/m/Y') }} → {{ \Carbon\Carbon::parse($cuota->fecha_fin_gasto)->format('d/m/Y') }}@else{{ \Carbon\Carbon::parse($cuota->mes_cuota)->translatedFormat('m/Y') }}@endif</td>
+                        <td data-label="Concepto" class="display-concepto">{{ $cuota->concepto_gasto ?: 'Sin concepto' }}</td>
+                        <td data-label="Categoría" class="display-categoria">{{ $categoriaLabel }}</td>
+                        <td data-label="Ámbito" class="display-ambito">
                             @if(($cuota->ambito_gasto ?? 'propiedad') === 'contrato')
                                 Contrato #{{ $cuota->id_alquiler_fk }}
                             @else
                                 Propiedad
                             @endif
                         </td>
-                        <td class="display-fecha">{{ \Carbon\Carbon::parse($cuota->vencimiento_cuota)->format('d/m/Y') }}</td>
-                        <td>
+                        <td data-label="Vencimiento" class="display-fecha">{{ \Carbon\Carbon::parse($cuota->vencimiento_cuota)->format('d/m/Y') }}</td>
+                        <td data-label="Estado">
                             <span class="badge-estado badge-gasto-{{ $estadoVisual }}">
                                 {{ ucfirst(str_replace('_', ' ', $estadoVisual)) }}
                             </span>
                         </td>
-                        <td>
+                        <td data-label="Detalle">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
                                 <div class="detalle-acciones" style="min-width:160px;">
                                     @if($cuota->estado_cuota !== 'pagado')

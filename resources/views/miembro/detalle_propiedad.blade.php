@@ -114,11 +114,11 @@
                     @csrf
                     <div class="grupo-filtro">
                         <label class="etiqueta-filtro" for="fecha-inicio-solicitud">Fecha de inicio</label>
-                        <input type="date" id="fecha-inicio-solicitud" name="fecha_inicio_solicitud" class="campo-filtro" required />
+                        <input type="date" id="fecha-inicio-solicitud" name="fecha_inicio_solicitud" class="campo-filtro" min="{{ \Carbon\Carbon::today()->addDay()->format('Y-m-d') }}" />
                     </div>
                     <div class="grupo-filtro">
                         <label class="etiqueta-filtro" for="mensaje-solicitud">Mensaje</label>
-                        <textarea id="mensaje-solicitud" name="mensaje_solicitud" class="campo-filtro" rows="3" required></textarea>
+                        <textarea id="mensaje-solicitud" name="mensaje_solicitud" class="campo-filtro" rows="3"></textarea>
                     </div>
                     <button class="boton-aplicar boton-contacto" type="submit">Enviar solicitud <i class="bi bi-house"></i></button>
                 </form>

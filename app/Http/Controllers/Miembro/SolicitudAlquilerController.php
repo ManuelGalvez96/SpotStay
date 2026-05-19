@@ -13,8 +13,8 @@ class SolicitudAlquilerController extends Controller
     public function store(Request $request, $id)
     {
         $request->validate([
-            'fecha_inicio_solicitud' => 'required|date',
-            'mensaje_solicitud' => 'required|string|max:500',
+            'fecha_inicio_solicitud' => 'required|date|after:today',
+            'mensaje_solicitud' => 'nullable|string|max:500',
         ]);
 
         $propiedad = DB::table('tbl_propiedad')

@@ -369,6 +369,10 @@ body {
     padding: 16px;
 }
 
+.plan-form-creacion {
+    margin-top: 12px;
+}
+
 .plan-form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

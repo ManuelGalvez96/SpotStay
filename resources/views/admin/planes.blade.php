@@ -6,6 +6,11 @@
     <link rel="stylesheet" href="{{ asset('css/admin/configuracion.css') }}">
 @endsection
 
+@section('scripts')
+    <script src="{{ asset('js/shared/swal-oso.js') }}"></script>
+    <script src="{{ asset('js/admin/planes.js') }}"></script>
+@endsection
+
 @section('content')
 <div class="hero-admin">
     <div class="hero-content">
@@ -65,22 +70,68 @@
     </div>
 
     <div class="configuracion-admin-body">
-        @if(session('mensaje_exito_plan'))
-            <div class="alerta-configuracion alerta-exito">
-                {{ session('mensaje_exito_plan') }}
+        <section class="configuracion-card-seccion planes-seccion" id="crear-plan">
+            <div class="configuracion-cabecera-seccion">
+                <span class="configuracion-icono icono-verde"><i class="bi bi-plus-circle"></i></span>
+                <h2>Crear plan</h2>
             </div>
-        @endif
 
-        @if($errors->any())
-            <div class="alerta-configuracion alerta-error">
-                <strong>Revisa los datos:</strong>
-                <ul>
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+            <p class="planes-intro">
+                Rellena los datos para crear un nuevo plan desde administración.
+            </p>
+
+            <form action="{{ route('admin.planes.crear') }}" method="POST" class="plan-form plan-form-creacion">
+                @csrf
+
+                <div class="plan-form-grid">
+                    <div class="campo-plan">
+                        <label for="crear_nombre_plan">Nombre</label>
+                        <input type="text" id="crear_nombre_plan" name="nombre_plan" value="{{ old('nombre_plan') }}" maxlength="50" placeholder="Ej. Premium">
+                    </div>
+
+                    <div class="campo-plan">
+                        <label for="crear_slug_plan">Slug</label>
+                        <input type="text" id="crear_slug_plan" name="slug_plan" value="{{ old('slug_plan') }}" maxlength="30" placeholder="ej. premium">
+                    </div>
+
+                    <div class="campo-plan">
+                        <label for="crear_rol_destino">Rol destino</label>
+                        <select id="crear_rol_destino" name="rol_destino">
+                            <option value="miembro" {{ old('rol_destino') === 'miembro' ? 'selected' : '' }}>Miembro</option>
+                            <option value="arrendador" {{ old('rol_destino', 'arrendador') === 'arrendador' ? 'selected' : '' }}>Arrendador</option>
+                        </select>
+                    </div>
+
+                    <div class="campo-plan">
+                        <label for="crear_precio_plan">Precio</label>
+                        <input type="number" step="0.01" min="0" id="crear_precio_plan" name="precio_plan" value="{{ old('precio_plan') }}" placeholder="0.00">
+                    </div>
+
+                    <div class="campo-plan">
+                        <label for="crear_max_propiedades_plan">Máx. propiedades</label>
+                        <input type="number" min="0" max="255" id="crear_max_propiedades_plan" name="max_propiedades_plan" value="{{ old('max_propiedades_plan', 1) }}">
+                    </div>
+
+                    <div class="campo-plan campo-plan-ancho">
+                        <label for="crear_descripcion_plan">Descripción</label>
+                        <textarea id="crear_descripcion_plan" name="descripcion_plan" rows="3" placeholder="Describe qué incluye el plan">{{ old('descripcion_plan') }}</textarea>
+                    </div>
+
+                    <div class="campo-plan campo-plan-check">
+                        <label class="checkbox-plan">
+                            <input type="checkbox" name="activo_plan" value="1" {{ old('activo_plan', true) ? 'checked' : '' }}>
+                            <span>Crear plan activo</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="plan-form-footer">
+                    <button type="submit" class="btn-guardar-plan">
+                        Crear plan
+                    </button>
+                </div>
+            </form>
+        </section>
 
         <section class="configuracion-card-seccion planes-seccion">
             <div class="configuracion-cabecera-seccion">
@@ -188,4 +239,10 @@
         </section>
     </div>
 </div>
+<div id="planes-messages"
+    style="display:none"
+    data-success="{{ session('mensaje_exito_plan') ? e(session('mensaje_exito_plan')) : '' }}"
+    data-error="{{ $errors->any() ? e($errors->first()) : '' }}">
+</div>
+
 @endsection

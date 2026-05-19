@@ -22,6 +22,33 @@ class ConfiguracionController extends Controller
         return view('admin.planes', compact('planes'));
     }
 
+    public function crearPlan(Request $request)
+    {
+        $datosValidados = $request->validate([
+            'nombre_plan' => ['required', 'string', 'max:50'],
+            'slug_plan' => ['required', 'string', 'max:30', 'unique:tbl_plan,slug_plan'],
+            'rol_destino' => ['required', Rule::in(['miembro', 'arrendador'])],
+            'precio_plan' => ['required', 'numeric', 'min:0'],
+            'max_propiedades_plan' => ['required', 'integer', 'min:0', 'max:255'],
+            'descripcion_plan' => ['nullable', 'string'],
+            'activo_plan' => ['nullable', 'boolean'],
+        ]);
+
+        Plan::create([
+            'nombre_plan' => $datosValidados['nombre_plan'],
+            'slug_plan' => $datosValidados['slug_plan'],
+            'rol_destino' => $datosValidados['rol_destino'],
+            'precio_plan' => $datosValidados['precio_plan'],
+            'max_propiedades_plan' => $datosValidados['max_propiedades_plan'],
+            'descripcion_plan' => $datosValidados['descripcion_plan'] ?? null,
+            'activo_plan' => $request->boolean('activo_plan'),
+            'creado_plan' => Carbon::now(),
+            'actualizado_plan' => Carbon::now(),
+        ]);
+
+        return redirect()->route('admin.planes')->with('mensaje_exito_plan', 'Plan creado correctamente.');
+    }
+
     public function actualizarPlan(Request $request, $id)
     {
         $plan = Plan::findOrFail($id);

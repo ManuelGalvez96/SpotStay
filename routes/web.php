@@ -63,6 +63,7 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index']);
     Route::get('/admin/configuracion', [ConfiguracionController::class, 'index']);
     Route::get('/admin/planes', [ConfiguracionController::class, 'planes'])->name('admin.planes');
+    Route::post('/admin/planes/crear', [ConfiguracionController::class, 'crearPlan'])->name('admin.planes.crear');
     Route::post('/admin/planes/{id}/actualizar', [ConfiguracionController::class, 'actualizarPlan'])->name('admin.planes.actualizar');
     Route::post('/admin/alquiler/{id}/aprobar', [DashboardController::class, 'aprobarAlquiler']);
     Route::post('/admin/alquiler/{id}/rechazar', [DashboardController::class, 'rechazarAlquiler']);

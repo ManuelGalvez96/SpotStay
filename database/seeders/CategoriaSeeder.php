@@ -20,13 +20,15 @@ class CategoriaSeeder extends Seeder
         ];
 
         foreach ($categorias as $categoria) {
-            DB::table('tbl_categoria')->insert([
-                'nombre_categoria' => $categoria['nombre_categoria'],
-                'descripcion_categoria' => $categoria['descripcion_categoria'],
-                'estado_categoria' => 'activa',
-                'creado_categoria' => now(),
-                'actualizado_categoria' => now(),
-            ]);
+            DB::table('tbl_categoria')->updateOrInsert(
+                ['nombre_categoria' => $categoria['nombre_categoria']],
+                [
+                    'descripcion_categoria' => $categoria['descripcion_categoria'],
+                    'estado_categoria' => 'activa',
+                    'creado_categoria' => now(),
+                    'actualizado_categoria' => now(),
+                ]
+            );
         }
     }
 }

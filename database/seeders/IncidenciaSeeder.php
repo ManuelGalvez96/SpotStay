@@ -72,6 +72,26 @@ class IncidenciaSeeder extends Seeder
                 $asignado = $gestores->random();
                 $fechaCreacion = now()->subDays(rand(1, 30));
 
+                $presupuesto = null;
+                $detallePresupuesto = null;
+                $responsablePago = null;
+                $pagadoPresupuesto = false;
+                $pagadoIncidencia = null;
+
+                if (in_array($estado, ['esperando_decision', 'esperando_pago', 'solucionada', 'resuelta'])) {
+                    $presupuesto = rand(80, 600);
+                    $detallePresupuesto = 'Reparación de materiales, mano de obra y desplazamiento.';
+                }
+
+                if (in_array($estado, ['esperando_pago', 'solucionada', 'resuelta'])) {
+                    $responsablePago = rand(0, 1) ? 'arrendador' : 'inquilino';
+                }
+
+                if (in_array($estado, ['solucionada', 'resuelta'])) {
+                    $pagadoPresupuesto = true;
+                    $pagadoIncidencia = $fechaCreacion->copy()->addDays(rand(1, 5));
+                }
+
                 Incidencia::firstOrCreate(
                     [
                         'id_propiedad_fk' => $propiedad->id_propiedad,
@@ -84,6 +104,11 @@ class IncidenciaSeeder extends Seeder
                         'estado_incidencia' => $estado,
                         'id_reporta_fk' => $reportador->id_usuario,
                         'id_asignado_fk' => $asignado->id_usuario,
+                        'presupuesto_importe_incidencia' => $presupuesto,
+                        'detalle_presupuesto_incidencia' => $detallePresupuesto,
+                        'responsable_pago_incidencia' => $responsablePago,
+                        'pagado_presupuesto_incidencia' => $pagadoPresupuesto,
+                        'pagado_incidencia' => $pagadoIncidencia,
                         'creado_incidencia' => $fechaCreacion,
                         'actualizado_incidencia' => in_array($estado, ['solucionada', 'resuelta']) ? $fechaCreacion->copy()->addDays(rand(1, 10)) : now(),
                     ]

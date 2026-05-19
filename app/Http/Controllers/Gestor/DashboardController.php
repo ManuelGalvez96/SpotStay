@@ -65,6 +65,7 @@ class DashboardController extends Controller
             ->select(
                 'tbl_incidencia.id_incidencia',
                 'tbl_incidencia.titulo_incidencia',
+                'tbl_incidencia.estado_incidencia',
                 'tbl_incidencia.prioridad_incidencia',
                 'tbl_incidencia.creado_incidencia',
                 'tbl_propiedad.titulo_propiedad',

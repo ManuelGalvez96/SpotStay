@@ -161,7 +161,42 @@ var asignarEventosTarjetas = function() {
 };
 
 var asignarEventosModal = function() {
-    // El modal de admin es solo lectura: no hay acciones de edición.
+    // Botón contactar en modal
+    var btnContactar = document.getElementById('btnContactarInquilino');
+    if (btnContactar) {
+        btnContactar.onclick = function() {
+            if (!incidenciaIdActual) {
+                mostrarAlertaError('Error', 'No hay incidencia seleccionada');
+                return;
+            }
+            var destinoEl = document.getElementById('modalContactarDestino');
+            var mensajeEl = document.getElementById('modalMensajeContacto');
+            var destino = destinoEl ? destinoEl.value : 'inquilino';
+            var mensaje = mensajeEl ? mensajeEl.value : '';
+
+            fetch('/admin/incidencias/' + incidenciaIdActual + '/contactar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ destino: destino, mensaje: mensaje })
+            })
+            .then(function(resp) { return resp.json(); })
+            .then(function(res) {
+                if (res.success) {
+                    mostrarAlertaExito('Correo enviado', 'El correo se ha enviado correctamente');
+                    cerrarModal();
+                } else {
+                    mostrarAlertaError('Error', res.error || 'No se pudo enviar el correo');
+                }
+            })
+            .catch(function(err) {
+                console.error(err);
+                mostrarAlertaError('Error', 'Error enviando el correo');
+            });
+        };
+    }
 };
 
 var asignarEventosVista = function() {
@@ -290,14 +325,17 @@ var renderizarKanban = function(data) {
     // Renderizar columna Abierta
     renderizarColumnaKanban('kanban-col-abierta', data.abiertas);
     
-    // Renderizar columna En proceso
-    renderizarColumnaKanban('kanban-col-proceso', data.enProceso);
+    // Renderizar columna Esperando Decisión
+    renderizarColumnaKanban('kanban-col-esperando-decision', data.esperandoDecision);
+    
+    // Renderizar columna Esperando Pago
+    renderizarColumnaKanban('kanban-col-esperando-pago', data.esperandoPago);
+    
+    // Renderizar columna Solucionada
+    renderizarColumnaKanban('kanban-col-solucionada', data.solucionadas);
     
     // Renderizar columna Resuelta
     renderizarColumnaKanban('kanban-col-resuelta', data.resueltas);
-    
-    // Renderizar columna Cerrada
-    renderizarColumnaKanban('kanban-col-cerrada', data.cerradas);
     
     // Renderizar tabla de lista
     renderizarTablaIncidencias(data);
@@ -305,14 +343,16 @@ var renderizarKanban = function(data) {
 
 var actualizarBadgesKanban = function(data) {
     var badgeAbierta = document.querySelector('.kanban-col-abierta .badge-kanban');
-    var badgeProceso = document.querySelector('.kanban-col-proceso .badge-kanban');
+    var badgeEsperandoDecision = document.querySelector('.kanban-col-esperando-decision .badge-kanban');
+    var badgeEsperandoPago = document.querySelector('.kanban-col-esperando-pago .badge-kanban');
+    var badgeSolucionada = document.querySelector('.kanban-col-solucionada .badge-kanban');
     var badgeResuelta = document.querySelector('.kanban-col-resuelta .badge-kanban');
-    var badgeCerrada = document.querySelector('.kanban-col-cerrada .badge-kanban');
     
     if (badgeAbierta) { badgeAbierta.textContent = data.totalAbiertas; }
-    if (badgeProceso) { badgeProceso.textContent = data.totalEnProceso; }
+    if (badgeEsperandoDecision) { badgeEsperandoDecision.textContent = data.totalEsperandoDecision; }
+    if (badgeEsperandoPago) { badgeEsperandoPago.textContent = data.totalEsperandoPago; }
+    if (badgeSolucionada) { badgeSolucionada.textContent = data.totalSolucionadas; }
     if (badgeResuelta) { badgeResuelta.textContent = data.totalResueltas; }
-    if (badgeCerrada) { badgeCerrada.textContent = data.totalCerradas; }
 };
 
 var renderizarColumnaKanban = function(className, incidencias) {
@@ -347,13 +387,13 @@ var crearTarjetaIncidencia = function(inc) {
     }
     
     var iconoCat = 'bi-wrench';
-    switch(inc.categoria_incidencia) {
-        case 'fontaneria': iconoCat = 'bi-droplet'; break;
-        case 'electricidad': iconoCat = 'bi-lightning'; break;
-        case 'calefaccion': iconoCat = 'bi-thermometer'; break;
-        case 'climatizacion': iconoCat = 'bi-fan'; break;
-        case 'humedades': iconoCat = 'bi-cloud-rain'; break;
-        case 'cerrajeria': iconoCat = 'bi-key'; break;
+    switch(inc.nombre_categoria) {
+        case 'Fontanería': iconoCat = 'bi-droplet'; break;
+        case 'Electricidad': iconoCat = 'bi-lightning'; break;
+        case 'Calefacción': iconoCat = 'bi-thermometer'; break;
+        case 'Climatización': iconoCat = 'bi-fan'; break;
+        case 'Humedades': iconoCat = 'bi-cloud-rain'; break;
+        case 'Cerrajería': iconoCat = 'bi-key'; break;
     }
     
     var partes = (inc.nombre_inquilino || '').split(' ');
@@ -385,7 +425,7 @@ var crearTarjetaIncidencia = function(inc) {
                '</div>' +
                '<div class="tarjeta-categoria">' +
                '<i class="bi ' + iconoCat + '"></i>' +
-               '<span>' + (inc.categoria_incidencia || '').charAt(0).toUpperCase() + (inc.categoria_incidencia || '').slice(1) + '</span>' +
+               '<span>' + (inc.nombre_categoria || 'Sin categoría') + '</span>' +
                '</div>';
     
     if (inc.nombre_gestor && (inc.estado_incidencia === 'en_proceso' || inc.estado_incidencia === 'resuelta')) {
@@ -458,22 +498,28 @@ var renderizarTablaIncidencias = function(data) {
                 todasIncidencias.push(data.abiertas[i]);
             }
         }
-        if (data.enProceso) {
+        if (data.esperandoDecision) {
             var i;
-            for (i = 0; i < data.enProceso.length; i++) {
-                todasIncidencias.push(data.enProceso[i]);
+            for (i = 0; i < data.esperandoDecision.length; i++) {
+                todasIncidencias.push(data.esperandoDecision[i]);
+            }
+        }
+        if (data.esperandoPago) {
+            var i;
+            for (i = 0; i < data.esperandoPago.length; i++) {
+                todasIncidencias.push(data.esperandoPago[i]);
+            }
+        }
+        if (data.solucionadas) {
+            var i;
+            for (i = 0; i < data.solucionadas.length; i++) {
+                todasIncidencias.push(data.solucionadas[i]);
             }
         }
         if (data.resueltas) {
             var i;
             for (i = 0; i < data.resueltas.length; i++) {
                 todasIncidencias.push(data.resueltas[i]);
-            }
-        }
-        if (data.cerradas) {
-            var i;
-            for (i = 0; i < data.cerradas.length; i++) {
-                todasIncidencias.push(data.cerradas[i]);
             }
         }
     }
@@ -509,15 +555,22 @@ var crearFilaIncidencia = function(inc) {
     
     var estadoBadgeClass = 'badge-' + inc.estado_incidencia;
     var estadoLabel = inc.estado_incidencia.charAt(0).toUpperCase() + inc.estado_incidencia.slice(1);
-    if (inc.estado_incidencia === 'en_proceso') {
-        estadoLabel = 'En proceso';
+    if (inc.estado_incidencia === 'esperando_decision') {
+        estadoLabel = 'Esperando decisión';
+    } else if (inc.estado_incidencia === 'esperando_pago') {
+        estadoLabel = 'Esperando pago';
     }
     
     var prioridadLabel = inc.prioridad_incidencia.charAt(0).toUpperCase() + inc.prioridad_incidencia.slice(1);
-    var categoriaLabel = inc.categoria_incidencia.charAt(0).toUpperCase() + inc.categoria_incidencia.slice(1);
+    var categoriaLabel = inc.nombre_categoria || 'Sin categoría';
     
-    fila.className = (inc.estado_incidencia === 'cerrada') ? 'fila-inactiva' : '';
-    fila.innerHTML = '<td data-label="TÍTULO"><strong>' + (inc.titulo_incidencia || '') + '</strong></td>' +
+    fila.className = (inc.estado_incidencia === 'resuelta') ? 'fila-inactiva' : '';
+    var tituloHTML = '<strong>' + (inc.titulo_incidencia || '') + '</strong>';
+    if (inc.inactivo) {
+        tituloHTML = '<strong>' + (inc.titulo_incidencia || '') + ' <span class="badge bg-danger">Inactiva</span></strong>';
+        fila.className += ' fila-inactividad';
+    }
+    fila.innerHTML = '<td data-label="TÍTULO">' + tituloHTML + '</td>' +
                      '<td data-label="PROPIEDAD" class="col-tablet-hide">' + truncarTexto(inc.direccion_propiedad || '', 30) + '</td>' +
                      '<td data-label="CATEGORÍA" class="col-mobile-hide">' + categoriaLabel + '</td>' +
                      '<td data-label="PRIORIDAD"><span class="badge-prioridad badge-prioridad-' + inc.prioridad_incidencia + '">' + prioridadLabel + '</span></td>' +
@@ -538,7 +591,7 @@ var abrirModal = function(id) {
     fetch('/admin/incidencias/' + id)
         .then(function(response) { return response.json(); })
         .then(function(data) {
-            rellenarModal(data.incidencia);
+            rellenarModal(data.incidencia, data.encargadoPago);
             rellenarHistorial(data.historial);
             marcarEstadoActivo(data.incidencia.estado_incidencia);
             mostrarModal();
@@ -549,7 +602,7 @@ var abrirModal = function(id) {
         });
 };
 
-var rellenarModal = function(inc) {
+var rellenarModal = function(inc, encargadoPago) {
     estadoActualModal = inc.estado_incidencia;
 
     var titulo = document.getElementById('modalTituloInc');
@@ -557,6 +610,8 @@ var rellenarModal = function(inc) {
     var propiedad = document.getElementById('modalPropiedadInc');
     var inquilino = document.getElementById('modalInquilinoInc');
     var categoria = document.getElementById('modalCategoriaInc');
+    var arrendador = document.getElementById('modalArrendadorInc');
+    var gestor = document.getElementById('modalGestorInc');
     var badgePrioridad = document.getElementById('modalBadgePrioridad');
     var badgeCategoria = document.getElementById('modalBadgeCategoria');
 
@@ -566,7 +621,7 @@ var rellenarModal = function(inc) {
         propiedad.textContent = (inc.direccion_propiedad || '') + ', ' + (inc.ciudad_propiedad || '');
     }
     if (inquilino) { inquilino.textContent = inc.nombre_inquilino || ''; }
-    if (categoria) { categoria.textContent = inc.categoria_incidencia || ''; }
+    if (categoria) { categoria.textContent = inc.nombre_categoria || 'Sin categoría'; }
     if (badgePrioridad) {
         badgePrioridad.textContent = inc.prioridad_incidencia || '';
         badgePrioridad.className = 'badge';
@@ -578,7 +633,23 @@ var rellenarModal = function(inc) {
         }
     }
     if (badgeCategoria) {
-        badgeCategoria.textContent = inc.categoria_incidencia || '';
+        badgeCategoria.textContent = inc.nombre_categoria || 'Sin categoría';
+    }
+    // Encargado de pago
+    var modalEnc = document.getElementById('modalEncargadoPago');
+    if (modalEnc) {
+        if (encargadoPago && encargadoPago.nombre) {
+            modalEnc.textContent = encargadoPago.nombre;
+        } else {
+            modalEnc.textContent = '-';
+        }
+    }
+    // Arrendador y gestor
+    if (arrendador) {
+        arrendador.textContent = inc.nombre_arrendador || '-';
+    }
+    if (gestor) {
+        gestor.textContent = inc.nombre_gestor || '-';
     }
 };
 
@@ -612,12 +683,14 @@ var rellenarHistorial = function(historial) {
         var textoEvento = item.comentario_historial || '';
         if (tipo === 'abierta') {
             textoEvento = textoEvento || 'Incidencia abierta';
-        } else if (tipo === 'en_proceso') {
-            textoEvento = textoEvento || 'Incidencia en proceso';
+        } else if (tipo === 'esperando_decision') {
+            textoEvento = textoEvento || 'Esperando decisión del arrendador';
+        } else if (tipo === 'esperando_pago') {
+            textoEvento = textoEvento || 'Esperando pago del arrendador';
+        } else if (tipo === 'solucionada') {
+            textoEvento = textoEvento || 'Incidencia solucionada';
         } else if (tipo === 'resuelta') {
             textoEvento = textoEvento || 'Incidencia resuelta';
-        } else if (tipo === 'cerrada') {
-            textoEvento = textoEvento || 'Incidencia cerrada';
         }
 
         evento.innerHTML = '<div class="timeline-punto-modal"></div>'

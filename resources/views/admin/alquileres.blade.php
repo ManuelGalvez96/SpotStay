@@ -103,16 +103,7 @@
         </select>
     </div>
     <div class="toolbar-derecha">
-        {{-- 
-        <button id="btnExportarAlq" class="btn-exportar">
-            <i class="bi bi-download"></i>
-            <span>Exportar</span>
-        </button>
-        --}}
-        <a href="/admin/alquileres/nuevo" id="btnNuevoAlquiler" class="btn-primario">
-            <i class="bi bi-plus"></i>
-            <span>Nuevo alquiler</span>
-        </a>
+        {{-- El admin sólo puede ver el contrato PDF; no se permiten acciones de creación/gestión desde aquí --}}
     </div>
 </div>
 
@@ -139,7 +130,7 @@
                 <th class="col-tablet-hide">INICIO</th>
                 <th class="col-tablet-hide">FIN</th>
                 <th>ESTADO</th>
-                <th>ACCIONES</th>
+                <th>CONTRATO</th>
             </tr>
         </thead>
         <tbody id="tbodyAlquileres">
@@ -199,26 +190,15 @@
                         <span class="badge-estado badge-estado-{{ $alquiler->estado_alquiler }}">{{ ucfirst($alquiler->estado_alquiler) }}</span>
                     </td>
 
-                    <td data-label="ACCIONES">
-                        <div class="acciones-tabla">
-                            <button class="btn-accion btn-ver-alq" data-id="{{ $alquiler->id_alquiler }}" title="Ver detalle">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn-accion btn-editar-alq" data-id="{{ $alquiler->id_alquiler }}" title="Editar">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn-accion btn-eliminar-alq" data-id="{{ $alquiler->id_alquiler }}" title="Eliminar">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                            @if($alquiler->estado_alquiler === 'pendiente')
-                                <button class="btn-accion btn-editar btn-aprobar-alq" data-id="{{ $alquiler->id_alquiler }}" title="Aprobar">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <div class="toggle-switch activo btn-rechazar-alq" data-id="{{ $alquiler->id_alquiler }}" title="Rechazar">
-                                    <div class="toggle-circulo"></div>
-                                </div>
-                            @endif
-                        </div>
+                    <td data-label="CONTRATO">
+                        @if(!empty($alquiler->url_pdf_contrato))
+                            <a href="{{ $alquiler->url_pdf_contrato }}" target="_blank" class="btn-exportar">
+                                <i class="bi bi-file-earmark-pdf"></i>
+                                <span>Ver PDF</span>
+                            </a>
+                        @else
+                            <span class="text-muted">Sin contrato</span>
+                        @endif
                     </td>
                 </tr>
             @empty
@@ -236,162 +216,7 @@
     </div>
 </div>
 
-<!-- MODAL DETALLE ALQUILER -->
-<div class="modal-overlay" id="modalOverlay"></div>
-<div class="modal-admin modal-ancho" id="modalAlquiler">
-
-    <div class="modal-header-admin">
-        <div class="modal-titulo-grupo">
-            <span class="modal-titulo">Detalle de alquiler</span>
-            <span id="modalBadgeEstadoAlq" class="badge-estado"></span>
-        </div>
-        <button id="btnCerrarModal" class="btn-cerrar-modal">
-            <i class="bi bi-x"></i>
-        </button>
-    </div>
-
-    <div class="modal-imagen-alq" id="modalImagenAlq">
-        <div class="modal-imagen-texto" id="modalImagenTexto"></div>
-    </div>
-
-    <div class="modal-cuerpo">
-
-        <!-- PARTES IMPLICADAS -->
-        <span class="seccion-label">PARTES IMPLICADAS</span>
-        <div class="modal-partes-grid">
-
-            <div class="parte-bloque">
-                <span class="parte-label">ARRENDADOR</span>
-                <div class="parte-persona" id="bloqueArrendador">
-                    <div class="modal-avatar" id="avatarArrendador"></div>
-                    <div>
-                        <p id="nombreArrendador" class="parte-nombre"></p>
-                        <p id="emailArrendador" class="parte-email"></p>
-                        <p id="telefonoArrendador" class="parte-email"></p>
-                    </div>
-                </div>
-                <a id="linkArrendador" href="#" class="link-accion">Ver perfil →</a>
-            </div>
-
-            <div class="parte-bloque">
-                <span class="parte-label">INQUILINO</span>
-                <div class="parte-persona" id="bloqueInquilino">
-                    <div class="modal-avatar" id="avatarInquilino"></div>
-                    <div>
-                        <p id="nombreInquilino" class="parte-nombre"></p>
-                        <p id="emailInquilino" class="parte-email"></p>
-                        <p id="telefonoInquilino" class="parte-email"></p>
-                    </div>
-                </div>
-                <a id="linkInquilino" href="#" class="link-accion">Ver perfil →</a>
-            </div>
-        </div>
-
-        <div class="modal-separador"></div>
-
-        <!-- PROPIEDAD -->
-        <span class="seccion-label">PROPIEDAD</span>
-        <div class="propiedad-modal-fila">
-            <div class="thumb-propiedad thumb-modal" id="thumbPropiedadModal"></div>
-            <div>
-                <p id="nombrePropiedadModal" class="propiedad-nombre"></p>
-                <p id="ciudadPropiedadModal" class="propiedad-ciudad"></p>
-                <p id="precioPropiedadModal" class="precio-modal"></p>
-            </div>
-        </div>
-        <a id="linkPropiedad" href="#" class="link-accion">Ver propiedad →</a>
-
-        <div class="modal-separador"></div>
-
-        <!-- FECHAS Y CONDICIONES -->
-        <span class="seccion-label">FECHAS Y CONDICIONES</span>
-        <div class="modal-grid-3">
-            <div class="dato-item">
-                <span class="dato-label">Inicio</span>
-                <span class="dato-valor" id="dataInicioAlq"></span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Fin</span>
-                <span class="dato-valor" id="dataFinAlq"></span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Duración</span>
-                <span class="dato-valor" id="dataDuracionAlq"></span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Alquiler</span>
-                <span class="dato-valor" id="dataPrecioAlq"></span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Fianza</span>
-                <span class="dato-valor" id="dataFianzaAlq"></span>
-            </div>
-            <div class="dato-item">
-                <span class="dato-label">Total anual</span>
-                <span class="dato-valor" id="dataTotalAnual"></span>
-            </div>
-        </div>
-
-        <div class="modal-separador"></div>
-
-        <!-- ESTADO DEL CONTRATO -->
-        <span class="seccion-label">ESTADO DEL CONTRATO</span>
-        <div class="contrato-estado-grid">
-
-            <div class="contrato-bloque">
-                <div class="contrato-fila">
-                    <span>Firma arrendador</span>
-                    <span id="firmaArrendador" class="badge-estado"></span>
-                </div>
-                <div class="contrato-fila">
-                    <span>Firma inquilino</span>
-                    <span id="firmaInquilino" class="badge-estado"></span>
-                </div>
-                <div class="contrato-fila">
-                    <span>Estado contrato</span>
-                    <span id="estadoContrato" class="badge-estado"></span>
-                </div>
-            </div>
-
-            <div class="contrato-bloque">
-                <div class="contrato-fila">
-                    <span>Primer pago (fianza)</span>
-                    <span id="estadoPago" class="badge-estado"></span>
-                </div>
-                <p id="importePago" class="pago-importe"></p>
-                <p id="referenciaPago" class="pago-referencia"></p>
-            </div>
-        </div>
-
-        <div class="modal-separador"></div>
-
-        <!-- HISTORIAL -->
-        <span class="seccion-label">HISTORIAL</span>
-        <div class="timeline-alq" id="timelineAlquiler">
-            <div class="timeline-linea-v"></div>
-        </div>
-
-        <div class="modal-separador"></div>
-
-        <!-- NOTAS -->
-        <span class="seccion-label">NOTAS DEL ADMIN</span>
-        <textarea id="modalNotasAlq" class="textarea-admin" placeholder="Añade notas sobre este alquiler..."></textarea>
-
-    </div>
-
-    <div class="modal-footer-admin">
-        <button id="btnEditarModal" class="btn-exportar">Editar alquiler</button>
-        <button id="btnRechazarModal" class="btn-desactivar">Rechazar alquiler</button>
-        <div class="modal-footer-derecha">
-            <button id="btnVerContrato" class="btn-exportar">
-                <i class="bi bi-file-text"></i>
-                <span>Ver contrato</span>
-            </button>
-            <button id="btnEliminarModal" class="btn-desactivar">Eliminar alquiler</button>
-            <button id="btnAprobarModal" class="btn-aprobar-verde">Aprobar alquiler</button>
-        </div>
-    </div>
-</div>
+<!-- Modal de detalle eliminado: el admin verá el PDF directamente desde la tabla -->
 
 <!-- MODAL NUEVO ALQUILER — 4 PASOS -->
 <div class="modal-overlay-nuevo" id="modalOverlayNuevo"></div>

@@ -28,7 +28,7 @@
             <small>Nueva propiedad</small>
         </button>
     </section>
-
+ 
     <section class="content-grid">
         <div class="panel list-panel">
             <div class="panel-header">
@@ -47,62 +47,15 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($propiedades as $propiedad)
-                        <tr>
-                            <td>
-                                <div class="property-info">
-                                    <p class="property-title">{{ $propiedad->titulo_propiedad }}</p>
-                                    <p class="property-meta">{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }} {{ $propiedad->codigo_postal_propiedad }}</p>
-                                    <p class="property-meta">{{ number_format((float) $propiedad->precio_propiedad, 2, ',', '.') }} €/mes</p>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="badge badge-{{ $propiedad->estado_propiedad }}">{{ ucfirst($propiedad->estado_propiedad) }}</span>
-                            </td>
-                            <td>
-                                {{ $propiedad->total_incidencias ?? 'Sin incidencias' }}
-                            </td>
-                            @php
-                                //Cálculo de las cuotas
-                                $atrasadas = $propiedad->cuotas_atrasadas ?? 0;
-                                $pendientes = $propiedad->cuotas_pendientes ?? 0;
-
-                                if($atrasadas > 0) {
-                                    $estado = 'atrasado';
-                                    $label = 'Atrasado';
-                                } elseif($pendientes > 0) {
-                                    $estado = 'pendiente';
-                                    $label = 'Pendiente';
-                                } else {
-                                    $estado = 'al-dia';
-                                    $label = 'Al día';
-                                }
-                            @endphp
-                            <td>
-                                <span class="badge badge-{{ $estado }}">{{ $label}}</span>
-                            </td>
-                            <td>
-                                <span class="gestor-nombre">{{ $propiedad->nombre_gestor ?? 'Sin gestor asignado' }}</span>
-                                <button type="button" class="btn-gear" aria-label="Configurar gestor" data-propiedad-id="{{ $propiedad->id_propiedad }}" onclick="abrirModalGestor(this.dataset.propiedadId)">
-                                    <i class="bi bi-gear"></i>
-                                </button>
-                            </td>
-                            <td>
-                                <div class="table-actions">
-                                    <button class="action-link" type="button" data-propiedad-id="{{ $propiedad->id_propiedad }}" onclick="fetchEditData(this.dataset.propiedadId)">Editar</button>
-                                    <button class="action-link" type="button" data-propiedad-id="{{ $propiedad->id_propiedad }}" data-arrendador-id="{{ $arrendadorId }}" onclick="abrirModalPropiedad(this.dataset.propiedadId, this.dataset.arrendadorId)">Previsualizar</button>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="text-center">Aún no tienes propiedades creadas.</td>
-                        </tr>
-                    @endforelse
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            <div class="spinner">Cargando...</div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
 
-            <div class="pagination-wrap">{{ $propiedades->withQueryString()->links() }}</div>
+            <div class="pagination-wrap"></div>
         </div>
     </section>
 
@@ -163,6 +116,7 @@
                         </div>
 
                         <button type="button" class="btn-gestor-profile" id="btnVerPerfilGestor" disabled>Ver perfil del gestor</button>
+                        <button type="button" class="btn-desasignar-gestor" id="btnDesasignarGestor" style="display:none" onclick="desasignarGestorPropiedad()">Desasignar gestor</button>
                     </aside>
 
                     <section class="gestor-right-panel">

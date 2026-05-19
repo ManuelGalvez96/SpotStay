@@ -11,6 +11,98 @@ use App\Http\Controllers\Controller;
 
 class UsuarioController extends Controller
 {
+    private function obtenerPlanesSuscripcion()
+    {
+        return DB::table('tbl_plan')
+            ->select('id_plan', 'nombre_plan', 'slug_plan', 'activo_plan')
+            ->orderBy('nombre_plan')
+            ->get();
+    }
+
+    private function obtenerSuscripcionActualUsuario($idUsuario)
+    {
+        return DB::table('tbl_suscripcion as sus')
+            ->leftJoin('tbl_plan as plan', 'plan.id_plan', '=', 'sus.id_plan_fk')
+            ->where('sus.id_usuario_fk', $idUsuario)
+            ->orderByDesc('sus.id_suscripcion')
+            ->select(
+                'sus.id_suscripcion',
+                'sus.id_usuario_fk',
+                'sus.id_plan_fk',
+                'sus.plan_suscripcion',
+                'sus.precio_pagado_suscripcion',
+                'sus.max_propiedades_suscripcion',
+                'sus.inicio_suscripcion',
+                'sus.fin_suscripcion',
+                'sus.estado_suscripcion',
+                'plan.nombre_plan as suscripcion_nombre'
+            )
+            ->first();
+    }
+
+    private function enriquecerUsuariosConSuscripcion($usuarios)
+    {
+        $idsUsuarios = $usuarios->pluck('id_usuario')->filter()->values()->all();
+
+        if (empty($idsUsuarios)) {
+            return $usuarios;
+        }
+
+        $suscripciones = DB::table('tbl_suscripcion as sus')
+            ->leftJoin('tbl_plan as plan', 'plan.id_plan', '=', 'sus.id_plan_fk')
+            ->whereIn('sus.id_usuario_fk', $idsUsuarios)
+            ->whereRaw('sus.id_suscripcion = (SELECT MAX(s2.id_suscripcion) FROM tbl_suscripcion s2 WHERE s2.id_usuario_fk = sus.id_usuario_fk)')
+            ->select(
+                'sus.id_usuario_fk',
+                'sus.id_plan_fk',
+                'sus.plan_suscripcion',
+                'sus.estado_suscripcion',
+                'plan.nombre_plan as suscripcion_nombre'
+            )
+            ->get()
+            ->keyBy('id_usuario_fk');
+
+        return $usuarios->map(function ($usuario) use ($suscripciones) {
+            $suscripcion = $suscripciones->get($usuario->id_usuario);
+            $idPlanFk = $suscripcion?->id_plan_fk;
+            $planSuscripcion = $suscripcion?->plan_suscripcion;
+            $nombreSuscripcion = $suscripcion?->suscripcion_nombre;
+
+            $usuario->id_plan_fk = $idPlanFk;
+            $usuario->plan_suscripcion = $planSuscripcion;
+            $usuario->suscripcion_estado = $suscripcion?->estado_suscripcion;
+            $usuario->suscripcion_nombre = $nombreSuscripcion;
+            $usuario->suscripcion_label = $nombreSuscripcion
+                ?? ($planSuscripcion ? ucfirst($planSuscripcion) : 'Sin suscripción');
+
+            return $usuario;
+        });
+    }
+
+    private function datosSuscripcionDesdePlan($idPlan, $idUsuario)
+    {
+        $plan = DB::table('tbl_plan')
+            ->where('id_plan', $idPlan)
+            ->first();
+
+        if (!$plan) {
+            return null;
+        }
+
+        return [
+            'id_usuario_fk' => $idUsuario,
+            'plan_suscripcion' => $plan->slug_plan,
+            'id_plan_fk' => $plan->id_plan,
+            'max_propiedades_suscripcion' => $plan->max_propiedades_plan,
+            'precio_pagado_suscripcion' => $plan->precio_plan,
+            'inicio_suscripcion' => Carbon::now()->toDateString(),
+            'fin_suscripcion' => null,
+            'estado_suscripcion' => 'activa',
+            'creado_suscripcion' => Carbon::now(),
+            'actualizado_suscripcion' => Carbon::now(),
+        ];
+    }
+
     public function index()
     {
         $usuarios = DB::table('tbl_usuario')
@@ -32,6 +124,10 @@ class UsuarioController extends Controller
             )
             ->paginate(10);
 
+                $usuarios->setCollection($this->enriquecerUsuariosConSuscripcion($usuarios->getCollection()));
+
+                $planesSuscripcion = $this->obtenerPlanesSuscripcion();
+
         $totalUsuarios = DB::table('tbl_usuario')->count();
         $activos = DB::table('tbl_usuario')
             ->where('activo_usuario', true)->count();
@@ -43,7 +139,7 @@ class UsuarioController extends Controller
             ->count();
 
         return view('admin.usuarios', compact(
-            'usuarios', 'totalUsuarios', 'activos', 'inactivos', 'esteMes'));
+            'usuarios', 'planesSuscripcion', 'totalUsuarios', 'activos', 'inactivos', 'esteMes'));
     }
 
     public function filtrar(Request $request)
@@ -77,6 +173,8 @@ class UsuarioController extends Controller
 
         $usuariosPaginados = $query->select('tbl_usuario.*', 'tbl_rol.nombre_rol', 'tbl_rol.slug_rol', 'props.total as total_propiedades')
             ->paginate(10);
+
+        $usuariosPaginados->setCollection($this->enriquecerUsuariosConSuscripcion($usuariosPaginados->getCollection()));
         
         // Procesar los datos para el frontend
         $usuarios = $usuariosPaginados->map(function($u) {
@@ -95,6 +193,8 @@ class UsuarioController extends Controller
                 'rolLabel' => $u->nombre_rol ?? 'Sin rol',
                 'estado' => $u->activo_usuario ? 'activo' : 'inactivo',
                 'propiedades' => $u->total_propiedades ?? 0,
+                'suscripcionLabel' => $u->suscripcion_label ?? 'Sin suscripción',
+                'id_plan_fk' => $u->id_plan_fk ?? null,
                 'fechaRegistro' => $u->creado_usuario ? substr($u->creado_usuario, 0, 10) : 'N/A',
                 'avatarText' => $avatarText,
                 'avatarColor' => '#B8CCE4'
@@ -175,18 +275,9 @@ class UsuarioController extends Controller
                 Log::error('Error obteniendo alquileres: ' . $e->getMessage());
             }
 
-            // Obtener suscripción
-            $suscripcionNombre = 'Estándar';
-            try {
-                $suscripcion = DB::table('tbl_suscripcion')
-                    ->where('id_usuario_fk', $id)
-                    ->first();
-                if ($suscripcion && isset($suscripcion->nombre_suscripcion)) {
-                    $suscripcionNombre = $suscripcion->nombre_suscripcion;
-                }
-            } catch (\Exception $e) {
-                Log::error('Error obteniendo suscripción: ' . $e->getMessage());
-            }
+            $suscripcion = $this->obtenerSuscripcionActualUsuario($id);
+            $suscripcionNombre = $suscripcion->suscripcion_nombre
+                ?? ($suscripcion->plan_suscripcion ?? 'Sin suscripción');
 
             return response()->json([
                 'id_usuario' => $usuario->id_usuario,
@@ -200,7 +291,9 @@ class UsuarioController extends Controller
                 'total_propiedades' => count($propiedadesFormato),
                 'propiedades' => $propiedadesFormato,
                 'total_alquileres' => $totalAlquileres,
-                'suscripcion' => $suscripcionNombre
+                'suscripcion' => $suscripcionNombre,
+                'id_plan_fk' => $suscripcion->id_plan_fk ?? null,
+                'plan_suscripcion' => $suscripcion->plan_suscripcion ?? null
             ]);
 
         } catch (\Exception $e) {
@@ -303,11 +396,13 @@ class UsuarioController extends Controller
             'email' => 'required|email|unique:tbl_usuario,email_usuario',
             'telefono' => 'nullable|string|max:20',
             'rol' => 'required|string|exists:tbl_rol,slug_rol',
+            'suscripcion_plan' => 'nullable|integer|exists:tbl_plan,id_plan',
             'password' => 'required|string|min:6'
         ]);
 
         try {
-            // Crear usuario
+            DB::beginTransaction();
+
             $usuarioId = DB::table('tbl_usuario')->insertGetId([
                 'nombre_usuario' => $validated['nombre'],
                 'email_usuario' => $validated['email'],
@@ -318,7 +413,6 @@ class UsuarioController extends Controller
                 'actualizado_usuario' => Carbon::now()
             ]);
 
-            // Asignar rol
             $rolId = DB::table('tbl_rol')
                 ->where('slug_rol', $validated['rol'])
                 ->value('id_rol');
@@ -331,12 +425,23 @@ class UsuarioController extends Controller
                 ]);
             }
 
+            if (!empty($validated['suscripcion_plan'])) {
+                $datosSuscripcion = $this->datosSuscripcionDesdePlan($validated['suscripcion_plan'], $usuarioId);
+
+                if ($datosSuscripcion) {
+                    DB::table('tbl_suscripcion')->insert($datosSuscripcion);
+                }
+            }
+
+            DB::commit();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Usuario creado correctamente',
                 'id' => $usuarioId
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Error al crear usuario: ' . $e->getMessage()
@@ -350,7 +455,8 @@ class UsuarioController extends Controller
             'nombre' => 'required|string|max:255',
             'email' => 'required|email|unique:tbl_usuario,email_usuario,' . $id . ',id_usuario',
             'telefono' => 'nullable|string|max:20',
-            'rol' => 'required|string|exists:tbl_rol,slug_rol'
+            'rol' => 'required|string|exists:tbl_rol,slug_rol',
+            'suscripcion_plan' => 'nullable|integer|exists:tbl_plan,id_plan'
         ];
         
         // Password es opcional en edición, pero si se proporciona debe tener mínimo 6 caracteres
@@ -361,7 +467,8 @@ class UsuarioController extends Controller
         $validated = $request->validate($rules);
 
         try {
-            // Actualizar usuario
+            DB::beginTransaction();
+
             $updateData = [
                 'nombre_usuario' => $validated['nombre'],
                 'email_usuario' => $validated['email'],
@@ -377,7 +484,6 @@ class UsuarioController extends Controller
                 ->where('id_usuario', $id)
                 ->update($updateData);
 
-            // Actualizar rol
             $rolId = DB::table('tbl_rol')
                 ->where('slug_rol', $validated['rol'])
                 ->value('id_rol');
@@ -388,11 +494,42 @@ class UsuarioController extends Controller
                     ->update(['id_rol_fk' => $rolId]);
             }
 
+            if (!empty($validated['suscripcion_plan'])) {
+                $datosSuscripcion = $this->datosSuscripcionDesdePlan($validated['suscripcion_plan'], $id);
+
+                if ($datosSuscripcion) {
+                    $suscripcionActual = DB::table('tbl_suscripcion')
+                        ->where('id_usuario_fk', $id)
+                        ->orderByDesc('id_suscripcion')
+                        ->first();
+
+                    if ($suscripcionActual) {
+                        DB::table('tbl_suscripcion')
+                            ->where('id_suscripcion', $suscripcionActual->id_suscripcion)
+                            ->update([
+                                'plan_suscripcion' => $datosSuscripcion['plan_suscripcion'],
+                                'id_plan_fk' => $datosSuscripcion['id_plan_fk'],
+                                'max_propiedades_suscripcion' => $datosSuscripcion['max_propiedades_suscripcion'],
+                                'precio_pagado_suscripcion' => $datosSuscripcion['precio_pagado_suscripcion'],
+                                'inicio_suscripcion' => $datosSuscripcion['inicio_suscripcion'],
+                                'fin_suscripcion' => $datosSuscripcion['fin_suscripcion'],
+                                'estado_suscripcion' => $datosSuscripcion['estado_suscripcion'],
+                                'actualizado_suscripcion' => Carbon::now(),
+                            ]);
+                    } else {
+                        DB::table('tbl_suscripcion')->insert($datosSuscripcion);
+                    }
+                }
+            }
+
+            DB::commit();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Usuario actualizado correctamente'
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Error al actualizar usuario: ' . $e->getMessage()

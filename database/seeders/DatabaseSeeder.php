@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             GastoSeeder::class,
             ContratoSeeder::class,
             PagoSeeder::class,
+            CategoriaSeeder::class,
             IncidenciaSeeder::class,
             HistorialIncidenciaSeeder::class,
             SolicitudArrendadorSeeder::class,

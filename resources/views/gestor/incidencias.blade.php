@@ -21,7 +21,7 @@
     <div class="card-admin card-con-franja">
         <div class="card-franja"></div>
         <div class="card-header-admin card-header-gradient" onclick="toggleFiltros()" style="cursor:pointer;">
-            <span><i class="bi bi-funnel"></i> Filtros</span>
+            <span><i class="bi bi-funnel"></i> Filtros de incidencias</span>
             <span class="filtros-toggle" id="filtrosToggleIcon"><i class="bi bi-chevron-down"></i></span>
         </div>
 

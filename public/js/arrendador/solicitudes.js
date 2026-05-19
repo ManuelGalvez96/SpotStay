@@ -81,13 +81,19 @@ function actualizarFila(id, estado) {
   if (accionesNodo) {
     if (estado === 'activo') {
       accionesNodo.innerHTML = 
-        '<button class="btn-ver" data-ver="' + id + '">Ver</button>' +
-        '<button class="btn-eliminar" data-eliminar="' + id + '">Eliminar</button>';
-    } else {
+        '<button class="btn-ver" data-ver="' + id + '">Ver</button>';
+    } else if (estado === 'pendiente') {
       accionesNodo.innerHTML = 
         '<button class="btn-ver" data-ver="' + id + '">Ver</button>' +
         '<button class="btn-editar" data-editar="' + id + '">Editar</button>' +
-        '<button class="btn-eliminar" data-eliminar="' + id + '">Eliminar</button>';
+        '<button class="btn-aprobar" data-aprobar="' + id + '">Aceptar</button>' +
+        '<button class="btn-rechazar" data-rechazar="' + id + '">Rechazar</button>';
+    } else if (estado === 'rechazado') {
+      accionesNodo.innerHTML = 
+        '<button class="btn-ver" data-ver="' + id + '">Ver</button>' +
+        '<button class="btn-aprobar" data-aprobar="' + id + '">Aceptar</button>';
+    } else {
+      accionesNodo.innerHTML = '<button class="btn-ver" data-ver="' + id + '">Ver</button>';
     }
     accionesNodo.setAttribute('data-estado', estado);
     agregarEventosAcciones();
@@ -126,9 +132,8 @@ function verSolicitud(id, arrendadorId) {
         '  <p><strong>Inquilino:</strong> ' + datos.nombre_inquilino + '</p>' +
         '  <p><strong>Email:</strong> ' + datos.email_inquilino + '</p>' +
         '  <p><strong>Teléfono:</strong> ' + (datos.telefono_inquilino || 'No disponible') + '</p>' +
-        '  <p><strong>Estado:</strong> ' + datos.estado_alquiler + '</p>' +
-        '  <p><strong>Fecha Inicio:</strong> ' + datos.fecha_inicio_alquiler + '</p>' +
-        '  <p><strong>Fecha Fin:</strong> ' + (datos.fecha_fin_alquiler || 'Sin fin definido') + '</p>' +
+        '  <p><strong>Estado:</strong> ' + datos.estado_solicitud_alquiler + '</p>' +
+        '  <p><strong>Fecha Inicio:</strong> ' + datos.fecha_inicio_solicitud_alquiler + '</p>' +
         '  <p><strong>Monto Mensual:</strong> €' + (parseFloat(datos.precio_alquiler) || 0).toFixed(2) + '</p>' +
         '</div>';
 
@@ -177,11 +182,7 @@ function editarSolicitud(id, arrendadorId) {
         '  </div>' +
         '  <div class="campo-formulario">' +
         '    <label for="fecha-inicio-' + id + '">Fecha Inicio:</label>' +
-        '    <input type="date" id="fecha-inicio-' + id + '" name="fecha_inicio_alquiler" value="' + datos.fecha_inicio_alquiler + '" required>' +
-        '  </div>' +
-        '  <div class="campo-formulario">' +
-        '    <label for="fecha-fin-' + id + '">Fecha Fin:</label>' +
-        '    <input type="date" id="fecha-fin-' + id + '" name="fecha_fin_alquiler" value="' + (datos.fecha_fin_alquiler || '') + '">' +
+        '    <input type="date" id="fecha-inicio-' + id + '" name="fecha_inicio_solicitud_alquiler" value="' + datos.fecha_inicio_solicitud_alquiler + '" required>' +
         '  </div>' +
         '</form>';
 
@@ -216,9 +217,9 @@ function editarSolicitud(id, arrendadorId) {
 }
 
 /* =========================================================
-   SECCIÓN 5: GUARDAR Y ELIMINAR (API)
-   Funciones asíncronas para actualizar o borrar solicitudes.
-   ========================================================= */
+  SECCIÓN 5: GUARDAR (API)
+  Funciones asíncronas para actualizar solicitudes.
+  ========================================================= */
 
 function guardarEdicion(id, arrendadorId, modal) {
   var formulario = document.getElementById('formulario-editar-' + id);
@@ -255,22 +256,22 @@ function guardarEdicion(id, arrendadorId, modal) {
     });
 }
 
-function eliminarSolicitud(id, arrendadorId) {
+function aprobarSolicitud(id, arrendadorId) {
   Swal.fire({
-    title: '¿Eliminar solicitud?',
-    text: 'Esta acción no se puede deshacer.',
-    icon: 'warning',
+    title: '¿Aceptar solicitud?',
+    text: 'Se creara el alquiler y se asignara el rol de inquilino si procede.',
+    icon: 'question',
     showCancelButton: true,
-    confirmButtonColor: '#d32f2f',
+    confirmButtonColor: '#0f9f6e',
     cancelButtonColor: '#757575',
-    confirmButtonText: 'Sí, eliminar',
+    confirmButtonText: 'Aceptar',
     cancelButtonText: 'Cancelar'
   }).then(function (result) {
     if (!result.isConfirmed) {
       return;
     }
 
-    fetch('/arrendador/solicitudes/' + id + '/eliminar', {
+    fetch('/arrendador/solicitudes/' + id + '/aprobar', {
       method: 'POST',
       headers: {
         'X-CSRF-TOKEN': obtenerTokenCsrf(),
@@ -287,32 +288,66 @@ function eliminarSolicitud(id, arrendadorId) {
       })
       .then(function (resultado) {
         if (!resultado.ok || !resultado.datosRespuesta.success) {
-          console.error('Error response:', resultado);
-          throw new Error(resultado.datosRespuesta.message || 'No se pudo eliminar la solicitud.');
+          throw new Error(resultado.datosRespuesta.message || 'No se pudo aprobar la solicitud.');
         }
 
-        var fila = document.getElementById('fila-' + id);
-        if (fila) {
-          fila.style.opacity = '0';
-          setTimeout(function () {
-            if (fila.parentNode) {
-              fila.parentNode.removeChild(fila);
-            }
-          }, 200);
-        }
-
-        mostrarToast('Solicitud eliminada correctamente.');
+        actualizarFila(id, 'activo');
+        mostrarToast('Solicitud aprobada correctamente.');
       })
       .catch(function (error) {
-        mostrarToast(error.message || 'Error al eliminar la solicitud.');
+        mostrarToast(error.message || 'Error al aprobar la solicitud.');
+      });
+  });
+}
+
+function rechazarSolicitud(id, arrendadorId) {
+  Swal.fire({
+    title: '¿Rechazar solicitud?',
+    text: 'Esta accion no se puede deshacer.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#f97316',
+    cancelButtonColor: '#757575',
+    confirmButtonText: 'Rechazar',
+    cancelButtonText: 'Cancelar'
+  }).then(function (result) {
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    fetch('/arrendador/solicitudes/' + id + '/rechazar', {
+      method: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': obtenerTokenCsrf(),
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json'
+      },
+      body: new URLSearchParams({ arrendador_id: arrendadorId || '' }),
+      credentials: 'same-origin'
+    })
+      .then(function (respuesta) {
+        return respuesta.json().then(function (datosRespuesta) {
+          return { ok: respuesta.ok, datosRespuesta: datosRespuesta };
+        });
+      })
+      .then(function (resultado) {
+        if (!resultado.ok || !resultado.datosRespuesta.success) {
+          throw new Error(resultado.datosRespuesta.message || 'No se pudo rechazar la solicitud.');
+        }
+
+        actualizarFila(id, 'rechazado');
+        mostrarToast('Solicitud rechazada correctamente.');
+      })
+      .catch(function (error) {
+        mostrarToast(error.message || 'Error al rechazar la solicitud.');
       });
   });
 }
 
 /* =========================================================
-   SECCIÓN 6: EVENT LISTERS (ACCIÓN)
-   Asigna los clics a los botones de la tabla (Ver, Editar, Eliminar).
-   ========================================================= */
+  SECCIÓN 6: EVENT LISTERS (ACCIÓN)
+  Asigna los clics a los botones de la tabla (Ver, Editar, Aceptar, Rechazar).
+  ========================================================= */
 
 function agregarEventosAcciones() {
   document.querySelectorAll('[data-ver]').forEach(function (boton) {
@@ -333,12 +368,21 @@ function agregarEventosAcciones() {
     };
   });
 
-  document.querySelectorAll('[data-eliminar]').forEach(function (boton) {
+  document.querySelectorAll('[data-aprobar]').forEach(function (boton) {
     boton.onclick = function (e) {
       e.preventDefault();
       var accionesDiv = boton.closest('[data-acciones]');
       var arrendadorId = accionesDiv ? accionesDiv.getAttribute('data-arrendador') : '';
-      eliminarSolicitud(boton.getAttribute('data-eliminar'), arrendadorId);
+      aprobarSolicitud(boton.getAttribute('data-aprobar'), arrendadorId);
+    };
+  });
+
+  document.querySelectorAll('[data-rechazar]').forEach(function (boton) {
+    boton.onclick = function (e) {
+      e.preventDefault();
+      var accionesDiv = boton.closest('[data-acciones]');
+      var arrendadorId = accionesDiv ? accionesDiv.getAttribute('data-arrendador') : '';
+      rechazarSolicitud(boton.getAttribute('data-rechazar'), arrendadorId);
     };
   });
 }

@@ -47,9 +47,9 @@
             <tbody>
                 @forelse ($solicitudes as $solicitud)
                     @php
-                        $estado = strtolower($solicitud->estado_alquiler);
+                        $estado = strtolower($solicitud->estado_solicitud_alquiler);
                     @endphp
-                    <tr id="fila-{{ $solicitud->id_alquiler }}">
+                    <tr id="fila-{{ $solicitud->id_solicitud_alquiler }}">
                         <td>
                             <strong>{{ $solicitud->titulo_propiedad }}</strong><br>
                             <span class="muted">{{ $solicitud->direccion_propiedad }}</span>
@@ -59,22 +59,27 @@
                             <span class="muted">{{ $solicitud->email_inquilino }}</span>
                         </td>
                         <td>
-                            {{ $solicitud->fecha_inicio_alquiler }}<br>
-                            <span class="muted">{{ $solicitud->fecha_fin_alquiler ?? 'Sin fin definido' }}</span>
+                            {{ $solicitud->fecha_inicio_solicitud_alquiler }}<br>
+                            <span class="muted">Sin fin definido</span>
                         </td>
                         <td>
-                            <span class="estado estado-{{ $estado }}" id="estado-{{ $solicitud->id_alquiler }}">{{ ucfirst($estado) }}</span>
+                            <span class="estado estado-{{ $estado }}" id="estado-{{ $solicitud->id_solicitud_alquiler }}">{{ ucfirst($estado) }}</span>
                         </td>
-                        <td>{{ $solicitud->creado_alquiler ? \Carbon\Carbon::parse($solicitud->creado_alquiler)->format('d/m/Y') : '-' }}</td>
+                        <td>{{ $solicitud->creado_solicitud_alquiler ? \Carbon\Carbon::parse($solicitud->creado_solicitud_alquiler)->format('d/m/Y') : '-' }}</td>
                         <td>
-                            <div class="acciones" data-acciones="{{ $solicitud->id_alquiler }}" data-estado="{{ $estado }}" data-arrendador="{{ $arrendadorId }}">
+                            <div class="acciones" data-acciones="{{ $solicitud->id_solicitud_alquiler }}" data-estado="{{ $estado }}" data-arrendador="{{ $arrendadorId }}">
                                 @if ($estado === 'activo')
-                                    <button class="btn-ver" data-ver="{{ $solicitud->id_alquiler }}">Ver</button>
-                                    <button class="btn-eliminar" data-eliminar="{{ $solicitud->id_alquiler }}">Eliminar</button>
+                                    <button class="btn-ver" data-ver="{{ $solicitud->id_solicitud_alquiler }}">Ver</button>
+                                @elseif ($estado === 'pendiente')
+                                    <button class="btn-ver" data-ver="{{ $solicitud->id_solicitud_alquiler }}">Ver</button>
+                                    <button class="btn-editar" data-editar="{{ $solicitud->id_solicitud_alquiler }}">Editar</button>
+                                    <button class="btn-aprobar" data-aprobar="{{ $solicitud->id_solicitud_alquiler }}">Aceptar</button>
+                                    <button class="btn-rechazar" data-rechazar="{{ $solicitud->id_solicitud_alquiler }}">Rechazar</button>
+                                @elseif ($estado === 'rechazado')
+                                    <button class="btn-ver" data-ver="{{ $solicitud->id_solicitud_alquiler }}">Ver</button>
+                                    <button class="btn-aprobar" data-aprobar="{{ $solicitud->id_solicitud_alquiler }}">Aceptar</button>
                                 @else
-                                    <button class="btn-ver" data-ver="{{ $solicitud->id_alquiler }}">Ver</button>
-                                    <button class="btn-editar" data-editar="{{ $solicitud->id_alquiler }}">Editar</button>
-                                    <button class="btn-eliminar" data-eliminar="{{ $solicitud->id_alquiler }}">Eliminar</button>
+                                    <button class="btn-ver" data-ver="{{ $solicitud->id_solicitud_alquiler }}">Ver</button>
                                 @endif
                             </div>
                         </td>

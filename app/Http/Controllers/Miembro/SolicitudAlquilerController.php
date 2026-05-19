@@ -40,14 +40,13 @@ class SolicitudAlquilerController extends Controller
             return redirect()->back()->with('error', 'Esta propiedad ya tiene un alquiler activo o pendiente.');
         }
 
-        $solicitudPendiente = DB::table('tbl_solicitud_alquiler')
+        $solicitudExistente = DB::table('tbl_solicitud_alquiler')
             ->where('id_propiedad_fk', $id)
             ->where('id_usuario_fk', $usuario->id_usuario)
-            ->where('estado_solicitud_alquiler', 'pendiente')
             ->exists();
 
-        if ($solicitudPendiente) {
-            return redirect()->back()->with('error', 'Ya tienes una solicitud pendiente para esta propiedad.');
+        if ($solicitudExistente) {
+            return redirect()->back()->with('error', 'Ya has solicitado esta propiedad anteriormente.');
         }
 
         try {

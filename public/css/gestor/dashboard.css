@@ -6,7 +6,7 @@
 }
 
 .kpi-grid {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    max-width: 100%;
 }
 
 .kpi-grid-header {

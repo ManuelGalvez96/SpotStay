@@ -7,6 +7,7 @@ use App\Http\Controllers\Miembro\MapaController;
 use App\Http\Controllers\Miembro\SolicitudAlquilerController;
 use App\Http\Controllers\Miembro\MensajesController;
 use App\Http\Controllers\Miembro\SolicitudArrendadorController;
+use App\Http\Controllers\Miembro\SolicitudGestorController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -200,6 +201,8 @@ Route::middleware(['role:miembro,inquilino,propietario'])->group(function () {
     Route::get('/miembro/inicio', [HomeController::class, 'index']);
     Route::get('/miembro/solicitud-arrendador', [SolicitudArrendadorController::class, 'create'])->name('miembro.arrendador.formulario');
     Route::post('/miembro/solicitud-arrendador', [SolicitudArrendadorController::class, 'store'])->name('miembro.arrendador.enviar');
+    Route::get('/miembro/solicitud-gestor', [SolicitudGestorController::class, 'create'])->name('miembro.gestor.formulario');
+    Route::post('/miembro/solicitud-gestor', [SolicitudGestorController::class, 'store'])->name('miembro.gestor.enviar');
     Route::get('/miembro/propiedad/{id}', [DetallePropiedadController::class, 'show'])->name('miembro.detalle_propiedad');
     Route::post('/miembro/propiedad/{id}/solicitud-alquiler', [SolicitudAlquilerController::class, 'store'])->name('miembro.solicitud_alquiler.store');
     Route::post('/miembro/propiedad/{id}/chat', [MensajesController::class, 'iniciarDesdePropiedad'])->name('miembro.mensajes.iniciar');

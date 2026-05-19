@@ -40,19 +40,19 @@
 
         <!-- Main Grid -->
         <div class="dashboard-grid">
-            <!-- Card: Publicar Propiedad -->
+            <!-- Card: Gestionar Propiedades -->
             <div class="card">
                 <div class="card-header">
                     <div class="card-icon">🏠</div>
                     <div>
-                        <div class="card-title">Publicar Propiedad</div>
+                        <div class="card-title">Gestionar Propiedades</div>
                     </div>
                 </div>
                 <p class="card-description">
                     Agrega una nueva propiedad a tu portafolio y comienza a recibir solicitudes de inquilinos.
                 </p>
                 <div class="card-footer">
-                    <a class="btn btn-primary btn-sm" href="{{ route('arrendador.propiedades', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Publicar Propiedad</a>
+                    <a class="btn btn-primary btn-sm" href="{{ route('arrendador.propiedades', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Gestionar</a>
                 </div>
             </div>
 
@@ -101,22 +101,6 @@
                 </p>
                 <div class="card-footer">
                     <a class="btn btn-outline btn-sm" href="{{ route('arrendador.inquilinos', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Ver Inquilinos</a>
-                </div>
-            </div>
-
-            <!-- Card: Chat con Inquilinos -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">💬</div>
-                    <div>
-                        <div class="card-title">Chat en Tiempo Real</div>
-                    </div>
-                </div>
-                <p class="card-description">
-                    Comunícate directamente con tus inquilinos a través de mensajes integrados.
-                </p>
-                <div class="card-footer">
-                    <a class="btn btn-outline btn-sm" href="{{ route('arrendador.mensajes', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Abrir Mensajes</a>
                 </div>
             </div>
 

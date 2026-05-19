@@ -437,4 +437,6 @@ body.pagina-miembro {
     max-width: 1400px !important;
     margin: 0 auto !important;
     width: 100% !important;
+    display: flex !important;
+    justify-content: safe center !important;
 }

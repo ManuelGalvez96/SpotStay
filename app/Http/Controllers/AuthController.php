@@ -26,15 +26,11 @@ class AuthController extends Controller
                 return redirect('/admin/dashboard');
             }
 
-            if ($user->roles()->where('slug_rol', 'arrendador')->exists()) {
-                return redirect('/arrendador/dashboard');
-            }
-
             if ($user->roles()->where('slug_rol', 'gestor')->exists()) {
                 return redirect('/gestor/dashboard');
             }
 
-            if ($user->roles()->whereIn('slug_rol', ['miembro', 'inquilino'])->exists()) {
+            if ($user->roles()->whereIn('slug_rol', ['arrendador', 'miembro', 'inquilino'])->exists()) {
                 return redirect('/miembro/inicio');
             }
         }
@@ -108,11 +104,7 @@ class AuthController extends Controller
                 return redirect()->intended('/gestor/dashboard');
             }
 
-            if ($user->roles()->where('slug_rol', 'arrendador')->exists()) {
-                return redirect()->intended('/arrendador/dashboard');
-            }
-
-            if ($user->roles()->whereIn('slug_rol', ['miembro', 'inquilino'])->exists()) {
+            if ($user->roles()->whereIn('slug_rol', ['arrendador', 'miembro', 'inquilino'])->exists()) {
                 return redirect()->intended('/miembro/inicio');
             }
 

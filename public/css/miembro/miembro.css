@@ -1377,7 +1377,7 @@ body.pagina-miembro.pagina-mensajes {
 	width: 100%;
 }
 
-body.pagina-miembro.pagina-mensajes .contenido-miembro {
+.pagina-mensajes .contenido-miembro {
 	flex: 1;
 	min-height: 0;
 	overflow: hidden;
@@ -1386,37 +1386,37 @@ body.pagina-miembro.pagina-mensajes .contenido-miembro {
 	padding: 24px 28px 20px;
 }
 
-body.pagina-miembro.pagina-mensajes .mensajes-layout {
+.pagina-mensajes .mensajes-layout {
 	height: 100%;
 	min-height: 0;
 }
 
-body.pagina-miembro.pagina-mensajes .mensajes-lista,
-body.pagina-miembro.pagina-mensajes .mensajes-panel {
+.pagina-mensajes .mensajes-lista,
+.pagina-mensajes .mensajes-panel {
 	height: 100%;
 	min-height: 0;
 }
 
-body.pagina-miembro.pagina-mensajes .mensajes-lista {
+.pagina-mensajes .mensajes-lista {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
 }
 
-body.pagina-miembro.pagina-mensajes .mensajes-panel {
+.pagina-mensajes .mensajes-panel {
 	display: grid;
 	grid-template-rows: auto auto 1fr auto;
 	gap: 14px;
 }
 
-body.pagina-miembro.pagina-mensajes .mensajes-barra-mobile {
+.pagina-mensajes .mensajes-barra-mobile {
 	display: none;
 	align-items: center;
 	justify-content: space-between;
 	gap: 10px;
 }
 
-body.pagina-miembro.pagina-mensajes .mensajes-panel .estado-vacio {
+.pagina-mensajes .mensajes-panel .estado-vacio {
 	grid-row: 2;
 	height: 100%;
 	display: flex;
@@ -1425,31 +1425,31 @@ body.pagina-miembro.pagina-mensajes .mensajes-panel .estado-vacio {
 	margin: 0;
 }
 
-body.pagina-miembro.pagina-mensajes .mensajes-panel .estado-vacio p {
+.pagina-mensajes .mensajes-panel .estado-vacio p {
 	margin: 0;
 }
 
 
-body.pagina-miembro.pagina-mensajes .panel-filtros-miembro {
+.pagina-mensajes .panel-filtros-miembro {
 	flex-direction: column;
 	flex-wrap: nowrap;
 }
 
-body.pagina-miembro.pagina-mensajes .mensajes-item {
+.pagina-mensajes .mensajes-item {
 	width: 100%;
 	margin-bottom: 0;
 }
 
-body.pagina-miembro.pagina-mensajes .mensajes-mensajes {
+.pagina-mensajes .mensajes-mensajes {
 	min-height: 0;
 }
 
-body.pagina-miembro.pagina-mensajes .mensajes-formulario {
+.pagina-mensajes .mensajes-formulario {
 	margin-top: 0;
 }
 
-body.pagina-miembro.pagina-mensajes .boton-conversaciones-toggle,
-body.pagina-miembro.pagina-mensajes .boton-conversaciones-cerrar {
+.pagina-mensajes .boton-conversaciones-toggle,
+.pagina-mensajes .boton-conversaciones-cerrar {
 	display: none;
 	align-items: center;
 	gap: 6px;
@@ -1588,149 +1588,109 @@ body.pagina-miembro.pagina-mensajes .mensajes-panel .estado-vacio {
 	margin: 0;
 }
 
-body.pagina-miembro.pagina-mensajes .mensajes-panel .estado-vacio p {
+.pagina-mensajes .mensajes-panel .estado-vacio p {
 	margin: 0;
 }
 
 @media (max-width: 980px) {
-	body.pagina-miembro.pagina-mensajes .mensajes-layout {
+	.pagina-mensajes .mensajes-layout {
 		grid-template-columns: 1fr;
 		grid-template-rows: 1fr;
 		position: relative;
+		height: calc(100vh - 150px) !important;
 	}
 
-	body.pagina-miembro.pagina-mensajes .mensajes-lista,
-	body.pagina-miembro.pagina-mensajes .mensajes-panel {
+	.pagina-mensajes .mensajes-lista,
+	.pagina-mensajes .mensajes-panel {
 		height: 100%;
 		min-height: 0;
 	}
 
-	body.pagina-miembro.pagina-mensajes .mensajes-cabecera {
+	.pagina-mensajes .mensajes-cabecera {
 		flex-wrap: wrap;
 		gap: 8px;
 	}
 
-	body.pagina-miembro.pagina-mensajes .mensajes-barra-mobile {
+	.pagina-mensajes .mensajes-barra-mobile {
 		display: flex;
 	}
 
-	body.pagina-miembro.pagina-mensajes .mensajes-lista {
+	.pagina-mensajes .mensajes-lista {
 		display: none;
 		position: absolute;
 		inset: 0;
 		z-index: 10;
-		background: var(--fondo);
+		background: #ffffff;
 		padding: 16px;
 		border-radius: var(--radio-lg);
 		box-shadow: var(--sombra);
 		overflow: auto;
 	}
 
-	body.pagina-miembro.pagina-mensajes .boton-conversaciones-toggle {
+	.pagina-mensajes .boton-conversaciones-toggle {
 		display: inline-flex;
 	}
 
-	body.pagina-miembro.pagina-mensajes.conversaciones-abiertas .mensajes-lista {
+	body.conversaciones-abiertas .mensajes-lista {
 		display: flex;
 	}
 
-	body.pagina-miembro.pagina-mensajes.conversaciones-abiertas .mensajes-panel {
+	body.conversaciones-abiertas .mensajes-panel {
 		display: none;
 	}
 
-	body.pagina-miembro.pagina-mensajes.conversaciones-abiertas .boton-conversaciones-cerrar {
+	body.conversaciones-abiertas .boton-conversaciones-cerrar {
 		display: inline-flex;
 		align-self: flex-start;
 	}
 }
 
 @media (max-width: 720px) {
-	body.pagina-miembro.pagina-mensajes .mensajes-layout {
+	.pagina-mensajes .mensajes-layout {
 		grid-template-rows: 1fr;
 	}
 
-	body.pagina-miembro.pagina-mensajes .mensajes-lista {
+	.pagina-mensajes .mensajes-lista {
 		max-height: none;
 	}
-
-	/* body.pagina-miembro.pagina-mensajes .mensajes-cabecera {
-		display: none;
-	}
-
-	body.pagina-miembro.pagina-mensajes .mensajes-cabecera-movil {
-		display: flex;
-	}
-
-	body.pagina-miembro.pagina-mensajes .mensajes-cabecera {
-		gap: 8px;
-		flex-wrap: wrap;
-	}
-
-	body.pagina-miembro.pagina-mensajes .boton-conversaciones-toggle {
-		display: inline-flex;
-	}
-
-	body.pagina-miembro.pagina-mensajes .mensajes-lista {
-		display: none;
-	}
-
-	body.pagina-miembro.pagina-mensajes .mensajes-panel {
-		display: grid;
-	}
-
-	body.pagina-miembro.pagina-mensajes.conversaciones-abiertas .mensajes-lista {
-		display: flex;
-	}
-
-	body.pagina-miembro.pagina-mensajes.conversaciones-abiertas .mensajes-panel {
-		display: none;
-	}
-
-	body.pagina-miembro.pagina-mensajes.conversaciones-abiertas .boton-conversaciones-toggle {
-		display: none;
-	}
-
-	body.pagina-miembro.pagina-mensajes.conversaciones-abiertas .boton-conversaciones-cerrar {
-		display: inline-flex;
-	} */
 }
 
 @media (max-width: 520px) {
-	body.pagina-miembro.pagina-mensajes .mensajes-layout {
+	.pagina-mensajes .mensajes-layout {
 		grid-template-rows: 1fr;
 	}
 
-	body.pagina-miembro.pagina-mensajes .mensajes-lista {
+	.pagina-mensajes .mensajes-lista {
 		max-height: none;
 	}
 
-	body.pagina-miembro.pagina-mensajes .mensajes-item-titulo {
+	.pagina-mensajes .mensajes-item-titulo {
 		font-size: 13px;
 	}
 
-	body.pagina-miembro.pagina-mensajes .mensajes-item-sub,
-	body.pagina-miembro.pagina-mensajes .mensajes-panel .etiqueta-filtro {
+	.pagina-mensajes .mensajes-item-sub,
+	.pagina-mensajes .mensajes-panel .etiqueta-filtro {
 		font-size: 11px;
 	}
 
-	body.pagina-miembro.pagina-mensajes .mensajes-item-preview {
+	.pagina-mensajes .mensajes-item-preview {
 		font-size: 12px;
 	}
 
-	body.pagina-miembro.pagina-mensajes .titulo-listado {
+	.pagina-mensajes .titulo-listado {
 		font-size: 16px;
 	}
 
-	body.pagina-miembro.pagina-mensajes .contador-propiedades {
+	.pagina-mensajes .contador-propiedades {
 		font-size: 11px;
 		padding: 4px 10px;
 	}
 
-	body.pagina-miembro.pagina-mensajes .mensajes-burbuja-texto {
+	.pagina-mensajes .mensajes-burbuja-texto {
 		font-size: 12px;
 	}
 
-	body.pagina-miembro.pagina-mensajes .mensajes-burbuja-fecha {
+	.pagina-mensajes .mensajes-burbuja-fecha {
 		font-size: 10px;
 	}
 }
@@ -1898,7 +1858,7 @@ body.pagina-miembro.pagina-mensajes .mensajes-panel .estado-vacio p {
 		padding: 0 12px;
 	}
 	.contenedor-nav {
-		justify-content: flex-start !important;
+		justify-content: safe center !important;
 		padding-left: 0;
 	}
 	.lista-nav {
@@ -2024,4 +1984,78 @@ body.pagina-miembro.pagina-mensajes .mensajes-panel .estado-vacio p {
 		padding: 6px 10px;
 		font-size: 12px;
 	}
+}
+
+/* --- ESTILO FORMULARIO WHATSAPP --- */
+.mensajes-formulario-whatsapp {
+	margin-top: auto;
+	padding: 12px 16px;
+	background: #ffffff;
+	border-top: 1px solid var(--borde);
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.input-whatsapp-container {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	background: #f8f9fa;
+	border: 1px solid var(--borde);
+	border-radius: 24px;
+	padding: 6px 14px;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-whatsapp-container:focus-within {
+	border-color: var(--primario);
+	box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.15);
+	background: #ffffff;
+}
+
+.input-whatsapp-texto {
+	flex: 1;
+	border: none;
+	background: transparent;
+	padding: 8px 0;
+	font-size: 14px;
+	color: var(--texto);
+	outline: none;
+	resize: none;
+	font-family: inherit;
+	line-height: 1.4;
+	max-height: 120px;
+	overflow-y: auto;
+}
+
+.boton-whatsapp-enviar {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 42px;
+	height: 42px;
+	border-radius: 50%;
+	border: none;
+	background: var(--primario);
+	color: #ffffff;
+	cursor: pointer;
+	transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+	flex-shrink: 0;
+	box-shadow: 0 2px 8px rgba(15, 76, 129, 0.25);
+}
+
+.boton-whatsapp-enviar:hover {
+	background: #0d3d68;
+	transform: scale(1.08);
+	box-shadow: 0 4px 12px rgba(15, 76, 129, 0.35);
+}
+
+.boton-whatsapp-enviar:active {
+	transform: scale(0.92);
+}
+
+.boton-whatsapp-enviar i {
+	font-size: 18px;
+	transform: translate(1px, -1px);
 }

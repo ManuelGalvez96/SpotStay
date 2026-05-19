@@ -27,7 +27,6 @@ use App\Http\Controllers\Arrendador\PropiedadController as ArrendadorPropiedadCo
 use App\Http\Controllers\Arrendador\SolicitudController as ArrendadorSolicitudController;
 use App\Http\Controllers\Arrendador\PrecioGastoController as ArrendadorPrecioGastoController;
 use App\Http\Controllers\Arrendador\InquilinoController as ArrendadorInquilinoController;
-use App\Http\Controllers\Arrendador\MensajeController as ArrendadorMensajeController;
 use App\Http\Controllers\Arrendador\ContratoController as ArrendadorContratoController;
 use App\Http\Controllers\Arrendador\GestorController as ArrendadorGestorController;
 use App\Http\Controllers\Arrendador\IncidenciaController as ArrendadorIncidenciaController;
@@ -195,9 +194,6 @@ Route::middleware(['role:arrendador', 'arrendador.activo'])->group(function () {
     Route::get('/arrendador/inquilinos', [ArrendadorInquilinoController::class, 'inicio'])->name('arrendador.inquilinos');
     Route::get('/arrendador/inquilinos/{id}', [ArrendadorInquilinoController::class, 'mostrar'])->name('arrendador.inquilinos.show');
 
-    Route::get('/arrendador/mensajes', [ArrendadorMensajeController::class, 'inicio'])->name('arrendador.mensajes');
-    Route::get('/arrendador/mensajes/{id}', [ArrendadorMensajeController::class, 'mostrar'])->name('arrendador.mensajes.show');
-    Route::post('/arrendador/mensajes/{id}', [ArrendadorMensajeController::class, 'enviar'])->name('arrendador.mensajes.enviar');
 
     Route::get('/arrendador/contratos', [ArrendadorContratoController::class, 'inicio'])->name('arrendador.contratos');
     Route::post('/arrendador/contratos/{id}/firmar', [ArrendadorContratoController::class, 'firmarArrendador'])->name('arrendador.contratos.firmar');

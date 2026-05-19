@@ -27,7 +27,7 @@ class ConfiguracionController extends Controller
         $datosValidados = $request->validate([
             'nombre_plan' => ['required', 'string', 'max:50'],
             'slug_plan' => ['required', 'string', 'max:30', 'unique:tbl_plan,slug_plan'],
-            'rol_destino' => ['required', Rule::in(['miembro', 'arrendador'])],
+            'rol_destino' => ['required', Rule::in(['miembro', 'arrendador', 'inquilino', 'gestor'])],
             'precio_plan' => ['required', 'numeric', 'min:0'],
             'max_propiedades_plan' => ['required', 'integer', 'min:0', 'max:255'],
             'descripcion_plan' => ['nullable', 'string'],
@@ -61,7 +61,7 @@ class ConfiguracionController extends Controller
                 'max:30',
                 Rule::unique('tbl_plan', 'slug_plan')->ignore($plan->id_plan, 'id_plan'),
             ],
-            'rol_destino' => ['required', Rule::in(['miembro', 'arrendador'])],
+            'rol_destino' => ['required', Rule::in(['miembro', 'arrendador', 'inquilino', 'gestor'])],
             'precio_plan' => ['required', 'numeric', 'min:0'],
             'max_propiedades_plan' => ['required', 'integer', 'min:0', 'max:255'],
             'descripcion_plan' => ['nullable', 'string'],

@@ -99,6 +99,8 @@
                         <select id="crear_rol_destino" name="rol_destino">
                             <option value="miembro" {{ old('rol_destino') === 'miembro' ? 'selected' : '' }}>Miembro</option>
                             <option value="arrendador" {{ old('rol_destino', 'arrendador') === 'arrendador' ? 'selected' : '' }}>Arrendador</option>
+                            <option value="inquilino" {{ old('rol_destino') === 'inquilino' ? 'selected' : '' }}>Inquilino</option>
+                            <option value="gestor" {{ old('rol_destino') === 'gestor' ? 'selected' : '' }}>Gestor</option>
                         </select>
                     </div>
 
@@ -201,6 +203,8 @@
                                     <select id="rol_destino_{{ $plan->id_plan }}" name="rol_destino">
                                         <option value="miembro" {{ old('rol_destino', $plan->rol_destino) === 'miembro' ? 'selected' : '' }}>Miembro</option>
                                         <option value="arrendador" {{ old('rol_destino', $plan->rol_destino) === 'arrendador' ? 'selected' : '' }}>Arrendador</option>
+                                        <option value="inquilino" {{ old('rol_destino', $plan->rol_destino) === 'inquilino' ? 'selected' : '' }}>Inquilino</option>
+                                        <option value="gestor" {{ old('rol_destino', $plan->rol_destino) === 'gestor' ? 'selected' : '' }}>Gestor</option>
                                     </select>
                                 </div>
 

@@ -12,8 +12,8 @@
 
     <title>@yield('titulo', 'Gestor - SpotStay')</title>
 
-    <link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}?v=6">
-    <link rel="stylesheet" href="{{ asset('css/admin/layout.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}?v=8">
+    <link rel="stylesheet" href="{{ asset('css/admin/layout.css') }}?v=2">
     @yield('css')
 </head>
 

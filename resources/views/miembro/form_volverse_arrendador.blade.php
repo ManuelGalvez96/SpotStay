@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>SpotStay | Solicitud Arrendador</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-    <link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}?v=8" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
     <link rel="stylesheet" href="{{ asset('css/shared/sweetalert-oso.css') }}" />
 </head>

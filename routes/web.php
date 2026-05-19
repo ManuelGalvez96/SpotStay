@@ -37,11 +37,8 @@ use App\Http\Controllers\Gestor\IncidenciaController as GestorIncidenciaControll
 use App\Http\Controllers\Gestor\PropiedadController as GestorPropiedadController;
 use App\Http\Controllers\Arrendador\ConfiguracionCobrosController;
 use App\Http\Controllers\Gestor\MensajeController as GestorMensajeController;
-<<<<<<< HEAD
-=======
 use App\Http\Controllers\Gestor\PerfilController as GestorPerfilController;
 use App\Http\Controllers\Gestor\ActividadController as GestorActividadController;
->>>>>>> 6129907e97013f3e80a43b475b48bc4a6d9c434e
 
 // Rutas Públicas
 Route::get('/', function () {

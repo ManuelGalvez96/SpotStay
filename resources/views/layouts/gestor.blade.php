@@ -33,6 +33,9 @@
             <button class="btn-nav-icon {{ request()->is('gestor/mensajes*') ? 'activo' : '' }}" data-ruta="/gestor/mensajes" title="Mensajes">
                 <i class="bi bi-chat-dots"></i>
             </button>
+            <button class="btn-nav-icon {{ request()->is('gestor/actividad*') ? 'activo' : '' }}" data-ruta="/gestor/actividad" title="Actividad">
+                <i class="bi bi-activity"></i>
+            </button>
         </div>
 
         <div class="topbar-der">

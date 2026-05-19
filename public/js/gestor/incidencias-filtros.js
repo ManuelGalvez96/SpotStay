@@ -2,6 +2,7 @@
     var formId = 'incidenciasFiltrosForm';
     var filtersWrapId = 'incidenciasFiltrosWrap';
     var tableWrapId = 'incidenciasTablaWrap';
+    var mobileListSelector = '.incidencias-lista-mobile';
     var debounceTimer = null;
 
     function getForm() {
@@ -22,7 +23,7 @@
         return query ? form.action + '?' + query : form.action;
     }
 
-    function replaceBlocksFromHtml(html) {
+    function replaceBlocksFromHtml(html, appendCards) {
         var parser = new DOMParser();
         var doc = parser.parseFromString(html, 'text/html');
 
@@ -35,11 +36,27 @@
         var currentTable = document.getElementById(tableWrapId);
         var nextTable = doc.getElementById(tableWrapId);
         if (currentTable && nextTable) {
-            currentTable.replaceWith(nextTable);
+            if (appendCards) {
+                var currentList = currentTable.querySelector(mobileListSelector);
+                var nextList = nextTable.querySelector(mobileListSelector);
+                if (currentList && nextList) {
+                    var cards = nextList.querySelectorAll('.incidencia-card');
+                    cards.forEach(function (card) {
+                        currentList.appendChild(card);
+                    });
+                }
+                var currentPagination = currentTable.querySelector('.paginacion-cargar-mas');
+                var nextPagination = nextTable.querySelector('.paginacion-cargar-mas');
+                if (currentPagination && nextPagination) {
+                    currentPagination.replaceWith(nextPagination);
+                }
+            } else {
+                currentTable.replaceWith(nextTable);
+            }
         }
     }
 
-    function fetchAndRender(url) {
+    function fetchAndRender(url, appendCards) {
         fetch(url, {
             method: 'GET',
             headers: {
@@ -50,12 +67,26 @@
                 return response.text();
             })
             .then(function (html) {
-                replaceBlocksFromHtml(html);
+                replaceBlocksFromHtml(html, appendCards);
                 bindEvents();
             })
             .catch(function () {
                 window.location.href = url;
             });
+    }
+
+    function cargarMas() {
+        var pagination = document.querySelector('.paginacion-cargar-mas');
+        if (!pagination) return;
+        var btn = pagination.querySelector('.btn-cargar-mas');
+        if (!btn || btn.disabled) return;
+        var url = btn.getAttribute('data-next-url');
+        if (!url) return;
+
+        btn.disabled = true;
+        btn.textContent = 'Cargando...';
+
+        fetchAndRender(url, true);
     }
 
     function bindEvents() {
@@ -66,7 +97,7 @@
 
         form.onsubmit = function (e) {
             e.preventDefault();
-            fetchAndRender(buildUrlFromForm(form));
+            fetchAndRender(buildUrlFromForm(form), false);
         };
 
         var textInputs = form.querySelectorAll('input[type="text"]');
@@ -74,7 +105,7 @@
             input.oninput = function () {
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(function () {
-                    fetchAndRender(buildUrlFromForm(form));
+                    fetchAndRender(buildUrlFromForm(form), false);
                 }, 350);
             };
         });
@@ -82,32 +113,21 @@
         var dateInput = form.querySelector('input[type="date"]');
         if (dateInput) {
             dateInput.onchange = function () {
-                fetchAndRender(buildUrlFromForm(form));
+                fetchAndRender(buildUrlFromForm(form), false);
             };
         }
 
         var selects = form.querySelectorAll('select');
         selects.forEach(function (select) {
             select.onchange = function () {
-                fetchAndRender(buildUrlFromForm(form));
+                fetchAndRender(buildUrlFromForm(form), false);
             };
         });
 
-        var tableWrap = document.getElementById(tableWrapId);
-        if (!tableWrap) {
-            return;
+        var cargarMasBtn = document.querySelector('.btn-cargar-mas');
+        if (cargarMasBtn) {
+            cargarMasBtn.onclick = cargarMas;
         }
-
-        var paginationLinks = tableWrap.querySelectorAll('.paginacion-admin a');
-        paginationLinks.forEach(function (link) {
-            link.onclick = function (e) {
-                e.preventDefault();
-                var href = link.getAttribute('href');
-                if (href) {
-                    fetchAndRender(href);
-                }
-            };
-        });
     }
 
     bindEvents();

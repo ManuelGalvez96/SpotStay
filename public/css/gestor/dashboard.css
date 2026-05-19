@@ -92,6 +92,16 @@
 }
 
 @media (max-width: 768px) {
+    .btn-revisar {
+        padding: 8px 14px;
+        display: inline-block;
+    }
+
+    .link-ver-todos {
+        padding: 8px 0;
+        display: inline-block;
+    }
+
     .hero-admin {
         padding: 20px 16px;
         border-radius: 0 0 14px 14px;

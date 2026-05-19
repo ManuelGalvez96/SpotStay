@@ -294,10 +294,9 @@ body {
     .topbar-central {
         order: 3;
         width: 100%;
-        justify-content: space-between;
-        gap: 2px;
-        padding-top: 4px;
-        overflow: hidden;
+        justify-content: space-around;
+        gap: 8px;
+        padding-top: 6px;
     }
 
     .topbar-der {
@@ -312,12 +311,11 @@ body {
     }
 
     .btn-nav-icon {
-        width: 32px;
-        height: 32px;
-        font-size: 14px;
-        border-radius: 7px;
-        flex: 1 1 0;
-        max-width: 34px;
+        width: 44px;
+        height: 44px;
+        font-size: 18px;
+        border-radius: 10px;
+        flex: 0 0 auto;
     }
 
     .admin-container {

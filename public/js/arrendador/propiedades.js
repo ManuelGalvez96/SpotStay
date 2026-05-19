@@ -162,7 +162,7 @@ function enviarFormularioConFetch(formulario) {
         var esEdicionPropiedad = Boolean(formulario.querySelector('#form-id-propiedad') && formulario.querySelector('#form-id-propiedad').value);
 
         if (esEdicionPropiedad && resultado.datosRespuesta.propiedad) {
-          actualizarFilaPropiedad(resultado.datosRespuesta.propiedad);
+          cargarTablaPropiedades();
         }
 
         cerrarModalFormulario();
@@ -547,12 +547,165 @@ function abrirModalGestor(propiedadId) {
         btnGuardar.disabled = !tieneGestor;
       }
 
-    })
-    .catch(() => {
+      var btnDesasignar = document.getElementById('btnDesasignarGestor');
+      if (btnDesasignar) {
+        btnDesasignar.dataset.propiedadId = propiedadId;
+        btnDesasignar.style.display = tieneGestor ? '' : 'none';
+      }
+
+      // Inicializar selector de gestores
+      inicializarSelectorGestores(propiedadId, data.id_gestor);
+      })
+      .catch(() => {
       mostrarMensaje('No se pudieron cargar los permisos del gestor.', true);
-    });
+      });
 
   modal.hidden = false;
+}
+
+// Inicializar selector de gestores
+function inicializarSelectorGestores(propiedadId, gestorIdActual) {
+  const selectorBox = document.querySelector('.gestor-selector-box');
+  if (!selectorBox) return;
+
+  // Remover dropdown anterior si existe
+  const dropdownAnterior = document.getElementById('gestor-selector-dropdown');
+  if (dropdownAnterior) {
+    dropdownAnterior.remove();
+  }
+
+  // Agregar click handler al selector
+  selectorBox.style.cursor = 'pointer';
+  selectorBox.onclick = function(e) {
+    e.stopPropagation();
+    mostrarSelectorGestores(propiedadId);
+  };
+}
+
+// Mostrar dropdown de gestores
+function mostrarSelectorGestores(propiedadId) {
+  // Remover dropdown anterior si existe
+  const dropdownAnterior = document.getElementById('gestor-selector-dropdown');
+  if (dropdownAnterior) {
+    dropdownAnterior.remove();
+    return; // Si ya estaba abierto, cerrarlo
+  }
+
+  // Obtener lista de gestores disponibles
+  fetch('/arrendador/gestores/disponibles')
+    .then(response => response.json())
+    .then(gestores => {
+      crearDropdownGestores(gestores, propiedadId);
+    })
+    .catch(error => {
+      console.error('Error al cargar gestores:', error);
+      mostrarMensaje('No se pudieron cargar los gestores disponibles.', true);
+    });
+}
+
+// Crear dropdown con lista de gestores
+function crearDropdownGestores(gestores, propiedadId) {
+  const selectorBox = document.querySelector('.gestor-selector-box');
+  if (!selectorBox) return;
+
+  // Crear contenedor del dropdown
+  const dropdown = document.createElement('div');
+  dropdown.id = 'gestor-selector-dropdown';
+  dropdown.className = 'gestor-dropdown';
+  
+  const contenido = document.createElement('div');
+  contenido.className = 'gestor-dropdown-content';
+  
+  gestores.forEach(gestor => {
+    const inicial = gestor.nombre_usuario && gestor.nombre_usuario.length > 0 
+      ? gestor.nombre_usuario.trim().charAt(0).toUpperCase() 
+      : '-';
+    
+    const item = document.createElement('div');
+    item.className = 'gestor-dropdown-item';
+    item.dataset.gestorId = gestor.id_usuario;
+    item.dataset.gestorNombre = gestor.nombre_usuario;
+    item.dataset.gestorEmail = gestor.email_usuario;
+    item.dataset.propiedadId = propiedadId;
+    
+    item.innerHTML = `
+      <div class="gestor-dropdown-avatar">${inicial}</div>
+      <div class="gestor-dropdown-info">
+        <div class="gestor-dropdown-nombre">${gestor.nombre_usuario}</div>
+        <div class="gestor-dropdown-email">${gestor.email_usuario}</div>
+      </div>
+    `;
+    
+    item.addEventListener('click', function() {
+      seleccionarGestor(
+        parseInt(this.dataset.gestorId),
+        this.dataset.gestorNombre,
+        this.dataset.gestorEmail,
+        parseInt(this.dataset.propiedadId)
+      );
+    });
+    
+    contenido.appendChild(item);
+  });
+  
+  dropdown.appendChild(contenido);
+  
+  // Insertar dropdown después del selector
+  selectorBox.parentElement.insertBefore(dropdown, selectorBox.nextSibling);
+  
+  // Cerrar dropdown al hacer click fuera
+  setTimeout(() => {
+    document.addEventListener('click', cerrarDropdownGestores);
+  }, 0);
+}
+
+// Cerrar dropdown de gestores
+function cerrarDropdownGestores(evento) {
+  if (evento && (evento.target.closest('.gestor-selector-box') || evento.target.closest('.gestor-selector-dropdown'))) {
+    return; // No cerrar si se hace click en el selector o dropdown
+  }
+  
+  const dropdown = document.getElementById('gestor-selector-dropdown');
+  if (dropdown) {
+    dropdown.remove();
+    document.removeEventListener('click', cerrarDropdownGestores);
+  }
+}
+
+// Seleccionar gestor y actualizar modal
+function seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId) {
+  // Actualizar display del selector
+  const inicialGestor = nombreGestor && nombreGestor.length > 0 
+    ? nombreGestor.trim().charAt(0).toUpperCase() 
+    : '-';
+  
+  document.getElementById('nombre_gestor').textContent = nombreGestor;
+  document.getElementById('email_gestor').textContent = emailGestor;
+  document.getElementById('gestor_avatar_inicial').textContent = inicialGestor;
+  
+  // Actualizar ID del gestor en el botón de guardado
+  const btnGuardar = document.getElementById('btnGuardarPermisosGestor');
+  if (btnGuardar) {
+    btnGuardar.dataset.gestorId = gestorId;
+  }
+  
+  // Habilitar checkboxes de permisos
+  document.getElementById('permiso-chat').disabled = false;
+  document.getElementById('permiso-editar').disabled = false;
+  document.getElementById('permiso-gastos').disabled = false;
+  document.getElementById('permiso-incidencias').disabled = false;
+  
+  var btnVerPerfil = document.getElementById('btnVerPerfilGestor');
+  if (btnVerPerfil) {
+    btnVerPerfil.disabled = false;
+  }
+  
+  btnGuardar.disabled = false;
+  
+  // Cerrar dropdown
+  cerrarDropdownGestores();
+  
+  mostrarMensaje('Gestor seleccionado: ' + nombreGestor, false);
 }
 
 document.addEventListener('click', function (evento) {
@@ -607,10 +760,11 @@ function guardarPermisos() {
     })
     .then(response => response.json())
     .then(data => {
-      if (data.success) {
-        cerrarModalGestor();
-        if (window.swalSuccess) {
-          swalSuccess('Permisos actualizados', data.message || 'Los permisos del gestor se han guardado correctamente.');
+    if (data.success) {
+      cerrarModalGestor();
+      cargarTablaPropiedades();
+      if (window.swalSuccess) {
+        swalSuccess('Permisos actualizados', data.message || 'Los permisos del gestor se han guardado correctamente.');
         } else {
           mostrarMensaje(data.message || 'Permisos actualizados correctamente.', false);
         }
@@ -618,15 +772,78 @@ function guardarPermisos() {
         throw new Error(data.message || 'Error al actualizar permisos.');
       }
     })
-    .catch(error => {
-      console.error(error);
-      if (window.swalError) {
-        swalError('No se pudo guardar', error.message || 'Error al actualizar permisos.');
-      } else {
-        mostrarMensaje(error.message || 'Error al actualizar permisos.', true);
-      }
-    });
+      .catch(error => {
+        console.error(error);
+        if (window.swalError) {
+          swalError('No se pudo guardar', error.message || 'Error al actualizar permisos.');
+        } else {
+          mostrarMensaje(error.message || 'Error al actualizar permisos.', true);
+        }
+      });
 };
+
+function desasignarGestorPropiedad() {
+  var btn = document.getElementById('btnDesasignarGestor');
+  if (!btn) return;
+  var propiedadId = btn.dataset.propiedadId;
+  if (!propiedadId) return;
+
+  if (!window.Swal) {
+    var confirmar = confirm('¿Estás seguro de que quieres desasignar el gestor de esta propiedad?');
+    if (!confirmar) return;
+    ejecutarDesasignar(propiedadId);
+    return;
+  }
+
+  Swal.fire({
+    title: '\u00BFDesasignar gestor?',
+    text: '\u00BFEst\u00E1s seguro de que quieres desasignar el gestor de esta propiedad?',
+    iconHtml: crearOsoError(),
+    customClass: { icon: 'oso-icon' },
+    showCancelButton: true,
+    confirmButtonText: 'S\u00ED, desasignar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#d9534f',
+    reverseButtons: true
+  }).then(function (result) {
+    if (result.isConfirmed) {
+      ejecutarDesasignar(propiedadId);
+    }
+  });
+}
+
+function ejecutarDesasignar(propiedadId) {
+  fetch('/arrendador/propiedades/' + propiedadId + '/gestor/desasignar', {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': obtenerTokenCsrf(),
+      'Accept': 'application/json'
+    },
+    credentials: 'same-origin'
+  })
+  .then(function (response) { return response.json(); })
+  .then(function (data) {
+    if (data.success) {
+      cerrarModalGestor();
+      cargarTablaPropiedades();
+      if (window.swalSuccess) {
+        swalSuccess('Gestor desasignado', data.message || 'Gestor desasignado correctamente.');
+      } else {
+        mostrarMensaje(data.message || 'Gestor desasignado correctamente.', false);
+      }
+    } else {
+      throw new Error(data.message || 'Error al desasignar gestor.');
+    }
+  })
+  .catch(function (error) {
+    console.error(error);
+    if (window.swalError) {
+      swalError('Error', error.message || 'No se pudo desasignar el gestor.');
+    } else {
+      mostrarMensaje(error.message || 'No se pudo desasignar el gestor.', true);
+    }
+  });
+}
 
 
 function cerrarModalGestor() {
@@ -755,8 +972,116 @@ function cambiarFotoModal(src) {
 }
 
 
+var paginaActualPropiedades = 1;
+
+function cargarTablaPropiedades(pagina) {
+  pagina = pagina || paginaActualPropiedades;
+  var contenedor = document.querySelector('.properties-table tbody');
+  var paginationWrap = document.querySelector('.pagination-wrap');
+  if (!contenedor) return;
+
+  contenedor.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner">Cargando...</div></td></tr>';
+
+  fetch('/arrendador/propiedades/datos?page=' + pagina, {
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'Accept': 'application/json'
+    },
+    credentials: 'same-origin'
+  })
+  .then(function (r) { return r.json(); })
+  .then(function (res) {
+    var datos = res.propiedades;
+    var totales = res.totales;
+    var arrendadorId = res.arrendadorId;
+    var filas = '';
+
+    if (datos.data && datos.data.length > 0) {
+      datos.data.forEach(function (p) {
+        var estadoPago = 'al-dia';
+        var labelPago = 'Al d\u00EDa';
+        var atrasadas = Number(p.cuotas_atrasadas || 0);
+        var pendientes = Number(p.cuotas_pendientes || 0);
+        if (atrasadas > 0) { estadoPago = 'atrasado'; labelPago = 'Atrasado'; }
+        else if (pendientes > 0) { estadoPago = 'pendiente'; labelPago = 'Pendiente'; }
+
+        var precio = parseFloat(p.precio_propiedad || 0).toFixed(2).replace('.', ',');
+        var gestorNombre = p.nombre_gestor || 'Sin gestor asignado';
+        var incidencias = p.total_incidencias || 'Sin incidencias';
+
+        filas += '<tr>' +
+          '<td><div class="property-info">' +
+            '<p class="property-title">' + escaparHtml(p.titulo_propiedad || '') + '</p>' +
+            '<p class="property-meta">' + escaparHtml(p.direccion_propiedad || '') + ', ' + escaparHtml(p.ciudad_propiedad || '') + ' ' + escaparHtml(p.codigo_postal_propiedad || '') + '</p>' +
+            '<p class="property-meta">' + precio + ' \u20AC/mes</p>' +
+          '</div></td>' +
+          '<td><span class="badge badge-' + p.estado_propiedad + '">' + (p.estado_propiedad ? p.estado_propiedad.charAt(0).toUpperCase() + p.estado_propiedad.slice(1) : '') + '</span></td>' +
+          '<td>' + incidencias + '</td>' +
+          '<td><span class="badge badge-' + estadoPago + '">' + labelPago + '</span></td>' +
+          '<td>' +
+            '<span class="gestor-nombre">' + escaparHtml(gestorNombre) + '</span>' +
+            '<button type="button" class="btn-gear" aria-label="Configurar gestor" data-propiedad-id="' + p.id_propiedad + '" onclick="abrirModalGestor(this.dataset.propiedadId)">' +
+              '<i class="bi bi-gear"></i>' +
+            '</button>' +
+          '</td>' +
+          '<td><div class="table-actions">' +
+            '<button class="action-link" type="button" data-propiedad-id="' + p.id_propiedad + '" onclick="fetchEditData(this.dataset.propiedadId)">Editar</button>' +
+            '<button class="action-link" type="button" data-propiedad-id="' + p.id_propiedad + '" data-arrendador-id="' + arrendadorId + '" onclick="abrirModalPropiedad(this.dataset.propiedadId, this.dataset.arrendadorId)">Previsualizar</button>' +
+          '</div></td>' +
+        '</tr>';
+      });
+    } else {
+      filas = '<tr><td colspan="6" class="text-center">A\u00FAn no tienes propiedades creadas.</td></tr>';
+    }
+
+    contenedor.innerHTML = filas;
+
+    paginaActualPropiedades = datos.current_page || 1;
+
+    // Actualizar stats
+    if (totales) {
+      var statSpans = document.querySelectorAll('.stats-grid .stat-card span');
+      if (statSpans.length >= 4) {
+        statSpans[0].textContent = totales.totalPropiedades || 0;
+        statSpans[1].textContent = totales.publicadas || 0;
+        statSpans[2].textContent = totales.alquiladas || 0;
+        statSpans[3].textContent = totales.inactivas || 0;
+      }
+    }
+
+    // Paginación
+    if (paginationWrap) {
+      var htmlPag = '';
+      if (datos.last_page && datos.last_page > 1) {
+        htmlPag += '<ul class="pagination">';
+        if (datos.prev_page_url) {
+          htmlPag += '<li class="page-item"><a class="page-link" href="#" onclick="cargarTablaPropiedades(' + (datos.current_page - 1) + ');return false;">&laquo;</a></li>';
+        }
+        for (var i = 1; i <= datos.last_page; i++) {
+          htmlPag += '<li class="page-item' + (i === datos.current_page ? ' active' : '') + '"><a class="page-link" href="#" onclick="cargarTablaPropiedades(' + i + ');return false;">' + i + '</a></li>';
+        }
+        if (datos.next_page_url) {
+          htmlPag += '<li class="page-item"><a class="page-link" href="#" onclick="cargarTablaPropiedades(' + (datos.current_page + 1) + ');return false;">&raquo;</a></li>';
+        }
+        htmlPag += '</ul>';
+      }
+      paginationWrap.innerHTML = htmlPag;
+    }
+  })
+  .catch(function () {
+    contenedor.innerHTML = '<tr><td colspan="6" class="text-center">Error al cargar las propiedades.</td></tr>';
+  });
+}
+
+function escaparHtml(texto) {
+  var div = document.createElement('div');
+  div.appendChild(document.createTextNode(texto));
+  return div.innerHTML;
+}
+
 document.querySelectorAll('form[data-ajax-form="true"]').forEach(enviarFormularioConFetch);
 iniciarValidacionImagenes();
+cargarTablaPropiedades();
 
 document.onkeydown = function (evento) {
   if (evento.key === 'Escape') {

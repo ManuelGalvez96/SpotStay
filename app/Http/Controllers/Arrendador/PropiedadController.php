@@ -33,6 +33,20 @@ class PropiedadController extends Controller
         ]);
     }
 
+    public function datosPropiedades(Request $request)
+    {
+        $arrendadorId = $this->obtenerIdArrendador($request);
+        $columnaPrecio = $this->obtenerColumnaPrecioPropiedad();
+        $propiedades = $this->consultarPropiedades($arrendadorId, $columnaPrecio)->paginate(10);
+        $totales = $this->obtenerTotales($arrendadorId);
+
+        return response()->json([
+            'propiedades' => $propiedades,
+            'totales' => $totales,
+            'arrendadorId' => $arrendadorId,
+        ]);
+    }
+
     public function guardar(Request $request)
     {
         $arrendadorId = $this->obtenerIdArrendador($request);
@@ -556,6 +570,14 @@ class PropiedadController extends Controller
             return response()->json(['success' => false, 'message' => 'Gestor no encontrado.'], 400);
         }
 
+        // Actualizar id_gestor_fk en tbl_propiedad para que ambas vistas coincidan
+        DB::table('tbl_propiedad')
+            ->where('id_propiedad', $idPropiedad)
+            ->update([
+                'id_gestor_fk' => $idGestor,
+                'actualizado_propiedad' => Carbon::now(),
+            ]);
+
         // Usar la tabla de permisos vinculada a propiedad
         DB::table('tbl_propiedad_permisos')
             ->updateOrInsert(
@@ -573,5 +595,32 @@ class PropiedadController extends Controller
             );
 
         return response()->json(['success' => true]);
+    }
+
+    public function desasignarGestor(Request $request, $idPropiedad)
+    {
+        $arrendadorId = $this->obtenerIdArrendador($request);
+
+        $existe = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $idPropiedad)
+            ->where('id_arrendador_fk', $arrendadorId)
+            ->exists();
+
+        if (!$existe) {
+            return response()->json(['success' => false, 'message' => 'Propiedad no encontrada.'], 404);
+        }
+
+        DB::table('tbl_propiedad')
+            ->where('id_propiedad', $idPropiedad)
+            ->update([
+                'id_gestor_fk' => null,
+                'actualizado_propiedad' => Carbon::now(),
+            ]);
+
+        DB::table('tbl_propiedad_permisos')
+            ->where('id_propiedad_fk', $idPropiedad)
+            ->delete();
+
+        return response()->json(['success' => true, 'message' => 'Gestor desasignado correctamente.']);
     }
 }

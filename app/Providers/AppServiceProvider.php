@@ -36,6 +36,8 @@ class AppServiceProvider extends ServiceProvider
                     'inicialUsuario' => $nombre !== '' ? strtoupper(substr($nombre, 0, 1)) : '',
                     'esInquilino' => $usuario->alquileres()->where('estado_alquiler', 'activo')->exists(),
                     'tienePagos' => $usuario->alquileres()->where('estado_alquiler', 'activo')->exists() || \Illuminate\Support\Facades\DB::table('tbl_pago')->where('id_pagador_fk', $usuario->id_usuario)->exists(),
+                    'esArrendador' => $usuario->roles()->where('slug_rol', 'arrendador')->exists(),
+                    'esGestor' => $usuario->roles()->where('slug_rol', 'gestor')->exists(),
                 ]);
             } else {
                 $view->with([
@@ -44,6 +46,8 @@ class AppServiceProvider extends ServiceProvider
                     'fotoUsuario' => '',
                     'inicialUsuario' => '',
                     'esInquilino' => false,
+                    'esArrendador' => false,
+                    'esGestor' => false,
                 ]);
             }
         });

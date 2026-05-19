@@ -6,6 +6,10 @@
     <section class="mensajes-layout">
         <aside class="mensajes-lista panel-filtros-miembro">
             <h2 class="titulo-filtros">Conversaciones</h2>
+            <button class="boton-conversaciones-cerrar" id="boton-cerrar-conversaciones" type="button">
+                <i class="bi bi-x" aria-hidden="true"></i>
+                Cerrar
+            </button>
             <a class="detalle-volver" href="{{ url('/miembro/inicio') }}" aria-label="Volver">
                 <i class="bi bi-arrow-left" aria-hidden="true"></i>
             </a>
@@ -30,15 +34,26 @@
         </aside>
 
         <section class="mensajes-panel listado-propiedades">
+            @php
+                $otroUsuario = null;
+                if ($conversacionActiva) {
+                    $otroUsuario = $conversacionActiva->participantes->firstWhere('id_usuario', '!=', auth()->id());
+                }
+            @endphp
+
+            <div class="mensajes-barra-mobile">
+                <button class="boton-conversaciones-toggle" id="boton-abrir-conversaciones" type="button">
+                    <i class="bi bi-list" aria-hidden="true"></i>
+                    Conversaciones
+                </button>
+                <span class="mensajes-chat-actual">{{ optional($otroUsuario)->nombre_usuario ?? 'Selecciona una conversacion' }}</span>
+            </div>
+
             @if (!$conversacionActiva)
                 <div class="estado-vacio">
                     <p>Selecciona una conversación para empezar a chatear.</p>
                 </div>
             @else
-                @php
-                    $otroUsuario = $conversacionActiva->participantes->firstWhere('id_usuario', '!=', auth()->id());
-                @endphp
-
                 <header class="mensajes-cabecera">
                     <h2 class="titulo-listado">{{ $otroUsuario->nombre_usuario ?? 'Chat' }}</h2>
                     <span class="contador-propiedades">{{ $conversacionActiva->propiedad->titulo_propiedad ?? 'Sin propiedad' }}</span>

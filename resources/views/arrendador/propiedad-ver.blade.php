@@ -1,28 +1,22 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $propiedad->titulo_propiedad }} - SpotStay</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+@extends('layouts.arrendador')
+
+@section('titulo', $propiedad->titulo_propiedad . ' - SpotStay')
+
+@section('css')
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #333; }
-        
         .page-header {
             background: white;
             padding: 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+            border-radius: 8px;
         }
         
         .page-header h1 { font-size: 28px; margin-bottom: 5px; }
         .page-header p { color: #666; font-size: 14px; }
         
         .nav-links { margin-top: 15px; display: flex; gap: 15px; }
-        .nav-links a { color: #0066cc; text-decoration: none; font-size: 14px; }
+        .nav-links a { color: #0f4c81; text-decoration: none; font-size: 14px; }
         .nav-links a:hover { text-decoration: underline; }
         
         .property-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
@@ -99,12 +93,12 @@
         .rental-section {
             background: #f9f9f9;
             padding: 20px;
-            border-left: 4px solid #0066cc;
+            border-left: 4px solid #0f4c81;
             grid-column: 1 / -1;
             margin-top: 20px;
         }
         
-        .rental-title { font-size: 12px; text-transform: uppercase; color: #0066cc; font-weight: 600; margin-bottom: 15px; }
+        .rental-title { font-size: 12px; text-transform: uppercase; color: #0f4c81; font-weight: 600; margin-bottom: 15px; }
         .rental-info { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .rental-item { font-size: 13px; }
         .rental-item-label { color: #999; margin-bottom: 3px; }
@@ -129,8 +123,8 @@
             display: inline-block;
         }
         
-        .btn-primary { background: #0066cc; color: white; }
-        .btn-primary:hover { background: #0052a3; }
+        .btn-primary { background: #0f4c81; color: white; }
+        .btn-primary:hover { background: #0c3b64; }
         
         .btn-secondary { background: #f0f0f0; color: #333; }
         .btn-secondary:hover { background: #e0e0e0; }
@@ -154,19 +148,19 @@
             .gallery-main { height: 300px; }
         }
     </style>
-</head>
-<body>
+@endsection
 
-<div class="page-header">
-    <h1>{{ $propiedad->titulo_propiedad }}</h1>
-    <p>{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }} · {{ $propiedad->codigo_postal_propiedad }}</p>
-    <div class="nav-links">
-        <a href="{{ route('arrendador.propiedades', ['arrendador_id' => $arrendadorId]) }}">← Volver a propiedades</a>
-        <a href="{{ route('arrendador.propiedades', ['arrendador_id' => $arrendadorId, 'editar' => $propiedad->id_propiedad]) }}">Editar</a>
+@section('content')
+<div class="property-container" style="padding-top: 0;">
+    <div class="page-header">
+        <h1>{{ $propiedad->titulo_propiedad }}</h1>
+        <p>{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }} · {{ $propiedad->codigo_postal_propiedad }}</p>
+        <div class="nav-links">
+            <a href="{{ route('arrendador.propiedades', ['arrendador_id' => $arrendadorId]) }}">← Volver a propiedades</a>
+            <a href="{{ route('arrendador.propiedades', ['arrendador_id' => $arrendadorId, 'editar' => $propiedad->id_propiedad]) }}">Editar</a>
+        </div>
     </div>
-</div>
 
-<div class="property-container">
     @if (count($fotos) > 0)
         <div class="gallery">
             <div class="gallery-main" id="galeria-principal">
@@ -252,12 +246,12 @@
         </div>
     </div>
 </div>
+@endsection
 
+@section('scripts')
 <script>
 function cambiarGaleria(src) {
     document.getElementById('galeria-principal').innerHTML = '<img src="' + src + '" alt="Propiedad" />';
 }
 </script>
-
-</body>
-</html>
+@endsection

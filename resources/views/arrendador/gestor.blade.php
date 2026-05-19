@@ -1,27 +1,18 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor inmobiliario - Arrendador</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+@extends('layouts.arrendador')
+
+@section('titulo', 'Gestor inmobiliario - Arrendador')
+
+@section('css')
     <link rel="stylesheet" href="{{ asset('css/arrendador/gestor.css') }}" />
-</head>
-<body>
-<div class="pagina">
-    <header class="cabecera">
+@endsection
+
+@section('content')
+<div class="pagina" style="padding-top: 0;">
+    <header class="cabecera" style="padding-top: 0; padding-bottom: 20px;">
         <div>
             <p class="etiqueta">Arrendador</p>
             <h1>Gestor inmobiliario</h1>
             <p class="subtitulo">Define quien gestiona cada propiedad y guarda los cambios al instante.</p>
-        </div>
-        <div class="acciones-cabecera">
-            <div class="avatar">{{ $avatarInicial }}</div>
-            <a class="btn-volver" href="{{ route('arrendador.dashboard', ['arrendador_id' => $arrendadorId]) }}">Volver al dashboard</a>
-            <a class="btn-volver" href="{{ route('logout') }}">Cerrar sesion</a>
         </div>
     </header>
 
@@ -88,7 +79,8 @@
 </div>
 
 <div id="toastGestor" class="toast" hidden></div>
+@endsection
 
+@section('scripts')
 <script src="{{ asset('js/arrendador/gestor.js') }}"></script>
-</body>
-</html>
+@endsection

@@ -290,14 +290,17 @@ var renderizarKanban = function(data) {
     // Renderizar columna Abierta
     renderizarColumnaKanban('kanban-col-abierta', data.abiertas);
     
-    // Renderizar columna En proceso
-    renderizarColumnaKanban('kanban-col-proceso', data.enProceso);
+    // Renderizar columna Esperando Decisión
+    renderizarColumnaKanban('kanban-col-esperando-decision', data.esperandoDecision);
+    
+    // Renderizar columna Esperando Pago
+    renderizarColumnaKanban('kanban-col-esperando-pago', data.esperandoPago);
+    
+    // Renderizar columna Solucionada
+    renderizarColumnaKanban('kanban-col-solucionada', data.solucionadas);
     
     // Renderizar columna Resuelta
     renderizarColumnaKanban('kanban-col-resuelta', data.resueltas);
-    
-    // Renderizar columna Cerrada
-    renderizarColumnaKanban('kanban-col-cerrada', data.cerradas);
     
     // Renderizar tabla de lista
     renderizarTablaIncidencias(data);
@@ -305,14 +308,16 @@ var renderizarKanban = function(data) {
 
 var actualizarBadgesKanban = function(data) {
     var badgeAbierta = document.querySelector('.kanban-col-abierta .badge-kanban');
-    var badgeProceso = document.querySelector('.kanban-col-proceso .badge-kanban');
+    var badgeEsperandoDecision = document.querySelector('.kanban-col-esperando-decision .badge-kanban');
+    var badgeEsperandoPago = document.querySelector('.kanban-col-esperando-pago .badge-kanban');
+    var badgeSolucionada = document.querySelector('.kanban-col-solucionada .badge-kanban');
     var badgeResuelta = document.querySelector('.kanban-col-resuelta .badge-kanban');
-    var badgeCerrada = document.querySelector('.kanban-col-cerrada .badge-kanban');
     
     if (badgeAbierta) { badgeAbierta.textContent = data.totalAbiertas; }
-    if (badgeProceso) { badgeProceso.textContent = data.totalEnProceso; }
+    if (badgeEsperandoDecision) { badgeEsperandoDecision.textContent = data.totalEsperandoDecision; }
+    if (badgeEsperandoPago) { badgeEsperandoPago.textContent = data.totalEsperandoPago; }
+    if (badgeSolucionada) { badgeSolucionada.textContent = data.totalSolucionadas; }
     if (badgeResuelta) { badgeResuelta.textContent = data.totalResueltas; }
-    if (badgeCerrada) { badgeCerrada.textContent = data.totalCerradas; }
 };
 
 var renderizarColumnaKanban = function(className, incidencias) {
@@ -458,22 +463,28 @@ var renderizarTablaIncidencias = function(data) {
                 todasIncidencias.push(data.abiertas[i]);
             }
         }
-        if (data.enProceso) {
+        if (data.esperandoDecision) {
             var i;
-            for (i = 0; i < data.enProceso.length; i++) {
-                todasIncidencias.push(data.enProceso[i]);
+            for (i = 0; i < data.esperandoDecision.length; i++) {
+                todasIncidencias.push(data.esperandoDecision[i]);
+            }
+        }
+        if (data.esperandoPago) {
+            var i;
+            for (i = 0; i < data.esperandoPago.length; i++) {
+                todasIncidencias.push(data.esperandoPago[i]);
+            }
+        }
+        if (data.solucionadas) {
+            var i;
+            for (i = 0; i < data.solucionadas.length; i++) {
+                todasIncidencias.push(data.solucionadas[i]);
             }
         }
         if (data.resueltas) {
             var i;
             for (i = 0; i < data.resueltas.length; i++) {
                 todasIncidencias.push(data.resueltas[i]);
-            }
-        }
-        if (data.cerradas) {
-            var i;
-            for (i = 0; i < data.cerradas.length; i++) {
-                todasIncidencias.push(data.cerradas[i]);
             }
         }
     }
@@ -509,14 +520,16 @@ var crearFilaIncidencia = function(inc) {
     
     var estadoBadgeClass = 'badge-' + inc.estado_incidencia;
     var estadoLabel = inc.estado_incidencia.charAt(0).toUpperCase() + inc.estado_incidencia.slice(1);
-    if (inc.estado_incidencia === 'en_proceso') {
-        estadoLabel = 'En proceso';
+    if (inc.estado_incidencia === 'esperando_decision') {
+        estadoLabel = 'Esperando decisión';
+    } else if (inc.estado_incidencia === 'esperando_pago') {
+        estadoLabel = 'Esperando pago';
     }
     
     var prioridadLabel = inc.prioridad_incidencia.charAt(0).toUpperCase() + inc.prioridad_incidencia.slice(1);
     var categoriaLabel = inc.categoria_incidencia.charAt(0).toUpperCase() + inc.categoria_incidencia.slice(1);
     
-    fila.className = (inc.estado_incidencia === 'cerrada') ? 'fila-inactiva' : '';
+    fila.className = (inc.estado_incidencia === 'resuelta') ? 'fila-inactiva' : '';
     fila.innerHTML = '<td data-label="TÍTULO"><strong>' + (inc.titulo_incidencia || '') + '</strong></td>' +
                      '<td data-label="PROPIEDAD" class="col-tablet-hide">' + truncarTexto(inc.direccion_propiedad || '', 30) + '</td>' +
                      '<td data-label="CATEGORÍA" class="col-mobile-hide">' + categoriaLabel + '</td>' +
@@ -612,12 +625,14 @@ var rellenarHistorial = function(historial) {
         var textoEvento = item.comentario_historial || '';
         if (tipo === 'abierta') {
             textoEvento = textoEvento || 'Incidencia abierta';
-        } else if (tipo === 'en_proceso') {
-            textoEvento = textoEvento || 'Incidencia en proceso';
+        } else if (tipo === 'esperando_decision') {
+            textoEvento = textoEvento || 'Esperando decisión del arrendador';
+        } else if (tipo === 'esperando_pago') {
+            textoEvento = textoEvento || 'Esperando pago del arrendador';
+        } else if (tipo === 'solucionada') {
+            textoEvento = textoEvento || 'Incidencia solucionada';
         } else if (tipo === 'resuelta') {
             textoEvento = textoEvento || 'Incidencia resuelta';
-        } else if (tipo === 'cerrada') {
-            textoEvento = textoEvento || 'Incidencia cerrada';
         }
 
         evento.innerHTML = '<div class="timeline-punto-modal"></div>'

@@ -12,6 +12,14 @@
         </div>
         @endif
 
+        @if(session('success'))
+        <div class="header-error-msg">
+            <div class="alert alert-success">
+                {!! session('success') !!}
+            </div>
+        </div>
+        @endif
+
         <div class="acciones-miembro">
             <button class="boton-icono" type="button" aria-label="Notificaciones">
                 <i class="bi bi-bell" aria-hidden="true"></i>

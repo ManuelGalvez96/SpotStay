@@ -241,3 +241,44 @@ function asignarEventosNavIconos() {
         };
     }
 }
+
+function inicializarMenuPerfilYNav() {
+    var botonPerfil = document.getElementById('boton-perfil');
+    var submenu = document.getElementById('submenu-perfil');
+
+    if (botonPerfil && submenu) {
+        botonPerfil.onclick = function (e) {
+            e.stopPropagation();
+            submenu.classList.toggle('activo');
+        };
+
+        submenu.onclick = function (e) {
+            e.stopPropagation();
+        };
+        
+        var originalDocClick = document.onclick;
+        document.onclick = function (e) {
+            if (originalDocClick) originalDocClick(e);
+            submenu.classList.remove('activo');
+        };
+    }
+
+    // Auto-centrar navegación horizontal activa al cargar la página
+    var contenedor = document.querySelector('.contenedor-nav');
+    var enlaceActivo = document.querySelector('.enlace-nav.activo');
+
+    if (contenedor && enlaceActivo) {
+        var offsetLeft = enlaceActivo.offsetLeft;
+        var anchoContenedor = contenedor.clientWidth;
+        var anchoEnlace = enlaceActivo.clientWidth;
+
+        var scrollPos = offsetLeft - (anchoContenedor / 2) + (anchoEnlace / 2);
+        contenedor.scrollTo({
+            left: scrollPos,
+            behavior: 'smooth'
+        });
+    }
+}
+
+// Inicializar al cargar el script
+inicializarMenuPerfilYNav();

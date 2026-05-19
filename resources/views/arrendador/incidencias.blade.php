@@ -1,26 +1,18 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Incidencias - Arrendador</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+@extends('layouts.arrendador')
+
+@section('titulo', 'Incidencias - Arrendador')
+
+@section('css')
     <link rel="stylesheet" href="{{ asset('css/arrendador/incidencias.css') }}" />
-</head>
-<body>
-<div class="pagina">
-    <header class="cabecera">
+@endsection
+
+@section('content')
+<div class="pagina" style="padding-top: 0;">
+    <header class="cabecera" style="padding-top: 0; padding-bottom: 20px;">
         <div>
             <p class="etiqueta">Arrendador</p>
             <h1>Incidencias de tus propiedades</h1>
             <p class="subtitulo">Revisa el estado de cada incidencia y decide quién paga cuando el presupuesto espera decisión.</p>
-        </div>
-        <div class="acciones-cabecera">
-            <a class="btn-volver" href="{{ route('arrendador.dashboard', ['arrendador_id' => $arrendadorId]) }}">Volver al dashboard</a>
-            <a class="btn-volver" href="{{ route('logout') }}">Cerrar sesion</a>
         </div>
     </header>
 
@@ -130,5 +122,4 @@
         <div class="paginacion">{{ $incidencias->withQueryString()->links() }}</div>
     </section>
 </div>
-</body>
-</html>
+@endsection

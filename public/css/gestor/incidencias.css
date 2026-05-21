@@ -110,6 +110,21 @@
     color: #6B7280;
 }
 
+.acciones-filtros-mobile {
+    display: none;
+}
+
+.filtros-toggle {
+    display: none;
+    font-size: 14px;
+    transition: transform 0.2s;
+    line-height: 1;
+}
+
+.filtros-toggle.rotated {
+    transform: rotate(180deg);
+}
+
 /* Desktop: mostrar tabla, ocultar lista */
 .incidencias-tabla-desktop {
     display: block;
@@ -117,6 +132,129 @@
 
 .incidencias-lista-mobile {
     display: none;
+}
+
+/* ── Card mobile ── */
+.incidencia-card {
+    display: block;
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 14px;
+    text-decoration: none;
+    color: inherit;
+    margin-bottom: 12px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.incidencia-card:hover {
+    border-color: #035498;
+    box-shadow: 0 2px 8px rgba(3, 84, 152, 0.1);
+}
+
+.incidencia-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.incidencia-card-titulo {
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
+    flex: 1;
+    line-height: 1.3;
+}
+
+.incidencia-card-dir,
+.incidencia-card-persona {
+    font-size: 13px;
+    color: #6B7280;
+    margin: 0 0 2px;
+    line-height: 1.4;
+}
+
+.incidencia-card-persona {
+    margin-bottom: 0;
+}
+
+.incidencia-card-divider {
+    height: 1px;
+    background: #F3F4F6;
+    margin: 10px 0;
+}
+
+.incidencia-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.incidencia-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.incidencia-card-prioridad {
+    font-size: 12px;
+    color: #6B7280;
+}
+
+.incidencia-card-prioridad strong {
+    color: #D97706;
+}
+
+.incidencia-card-prioridad strong.prioridad-alta,
+.incidencia-card-prioridad strong.prioridad-urgente {
+    color: #EF4444;
+}
+
+.incidencia-card-prioridad strong.prioridad-baja {
+    color: #16A34A;
+}
+
+.incidencia-card-fecha {
+    font-size: 12px;
+    color: #9CA3AF;
+}
+
+/* ── Cargar más ── */
+.paginacion-cargar-mas {
+    justify-content: center;
+}
+
+.btn-cargar-mas {
+    border: 2px solid #035498;
+    background: #fff;
+    color: #035498;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+
+.btn-cargar-mas:hover {
+    background: #EEF4FF;
+}
+
+.btn-cargar-mas:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.cargar-mas-fin {
+    color: #9CA3AF;
+    font-size: 13px;
+    text-align: center;
+    padding: 14px;
 }
 
 @media (max-width: 1024px) {
@@ -130,6 +268,18 @@
 }
 
 @media (max-width: 768px) {
+    .filtros-toggle {
+        display: inline-block;
+    }
+
+    #filtrosBody.collapsed {
+        display: none;
+    }
+
+    .incidencias-filtros-wrap .card-admin:last-child {
+        display: none;
+    }
+
     .hero-admin {
         padding: 20px 16px;
         border-radius: 0 0 14px 14px;
@@ -157,8 +307,8 @@
         padding: 12px 14px;
         font-size: 14px;
         gap: 8px;
-        align-items: flex-start;
-        flex-direction: column;
+        align-items: center;
+        flex-direction: row;
     }
 
     .form-filtros-admin {
@@ -169,6 +319,18 @@
 
     .acciones-filtros-admin {
         flex-wrap: wrap;
+    }
+
+    .acciones-filtros-mobile {
+        display: flex;
+        gap: 8px;
+        flex-direction: column;
+    }
+
+    .acciones-filtros-mobile .btn-aplicar-admin,
+    .acciones-filtros-mobile .btn-limpiar-admin {
+        width: 100%;
+        text-align: center;
     }
 
     .btn-aplicar-admin,
@@ -196,50 +358,47 @@
 
     .incidencias-lista-mobile {
         display: block;
-        padding: 0 4px;
+        padding: 0 12px 12px;
     }
 
-    .incidencias-lista-mobile .solicitud-item {
-        gap: 10px;
-        padding: 12px 10px;
+    .paginacion-cargar-mas {
+        justify-content: center;
+        padding: 12px;
     }
 
-    .incidencias-lista-mobile .solicitud-avatar {
-        width: 34px;
-        height: 34px;
-        font-size: 11px;
-    }
-
-    .incidencias-lista-mobile .solicitud-nombre {
-        font-size: 13px;
-    }
-
-    .incidencias-lista-mobile .solicitud-ciudad {
-        font-size: 11px;
-    }
-
-    .incidencias-lista-mobile .solicitud-meta {
-        gap: 6px;
-    }
-
-    .paginacion-admin {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 12px 14px;
-    }
-
-    .pagina-btn-admin,
-    .pagina-btn-admin.disabled {
+    .btn-cargar-mas {
+        border: 2px solid #035498;
+        background: #fff;
+        color: #035498;
+        border-radius: 10px;
+        padding: 14px 24px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
         text-align: center;
+        transition: background 0.15s;
+    }
+
+    .btn-cargar-mas:hover {
+        background: #EEF4FF;
+    }
+
+    .btn-cargar-mas:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+
+    .cargar-mas-fin {
+        color: #9CA3AF;
+        font-size: 13px;
+        text-align: center;
+        padding: 14px;
     }
 }
 
 @media (max-width: 480px) {
     .hero-admin h1 {
         font-size: 20px;
-    }
-
-    .incidencias-tabla-wrap .tabla-admin {
-        min-width: 680px;
     }
 }

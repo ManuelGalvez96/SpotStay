@@ -95,30 +95,38 @@
 }
 
 .badge.estado.abierta {
-    background: #e8f1ff;
-    color: var(--inc-blue);
+    background: #DBEAFE;
+    color: #1E40AF;
 }
 
 .badge.estado.en-proceso {
-    background: #fff7db;
-    color: var(--inc-yellow);
+    background: #FEF3C7;
+    color: #92400E;
 }
 
-.badge.estado.esperando,
-.badge.estado.esperando-decision,
+.badge.estado.esperando-decision {
+    background: #FFEDD5;
+    color: #C2410C;
+}
+
 .badge.estado.esperando-pago {
-    background: #ffe8e8;
-    color: var(--inc-red);
+    background: #EDE9FE;
+    color: #6D21D9;
+}
+
+.badge.estado.solucionada {
+    background: #CCFBF1;
+    color: #0F766E;
 }
 
 .badge.estado.resuelta {
-    background: #e8f6ec;
-    color: #228857;
+    background: #D1FAE5;
+    color: #065F46;
 }
 
 .badge.estado.cerrada {
-    background: #eceff4;
-    color: #4b5563;
+    background: #F1F5F9;
+    color: #475569;
 }
 
 .badge.prioridad {

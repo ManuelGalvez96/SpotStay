@@ -304,13 +304,19 @@
   }
   .formulario-mensaje textarea {
     padding: 8px;
+    min-height: 44px;
   }
   .btn-enviar {
-    padding: 8px 14px;
-    font-size: 13px;
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
   }
   .item-conversacion {
-    padding: 8px;
-    gap: 8px;
+    padding: 12px;
+    gap: 10px;
+  }
+  .filtro-conversaciones {
+    padding: 10px 12px;
+    font-size: 15px;
   }
 }

@@ -63,6 +63,35 @@ class SolicitudAlquilerController extends Controller
             return redirect()->back()->with('error', 'No se pudo enviar la solicitud de alquiler. Detalle: ' . $e->getMessage());
         }
 
-        return redirect()->back()->with('success', 'Solicitud enviada correctamente.');
+        if ($propiedad->id_gestor_fk) {
+            $actividadService = new \App\Services\ActividadService();
+            $inquilinoNombre = $usuario->nombre_usuario ?? 'Inquilino';
+
+            $actividadService->alquilerCreado(
+                $propiedad->id_gestor_fk,
+                $id,
+                $propiedad->titulo_propiedad,
+                $inquilinoNombre
+            );
+
+            $actividadService->propiedadEstadoCambiado(
+                $propiedad->id_gestor_fk,
+                $id,
+                $propiedad->titulo_propiedad,
+                $propiedad->estado_propiedad,
+                'alquilada',
+                $inquilinoNombre
+            );
+        }
+
+        if ($debeCerrarSesion) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect('/login');
+        }
+
+        return redirect('/inquilino/gestionar-propiedades');
     }
 }

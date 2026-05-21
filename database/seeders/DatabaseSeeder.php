@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             ConversacionUsuarioSeeder::class,
             MensajeSeeder::class,
             NotificacionSeeder::class,
+            ActividadSeeder::class,
             ChatbotSesionSeeder::class,
             ChatbotMensajeSeeder::class,
             DocumentoSeeder::class,

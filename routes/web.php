@@ -236,6 +236,9 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
     Route::get('/miembro/solicitud-arrendador', [SolicitudArrendadorController::class, 'create'])->name('miembro.arrendador.formulario');
     Route::post('/miembro/solicitud-arrendador', [SolicitudArrendadorController::class, 'store'])->name('miembro.arrendador.enviar');
 
+    Route::get('/miembro/solicitud-gestor', [SolicitudGestorController::class, 'create'])->name('miembro.gestor.formulario');
+    Route::post('/miembro/solicitud-gestor', [SolicitudGestorController::class, 'store'])->name('miembro.gestor.enviar');
+
     Route::get('/miembro/chat/{id}/mensajes', [MensajesController::class, 'obtenerMensajes'])->name('miembro.mensajes.mensajes');
     Route::post('/miembro/chat/{id}/mensaje', [MensajesController::class, 'enviarMensaje'])->name('miembro.mensajes.enviar');
     Route::get('/miembro/mapa', [MapaController::class, 'index'])->name('miembro.mapa');

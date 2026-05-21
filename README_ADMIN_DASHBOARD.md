@@ -431,3 +431,4 @@ Después de cambios, verifica:
 **Última actualización**: Abril 2026  
 **Laravel**: 13.4.0  
 **Estado**: ✅ Dropdown funcional y seguro
+

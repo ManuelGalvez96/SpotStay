@@ -44,34 +44,15 @@
                     <form method="POST" action="{{ route('miembro.arrendador.enviar') }}" class="filtros-miembro solicitud-formulario" id="formulario-solicitud-arrendador" novalidate>
                         @csrf
 
-                        <div class="grupo-filtro solicitud-columna-doble">
-                            <label class="etiqueta-filtro" for="telefono-solicitud">Telefono de contacto</label>
-                            <input class="campo-filtro" id="telefono-solicitud" name="telefono_solicitud" type="text" value="{{ old('telefono_solicitud') }}" placeholder="+34 600123456">
-                            <small id="error-telefono-solicitud" class="solicitud-error"></small>
-                            <small class="solicitud-ayuda">Formato: +34 600123456</small>
-                        </div>
-
-                        <div class="grupo-filtro solicitud-columna-doble">
-                            <label class="etiqueta-filtro" for="fecha-nacimiento-solicitud">Fecha de nacimiento</label>
-                            <input class="campo-filtro" id="fecha-nacimiento-solicitud" name="fecha_nacimiento_solicitud" type="date" value="{{ old('fecha_nacimiento_solicitud') }}">
-                            <small id="error-fecha-nacimiento-solicitud" class="solicitud-error"></small>
-                        </div>
-
-                        <div class="grupo-filtro">
-                            <label class="etiqueta-filtro" for="tipo-documento-solicitud">Tipo de documento</label>
-                            <select class="campo-filtro" id="tipo-documento-solicitud" name="tipo_documento_solicitud">
-                                <option value="">Selecciona una opcion</option>
-                                <option value="DNI" {{ old('tipo_documento_solicitud') === 'DNI' ? 'selected' : '' }}>DNI</option>
-                                <option value="NIE" {{ old('tipo_documento_solicitud') === 'NIE' ? 'selected' : '' }}>NIE</option>
-                                <option value="PASAPORTE" {{ old('tipo_documento_solicitud') === 'PASAPORTE' ? 'selected' : '' }}>Pasaporte</option>
-                            </select>
-                            <small id="error-tipo-documento-solicitud" class="solicitud-error"></small>
-                        </div>
-
-                        <div class="grupo-filtro">
-                            <label class="etiqueta-filtro" for="numero-documento-solicitud">Numero de documento</label>
-                            <input class="campo-filtro" id="numero-documento-solicitud" name="numero_documento_solicitud" type="text" value="{{ old('numero_documento_solicitud') }}">
-                            <small id="error-numero-documento-solicitud" class="solicitud-error"></small>
+                        <div class="grupo-filtro solicitud-columna-completa">
+                            <div class="solicitud-resumen-datos">
+                                <p class="solicitud-ayuda">Los datos personales y de contacto se toman de tu perfil registrado.</p>
+                                <ul class="solicitud-resumen-lista">
+                                    <li><strong>Telefono:</strong> {{ auth()->user()->telefono_usuario ?? 'No disponible' }}</li>
+                                    <li><strong>Fecha de nacimiento:</strong> {{ auth()->user()->fecha_nacimiento_usuario ? \Illuminate\Support\Carbon::parse(auth()->user()->fecha_nacimiento_usuario)->format('d/m/Y') : 'No disponible' }}</li>
+                                    <li><strong>Documento:</strong> {{ auth()->user()->dni_usuario ?? 'No disponible' }}</li>
+                                </ul>
+                            </div>
                         </div>
 
 

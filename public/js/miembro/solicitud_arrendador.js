@@ -11,22 +11,20 @@ var tocados = {};
 var solicitudEnviando = false;
 var solicitudEnviada = false;
 
-window.addEventListener('pageshow', function () {
-    iniciarAplicacionSolicitudArrendador();
-});
+window.onload = iniciarAplicacionSolicitudArrendador;
 
-iniciarAplicacionSolicitudArrendador();
+function iniciarAplicacionSolicitudArrendador() {
+	// Inicia la validacion cuando carga la pagina
+	iniciarValidacionSolicitudArrendador();
+}
 
 function iniciarValidacionSolicitudArrendador() {
+	// Pillamos el formulario y sus piezas para usarlas en validacion y envio
     // --- REFERENCIAS DOM ---
     const formulario = document.getElementById("formulario-solicitud-arrendador");
     const botonEnviar = document.getElementById("boton-enviar-solicitud");
 
     // Elementos de error
-    const errorTelefono = document.getElementById("error-telefono-solicitud");
-    const errorFechaNacimiento = document.getElementById("error-fecha-nacimiento-solicitud");
-    const errorTipoDocumento = document.getElementById("error-tipo-documento-solicitud");
-    const errorNumeroDocumento = document.getElementById("error-numero-documento-solicitud");
     const errorTipoArrendador = document.getElementById("error-tipo-arrendador-solicitud");
     const errorNumPropiedades = document.getElementById("error-num-propiedades-previstas-solicitud");
     const errorDescripcion = document.getElementById("error-descripcion-solicitud");
@@ -34,10 +32,6 @@ function iniciarValidacionSolicitudArrendador() {
     const errorAceptaVeracidad = document.getElementById("error-acepta-veracidad-solicitud");
 
     // Inputs
-    const entradaTelefono = document.getElementById("telefono-solicitud");
-    const entradaFechaNacimiento = document.getElementById("fecha-nacimiento-solicitud");
-    const entradaTipoDocumento = document.getElementById("tipo-documento-solicitud");
-    const entradaNumeroDocumento = document.getElementById("numero-documento-solicitud");
     const entradaTipoArrendador = document.getElementById("tipo-arrendador-solicitud");
     const entradaNumPropiedades = document.getElementById("num-propiedades-previstas-solicitud");
     const entradaDescripcion = document.getElementById("descripcion-solicitud");
@@ -46,32 +40,42 @@ function iniciarValidacionSolicitudArrendador() {
 
     if (!formulario || !botonEnviar) return;
 
-    const camposObligatorios = [
-        errorTelefono,
-        errorFechaNacimiento,
-        errorTipoDocumento,
-        errorNumeroDocumento,
-        errorTipoArrendador,
-        errorNumPropiedades,
-        errorDescripcion,
-        errorAceptaTerminos,
-        errorAceptaVeracidad,
-        entradaTelefono,
-        entradaFechaNacimiento,
-        entradaTipoDocumento,
-        entradaNumeroDocumento,
-        entradaTipoArrendador,
-        entradaNumPropiedades,
-        entradaDescripcion,
-        entradaAceptaTerminos,
-        entradaAceptaVeracidad
-    ];
+	// Guardamos el formulario y el boton en variables globales
+	formularioSolicitud = formulario;
+	botonEnviarSolicitud = botonEnviar;
+	// Guardamos cada campo para validar y controlar el boton
+	campos = {
+		tipoArrendador: entradaTipoArrendador,
+		numPropiedades: entradaNumPropiedades,
+		descripcion: entradaDescripcion,
+		aceptaTerminos: entradaAceptaTerminos,
+		aceptaVeracidad: entradaAceptaVeracidad
+	};
+	tocados = {
+		tipoArrendador: false,
+		numPropiedades: false,
+		descripcion: false,
+		aceptaTerminos: false,
+		aceptaVeracidad: false
+	};
+
+	// Enganchamos validadores por campo
+	registrarCampo("tipoArrendador", validarSelectObligatorio);
+	registrarCampo("numPropiedades", validarNumeroPropiedades);
+	registrarCampo("descripcion", validarDescripcion);
+	registrarCampo("aceptaTerminos", validarCheckboxObligatorio);
+	registrarCampo("aceptaVeracidad", validarCheckboxObligatorio);
+
+	// Controla el envio con validacion previa
+	formularioSolicitud.onsubmit = function (evento) {
+		evento.preventDefault();
 
 		if (solicitudEnviando || solicitudEnviada) {
 			return;
 		}
 
 		if (!validarFormulario(true)) {
+			actualizarEstadoBoton(false);
 			return;
 		}
 
@@ -79,25 +83,42 @@ function iniciarValidacionSolicitudArrendador() {
 		botonEnviarSolicitud.disabled = true;
 		botonEnviarSolicitud.classList.add("btn-login-desabilitado");
 		var textoOriginalBoton = botonEnviarSolicitud.innerText;
+		// Monta los datos del formulario como texto tipo query
+		var formularioDatos = "";
+		for (var i = 0; i < formularioSolicitud.elements.length; i++) {
+			var elementoFormulario = formularioSolicitud.elements[i];
+			if (!elementoFormulario.name || elementoFormulario.disabled) {
+				continue;
+			}
+
+			if ((elementoFormulario.type === "checkbox" || elementoFormulario.type === "radio") && !elementoFormulario.checked) {
+				continue;
+			}
+
+			if (formularioDatos !== "") {
+				formularioDatos += "&";
+			}
+			formularioDatos += encodeURIComponent(elementoFormulario.name) + "=" + encodeURIComponent(elementoFormulario.value);
+		}
 
 		var tokenMeta = document.getElementsByName("csrf-token");
 		var csrf = "";
 		if (tokenMeta && tokenMeta.length > 0) {
 			csrf = tokenMeta[0].content || tokenMeta[0].getAttribute("content") || "";
 		}
-		if (!csrf && formularioSolicitud && formularioSolicitud.elements && formularioSolicitud.elements["_token"]) {
+		if (!csrf && formularioSolicitud.elements && formularioSolicitud.elements["_token"]) {
 			csrf = formularioSolicitud.elements["_token"].value || "";
 		}
 
-        const regexTel = /^\+\d{1,4} \d{6,11}$/;
-
+		// Envia el formulario y actualiza el estado segun la respuesta
 		fetch(formularioSolicitud.action, {
 			method: "POST",
 			headers: {
+				"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
 				"X-CSRF-TOKEN": csrf,
 				"Accept": "application/json"
 			},
-			body: fd
+			body: formularioDatos
 		})
 			.then(function (response) {
 				var ct = response.headers.get("content-type") || "";
@@ -113,6 +134,7 @@ function iniciarValidacionSolicitudArrendador() {
 
 				if (data.success) {
 					solicitudEnviada = true;
+					// Resetea el formulario y bloquea el boton si fue bien
 					if (typeof mostrarAlertaExito === "function") {
 						mostrarAlertaExito("Solicitud enviada", data.message || "Solicitud enviada correctamente");
 					} else {
@@ -121,15 +143,13 @@ function iniciarValidacionSolicitudArrendador() {
 
 					formularioSolicitud.reset();
 					for (var k in tocados) {
-						if (tocados.hasOwnProperty(k)) {
-							tocados[k] = false;
-						}
+						tocados[k] = false;
 					}
 					botonEnviarSolicitud.innerText = "Solicitud enviada";
 					botonEnviarSolicitud.disabled = true;
 					botonEnviarSolicitud.classList.add("btn-login-desabilitado");
-					actualizarEstadoBoton(false);
 				} else {
+					// Devuelve el boton a su estado si hay error
 					if (typeof mostrarAlertaError === "function") {
 						mostrarAlertaError("Error", data.message || "No se pudo enviar la solicitud");
 					} else {
@@ -140,6 +160,7 @@ function iniciarValidacionSolicitudArrendador() {
 				}
 			})
 			.catch(function () {
+				// Mensaje de fallo de red
 				if (typeof mostrarAlertaError === "function") {
 					mostrarAlertaError("Error", "Error de red al enviar la solicitud");
 				} else {
@@ -149,12 +170,14 @@ function iniciarValidacionSolicitudArrendador() {
 				solicitudEnviando = false;
 			})
 			.finally(function () {
+				// Reactiva el boton si no se envio bien
 				if (!solicitudEnviada) {
 					actualizarEstadoBoton(validarFormulario(false));
 				}
 			});
 	};
 
+	// Estado inicial del boton al cargar
 	actualizarEstadoBoton(validarFormulario(false));
 }
 
@@ -165,6 +188,7 @@ function iniciarValidacionSolicitudArrendador() {
    ========================================================= */
 
 function registrarCampo(clave, validador) {
+	// Conecta los eventos del campo con su validador
 	var campo = campos[clave];
 	if (!campo) {
 		return;
@@ -191,11 +215,8 @@ function registrarCampo(clave, validador) {
 }
 
 function validarFormulario(mostrarErrores) {
+	// Lanza todas las validaciones y devuelve si esta todo ok
 	var errores = 0;
-	errores += validarCampo("telefono", validarTelefono, mostrarErrores);
-	errores += validarCampo("fechaNacimiento", validarFechaNacimiento, mostrarErrores);
-	errores += validarCampo("tipoDocumento", validarSelectObligatorio, mostrarErrores);
-	errores += validarCampo("numeroDocumento", validarTextoObligatorio, mostrarErrores);
 	errores += validarCampo("tipoArrendador", validarSelectObligatorio, mostrarErrores);
 	errores += validarCampo("numPropiedades", validarNumeroPropiedades, mostrarErrores);
 	errores += validarCampo("descripcion", validarDescripcion, mostrarErrores);
@@ -205,6 +226,7 @@ function validarFormulario(mostrarErrores) {
 }
 
 function validarCampo(clave, validador, mostrarErrores) {
+	// Valida un campo y pinta su estado segun el resultado
 	var campo = campos[clave];
 	if (!campo) {
 		return 1;
@@ -292,6 +314,7 @@ function validarTextoObligatorio(campo) {
 
 
 function validarNumeroPropiedades(campo) {
+	// Valida que sea un numero entero y positivo
 	var valor = String(campo.value || "").trim();
 	if (valor === "") {
 		return "El numero de propiedades es obligatorio.";
@@ -304,6 +327,7 @@ function validarNumeroPropiedades(campo) {
 }
 
 function validarDescripcion(campo) {
+	// Pide una descripcion con un minimo de texto
 	var valor = String(campo.value || "").trim();
 	if (valor === "") {
 		return "La descripcion es obligatoria.";
@@ -323,10 +347,6 @@ function validarCheckboxObligatorio(campo) {
 
 function obtenerIdErrorPorClave(clave) {
 	var mapaErrores = {
-		telefono: "error-telefono-solicitud",
-		fechaNacimiento: "error-fecha-nacimiento-solicitud",
-		tipoDocumento: "error-tipo-documento-solicitud",
-		numeroDocumento: "error-numero-documento-solicitud",
 		tipoArrendador: "error-tipo-arrendador-solicitud",
 		numPropiedades: "error-num-propiedades-previstas-solicitud",
 		descripcion: "error-descripcion-solicitud",
@@ -379,6 +399,7 @@ function limpiarMarcaCampo(campo) {
 }
 
 function actualizarEstadoBoton(habilitar) {
+	// Activa o bloquea el boton segun el estado del formulario
 	if (!botonEnviarSolicitud || solicitudEnviada) {
 		return;
 	}

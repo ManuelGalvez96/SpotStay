@@ -180,6 +180,7 @@ class AuthController extends Controller
             'fecha_nacimiento_usuario' => $request->fecha_nacimiento,
             'tipo_arrendador_usuario' => $request->tipo_arrendador,
             'activo_usuario' => true,
+            'stripe_status' => ($plan->precio_plan > 0) ? null : 'active',
             'creado_usuario' => Carbon::now(),
             'actualizado_usuario' => Carbon::now(),
         ]);

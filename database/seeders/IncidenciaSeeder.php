@@ -59,6 +59,13 @@ class IncidenciaSeeder extends Seeder
 
         $estados = ['abierta', 'esperando_decision', 'esperando_pago', 'solucionada', 'resuelta'];
         $prioridades = ['baja', 'media', 'alta', 'urgente'];
+        $estadosInactivosForzados = [
+            'abierta',
+            'esperando_decision',
+            'esperando_pago',
+            'abierta',
+            'esperando_pago',
+        ];
         $incidenciaCounter = 0;
 
         foreach ($propiedades as $propiedad) {
@@ -84,6 +91,8 @@ class IncidenciaSeeder extends Seeder
                 $asignado = $gestores->random();
                 $fechaCreacion = now()->subDays(rand(1, 30));
                 $idCategoriaFk = $mapeoCategoria[$incidenciaData['categoria']] ?? null;
+                $esInactivaForzada = $incidenciaCounter < count($estadosInactivosForzados);
+                $estadoForzado = $esInactivaForzada ? $estadosInactivosForzados[$incidenciaCounter] : $estado;
 
                 $presupuesto = null;
                 $detallePresupuesto = null;
@@ -91,19 +100,25 @@ class IncidenciaSeeder extends Seeder
                 $pagadoPresupuesto = false;
                 $pagadoIncidencia = null;
 
-                if (in_array($estado, ['esperando_decision', 'esperando_pago', 'solucionada', 'resuelta'])) {
+                if (in_array($estadoForzado, ['esperando_decision', 'esperando_pago', 'solucionada', 'resuelta'])) {
                     $presupuesto = rand(80, 600);
                     $detallePresupuesto = 'Reparación de materiales, mano de obra y desplazamiento.';
                 }
 
-                if (in_array($estado, ['esperando_pago', 'solucionada', 'resuelta'])) {
+                if (in_array($estadoForzado, ['esperando_pago', 'solucionada', 'resuelta'])) {
                     $responsablePago = rand(0, 1) ? 'arrendador' : 'inquilino';
                 }
 
-                if (in_array($estado, ['solucionada', 'resuelta'])) {
+                if (in_array($estadoForzado, ['solucionada', 'resuelta'])) {
                     $pagadoPresupuesto = true;
                     $pagadoIncidencia = $fechaCreacion->copy()->addDays(rand(1, 5));
                 }
+
+                $fechaActualizacion = $esInactivaForzada
+                    ? Carbon::now()->subDays(rand(15, 30))
+                    : (in_array($estadoForzado, ['solucionada', 'resuelta'])
+                        ? $fechaCreacion->copy()->addDays(rand(1, 10))
+                        : now());
 
                 Incidencia::firstOrCreate(
                     [
@@ -114,7 +129,7 @@ class IncidenciaSeeder extends Seeder
                         'descripcion_incidencia' => $incidenciaData['descripcion'],
                         'id_categoria_fk' => $idCategoriaFk,
                         'prioridad_incidencia' => $prioridad,
-                        'estado_incidencia' => $estado,
+                        'estado_incidencia' => $estadoForzado,
                         'id_reporta_fk' => $reportador->id_usuario,
                         'id_asignado_fk' => $asignado->id_usuario,
                         'presupuesto_importe_incidencia' => $presupuesto,
@@ -123,7 +138,7 @@ class IncidenciaSeeder extends Seeder
                         'pagado_presupuesto_incidencia' => $pagadoPresupuesto,
                         'pagado_incidencia' => $pagadoIncidencia,
                         'creado_incidencia' => $fechaCreacion,
-                        'actualizado_incidencia' => in_array($estado, ['solucionada', 'resuelta']) ? $fechaCreacion->copy()->addDays(rand(1, 10)) : now(),
+                        'actualizado_incidencia' => $fechaActualizacion,
                     ]
                 );
 

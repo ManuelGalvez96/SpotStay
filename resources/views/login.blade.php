@@ -70,11 +70,11 @@
                 </div>
                 @endif
             </form>
-            <a href="{{ url('/register') }}" class="nav-link">¿No tienes cuenta? <b>Regístrate aquí</b></a>
+            <a href="{{ route('register') }}" class="nav-link">¿No tienes cuenta? <b>Regístrate aquí</b></a>
         </div>
     </div>
 
-    <script src="{{ asset('js/login.js') }}"></script>
+    <script src="{{ asset('js/login.js') }}?v=2"></script>
 
 </body>
 

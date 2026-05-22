@@ -25,10 +25,10 @@ class EnsureArrendadorIsActive
             return redirect()->route('login');
         }
 
-        // 2. Solo aplicamos estas restricciones si el usuario tiene el rol de 'arrendador' o 'miembro'
-        if ($user->roles()->whereIn('slug_rol', ['arrendador', 'miembro'])->exists()) {
+        // 2. Estas restricciones solo aplican al rol de 'arrendador'
+        if ($user->roles()->where('slug_rol', 'arrendador')->exists()) {
             
-            // PASO 1: Verificar Suscripción Mensual (Para ambos)
+            // PASO 1: Verificar Suscripción Mensual
             if ($user->stripe_status !== 'active') {
                 if (!$request->is('miembro/suscripcion*')) {
                     return redirect()->route('miembro.suscripcion.index')

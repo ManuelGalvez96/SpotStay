@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Miembro;
 
 use App\Http\Controllers\Controller;
+use App\Models\Usuario;
 use App\Models\Suscripcion;
 use App\Models\Plan;
 use App\Models\Pago;
@@ -24,6 +25,14 @@ class MiembroSuscripcionController extends Controller
     public function index()
     {
         $usuario = Auth::user();
+        $esArrendador = DB::table('tbl_rol_usuario as ru')
+            ->join('tbl_rol as r', 'r.id_rol', '=', 'ru.id_rol_fk')
+            ->where('ru.id_usuario_fk', $usuario->id_usuario)
+            ->where('r.slug_rol', 'arrendador')
+            ->exists();
+        $rutaRetorno = $esArrendador
+            ? route('arrendador.stripe.configurar')
+            : url('/miembro/inicio');
         
         // Buscamos la suscripción pendiente más reciente
         $suscripcion = Suscripcion::where('id_usuario_fk', $usuario->id_usuario)
@@ -36,12 +45,15 @@ class MiembroSuscripcionController extends Controller
             return redirect($this->redirigirDashboard());
         }
 
-        // Si no tiene nada pendiente y no es activo, al registro para que elija plan
+        // Si no tiene nada pendiente y no es activo, mostramos la pantalla sin entrar en bucle
         if (!$suscripcion) {
-            return redirect('/register')->with('info', 'Por favor, selecciona un plan para continuar.');
+            return view('miembro.suscripcion', [
+                'suscripcion' => null,
+                'rutaRetorno' => $rutaRetorno,
+            ]);
         }
 
-        return view('miembro.suscripcion', compact('suscripcion'));
+        return view('miembro.suscripcion', compact('suscripcion', 'rutaRetorno'));
     }
 
     /**
@@ -128,13 +140,12 @@ class MiembroSuscripcionController extends Controller
                 ]);
 
                 // 2. Actualizar estado del usuario
-                $usuario->update([
+                DB::table('tbl_usuario')
+                    ->where('id_usuario', $usuario->id_usuario)
+                    ->update([
                     'stripe_status' => 'active',
                     'stripe_subscription_id' => $checkoutSession->subscription ?? null
-                ]);
-
-                // Refrescamos el objeto usuario para que el Middleware vea los cambios inmediatamente
-                $usuario->refresh();
+                    ]);
 
                 // 3. Registrar el Pago en la tabla de pagos
                 $pago = Pago::create([

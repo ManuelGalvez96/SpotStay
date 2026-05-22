@@ -191,11 +191,11 @@
                     </div>
                 </div>
             </form>
-            <a href="{{ url('login') }}" class="nav-link">¿Ya tienes cuenta? <b>Inicia sesión</b></a>
+            <a href="{{ route('login') }}" class="nav-link">¿Ya tienes cuenta? <b>Inicia sesión</b></a>
         </div>
     </div>
 
-    <script src="{{ asset('js/registro.js') }}"></script>
+    <script src="{{ asset('js/registro.js') }}?v=2"></script>
 
 </body>
 

@@ -19,6 +19,20 @@
     @include('miembro.partials.nav')
 
     <main class="contenido-miembro">
+        @if(session('info'))
+            <div class="container mt-3">
+                <div class="alert alert-info mb-0">
+                    {{ session('info') }}
+                </div>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="container mt-3">
+                <div class="alert alert-danger mb-0">
+                    {{ session('error') }}
+                </div>
+            </div>
+        @endif
         @yield('content')
     </main>
 

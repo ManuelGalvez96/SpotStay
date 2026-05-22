@@ -93,8 +93,7 @@ function iniciarValidacionCrearUsuario() {
         const planSeleccionado = document.querySelector('input[name="plan_id"]:checked') !== null;
         
         // Validación de DNI (Obligatorio para todos)
-        const dniFormato = validarDniGenerico(entradaDni, errorDni, false, selectorTipoDocumento.value);
-        const dniValido = dniFormato && dniDisponible;
+        const dniValido = validarDniGenerico(entradaDni, errorDni, false, selectorTipoDocumento.value, false) && dniDisponible;
 
         let arrendadorCamposValidos = true;
         if (rol === 'arrendador') {
@@ -234,7 +233,7 @@ function iniciarValidacionCrearUsuario() {
         return validarDniGenerico(entradaDni, errorDni, esBlur, selectorTipoDocumento.value);
     }
 
-    function validarDniGenerico(input, spanError, esBlur, tipoForzado = 'dni') {
+    function validarDniGenerico(input, spanError, esBlur, tipoForzado = 'dni', recalcularBoton = true) {
         if (!input) return true;
         const documento = input.value.trim().toUpperCase();
         const tipo = tipoForzado;
@@ -243,7 +242,7 @@ function iniciarValidacionCrearUsuario() {
             spanError.innerText = esBlur ? "El documento es obligatorio." : "";
             disponibilidadDni.innerText = "";
             dniDisponible = false;
-            comprobarBoton();
+            if (recalcularBoton) comprobarBoton();
             return false;
         }
 
@@ -253,7 +252,7 @@ function iniciarValidacionCrearUsuario() {
                 spanError.innerText = "Formato DNI inválido (8 números + letra).";
                 disponibilidadDni.innerText = "";
                 dniDisponible = false;
-                comprobarBoton();
+                if (recalcularBoton) comprobarBoton();
                 return false;
             }
             const numero = documento.substr(0, 8);
@@ -263,7 +262,7 @@ function iniciarValidacionCrearUsuario() {
                 spanError.innerText = "La letra del DNI no coincide.";
                 disponibilidadDni.innerText = "";
                 dniDisponible = false;
-                comprobarBoton();
+                if (recalcularBoton) comprobarBoton();
                 return false;
             }
         } else {
@@ -273,7 +272,7 @@ function iniciarValidacionCrearUsuario() {
                 spanError.innerText = "Formato NIE inválido (X/Y/Z + 7 números + letra).";
                 disponibilidadDni.innerText = "";
                 dniDisponible = false;
-                comprobarBoton();
+                if (recalcularBoton) comprobarBoton();
                 return false;
             }
             let prefijo = documento.charAt(0);
@@ -288,7 +287,7 @@ function iniciarValidacionCrearUsuario() {
                 spanError.innerText = "La letra del NIE no coincide.";
                 disponibilidadDni.innerText = "";
                 dniDisponible = false;
-                comprobarBoton();
+                if (recalcularBoton) comprobarBoton();
                 return false;
             }
         }
@@ -309,7 +308,7 @@ function iniciarValidacionCrearUsuario() {
                         disponibilidadDni.innerText = "";
                         dniDisponible = false;
                     }
-                    comprobarBoton();
+                    if (recalcularBoton) comprobarBoton();
                 });
         }, 150);
 

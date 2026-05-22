@@ -40,6 +40,7 @@ use App\Http\Controllers\Arrendador\ConfiguracionCobrosController;
 use App\Http\Controllers\Gestor\MensajeController as GestorMensajeController;
 use App\Http\Controllers\Gestor\PerfilController as GestorPerfilController;
 use App\Http\Controllers\Gestor\ActividadController as GestorActividadController;
+use App\Http\Controllers\Miembro\PerfilController as MiembroPerfilController;
 
 // Rutas Públicas
 Route::get('/', function () {
@@ -254,6 +255,12 @@ Route::middleware(['auth', 'role:miembro,inquilino,arrendador'])->group(function
     Route::get('/miembro/suscripcion', [App\Http\Controllers\Miembro\MiembroSuscripcionController::class, 'index'])->name('miembro.suscripcion.index');
     Route::post('/miembro/suscripcion/checkout', [App\Http\Controllers\Miembro\MiembroSuscripcionController::class, 'checkout'])->name('miembro.suscripcion.checkout');
     Route::get('/miembro/suscripcion/success', [App\Http\Controllers\Miembro\MiembroSuscripcionController::class, 'success'])->name('miembro.suscripcion.success');
+    Route::get('/miembro/perfil/{id}', [MiembroPerfilController::class, 'show'])->whereNumber('id')->name('miembro.perfil.show');
+    Route::get('/miembro/configuracion', [MiembroPerfilController::class, 'configuracion'])->name('miembro.configuracion');
+    Route::put('/miembro/configuracion', [MiembroPerfilController::class, 'actualizar'])->name('miembro.configuracion.actualizar');
+    Route::put('/miembro/configuracion/plan', [MiembroPerfilController::class, 'actualizarPlan'])->name('miembro.configuracion.plan');
+    Route::post('/miembro/configuracion/cancelar-suscripcion', [MiembroPerfilController::class, 'cancelarSuscripcion'])->name('miembro.configuracion.cancelar-suscripcion');
+    Route::post('/miembro/configuracion/reactivar-suscripcion', [MiembroPerfilController::class, 'reactivarSuscripcion'])->name('miembro.configuracion.reactivar-suscripcion');
 
     Route::get('/arrendador/configurar-stripe', [ConfiguracionCobrosController::class, 'index'])->name('arrendador.stripe.configurar');
     Route::post('/arrendador/guardar-iban', [ConfiguracionCobrosController::class, 'store'])->name('arrendador.guardar-iban');
@@ -292,6 +299,7 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
 
     Route::get('/inquilino/alquiler/{id}/estado-contrato', [InquilinoController::class, 'obtenerEstadoContrato'])->name('inquilino.estado_contrato');
     Route::get('/miembro/mapa/propiedades', [MapaController::class, 'propiedades'])->name('miembro.mapa.propiedades');
+
 });
 
 // Ruta temporal para ejecutar migraciones y seeders de forma segura desde el navegador

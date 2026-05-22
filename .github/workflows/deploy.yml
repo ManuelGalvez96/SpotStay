@@ -32,6 +32,11 @@ jobs:
           node-version: "22"
           cache: "npm"
 
+      - name: Instalar rsync en el runner
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rsync
+
       - name: Compilar CSS y JS (Vite)
         run: |
           npm ci

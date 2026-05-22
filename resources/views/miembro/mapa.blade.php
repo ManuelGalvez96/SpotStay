@@ -33,7 +33,7 @@
 
 						<div class="submenu-perfil" id="submenu-perfil">
 							<a href="#" class="item-submenu"><i class="bi bi-person"></i> Mi Perfil</a>
-							<a href="#" class="item-submenu"><i class="bi bi-gear"></i> Configuración</a>
+							
 
 							<div class="separador-submenu"></div>
 							<a href="{{ route('logout') }}" class="item-submenu" style="color: red;"><i class="bi bi-box-arrow-right" style="color: red"></i> Cerrar Sesión</a>

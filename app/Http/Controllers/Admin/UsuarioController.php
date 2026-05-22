@@ -96,7 +96,7 @@ class UsuarioController extends Controller
             'max_propiedades_suscripcion' => $plan->max_propiedades_plan,
             'precio_pagado_suscripcion' => $plan->precio_plan,
             'inicio_suscripcion' => Carbon::now()->toDateString(),
-            'fin_suscripcion' => null,
+            'fin_suscripcion' => $plan->precio_plan > 0 ? Carbon::now()->copy()->addMonth()->toDateString() : null,
             'estado_suscripcion' => 'activa',
             'creado_suscripcion' => Carbon::now(),
             'actualizado_suscripcion' => Carbon::now(),
@@ -106,27 +106,37 @@ class UsuarioController extends Controller
     public function index()
     {
         $usuarios = DB::table('tbl_usuario')
-            ->leftJoin('tbl_rol_usuario',
-              'tbl_usuario.id_usuario', '=',
-              'tbl_rol_usuario.id_usuario_fk')
-            ->leftJoin('tbl_rol',
-              'tbl_rol.id_rol', '=',
-              'tbl_rol_usuario.id_rol_fk')
-            ->leftJoin(DB::raw('(SELECT id_arrendador_fk,
+            ->leftJoin(
+                'tbl_rol_usuario',
+                'tbl_usuario.id_usuario',
+                '=',
+                'tbl_rol_usuario.id_usuario_fk'
+            )
+            ->leftJoin(
+                'tbl_rol',
+                'tbl_rol.id_rol',
+                '=',
+                'tbl_rol_usuario.id_rol_fk'
+            )
+            ->leftJoin(
+                DB::raw('(SELECT id_arrendador_fk,
               COUNT(*) as total FROM tbl_propiedad
               GROUP BY id_arrendador_fk) as props'),
-              'props.id_arrendador_fk', '=', 'tbl_usuario.id_usuario')
+                'props.id_arrendador_fk',
+                '=',
+                'tbl_usuario.id_usuario'
+            )
             ->select(
-              'tbl_usuario.*',
-              'tbl_rol.nombre_rol',
-              'tbl_rol.slug_rol',
-              'props.total as total_propiedades'
+                'tbl_usuario.*',
+                'tbl_rol.nombre_rol',
+                'tbl_rol.slug_rol',
+                'props.total as total_propiedades'
             )
             ->paginate(10);
 
-                $usuarios->setCollection($this->enriquecerUsuariosConSuscripcion($usuarios->getCollection()));
+        $usuarios->setCollection($this->enriquecerUsuariosConSuscripcion($usuarios->getCollection()));
 
-                $planesSuscripcion = $this->obtenerPlanesSuscripcion();
+        $planesSuscripcion = $this->obtenerPlanesSuscripcion();
 
         $totalUsuarios = DB::table('tbl_usuario')->count();
         $activos = DB::table('tbl_usuario')
@@ -139,20 +149,36 @@ class UsuarioController extends Controller
             ->count();
 
         return view('admin.usuarios', compact(
-            'usuarios', 'planesSuscripcion', 'totalUsuarios', 'activos', 'inactivos', 'esteMes'));
+            'usuarios',
+            'planesSuscripcion',
+            'totalUsuarios',
+            'activos',
+            'inactivos',
+            'esteMes'
+        ));
     }
 
     public function filtrar(Request $request)
     {
         $query = DB::table('tbl_usuario')
-            ->leftJoin('tbl_rol_usuario',
-              'tbl_usuario.id_usuario', '=',
-              'tbl_rol_usuario.id_usuario_fk')
-            ->leftJoin('tbl_rol',
-              'tbl_rol.id_rol', '=',
-              'tbl_rol_usuario.id_rol_fk')
-            ->leftJoin(DB::raw('(SELECT id_arrendador_fk, COUNT(*) as total FROM tbl_propiedad GROUP BY id_arrendador_fk) as props'),
-              'props.id_arrendador_fk', '=', 'tbl_usuario.id_usuario');
+            ->leftJoin(
+                'tbl_rol_usuario',
+                'tbl_usuario.id_usuario',
+                '=',
+                'tbl_rol_usuario.id_usuario_fk'
+            )
+            ->leftJoin(
+                'tbl_rol',
+                'tbl_rol.id_rol',
+                '=',
+                'tbl_rol_usuario.id_rol_fk'
+            )
+            ->leftJoin(
+                DB::raw('(SELECT id_arrendador_fk, COUNT(*) as total FROM tbl_propiedad GROUP BY id_arrendador_fk) as props'),
+                'props.id_arrendador_fk',
+                '=',
+                'tbl_usuario.id_usuario'
+            );
 
         if ($request->input('rol')) {
             $query->where('tbl_rol.slug_rol', $request->input('rol'));
@@ -167,7 +193,7 @@ class UsuarioController extends Controller
             $q = '%' . $request->input('q') . '%';
             $query->where(function ($builder) use ($q) {
                 $builder->where('tbl_usuario.nombre_usuario', 'like', $q)
-                  ->orWhere('tbl_usuario.email_usuario', 'like', $q);
+                    ->orWhere('tbl_usuario.email_usuario', 'like', $q);
             });
         }
 
@@ -175,14 +201,14 @@ class UsuarioController extends Controller
             ->paginate(10);
 
         $usuariosPaginados->setCollection($this->enriquecerUsuariosConSuscripcion($usuariosPaginados->getCollection()));
-        
+
         // Procesar los datos para el frontend
-        $usuarios = $usuariosPaginados->map(function($u) {
+        $usuarios = $usuariosPaginados->map(function ($u) {
             $nombre = $u->nombre_usuario ?? 'Usuario';
             $partes = explode(' ', $nombre);
-            $avatarText = strtoupper(substr($partes[0], 0, 1)) . 
-                         strtoupper(substr($partes[1] ?? '', 0, 1));
-            
+            $avatarText = strtoupper(substr($partes[0], 0, 1)) .
+                strtoupper(substr($partes[1] ?? '', 0, 1));
+
             return [
                 'id' => $u->id_usuario,
                 'id_usuario' => $u->id_usuario,
@@ -216,12 +242,18 @@ class UsuarioController extends Controller
     {
         try {
             $usuario = DB::table('tbl_usuario')
-                ->leftJoin('tbl_rol_usuario',
-                  'tbl_usuario.id_usuario', '=',
-                  'tbl_rol_usuario.id_usuario_fk')
-                ->leftJoin('tbl_rol',
-                  'tbl_rol.id_rol', '=',
-                  'tbl_rol_usuario.id_rol_fk')
+                ->leftJoin(
+                    'tbl_rol_usuario',
+                    'tbl_usuario.id_usuario',
+                    '=',
+                    'tbl_rol_usuario.id_usuario_fk'
+                )
+                ->leftJoin(
+                    'tbl_rol',
+                    'tbl_rol.id_rol',
+                    '=',
+                    'tbl_rol_usuario.id_rol_fk'
+                )
                 ->select('tbl_usuario.*', 'tbl_rol.nombre_rol', 'tbl_rol.slug_rol')
                 ->where('tbl_usuario.id_usuario', $id)
                 ->first();
@@ -236,7 +268,7 @@ class UsuarioController extends Controller
                 $propiedades = DB::table('tbl_propiedad')
                     ->where('id_arrendador_fk', $id)
                     ->get();
-                
+
                 foreach ($propiedades as $p) {
                     $direccion = '';
                     if (isset($p->calle_propiedad)) {
@@ -251,7 +283,7 @@ class UsuarioController extends Controller
                             $direccion .= ' - ' . $p->ciudad_propiedad;
                         }
                     }
-                    
+
                     $propiedadesFormato[] = [
                         'direccion_propiedad' => $direccion,
                         'estado_propiedad' => $p->estado_propiedad ?? 'borrador',
@@ -266,9 +298,9 @@ class UsuarioController extends Controller
             $totalAlquileres = 0;
             try {
                 $totalAlquileres = DB::table('tbl_alquiler')
-                    ->where(function($q) use ($id) {
+                    ->where(function ($q) use ($id) {
                         $q->where('id_arrendador_fk', $id)
-                          ->orWhere('id_inquilino_fk', $id);
+                            ->orWhere('id_inquilino_fk', $id);
                     })
                     ->count();
             } catch (\Exception $e) {
@@ -295,7 +327,6 @@ class UsuarioController extends Controller
                 'id_plan_fk' => $suscripcion->id_plan_fk ?? null,
                 'plan_suscripcion' => $suscripcion->plan_suscripcion ?? null
             ]);
-
         } catch (\Exception $e) {
             Log::error('Error en UsuarioController@show: ' . $e->getMessage() . ' - ' . $e->getFile() . ':' . $e->getLine());
             return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
@@ -375,15 +406,26 @@ class UsuarioController extends Controller
     public function exportar()
     {
         $usuarios = DB::table('tbl_usuario')
-            ->leftJoin('tbl_rol_usuario',
-              'tbl_usuario.id_usuario', '=',
-              'tbl_rol_usuario.id_usuario_fk')
-            ->leftJoin('tbl_rol',
-              'tbl_rol.id_rol', '=',
-              'tbl_rol_usuario.id_rol_fk')
-            ->select('tbl_usuario.nombre_usuario', 'tbl_usuario.email_usuario',
-                     'tbl_usuario.telefono_usuario', 'tbl_rol.nombre_rol',
-                     'tbl_usuario.activo_usuario', 'tbl_usuario.creado_usuario')
+            ->leftJoin(
+                'tbl_rol_usuario',
+                'tbl_usuario.id_usuario',
+                '=',
+                'tbl_rol_usuario.id_usuario_fk'
+            )
+            ->leftJoin(
+                'tbl_rol',
+                'tbl_rol.id_rol',
+                '=',
+                'tbl_rol_usuario.id_rol_fk'
+            )
+            ->select(
+                'tbl_usuario.nombre_usuario',
+                'tbl_usuario.email_usuario',
+                'tbl_usuario.telefono_usuario',
+                'tbl_rol.nombre_rol',
+                'tbl_usuario.activo_usuario',
+                'tbl_usuario.creado_usuario'
+            )
             ->get();
 
         return response()->json($usuarios);
@@ -458,12 +500,12 @@ class UsuarioController extends Controller
             'rol' => 'required|string|exists:tbl_rol,slug_rol',
             'suscripcion_plan' => 'nullable|integer|exists:tbl_plan,id_plan'
         ];
-        
+
         // Password es opcional en edición, pero si se proporciona debe tener mínimo 6 caracteres
         if ($request->filled('password')) {
             $rules['password'] = 'string|min:6';
         }
-        
+
         $validated = $request->validate($rules);
 
         try {

@@ -32,6 +32,7 @@
             </div>
 
             <div class="asesoria-grid">
+                @include('asesoria._buscador')
                 @foreach($categorias as $categoria)
                     <a href="{{ route('arrendador.asesoria.categoria', $categoria->slug) }}" class="asesoria-card">
                         <div class="asesoria-card-icono">

@@ -4,22 +4,6 @@
             <img src="/img/logo.png" alt="SpotStay Logo" />
         </div>
 
-        @if(session('error'))
-        <div class="header-error-msg">
-            <div class="alert alert-error">
-                {!! session('error') !!}
-            </div>
-        </div>
-        @endif
-
-        @if(session('success'))
-        <div class="header-error-msg">
-            <div class="alert alert-success">
-                {!! session('success') !!}
-            </div>
-        </div>
-        @endif
-
         <div class="acciones-miembro">
             <button class="boton-icono" type="button" aria-label="Notificaciones">
                 <i class="bi bi-bell" aria-hidden="true"></i>
@@ -32,8 +16,8 @@
                 <div class="inicial-perfil" aria-hidden="true">{{ $inicialUsuario }}</div>
                 @endif
                 <div class="submenu-perfil" id="submenu-perfil">
-                    <a href="#" class="item-submenu"><i class="bi bi-person"></i> Mi Perfil</a>
-                    <a href="#" class="item-submenu"><i class="bi bi-gear"></i> Configuración</a>
+                    <a href="{{ route('miembro.perfil.show', ['id' => auth()->user()->id_usuario]) }}" class="item-submenu"><i class="bi bi-person"></i> Mi Perfil</a>
+                    
 
                     <div class="separador-submenu"></div>
                     <a href="{{ route('logout') }}" class="item-submenu" style="color: red;"><i class="bi bi-box-arrow-right" style="color: red"></i> Cerrar Sesión</a>

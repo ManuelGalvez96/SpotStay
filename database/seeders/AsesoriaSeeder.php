@@ -23,6 +23,8 @@ class AsesoriaSeeder extends Seeder
                     [
                         'titulo' => '¿Cuáles son los derechos básicos del inquilino?',
                         'contenido' => '<p>Como inquilino, tienes derechos fundamentales recogidos en la Ley de Arrendamientos Urbanos (LAU):</p><ul><li><strong>Uso pacífico de la vivienda:</strong> No puedes ser desalojado sin una causa legal y sin seguir el procedimiento judicial correspondiente.</li><li><strong>Prórroga obligatoria:</strong> Tienes derecho a permanecer en la vivienda durante los primeros 5 años (o 7 si el arrendador es persona jurídica), siempre que cumplas con tus obligaciones.</li><li><strong>Reparaciones urgentes:</strong> El arrendador está obligado a realizar las reparaciones necesarias para mantener la vivienda en condiciones habitables.</li><li><strong>No discriminación:</strong> No pueden negarte el alquiler por razones de origen, religión, orientación sexual o situación familiar.</li><li><strong>Privacidad:</strong> El arrendador no puede entrar en la vivienda sin tu permiso, salvo casos de emergencia.</li><li><strong>Devolución de la fianza:</strong> Al finalizar el contrato, tienes derecho a que te devuelvan la fianza si no hay daños en la vivienda.</li></ul><p>Si consideras que alguno de tus derechos está siendo vulnerado, puedes presentar una reclamación ante la Agencia de Vivienda de tu comunidad autónoma o acudir a los tribunales.</p>',
+                        'destacado' => true,
+                        'orden_faq' => 1,
                     ],
                     [
                         'titulo' => '¿Qué obligaciones legales tiene el arrendador?',
@@ -46,6 +48,8 @@ class AsesoriaSeeder extends Seeder
                     [
                         'titulo' => '¿Qué debe incluir un contrato de alquiler?',
                         'contenido' => '<p>Un contrato de alquiler debe contener, como mínimo, los siguientes elementos para ser válido:</p><ul><li><strong>Identificación de las partes:</strong> Datos completos del arrendador y del inquilino (DNI/NIE, nombre completo, domicilio).</li><li><strong>Descripción de la vivienda:</strong> Dirección, superficie, distribución y estado general del inmueble.</li><li><strong>Duración del contrato:</strong> Fecha de inicio y duración acordada. Por defecto, la LAU establece un mínimo de 5 años (7 si el arrendador es persona jurídica).</li><li><strong>Renta mensual:</strong> Importe exacto, forma de pago y fecha de vencimiento cada mes.</li><li><strong>Fianza legal:</strong> Equivalente a una mensualidad de renta, depositada en el organismo autonómico correspondiente.</li><li><strong>Gastos y suministros:</strong> Quién se hace cargo de cada suministro (agua, luz, gas, comunidad).</li><li><strong>Cláusulas adicionales:</strong> Cualquier pacto entre ambas partes que no contradiga la ley (mascotas, subarriendo, etc.).</li></ul><p>Es recomendable que el contrato se firme por duplicado y que cada parte conserve una copia. También es aconsejable realizar un inventario de mobiliario y electrodomésticos si la vivienda se entrega amueblada.</p>',
+                        'destacado' => true,
+                        'orden_faq' => 2,
                     ],
                     [
                         'titulo' => 'Duración del contrato: ¿5 o 7 años?',
@@ -73,6 +77,8 @@ class AsesoriaSeeder extends Seeder
                     [
                         'titulo' => '¿Cómo funciona el pago del alquiler?',
                         'contenido' => '<p>El pago del alquiler es la obligación principal del inquilino y debe realizarse según lo acordado en el contrato:</p><ul><li><strong>Plazo de pago:</strong> La renta se paga por meses anticipados, normalmente dentro de los primeros 7 días de cada mes, salvo que el contrato especifique otra fecha.</li><li><strong>Medios de pago:</strong> Lo más recomendable es realizar la transferencia bancaria, ya que deja constancia documental del pago. También son válidos el ingreso en cuenta, el pago por Bizum o la domiciliación bancaria.</li><li><strong>Justificante de pago:</strong> El inquilino tiene derecho a solicitar un justificante de pago (recibo) al arrendador. Es recomendable conservar todos los justificantes durante al menos 3-5 años.</li><li><strong>Factura electrónica:</strong> Si el arrendador es profesional o empresa, debe emitir factura electrónica o en papel. El inquilino puede solicitarla expresamente.</li></ul><p>En SpotStay, gestionamos los pagos de forma segura y automatizada, manteniendo un historial completo de todas las transacciones para tu tranquilidad.</p>',
+                        'destacado' => true,
+                        'orden_faq' => 3,
                     ],
                     [
                         'titulo' => '¿Qué hacer ante un impago del alquiler?',
@@ -100,6 +106,8 @@ class AsesoriaSeeder extends Seeder
                     [
                         'titulo' => '¿Quién se hace cargo de las reparaciones?',
                         'contenido' => '<p>Una de las preguntas más frecuentes en el día a día del alquiler es quién debe pagar las reparaciones. La ley establece una clara distinción:</p><p><strong>Reparaciones a cargo del arrendador:</strong></p><ul><li>Reparaciones necesarias para mantener la vivienda en condiciones habitables (averías estructurales, tuberías generales, instalación eléctrica, caldera, etc.).</li><li>El arrendador está obligado a realizar estas reparaciones <strong>sin que pueda elevar la renta</strong> por ello.</li><li>Si la reparación es urgente (pérdida de agua, avería eléctrica grave), el inquilino puede realizarla y luego reclamar el importe al arrendador, siempre que justifique la urgencia.</li></ul><p><strong>Reparaciones a cargo del inquilino:</strong></p><ul><li>El mantenimiento diario y las pequeñas reparaciones por desgaste normal de uso (bombillas, pequeños arreglos de fontanería, pintura, etc.).</li><li>Las reparaciones derivadas de un mal uso de la vivienda por parte del inquilino.</li></ul><p>Es recomendable que el contrato especifique claramente los límites de responsabilidad de cada parte para evitar malentendidos.</p>',
+                        'destacado' => true,
+                        'orden_faq' => 4,
                     ],
                     [
                         'titulo' => '¿Cómo reportar una avería urgente?',
@@ -166,6 +174,8 @@ class AsesoriaSeeder extends Seeder
                     [
                         'titulo' => 'Devolución de la fianza: plazos y deducciones',
                         'contenido' => '<p>La devolución de la fianza es uno de los momentos más delicados al finalizar un contrato de alquiler. Estos son tus derechos:</p><p><strong>Plazo legal:</strong> El arrendador tiene <strong>30 días</strong> desde la entrega de llaves para devolver la fianza al inquilino. Si no lo hace en ese plazo, puede incurrir en mora.</p><p><strong>Deducciones permitidas:</strong></p><ul><li>Deudas pendientes de renta o suministros.</li><li>Daños en la vivienda documentados (con fotos de antes y después) que excedan el desgaste normal por uso.</li><li>Faltantes de mobiliario o electrodomésticos que estaban presentes al inicio (según el inventario firmado).</li></ul><p><strong>Deducciones NO permitidas:</strong></p><ul><li>Desgaste normal por el uso de la vivienda (paredes que necesitan pintura, alfombras gastadas, etc.).</li><li>Mejoras que el arrendador decide hacer después de la marcha del inquilino (pintar toda la casa, cambiar la cocina, etc.).</li><li>Gastos de administración o gestión no acordados previamente.</li></ul><p>Si el arrendador no devuelve la fianza sin justificación, el inquilino puede reclamar judicialmente, pudiendo obtener además intereses de demora.</p>',
+                        'destacado' => true,
+                        'orden_faq' => 5,
                     ],
                     [
                         'titulo' => 'Inspección final de la vivienda: checklist',
@@ -260,6 +270,8 @@ class AsesoriaSeeder extends Seeder
                     'contenido' => $dataArt['contenido'],
                     'slug' => Str::slug($dataArt['titulo']),
                     'estado' => true,
+                    'destacado' => $dataArt['destacado'] ?? false,
+                    'orden_faq' => $dataArt['orden_faq'] ?? null,
                 ]);
             }
         }

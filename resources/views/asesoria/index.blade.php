@@ -37,4 +37,32 @@
         </a>
     @endforeach
 </div>
+
+@if($faqs->isNotEmpty())
+<div class="asesoria-faq">
+    <h2><i class="bi bi-question-circle"></i> Preguntas frecuentes</h2>
+    <div class="card-admin card-con-franja">
+        <div class="card-franja"></div>
+        <div class="accordion" id="accordionFaq">
+            @foreach($faqs as $articulo)
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq{{ $articulo->id }}">
+                            @if($articulo->categoria)
+                                <span class="faq-badge">{{ $articulo->categoria->nombre }}</span>
+                            @endif
+                            {{ $articulo->titulo }}
+                        </button>
+                    </h2>
+                    <div id="faq{{ $articulo->id }}" class="accordion-collapse collapse" data-bs-parent="#accordionFaq">
+                        <div class="accordion-body">
+                            {!! $articulo->contenido !!}
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+@endif
 @endsection

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ArticuloAsesoria;
 use App\Models\CategoriaArticulo;
 
 class AsesoriaController extends Controller
@@ -13,10 +14,17 @@ class AsesoriaController extends Controller
             ->orderBy('orden')
             ->get();
 
+        $faqs = ArticuloAsesoria::with('categoria')
+            ->where('destacado', true)
+            ->where('estado', 1)
+            ->orderBy('orden_faq')
+            ->get();
+
         return view('asesoria.index', [
             'layout' => $this->layout(),
             'routePrefix' => $this->routePrefix(),
             'categorias' => $categorias,
+            'faqs' => $faqs,
         ]);
     }
 

@@ -15,6 +15,8 @@ class ArticuloAsesoria extends Model
         'contenido',
         'slug',
         'estado',
+        'destacado',
+        'orden_faq',
     ];
 
     public function categoria(): BelongsTo

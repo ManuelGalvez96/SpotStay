@@ -15,6 +15,8 @@ return new class extends Migration
             $table->text('contenido');
             $table->string('slug')->unique();
             $table->boolean('estado')->default(true);
+            $table->boolean('destacado')->default(false);
+            $table->unsignedSmallInteger('orden_faq')->nullable();
             $table->timestamps();
         });
     }

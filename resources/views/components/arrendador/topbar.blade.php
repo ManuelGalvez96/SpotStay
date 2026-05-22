@@ -22,6 +22,9 @@
         <button class="btn-nav-icon {{ request()->is('arrendador/incidencias*') ? 'activo' : '' }}" data-ruta="{{ route('arrendador.incidencias', ['arrendador_id' => $arrendadorId]) }}" title="Incidencias">
             <i class="bi bi-exclamation-triangle"></i>
         </button>
+        <button class="btn-nav-icon {{ request()->is('arrendador/asesoria*') ? 'activo' : '' }}" data-ruta="/arrendador/asesoria" title="Asesoría Legal">
+            <i class="bi bi-journal-text"></i>
+        </button>
     </div>
 
     <div class="topbar-der">

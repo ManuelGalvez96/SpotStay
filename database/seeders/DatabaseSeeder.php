@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
             ChatbotSesionSeeder::class,
             ChatbotMensajeSeeder::class,
             DocumentoSeeder::class,
+            AsesoriaSeeder::class,
         ]);
     }
 }

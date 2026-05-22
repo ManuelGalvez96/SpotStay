@@ -1,0 +1,90 @@
+.asesoria-grid {
+    padding: 0 40px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.asesoria-grid .card-admin {
+    border-radius: 14px;
+}
+
+.asesoria-grid .card-header-admin i {
+    font-size: 18px;
+    margin-right: 10px;
+}
+
+.asesoria-grid .accordion {
+    --bs-accordion-bg: #fff;
+    --bs-accordion-border-color: #E5E7EB;
+    --bs-accordion-active-bg: #F9FAFB;
+    --bs-accordion-active-color: #035498;
+    --bs-accordion-btn-focus-box-shadow: none;
+    --bs-accordion-btn-padding-y: 14px;
+    --bs-accordion-btn-padding-x: 20px;
+    --bs-accordion-body-padding-y: 16px;
+    --bs-accordion-body-padding-x: 20px;
+}
+
+.asesoria-grid .accordion-button {
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
+}
+
+.asesoria-grid .accordion-button:not(.collapsed) {
+    background: #F9FAFB;
+    color: #035498;
+    font-weight: 700;
+}
+
+.asesoria-grid .accordion-button::after {
+    background-size: 16px;
+}
+
+.asesoria-grid .accordion-body {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #374151;
+}
+
+.asesoria-grid .accordion-body p {
+    margin-bottom: 12px;
+}
+
+.asesoria-grid .accordion-body ul,
+.asesoria-grid .accordion-body ol {
+    padding-left: 20px;
+    margin-bottom: 12px;
+}
+
+.asesoria-grid .accordion-body li {
+    margin-bottom: 8px;
+}
+
+.asesoria-grid .accordion-body strong {
+    color: #111827;
+}
+
+.asesoria-grid .accordion-item:first-child {
+    border-top: none;
+}
+
+@media (max-width: 768px) {
+    .asesoria-grid {
+        padding: 0 12px 24px;
+        gap: 16px;
+    }
+
+    .asesoria-grid .accordion-button {
+        font-size: 13px;
+        padding: 12px 16px;
+    }
+
+    .asesoria-grid .accordion-body {
+        font-size: 13px;
+        padding: 12px 16px;
+    }
+}

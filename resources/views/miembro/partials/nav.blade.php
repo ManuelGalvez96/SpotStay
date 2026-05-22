@@ -12,6 +12,7 @@
             @if($tienePagos)
             <li><a href="{{ route('inquilino.historial_pagos') }}" class="enlace-nav {{ request()->routeIs('inquilino.historial_pagos') ? 'activo' : '' }}"><i class="bi bi-receipt"></i> Mis Gastos</a></li>
             @endif
+            <li><a href="{{ route('miembro.asesoria') }}" class="enlace-nav {{ request()->is('*/asesoria*') ? 'activo' : '' }}"><i class="bi bi-journal-text"></i> Asesoría Legal</a></li>
         </ul>
     </div>
 </nav>

@@ -40,6 +40,7 @@ use App\Http\Controllers\Arrendador\ConfiguracionCobrosController;
 use App\Http\Controllers\Gestor\MensajeController as GestorMensajeController;
 use App\Http\Controllers\Gestor\PerfilController as GestorPerfilController;
 use App\Http\Controllers\Gestor\ActividadController as GestorActividadController;
+use App\Http\Controllers\AsesoriaController;
 
 // Rutas Públicas
 Route::get('/', function () {
@@ -187,11 +188,14 @@ Route::middleware(['role:gestor'])->group(function () {
 
     Route::get('/gestor/perfil', [GestorPerfilController::class, 'index'])->name('gestor.perfil');
     Route::post('/gestor/perfil', [GestorPerfilController::class, 'update'])->name('gestor.perfil.update');
+
+    Route::get('/gestor/asesoria', [AsesoriaController::class, 'index'])->name('gestor.asesoria');
 });
 
 // Rutas Arrendador
 Route::middleware(['role:arrendador', 'arrendador.activo'])->group(function () {
     Route::get('/arrendador/dashboard', [ArrendadorDashboardController::class, 'inicio'])->name('arrendador.dashboard');
+    Route::get('/arrendador/asesoria', [AsesoriaController::class, 'index'])->name('arrendador.asesoria');
 
     Route::get('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'inicio'])->name('arrendador.propiedades');
     Route::post('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'guardar'])->name('arrendador.propiedades.store');
@@ -242,6 +246,9 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
     Route::get('/miembro/chat/{id}/mensajes', [MensajesController::class, 'obtenerMensajes'])->name('miembro.mensajes.mensajes');
     Route::post('/miembro/chat/{id}/mensaje', [MensajesController::class, 'enviarMensaje'])->name('miembro.mensajes.enviar');
     Route::get('/miembro/mapa', [MapaController::class, 'index'])->name('miembro.mapa');
+
+    Route::get('/miembro/asesoria', [AsesoriaController::class, 'index'])->name('miembro.asesoria');
+    Route::get('/inquilino/asesoria', [AsesoriaController::class, 'index'])->name('inquilino.asesoria');
 
     Route::get('/inquilino/gestionar-propiedades', [InquilinoController::class, 'gestionarPropiedades'])->name('gestionar_propiedades');
 });

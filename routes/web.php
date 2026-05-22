@@ -93,6 +93,8 @@ Route::middleware(['role:admin'])->group(function () {
     Route::post('/admin/propiedades/{id}/desactivar', [PropiedadController::class, 'desactivar']);
     Route::post('/admin/propiedades/{id}/publicar', [PropiedadController::class, 'publicar']);
     Route::get('/admin/propiedades/{id}/descargar-pdf', [PropiedadController::class, 'descargarPdf']);
+    Route::get('/admin/alquileres/{id}/descargar-contrato', [\App\Http\Controllers\Admin\AlquilerController::class, 'descargarContrato'])->name('admin.alquileres.descargar-contrato');
+    Route::get('/admin/alquileres/{id}/contrato-debug', [\App\Http\Controllers\Admin\AlquilerController::class, 'contratoDebug'])->name('admin.alquileres.contrato-debug');
     Route::get('/admin/propiedades/exportar', [PropiedadController::class, 'exportar']);
 
     // Solicitudes
@@ -221,7 +223,6 @@ Route::middleware(['role:arrendador', 'arrendador.activo'])->group(function () {
     Route::post('/arrendador/mensajes/{id}', [ArrendadorMensajeController::class, 'enviar'])->name('arrendador.mensajes.enviar');
 
     Route::get('/arrendador/contratos', [ArrendadorContratoController::class, 'inicio'])->name('arrendador.contratos');
-    Route::post('/arrendador/contratos/{id}/firmar', [ArrendadorContratoController::class, 'firmarArrendador'])->name('arrendador.contratos.firmar');
     Route::get('/arrendador/contratos/{id}/descargar-pdf', [ArrendadorContratoController::class, 'descargarPDF'])->name('arrendador.contratos.descargar-pdf');
     Route::post('/arrendador/contratos/{id}/subir-pdf', [ArrendadorContratoController::class, 'subirPDF'])->name('arrendador.contratos.subir-pdf');
 

@@ -74,11 +74,17 @@
                             <div class="acciones" data-acciones="{{ $solicitud->id_alquiler }}" data-estado="{{ $estado }}" data-arrendador="{{ $arrendadorId }}">
                                 @if ($estado === 'activo')
                                     <button class="btn-ver" data-ver="{{ $solicitud->id_alquiler }}">Ver</button>
-                                    <button class="btn-eliminar" data-eliminar="{{ $solicitud->id_alquiler }}">Eliminar</button>
                                 @else
                                     <button class="btn-ver" data-ver="{{ $solicitud->id_alquiler }}">Ver</button>
                                     <button class="btn-editar" data-editar="{{ $solicitud->id_alquiler }}">Editar</button>
-                                    <button class="btn-eliminar" data-eliminar="{{ $solicitud->id_alquiler }}">Eliminar</button>
+                                    @if ($estado === 'pendiente')
+                                        <button class="btn-icono btn-aprobar-sol" data-id="{{ $solicitud->id_alquiler }}" title="Aprobar">
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                        <button class="btn-icono btn-rechazar-sol" data-id="{{ $solicitud->id_alquiler }}" title="Rechazar">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    @endif
                                 @endif
                             </div>
                         </td>

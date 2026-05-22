@@ -78,16 +78,14 @@ function actualizarFila(id, estado) {
     estadoNodo.className = 'estado estado-' + estado;
   }
 
-  if (accionesNodo) {
+    if (accionesNodo) {
     if (estado === 'activo') {
       accionesNodo.innerHTML = 
-        '<button class="btn-ver" data-ver="' + id + '">Ver</button>' +
-        '<button class="btn-eliminar" data-eliminar="' + id + '">Eliminar</button>';
+        '<button class="btn-ver" data-ver="' + id + '">Ver</button>';
     } else {
       accionesNodo.innerHTML = 
         '<button class="btn-ver" data-ver="' + id + '">Ver</button>' +
-        '<button class="btn-editar" data-editar="' + id + '">Editar</button>' +
-        '<button class="btn-eliminar" data-eliminar="' + id + '">Eliminar</button>';
+        '<button class="btn-editar" data-editar="' + id + '">Editar</button>';
     }
     accionesNodo.setAttribute('data-estado', estado);
     agregarEventosAcciones();
@@ -333,12 +331,88 @@ function agregarEventosAcciones() {
     };
   });
 
-  document.querySelectorAll('[data-eliminar]').forEach(function (boton) {
+  // El botón eliminar ha sido retirado de la UI para arrendadores.
+
+  /* Botones de aprobar */
+  document.querySelectorAll('.btn-aprobar-sol').forEach(function (boton) {
     boton.onclick = function (e) {
       e.preventDefault();
       var accionesDiv = boton.closest('[data-acciones]');
       var arrendadorId = accionesDiv ? accionesDiv.getAttribute('data-arrendador') : '';
-      eliminarSolicitud(boton.getAttribute('data-eliminar'), arrendadorId);
+      var id = boton.getAttribute('data-id');
+
+      Swal.fire({
+        title: 'Aprobar solicitud',
+        text: '¿Confirmas que deseas aprobar esta solicitud? Esto activará el alquiler.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, aprobar',
+        cancelButtonText: 'Cancelar'
+      }).then(function (result) {
+        if (!result.isConfirmed) return;
+
+        fetch('/arrendador/solicitudes/' + id + '/aprobar', {
+          method: 'POST',
+          headers: {
+            'X-CSRF-TOKEN': obtenerTokenCsrf(),
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+          },
+          body: new URLSearchParams({ arrendador_id: arrendadorId }),
+          credentials: 'same-origin'
+        })
+          .then(function (respuesta) { return respuesta.json().then(function (d) { return { ok: respuesta.ok, d: d }; }); })
+          .then(function (resultado) {
+            if (!resultado.ok || !resultado.d.success) {
+              throw new Error(resultado.d.message || 'Error al aprobar la solicitud');
+            }
+            actualizarFila(id, 'activo');
+            mostrarToast('Solicitud aprobada correctamente.');
+          })
+          .catch(function (error) { mostrarToast(error.message || 'Error al aprobar la solicitud'); });
+      });
+    };
+  });
+
+  /* Botones de rechazar */
+  document.querySelectorAll('.btn-rechazar-sol').forEach(function (boton) {
+    boton.onclick = function (e) {
+      e.preventDefault();
+      var accionesDiv = boton.closest('[data-acciones]');
+      var arrendadorId = accionesDiv ? accionesDiv.getAttribute('data-arrendador') : '';
+      var id = boton.getAttribute('data-id');
+
+      Swal.fire({
+        title: 'Rechazar solicitud',
+        input: 'textarea',
+        inputPlaceholder: 'Motivo del rechazo (opcional)',
+        showCancelButton: true,
+        confirmButtonText: 'Rechazar',
+        cancelButtonText: 'Cancelar'
+      }).then(function (result) {
+        if (!result.isConfirmed) return;
+        var notas = result.value || '';
+
+        fetch('/arrendador/solicitudes/' + id + '/rechazar', {
+          method: 'POST',
+          headers: {
+            'X-CSRF-TOKEN': obtenerTokenCsrf(),
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+          },
+          body: new URLSearchParams({ arrendador_id: arrendadorId, notas: notas }),
+          credentials: 'same-origin'
+        })
+          .then(function (respuesta) { return respuesta.json().then(function (d) { return { ok: respuesta.ok, d: d }; }); })
+          .then(function (resultado) {
+            if (!resultado.ok || !resultado.d.success) {
+              throw new Error(resultado.d.message || 'Error al rechazar la solicitud');
+            }
+            actualizarFila(id, 'rechazado');
+            mostrarToast('Solicitud rechazada correctamente.');
+          })
+          .catch(function (error) { mostrarToast(error.message || 'Error al rechazar la solicitud'); });
+      });
     };
   });
 }

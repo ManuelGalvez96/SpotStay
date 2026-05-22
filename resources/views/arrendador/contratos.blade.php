@@ -41,7 +41,6 @@
                     <th>Contrato</th>
                     <th>Propiedad</th>
                     <th>Inquilino</th>
-                    <th>Firma arrendador</th>
                     <th>Firma inquilino</th>
                     <th>Estado</th>
                     <th>Acciones</th>
@@ -51,7 +50,6 @@
                 @forelse ($contratos as $contrato)
                     @php
                         $estado = strtolower($contrato->estado_contrato ?? 'pendiente');
-                        $firmadoArrendador = (bool) ($contrato->firmado_arrendador ?? false);
                         $firmadoInquilino = (bool) ($contrato->firmado_inquilino ?? false);
                     @endphp
                     <tr>
@@ -61,12 +59,6 @@
                             <span class="muted">{{ $contrato->direccion_propiedad }}</span>
                         </td>
                         <td>{{ $contrato->nombre_inquilino }}</td>
-                        <td id="firma-arrendador-{{ $contrato->id_contrato }}">
-                            {{ $firmadoArrendador ? 'Firmado' : 'Pendiente' }}
-                            @if ($firmadoArrendador && $contrato->fecha_firma_arrendador)
-                                <br><span class="muted">{{ \Carbon\Carbon::parse($contrato->fecha_firma_arrendador)->format('d/m/Y H:i') }}</span>
-                            @endif
-                        </td>
                         <td>
                             {{ $firmadoInquilino ? 'Firmado' : 'Pendiente' }}
                             @if ($firmadoInquilino && $contrato->fecha_firma_inquilino)
@@ -78,20 +70,10 @@
                         </td>
                         <td>
                             <div class="acciones" data-acciones="{{ $contrato->id_contrato }}">
-                                @if (!$firmadoArrendador)
-                                    <button
-                                        class="btn-firmar"
-                                        data-firmar-arrendador="{{ $contrato->id_contrato }}"
-                                        data-arrendador="{{ $arrendadorId }}"
-                                    >
-                                        Firmar
-                                    </button>
-                                @else
-                                    <span class="muted">Sin acciones</span>
-                                @endif
+                                {{-- Funcionalidad de firma eliminada: no mostrar botón "Firmar" --}}
 
-                                @if (!empty($contrato->url_pdf_contrato))
-                                    <a class="btn-ver" href="{{ route('arrendador.contratos.descargar-pdf', ['id' => $contrato->id_contrato, 'arrendador_id' => $arrendadorId]) }}" target="_blank">Ver Contrato</a>
+                                @if (!empty($contrato->url_pdf_contrato) && (!isset($contrato->pdf_disponible) || $contrato->pdf_disponible))
+                                    <a class="btn-ver" href="{{ route('arrendador.contratos.descargar-pdf', ['id' => $contrato->id_contrato, 'arrendador_id' => $arrendadorId]) }}">Ver Contrato</a>
                                 @endif
 
                                 <form method="POST" action="{{ route('arrendador.contratos.subir-pdf', ['id' => $contrato->id_contrato, 'arrendador_id' => $arrendadorId]) }}" enctype="multipart/form-data" class="form-subir-pdf" style="display:inline">

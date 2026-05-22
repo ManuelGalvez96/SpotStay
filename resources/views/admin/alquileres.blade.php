@@ -191,10 +191,10 @@
                     </td>
 
                     <td data-label="CONTRATO">
-                        @if(!empty($alquiler->url_pdf_contrato))
-                            <a href="{{ $alquiler->url_pdf_contrato }}" target="_blank" class="btn-exportar">
+                        @if(!empty($alquiler->url_pdf_contrato) || (isset($alquiler->pdf_disponible) && $alquiler->pdf_disponible))
+                            <a href="{{ route('admin.alquileres.descargar-contrato', ['id' => $alquiler->id_alquiler]) }}" class="btn-exportar">
                                 <i class="bi bi-file-earmark-pdf"></i>
-                                <span>Ver PDF</span>
+                                <span>Ver Contrato</span>
                             </a>
                         @else
                             <span class="text-muted">Sin contrato</span>

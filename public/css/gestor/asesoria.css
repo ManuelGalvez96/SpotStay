@@ -1,3 +1,26 @@
+.dashboard-wrapper {
+    padding-top: 80px;
+}
+
+.hero-admin {
+    background: linear-gradient(135deg, #035498, #00A3E0);
+    padding: 36px 40px;
+    border-radius: 0 0 20px 20px;
+    position: relative;
+    overflow: hidden;
+    margin: 0 0 24px 0;
+}
+.hero-content { position: relative; z-index: 2; }
+.hero-admin h1 {
+    color: white; font-size: 26px; font-weight: 700; margin: 0;
+}
+.hero-admin h1 i {
+    margin-right: 10px;
+}
+.hero-admin p {
+    color: rgba(255, 255, 255, 0.7); font-size: 14px; margin-top: 4px; margin-bottom: 0;
+}
+
 .asesoria-back-link {
     display: inline-flex;
     align-items: center;

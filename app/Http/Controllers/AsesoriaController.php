@@ -13,7 +13,11 @@ class AsesoriaController extends Controller
             ->orderBy('orden')
             ->get();
 
-        return view('asesoria.' . $this->rol(), compact('categorias'));
+        return view('asesoria.index', [
+            'layout' => $this->layout(),
+            'routePrefix' => $this->routePrefix(),
+            'categorias' => $categorias,
+        ]);
     }
 
     public function categoria($slug)
@@ -25,13 +29,25 @@ class AsesoriaController extends Controller
             ->where('estado', 1)
             ->firstOrFail();
 
-        return view('asesoria.' . $this->rol() . '-categoria', compact('categoria'));
+        return view('asesoria.categoria', [
+            'layout' => $this->layout(),
+            'routePrefix' => $this->routePrefix(),
+            'categoria' => $categoria,
+        ]);
     }
 
-    private function rol()
+    private function layout()
+    {
+        if (request()->routeIs('gestor.*')) return 'layouts.gestor';
+        if (request()->routeIs('arrendador.*')) return 'layouts.arrendador';
+        return 'layouts.miembro';
+    }
+
+    private function routePrefix()
     {
         if (request()->routeIs('gestor.*')) return 'gestor';
         if (request()->routeIs('arrendador.*')) return 'arrendador';
+        if (request()->routeIs('inquilino.*')) return 'inquilino';
         return 'miembro';
     }
 }

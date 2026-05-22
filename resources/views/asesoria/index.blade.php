@@ -22,7 +22,8 @@
 <div class="asesoria-grid">
     <div class="asesoria-buscador">
         <i class="bi bi-search asesoria-buscador-icono"></i>
-        <input type="text" class="asesoria-buscador-input" placeholder="Buscar artículos…">
+        <input type="text" class="asesoria-buscador-input" placeholder="Buscar artículos…" data-search-endpoint="{{ route($routePrefix . '.asesoria.buscar') }}">
+        <div class="asesoria-sugerencias"></div>
     </div>
     @foreach($categorias as $categoria)
         <a href="{{ route($routePrefix . '.asesoria.categoria', $categoria->slug) }}" class="asesoria-card">
@@ -65,4 +66,8 @@
     </div>
 </div>
 @endif
+@endsection
+
+@section('scripts')
+    <script src="{{ asset('js/gestor/asesoria-buscador.js') }}"></script>
 @endsection

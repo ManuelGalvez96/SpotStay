@@ -59,18 +59,19 @@
         
         <!-- Zona derecha -->
         <div class="topbar-der">
-            <div class="admin-container" id="adminContainer">
-                <div class="avatar-admin">A</div>
-                <span class="admin-nombre">Admin</span>
-                <i class="bi bi-chevron-down chevron-admin"></i>
-                
-                <!-- DROPDOWN MENU -->
-                <div class="admin-dropdown" id="adminDropdown">
-                    <button class="dropdown-item">Perfil</button>
-                    <button class="dropdown-item">Configuración</button>
-                    <button class="dropdown-item dropdown-item-logout" id="btnLogout">Cerrar sesión</button>
+                <div class="perfil-miembro admin-container" id="adminContainer">
+                    <div class="avatar-admin">A</div>
+                    <span class="admin-nombre">Admin</span>
+                    <i class="bi bi-chevron-down chevron-admin"></i>
+
+                    <!-- DROPDOWN MENU (estilo miembro) -->
+                    <div class="submenu-perfil admin-dropdown" id="adminDropdown">
+                        <a href="#" class="item-submenu cerrar-sesion dropdown-item-logout" id="btnLogout">
+                            <i class="bi bi-box-arrow-right" style="color: #EF4444"></i>
+                            Cerrar sesión
+                        </a>
+                    </div>
                 </div>
-            </div>
         </div>
     </div>
     

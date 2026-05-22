@@ -136,7 +136,8 @@ body {
 }
 
 .admin-container:hover {
-    opacity: 0.8;
+    /* sin transparencia al pasar el ratón (mantener blanco consistente con otros roles) */
+    opacity: 1;
 }
 
 .avatar-admin {
@@ -170,14 +171,16 @@ body {
 
 /* DROPDOWN MENU */
 .admin-dropdown {
-    position: fixed;
-    top: 56px;
-    right: 24px;
-    background: white;
-    border: 1px solid #E5E7EB;
+    /* estilo copia del submenu-perfil (miembro) */
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 220px;
+    background: #ffffff;
     border-radius: 10px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    min-width: 200px;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    padding: 8px;
     display: none;
     z-index: 9999;
 }
@@ -186,39 +189,67 @@ body {
     display: block;
 }
 
-.dropdown-item {
-    padding: 12px 16px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 13px;
+.dropdown-item,
+.admin-dropdown .item-submenu {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
     color: #374151;
-    width: 100%;
-    text-align: left;
     text-decoration: none;
-    display: block;
-    transition: background 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: background 0.15s ease, color 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
 }
 
 .dropdown-item:first-child {
     border-radius: 10px 10px 0 0;
 }
 
-.dropdown-item:last-child {
-    border-radius: 0 0 10px 10px;
+.dropdown-item:hover,
+.admin-dropdown .item-submenu:hover {
+    background: #F5F8FC;
+    color: #035498;
 }
 
-.dropdown-item:hover {
-    background: #F3F4F6;
+/* Forzar que la opción Cerrar sesión permanezca roja al pasar el ratón, manteniendo la sombra */
+.admin-dropdown .item-submenu.cerrar-sesion:hover,
+.admin-dropdown .dropdown-item-logout:hover,
+.admin-dropdown .item-submenu.cerrar-sesion:focus,
+.admin-dropdown .dropdown-item-logout:focus {
+    background: #ffffff !important;
+    color: #EF4444 !important;
+    box-shadow: 0 6px 18px rgba(14,30,40,0.08) !important;
+    transform: translateY(-2px) !important;
 }
 
-.dropdown-item-logout {
-    color: #EF4444;
-    border-top: 1px solid #F3F4F6;
+/* Forzar color rojo por defecto en Cerrar sesión */
+.admin-dropdown .item-submenu.cerrar-sesion,
+.admin-dropdown .dropdown-item-logout {
+    color: #EF4444 !important;
 }
 
-.dropdown-item-logout:hover {
-    background: #FEE2E2;
+.admin-dropdown .item-submenu.cerrar-sesion i,
+.admin-dropdown .dropdown-item-logout i {
+    color: #EF4444 !important;
+}
+    transition: background 0.12s ease, box-shadow 0.12s ease, color 0.12s ease, transform 0.12s ease;
+}
+
+.dropdown-item-logout:hover,
+.dropdown-item-logout:focus {
+    background: #ffffff !important; /* mantener fondo blanco */
+    color: #EF4444 !important; /* conservar rojo, no cambiar a azul */
+    box-shadow: 0 6px 18px rgba(14,30,40,0.08);
+    transform: translateY(-2px);
+}
+
+.dropdown-item-logout:active {
+    background: #ffffff !important;
+    color: #EF4444 !important;
+    box-shadow: 0 4px 10px rgba(14,30,40,0.06);
+    transform: translateY(0);
 }
 
 /* =========================================================

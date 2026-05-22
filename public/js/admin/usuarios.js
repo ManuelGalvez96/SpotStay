@@ -429,6 +429,20 @@ var abrirModal = function(id) {
         document.getElementById('dataAcceso').textContent = 'N/A';
         document.getElementById('dataAlquileres').textContent = usuario.total_alquileres || '0';
         document.getElementById('dataSuscripcion').textContent = usuario.suscripcion || 'Sin suscripción';
+
+        var bloqueCodigoGestor = document.getElementById('bloqueCodigoGestor');
+        var dataCodigoGestor = document.getElementById('dataCodigoGestor');
+        var esGestor = (usuario.slug_rol || '').toLowerCase() === 'gestor';
+
+        if (bloqueCodigoGestor && dataCodigoGestor) {
+            if (esGestor) {
+                bloqueCodigoGestor.style.display = 'block';
+                dataCodigoGestor.textContent = usuario.codigo_gestor || 'Sin código';
+            } else {
+                bloqueCodigoGestor.style.display = 'none';
+                dataCodigoGestor.textContent = '—';
+            }
+        }
         
         // Rellenar sección de Propiedades del Usuario
         var listaPropiedades = document.getElementById('listaPropiedades');

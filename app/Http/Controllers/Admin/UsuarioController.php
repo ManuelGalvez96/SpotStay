@@ -8,9 +8,33 @@ use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Services\CodigoGestorService;
 
 class UsuarioController extends Controller
 {
+    private function obtenerSubconsultaRolesUsuarios()
+    {
+        return DB::table('tbl_rol_usuario as ru')
+            ->join('tbl_rol as r', 'r.id_rol', '=', 'ru.id_rol_fk')
+            ->selectRaw(
+                "ru.id_usuario_fk,
+                GROUP_CONCAT(DISTINCT r.nombre_rol ORDER BY FIELD(r.slug_rol, 'gestor', 'arrendador', 'inquilino', 'admin', 'miembro') SEPARATOR ' / ') as nombre_rol,
+                SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT r.slug_rol ORDER BY FIELD(r.slug_rol, 'gestor', 'arrendador', 'inquilino', 'admin', 'miembro') SEPARATOR ','), ',', 1) as slug_rol"
+            )
+            ->groupBy('ru.id_usuario_fk');
+    }
+
+    private function aplicarFiltroRolUsuario($query, $rol)
+    {
+        $query->whereExists(function ($subquery) use ($rol) {
+            $subquery->select(DB::raw(1))
+                ->from('tbl_rol_usuario as ru')
+                ->join('tbl_rol as r', 'r.id_rol', '=', 'ru.id_rol_fk')
+                ->whereColumn('ru.id_usuario_fk', 'tbl_usuario.id_usuario')
+                ->where('r.slug_rol', $rol);
+        });
+    }
+
     private function obtenerPlanesSuscripcion()
     {
         return DB::table('tbl_plan')
@@ -105,18 +129,17 @@ class UsuarioController extends Controller
 
     public function index()
     {
+        $this->sincronizarGestoresAprobados();
+
+        $rolesUsuario = $this->obtenerSubconsultaRolesUsuarios();
+
         $usuarios = DB::table('tbl_usuario')
-            ->leftJoin(
-                'tbl_rol_usuario',
-                'tbl_usuario.id_usuario',
-                '=',
-                'tbl_rol_usuario.id_usuario_fk'
-            )
-            ->leftJoin(
-                'tbl_rol',
-                'tbl_rol.id_rol',
-                '=',
-                'tbl_rol_usuario.id_rol_fk'
+            ->leftJoinSub(
+                $rolesUsuario,
+                'roles_usuario',
+                function ($join) {
+                    $join->on('roles_usuario.id_usuario_fk', '=', 'tbl_usuario.id_usuario');
+                }
             )
             ->leftJoin(
                 DB::raw('(SELECT id_arrendador_fk,
@@ -126,10 +149,12 @@ class UsuarioController extends Controller
                 '=',
                 'tbl_usuario.id_usuario'
             )
+                        ->orderByDesc('tbl_usuario.actualizado_usuario')
+                        ->orderByDesc('tbl_usuario.creado_usuario')
             ->select(
                 'tbl_usuario.*',
-                'tbl_rol.nombre_rol',
-                'tbl_rol.slug_rol',
+                'roles_usuario.nombre_rol',
+                'roles_usuario.slug_rol',
                 'props.total as total_propiedades'
             )
             ->paginate(10);
@@ -160,18 +185,17 @@ class UsuarioController extends Controller
 
     public function filtrar(Request $request)
     {
+        $this->sincronizarGestoresAprobados();
+
+        $rolesUsuario = $this->obtenerSubconsultaRolesUsuarios();
+
         $query = DB::table('tbl_usuario')
-            ->leftJoin(
-                'tbl_rol_usuario',
-                'tbl_usuario.id_usuario',
-                '=',
-                'tbl_rol_usuario.id_usuario_fk'
-            )
-            ->leftJoin(
-                'tbl_rol',
-                'tbl_rol.id_rol',
-                '=',
-                'tbl_rol_usuario.id_rol_fk'
+            ->leftJoinSub(
+                $rolesUsuario,
+                'roles_usuario',
+                function ($join) {
+                    $join->on('roles_usuario.id_usuario_fk', '=', 'tbl_usuario.id_usuario');
+                }
             )
             ->leftJoin(
                 DB::raw('(SELECT id_arrendador_fk, COUNT(*) as total FROM tbl_propiedad GROUP BY id_arrendador_fk) as props'),
@@ -181,7 +205,7 @@ class UsuarioController extends Controller
             );
 
         if ($request->input('rol')) {
-            $query->where('tbl_rol.slug_rol', $request->input('rol'));
+            $this->aplicarFiltroRolUsuario($query, $request->input('rol'));
         }
 
         if ($request->input('estado')) {
@@ -197,7 +221,10 @@ class UsuarioController extends Controller
             });
         }
 
-        $usuariosPaginados = $query->select('tbl_usuario.*', 'tbl_rol.nombre_rol', 'tbl_rol.slug_rol', 'props.total as total_propiedades')
+        $query->orderByDesc('tbl_usuario.actualizado_usuario')
+            ->orderByDesc('tbl_usuario.creado_usuario');
+
+        $usuariosPaginados = $query->select('tbl_usuario.*', 'roles_usuario.nombre_rol', 'roles_usuario.slug_rol', 'props.total as total_propiedades')
             ->paginate(10);
 
         $usuariosPaginados->setCollection($this->enriquecerUsuariosConSuscripcion($usuariosPaginados->getCollection()));
@@ -238,23 +265,71 @@ class UsuarioController extends Controller
         ]);
     }
 
+    private function sincronizarGestoresAprobados(): void
+    {
+        $gestoresAprobados = DB::table('tbl_solicitud_gestor as s')
+            ->where('s.estado_solicitud_gestor', 'aprobada')
+            ->pluck('s.id_usuario_fk');
+
+        if ($gestoresAprobados->isEmpty()) {
+            return;
+        }
+
+        $idRolGestor = DB::table('tbl_rol')
+            ->where('slug_rol', 'gestor')
+            ->value('id_rol');
+
+        if (!$idRolGestor) {
+            return;
+        }
+
+        foreach ($gestoresAprobados as $idUsuario) {
+            $tieneRol = DB::table('tbl_rol_usuario')
+                ->where('id_usuario_fk', $idUsuario)
+                ->where('id_rol_fk', $idRolGestor)
+                ->exists();
+
+            if (!$tieneRol) {
+                DB::table('tbl_rol_usuario')->insert([
+                    'id_usuario_fk' => $idUsuario,
+                    'id_rol_fk' => $idRolGestor,
+                    'asignado_rol_usuario' => Carbon::now(),
+                ]);
+            }
+
+            $existePerfil = DB::table('tbl_usuario_gestor')
+                ->where('id_usuario_gestor', $idUsuario)
+                ->exists();
+
+            if (!$existePerfil) {
+                DB::table('tbl_usuario_gestor')->insert([
+                    'id_usuario_gestor' => $idUsuario,
+                    'id_usuario_fk' => $idUsuario,
+                    'propiedades_gestionadas' => 0,
+                    'tareas_completadas' => 0,
+                    'creado_gestor' => Carbon::now(),
+                    'actualizado_gestor' => Carbon::now(),
+                ]);
+            }
+
+            CodigoGestorService::obtenerOCrearCodigoParaGestor((int) $idUsuario);
+        }
+    }
+
     public function show($id)
     {
         try {
+            $rolesUsuario = $this->obtenerSubconsultaRolesUsuarios();
+
             $usuario = DB::table('tbl_usuario')
-                ->leftJoin(
-                    'tbl_rol_usuario',
-                    'tbl_usuario.id_usuario',
-                    '=',
-                    'tbl_rol_usuario.id_usuario_fk'
+                ->leftJoinSub(
+                    $rolesUsuario,
+                    'roles_usuario',
+                    function ($join) {
+                        $join->on('roles_usuario.id_usuario_fk', '=', 'tbl_usuario.id_usuario');
+                    }
                 )
-                ->leftJoin(
-                    'tbl_rol',
-                    'tbl_rol.id_rol',
-                    '=',
-                    'tbl_rol_usuario.id_rol_fk'
-                )
-                ->select('tbl_usuario.*', 'tbl_rol.nombre_rol', 'tbl_rol.slug_rol')
+                ->select('tbl_usuario.*', 'roles_usuario.nombre_rol', 'roles_usuario.slug_rol')
                 ->where('tbl_usuario.id_usuario', $id)
                 ->first();
 
@@ -311,6 +386,15 @@ class UsuarioController extends Controller
             $suscripcionNombre = $suscripcion->suscripcion_nombre
                 ?? ($suscripcion->plan_suscripcion ?? 'Sin suscripción');
 
+            $codigoGestor = null;
+            if (($usuario->slug_rol ?? null) === 'gestor') {
+                $codigoGestor = DB::table('tbl_codigo_gestor')
+                    ->where('id_gestor_fk', $id)
+                    ->where('estado_codigo_gestor', 'activo')
+                    ->orderByDesc('creado_codigo_gestor')
+                    ->value('codigo_gestor');
+            }
+
             return response()->json([
                 'id_usuario' => $usuario->id_usuario,
                 'nombre_usuario' => $usuario->nombre_usuario,
@@ -325,7 +409,8 @@ class UsuarioController extends Controller
                 'total_alquileres' => $totalAlquileres,
                 'suscripcion' => $suscripcionNombre,
                 'id_plan_fk' => $suscripcion->id_plan_fk ?? null,
-                'plan_suscripcion' => $suscripcion->plan_suscripcion ?? null
+                'plan_suscripcion' => $suscripcion->plan_suscripcion ?? null,
+                'codigo_gestor' => $codigoGestor,
             ]);
         } catch (\Exception $e) {
             Log::error('Error en UsuarioController@show: ' . $e->getMessage() . ' - ' . $e->getFile() . ':' . $e->getLine());
@@ -405,24 +490,21 @@ class UsuarioController extends Controller
 
     public function exportar()
     {
+        $rolesUsuario = $this->obtenerSubconsultaRolesUsuarios();
+
         $usuarios = DB::table('tbl_usuario')
-            ->leftJoin(
-                'tbl_rol_usuario',
-                'tbl_usuario.id_usuario',
-                '=',
-                'tbl_rol_usuario.id_usuario_fk'
-            )
-            ->leftJoin(
-                'tbl_rol',
-                'tbl_rol.id_rol',
-                '=',
-                'tbl_rol_usuario.id_rol_fk'
+            ->leftJoinSub(
+                $rolesUsuario,
+                'roles_usuario',
+                function ($join) {
+                    $join->on('roles_usuario.id_usuario_fk', '=', 'tbl_usuario.id_usuario');
+                }
             )
             ->select(
                 'tbl_usuario.nombre_usuario',
                 'tbl_usuario.email_usuario',
                 'tbl_usuario.telefono_usuario',
-                'tbl_rol.nombre_rol',
+                'roles_usuario.nombre_rol',
                 'tbl_usuario.activo_usuario',
                 'tbl_usuario.creado_usuario'
             )

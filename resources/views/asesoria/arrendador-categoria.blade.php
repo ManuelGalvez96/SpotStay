@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asesoría Legal - SpotStay</title>
+    <title>{{ $categoria->nombre }} - Asesoría Legal - SpotStay</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,8 +23,8 @@
         <main class="main-content">
             <div class="hero-admin">
                 <div class="hero-content">
-                    <h1>Asesoría Legal</h1>
-                    <p>Preguntas frecuentes sobre alquiler, vivienda y normativa</p>
+                    <a href="{{ route('arrendador.asesoria') }}" class="asesoria-back-link"><i class="bi bi-arrow-left"></i> Todas las categorías</a>
+                    <h1><i class="bi {{ $categoria->icono }}"></i> {{ $categoria->nombre }}</h1>
                 </div>
                 <div class="hero-deco hero-deco-1"></div>
                 <div class="hero-deco hero-deco-2"></div>
@@ -32,18 +32,25 @@
             </div>
 
             <div class="asesoria-grid">
-                @foreach($categorias as $categoria)
-                    <a href="{{ route('arrendador.asesoria.categoria', $categoria->slug) }}" class="asesoria-card">
-                        <div class="asesoria-card-icono">
-                            <i class="bi {{ $categoria->icono }}"></i>
-                        </div>
-                        <div class="asesoria-card-contenido">
-                            <h3>{{ $categoria->nombre }}</h3>
-                            <span class="asesoria-card-count">{{ $categoria->articulos_count }} {{ $categoria->articulos_count === 1 ? 'artículo' : 'artículos' }}</span>
-                        </div>
-                        <i class="bi bi-chevron-right asesoria-card-flecha"></i>
-                    </a>
-                @endforeach
+                <div class="card-admin card-con-franja">
+                    <div class="card-franja"></div>
+                    <div class="accordion" id="accordionCat">
+                        @foreach($categoria->articulos as $articulo)
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#art{{ $articulo->id }}">
+                                        {{ $articulo->titulo }}
+                                    </button>
+                                </h2>
+                                <div id="art{{ $articulo->id }}" class="accordion-collapse collapse" data-bs-parent="#accordionCat">
+                                    <div class="accordion-body">
+                                        {!! $articulo->contenido !!}
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
             </div>
         </main>
     </div>

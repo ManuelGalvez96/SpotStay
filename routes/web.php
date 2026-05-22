@@ -190,12 +190,14 @@ Route::middleware(['role:gestor'])->group(function () {
     Route::post('/gestor/perfil', [GestorPerfilController::class, 'update'])->name('gestor.perfil.update');
 
     Route::get('/gestor/asesoria', [AsesoriaController::class, 'index'])->name('gestor.asesoria');
+    Route::get('/gestor/asesoria/{slug}', [AsesoriaController::class, 'categoria'])->name('gestor.asesoria.categoria');
 });
 
 // Rutas Arrendador
 Route::middleware(['role:arrendador', 'arrendador.activo'])->group(function () {
     Route::get('/arrendador/dashboard', [ArrendadorDashboardController::class, 'inicio'])->name('arrendador.dashboard');
     Route::get('/arrendador/asesoria', [AsesoriaController::class, 'index'])->name('arrendador.asesoria');
+    Route::get('/arrendador/asesoria/{slug}', [AsesoriaController::class, 'categoria'])->name('arrendador.asesoria.categoria');
 
     Route::get('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'inicio'])->name('arrendador.propiedades');
     Route::post('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'guardar'])->name('arrendador.propiedades.store');
@@ -248,7 +250,9 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
     Route::get('/miembro/mapa', [MapaController::class, 'index'])->name('miembro.mapa');
 
     Route::get('/miembro/asesoria', [AsesoriaController::class, 'index'])->name('miembro.asesoria');
+    Route::get('/miembro/asesoria/{slug}', [AsesoriaController::class, 'categoria'])->name('miembro.asesoria.categoria');
     Route::get('/inquilino/asesoria', [AsesoriaController::class, 'index'])->name('inquilino.asesoria');
+    Route::get('/inquilino/asesoria/{slug}', [AsesoriaController::class, 'categoria'])->name('inquilino.asesoria.categoria');
 
     Route::get('/inquilino/gestionar-propiedades', [InquilinoController::class, 'gestionarPropiedades'])->name('gestionar_propiedades');
 });

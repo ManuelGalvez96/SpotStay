@@ -409,7 +409,6 @@ class SolicitudController extends Controller
             $paginaActual,
             [
                 'path' => LengthAwarePaginator::resolveCurrentPath(),
-                'query' => request()->query(),
             ]
         );
     }

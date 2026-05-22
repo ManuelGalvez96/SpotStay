@@ -7,6 +7,7 @@ use App\Models\Conversacion;
 use App\Models\ConversacionUsuario;
 use App\Models\Mensaje;
 use App\Models\Propiedad;
+use App\Services\ActividadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
@@ -163,6 +164,25 @@ class MensajesController extends Controller
             ->update([
                 'ultima_lectura_conv_usuario' => $ahora,
             ]);
+
+        $actividadService = new ActividadService();
+        $usuario = Auth::user();
+        $propiedadTitulo = $conversacion->propiedad->titulo_propiedad ?? 'tu conversación';
+        $extracto = mb_substr(trim((string) $request->input('mensaje')), 0, 120);
+
+        foreach ($conversacion->participantes as $participante) {
+            if ((int) $participante->id_usuario === (int) $usuarioId) {
+                continue;
+            }
+
+            $actividadService->mensajeNuevo(
+                (int) $participante->id_usuario,
+                (int) $conversacion->id_conversacion,
+                $propiedadTitulo,
+                $usuario->nombre_usuario ?? 'Un usuario',
+                $extracto
+            );
+        }
 
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([

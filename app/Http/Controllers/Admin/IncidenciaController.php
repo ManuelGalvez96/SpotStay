@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Services\ActividadService;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -522,6 +523,17 @@ class IncidenciaController extends Controller
                 'creado_historial' => Carbon::now(),
                 'actualizado_historial' => Carbon::now()
             ]);
+
+            $tituloPropiedad = DB::table('tbl_propiedad')->where('id_propiedad', $request->id_propiedad)->value('titulo_propiedad') ?: 'propiedad';
+            if ($idAsignado > 0) {
+                (new ActividadService())->incidenciaCreada(
+                    $idAsignado,
+                    (int) $idIncidencia,
+                    (string) $tituloPropiedad,
+                    (string) $request->titulo,
+                    'Administrador'
+                );
+            }
 
             DB::commit();
             return response()->json(['success' => true, 'id' => $idIncidencia]);

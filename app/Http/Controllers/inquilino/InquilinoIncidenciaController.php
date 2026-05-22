@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\ActividadService;
 use Carbon\Carbon;
 use Stripe\Stripe;
 use Stripe\Checkout\Session as StripeSession;
@@ -51,6 +52,17 @@ class InquilinoIncidenciaController extends Controller
                 'actualizado_historial' => Carbon::now()
             ]);
 
+            $tituloPropiedad = DB::table('tbl_propiedad')->where('id_propiedad', $id)->value('titulo_propiedad') ?: 'propiedad';
+            if ($idAsignado) {
+                (new ActividadService())->incidenciaCreada(
+                    (int) $idAsignado,
+                    (int) $idIncidencia,
+                    (string) $tituloPropiedad,
+                    (string) $request->titulo,
+                    (string) ($usuario->nombre_usuario ?? 'Un usuario')
+                );
+            }
+
             DB::commit();
             return $request->ajax() ? response()->json(['success' => true]) : redirect()->back()->with('success', 'Incidencia reportada.');
         } catch (\Exception $e) {
@@ -66,7 +78,7 @@ class InquilinoIncidenciaController extends Controller
 
         $query = DB::table('tbl_incidencia')->where('id_propiedad_fk', $id);
         if ($estado !== 'todas') $query->where('estado_incidencia', $estado);
-        if ($autor === 'mias') $query->where('id_reporta_fk', auth()->id());
+        if ($autor === 'mias') $query->where('id_reporta_fk', Auth::id());
 
         $incidencias = $query->orderBy('creado_incidencia', 'desc')->get();
 
@@ -78,7 +90,7 @@ class InquilinoIncidenciaController extends Controller
                 'estado' => $inc->estado_incidencia,
                 'estado_texto' => ucfirst(str_replace('_', ' ', $inc->estado_incidencia)),
                 'id_reporta' => $inc->id_reporta_fk,
-                'auth_id' => auth()->id()
+                'auth_id' => Auth::id()
             ];
         }));
     }

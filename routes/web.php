@@ -68,6 +68,7 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/dashboard/solicitudes-filtrar', [DashboardController::class, 'filtrarSolicitudesNuevas']);
     Route::get('/admin/dashboard/incidencias-filtrar', [DashboardController::class, 'filtrarIncidenciasInactivas']);
     Route::get('/admin/configuracion', [ConfiguracionController::class, 'index']);
+    Route::post('/admin/configuracion/notificaciones', [ConfiguracionController::class, 'crearNotificacion'])->name('admin.configuracion.notificaciones.crear');
     Route::get('/admin/planes', [ConfiguracionController::class, 'planes'])->name('admin.planes');
     Route::post('/admin/planes/crear', [ConfiguracionController::class, 'crearPlan'])->name('admin.planes.crear');
     Route::post('/admin/planes/{id}/actualizar', [ConfiguracionController::class, 'actualizarPlan'])->name('admin.planes.actualizar');

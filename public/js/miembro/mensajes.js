@@ -12,7 +12,37 @@ var enviandoMensaje = false;
 
 window.onload = function () {
 	inicializarChatFetch();
+	inicializarToggleConversaciones();
 };
+
+function inicializarToggleConversaciones() {
+	var botonAbrir = document.getElementById("boton-abrir-conversaciones");
+	var botonCerrar = document.getElementById("boton-cerrar-conversaciones");
+
+	if (!botonAbrir && !botonCerrar) {
+		return;
+	}
+
+	function abrirConversaciones() {
+		document.body.classList.add("conversaciones-abiertas");
+	}
+
+	function cerrarConversaciones() {
+		document.body.classList.remove("conversaciones-abiertas");
+	}
+
+	if (botonAbrir) {
+		botonAbrir.onclick = function () {
+			abrirConversaciones();
+		};
+	}
+
+	if (botonCerrar) {
+		botonCerrar.onclick = function () {
+			cerrarConversaciones();
+		};
+	}
+}
 
 function inicializarChatFetch() {
 	var datosMensajes = document.getElementById("mensajes-datos");
@@ -31,6 +61,13 @@ function inicializarChatFetch() {
 	formulario.onsubmit = function (evento) {
 		evento.preventDefault();
 		enviarMensaje(campoMensaje, listaMensajes);
+	};
+
+	campoMensaje.onkeydown = function (evento) {
+		if (evento.key === "Enter" && !evento.shiftKey) {
+			evento.preventDefault();
+			enviarMensaje(campoMensaje, listaMensajes);
+		}
 	};
 
 	cargarMensajes(listaMensajes);
@@ -120,6 +157,7 @@ function enviarMensaje(campoMensaje, listaMensajes) {
 		})
 		.then(function () {
 			campoMensaje.value = "";
+			campoMensaje.focus();
 			cargarMensajes(listaMensajes);
 		})
 		.catch(function () {

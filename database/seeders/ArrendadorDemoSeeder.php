@@ -115,19 +115,17 @@ class ArrendadorDemoSeeder extends Seeder
             ]
         );
 
-        DB::table('tbl_alquiler')->updateOrInsert(
+        DB::table('tbl_solicitud_alquiler')->updateOrInsert(
             [
                 'id_propiedad_fk' => $propiedad2Id,
-                'id_inquilino_fk' => $pedroId,
+                'id_usuario_fk' => $pedroId,
             ],
             [
-                'id_admin_aprueba_fk' => DB::table('tbl_usuario')->where('email_usuario', 'admin@spotstay.com')->value('id_usuario'),
-                'fecha_inicio_alquiler' => '2025-02-01',
-                'fecha_fin_alquiler' => '2026-02-01',
-                'estado_alquiler' => 'pendiente',
-                'aprobado_alquiler' => null,
-                'creado_alquiler' => Carbon::now(),
-                'actualizado_alquiler' => Carbon::now(),
+                'fecha_inicio_solicitud_alquiler' => '2025-02-01',
+                'mensaje_solicitud_alquiler' => 'Hola Carlos, me gustaría mucho alquilar este estudio en Fuencarral. Tengo contrato indefinido y solvencia demostrable. ¡Saludos!',
+                'estado_solicitud_alquiler' => 'pendiente',
+                'creado_solicitud_alquiler' => Carbon::now(),
+                'actualizado_solicitud_alquiler' => Carbon::now(),
             ]
         );
     }

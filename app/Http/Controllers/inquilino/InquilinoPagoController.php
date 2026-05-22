@@ -261,18 +261,28 @@ class InquilinoPagoController extends Controller
                         ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
                         ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
                         ->whereIn('id_gasto_cuota_detalle', $idsGasto)
-                        ->select('tbl_gasto_cuota_detalle.*', 'tbl_gasto.concepto_gasto', 'tbl_gasto_cuota.mes_cuota')
+                        ->select('tbl_gasto_cuota_detalle.*', 'tbl_gasto.concepto_gasto', 'tbl_gasto.categoria_gasto', 'tbl_gasto_cuota.mes_cuota')
                         ->get();
                     foreach ($gastosPendientes as $gasto) {
                         DB::table('tbl_gasto_cuota_detalle')
                             ->where('id_gasto_cuota_detalle', $gasto->id_gasto_cuota_detalle)
                             ->update(['estado_detalle' => 'pagado']);
+
+                        $cat = ucfirst($gasto->categoria_gasto ?? 'general');
+                        $con = trim($gasto->concepto_gasto ?? '');
+
+                        if (!empty($con) && strtolower($con) !== strtolower($cat)) {
+                            $conceptoPago = "Suministro: {$cat} ({$con})";
+                        } else {
+                            $conceptoPago = "Suministro: {$cat}";
+                        }
+
                         Pago::create([
                             'id_pagador_fk' => $meta->id_usuario,
                             'id_alquiler_fk' => $gasto->id_alquiler_fk,
                             'id_gasto_cuota_detalle_fk' => $gasto->id_gasto_cuota_detalle,
                             'tipo_pago' => 'gasto',
-                            'concepto_pago' => $gasto->concepto_gasto ?? 'Gasto de reparación',
+                            'concepto_pago' => $conceptoPago,
                             'importe_pago' => $gasto->importe_detalle,
                             'estado_pago' => 'pagado',
                             'referencia_pago' => $session->payment_intent,
@@ -280,7 +290,7 @@ class InquilinoPagoController extends Controller
                         ]);
                         $mesGasto = Carbon::parse($gasto->mes_cuota)->translatedFormat('F Y');
                         $itemsFactura[] = [
-                            'concepto_pago' => 'Suministro: ' . ($gasto->concepto_gasto ?? 'General'),
+                            'concepto_pago' => $conceptoPago,
                             'importe_pago' => number_format((float)$gasto->importe_detalle, 2, ',', '.') . '€',
                             'mes_cuota' => $mesGasto,
                         ];
@@ -395,7 +405,7 @@ class InquilinoPagoController extends Controller
             ->where('tbl_gasto_cuota_detalle.id_alquiler_fk', $idAlquiler)
             ->where('tbl_gasto_cuota_detalle.id_pagador_fk', $idUsuario)
             ->whereIn('tbl_gasto_cuota_detalle.estado_detalle', ['pendiente', 'atrasado'])
-            ->select('tbl_gasto_cuota_detalle.*', 'tbl_gasto.concepto_gasto');
+            ->select('tbl_gasto_cuota_detalle.*', 'tbl_gasto.concepto_gasto', 'tbl_gasto.categoria_gasto');
 
         if ($idDetalle) {
             $query->where('tbl_gasto_cuota_detalle.id_gasto_cuota_detalle', $idDetalle);
@@ -405,12 +415,22 @@ class InquilinoPagoController extends Controller
         $pagoIds = [];
         foreach ($gastos as $gasto) {
             DB::table('tbl_gasto_cuota_detalle')->where('id_gasto_cuota_detalle', $gasto->id_gasto_cuota_detalle)->update(['estado_detalle' => 'pagado']);
+
+            $cat = ucfirst($gasto->categoria_gasto ?? 'general');
+            $con = trim($gasto->concepto_gasto ?? '');
+
+            if (!empty($con) && strtolower($con) !== strtolower($cat)) {
+                $conceptoFinal = "Suministro: {$cat} ({$con})";
+            } else {
+                $conceptoFinal = "Suministro: {$cat}";
+            }
+
             $pago = Pago::create([
                 'id_pagador_fk' => $idUsuario,
                 'id_alquiler_fk' => $idAlquiler,
                 'id_gasto_cuota_detalle_fk' => $gasto->id_gasto_cuota_detalle,
                 'tipo_pago' => 'gasto',
-                'concepto_pago' => $gasto->concepto_gasto ?? 'Gasto de suministro',
+                'concepto_pago' => $conceptoFinal,
                 'importe_pago' => $gasto->importe_detalle,
                 'estado_pago' => 'pagado',
                 'referencia_pago' => $session->payment_intent,
@@ -453,9 +473,32 @@ class InquilinoPagoController extends Controller
 
             // Build items array for the template's {{#items}} block
             if ($items === null) {
+                $concepto = $pagoInfo->concepto_pago;
+
+                // Soporte retrocompatible para facturas antiguas que no tengan el formato nuevo en base de datos
+                if ($pagoInfo->tipo_pago === 'gasto' && !str_starts_with(strtolower($concepto), 'suministro:') && !empty($pagoInfo->id_gasto_cuota_detalle_fk)) {
+                    $gastoDb = DB::table('tbl_gasto_cuota_detalle')
+                        ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
+                        ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+                        ->where('tbl_gasto_cuota_detalle.id_gasto_cuota_detalle', $pagoInfo->id_gasto_cuota_detalle_fk)
+                        ->select('tbl_gasto.categoria_gasto', 'tbl_gasto.concepto_gasto')
+                        ->first();
+
+                    if ($gastoDb) {
+                        $cat = ucfirst($gastoDb->categoria_gasto ?? 'general');
+                        $con = trim($gastoDb->concepto_gasto ?? '');
+
+                        if (!empty($con) && strtolower($con) !== strtolower($cat)) {
+                            $concepto = "Suministro: {$cat} ({$con})";
+                        } else {
+                            $concepto = "Suministro: {$cat}";
+                        }
+                    }
+                }
+
                 $importeFormateado = number_format((float) $pagoInfo->importe_pago, 2, ',', '.') . '€';
                 $items = [[
-                    'concepto_pago' => $pagoInfo->concepto_pago,
+                    'concepto_pago' => $concepto,
                     'importe_pago' => $importeFormateado,
                     'mes_cuota' => null,
                 ]];

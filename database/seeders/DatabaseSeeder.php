@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             IncidenciaSeeder::class,
             HistorialIncidenciaSeeder::class,
             SolicitudArrendadorSeeder::class,
+            SolicitudGestorSeeder::class,
             ConversacionSeeder::class,
             ConversacionUsuarioSeeder::class,
             MensajeSeeder::class,

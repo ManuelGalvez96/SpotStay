@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,10 +15,16 @@
     <link rel="stylesheet" href="{{ asset('css/admin/layout.css') }}">
     @yield('css')
 </head>
+
 <body>
+    <!-- TOPBAR -->
     <div class="topbar">
         <div class="topbar-izq">
-            <img src="{{ asset('img/logo.png') }}" alt="SpotStay Logo" class="topbar-logo-img">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 4C2.44772 4 2 4.44772 2 5V16C2 17.1046 2.89543 18 4 18H16C17.1046 18 18 17.1046 18 16V5C18 4.44772 17.5523 4 17 4H3Z" fill="#035498"/>
+                <path d="M6 2V6M14 2V6" stroke="#035498" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="topbar-logo">SpotStay</span>
         </div>
 
         <div class="topbar-central">
@@ -42,6 +49,10 @@
         </div>
 
         <div class="topbar-der">
+            <div class="campana-container">
+                <i class="bi bi-bell icon-campana" id="iconCampana"></i>
+                <span class="badge-campana" id="badgeCampana">3</span>
+            </div>
             <div class="admin-container" id="adminContainer">
                 <div class="avatar-admin">G</div>
                 <span class="admin-nombre">Gestor</span>
@@ -55,6 +66,7 @@
         </div>
     </div>
 
+    <!-- CONTENIDO -->
     <div class="content-wrapper">
         @yield('content')
     </div>
@@ -66,4 +78,5 @@
     <script src="{{ asset('js/shared/swal-oso.js') }}"></script>
     @yield('scripts')
 </body>
+
 </html>

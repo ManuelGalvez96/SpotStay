@@ -3,7 +3,7 @@
 .welcome-section {
     grid-column: 1 / -1;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 24px;
     align-items: center;
     margin-bottom: 32px;
@@ -28,11 +28,15 @@
     position: relative;
     height: 140px;
     width: 100%;
-    margin-bottom: 8px;
+    max-width: 280px;
+    margin: 0 auto 8px;
 }
 
 .chart-container canvas {
     max-height: 140px;
+    display: block !important;
+    margin: 0 auto !important;
+    max-width: 100% !important;
 }
 
 .chart-label {

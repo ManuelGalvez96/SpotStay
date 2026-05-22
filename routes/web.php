@@ -7,6 +7,7 @@ use App\Http\Controllers\Miembro\MapaController;
 use App\Http\Controllers\Miembro\SolicitudAlquilerController;
 use App\Http\Controllers\Miembro\MensajesController;
 use App\Http\Controllers\Miembro\SolicitudArrendadorController;
+use App\Http\Controllers\Miembro\SolicitudGestorController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -29,7 +30,6 @@ use App\Http\Controllers\Arrendador\PropiedadController as ArrendadorPropiedadCo
 use App\Http\Controllers\Arrendador\SolicitudController as ArrendadorSolicitudController;
 use App\Http\Controllers\Arrendador\PrecioGastoController as ArrendadorPrecioGastoController;
 use App\Http\Controllers\Arrendador\InquilinoController as ArrendadorInquilinoController;
-use App\Http\Controllers\Arrendador\MensajeController as ArrendadorMensajeController;
 use App\Http\Controllers\Arrendador\ContratoController as ArrendadorContratoController;
 use App\Http\Controllers\Arrendador\GestorController as ArrendadorGestorController;
 use App\Http\Controllers\Arrendador\IncidenciaController as ArrendadorIncidenciaController;
@@ -64,6 +64,8 @@ Route::middleware(['role:admin'])->group(function () {
 
     // Dashboard
     Route::get('/admin/dashboard', [DashboardController::class, 'index']);
+    Route::get('/admin/dashboard/solicitudes-filtrar', [DashboardController::class, 'filtrarSolicitudesNuevas']);
+    Route::get('/admin/dashboard/incidencias-filtrar', [DashboardController::class, 'filtrarIncidenciasInactivas']);
     Route::get('/admin/configuracion', [ConfiguracionController::class, 'index']);
     Route::get('/admin/planes', [ConfiguracionController::class, 'planes'])->name('admin.planes');
     Route::post('/admin/planes/crear', [ConfiguracionController::class, 'crearPlan'])->name('admin.planes.crear');
@@ -222,9 +224,6 @@ Route::middleware(['role:arrendador', 'arrendador.activo'])->group(function () {
     Route::get('/arrendador/inquilinos', [ArrendadorInquilinoController::class, 'inicio'])->name('arrendador.inquilinos');
     Route::get('/arrendador/inquilinos/{id}', [ArrendadorInquilinoController::class, 'mostrar'])->name('arrendador.inquilinos.show');
 
-    Route::get('/arrendador/mensajes', [ArrendadorMensajeController::class, 'inicio'])->name('arrendador.mensajes');
-    Route::get('/arrendador/mensajes/{id}', [ArrendadorMensajeController::class, 'mostrar'])->name('arrendador.mensajes.show');
-    Route::post('/arrendador/mensajes/{id}', [ArrendadorMensajeController::class, 'enviar'])->name('arrendador.mensajes.enviar');
 
     Route::get('/arrendador/contratos', [ArrendadorContratoController::class, 'inicio'])->name('arrendador.contratos');
     Route::post('/arrendador/contratos/{id}/firmar', [ArrendadorContratoController::class, 'firmarArrendador'])->name('arrendador.contratos.firmar');
@@ -244,6 +243,9 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
     Route::get('/miembro/inicio', [HomeController::class, 'index']);
     Route::get('/miembro/solicitud-arrendador', [SolicitudArrendadorController::class, 'create'])->name('miembro.arrendador.formulario');
     Route::post('/miembro/solicitud-arrendador', [SolicitudArrendadorController::class, 'store'])->name('miembro.arrendador.enviar');
+
+    Route::get('/miembro/solicitud-gestor', [SolicitudGestorController::class, 'create'])->name('miembro.gestor.formulario');
+    Route::post('/miembro/solicitud-gestor', [SolicitudGestorController::class, 'store'])->name('miembro.gestor.enviar');
 
     Route::get('/miembro/chat/{id}/mensajes', [MensajesController::class, 'obtenerMensajes'])->name('miembro.mensajes.mensajes');
     Route::post('/miembro/chat/{id}/mensaje', [MensajesController::class, 'enviarMensaje'])->name('miembro.mensajes.enviar');

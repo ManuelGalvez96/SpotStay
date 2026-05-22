@@ -29,11 +29,15 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
 .estado-activo { background: #d1fae5; color: #065f46; }
 .estado-rechazado { background: #fee2e2; color: #991b1b; }
 .acciones { display: flex; gap: 8px; }
-.btn-ver, .btn-editar, .btn-eliminar { border: none; border-radius: 8px; padding: 8px 12px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.15s ease; }
+.btn-ver, .btn-editar, .btn-eliminar, .btn-aprobar, .btn-rechazar { border: none; border-radius: 8px; padding: 8px 12px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.15s ease; }
 .btn-ver { background: rgba(255, 255, 255, 0.15); color: #333; border: 1px solid #ccc; }
 .btn-ver:hover { background: rgba(241, 245, 247, 0.95); }
 .btn-editar { background: #f59e0b; color: #fff; }
 .btn-editar:hover { background: #d97706; }
+.btn-aprobar { background: var(--exito); color: #fff; }
+.btn-aprobar:hover { background: #0d8561; }
+.btn-rechazar { background: #f12e0c; color: #fff; }
+.btn-rechazar:hover { background: #de4c2e; }
 .btn-eliminar { background: #dc2626; color: #fff; }
 .btn-eliminar:hover { background: #b91c1c; }
 .paginacion { margin-top: 12px; }
@@ -234,7 +238,7 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
   .cabecera h1 { font-size: 20px; }
   .panel { padding: 12px; border-radius: 14px; }
   .tabla th, .tabla td { padding: 10px 8px; font-size: 13px; }
-  .btn-ver, .btn-editar, .btn-eliminar { padding: 6px 10px; font-size: 12px; }
+  .btn-ver, .btn-editar, .btn-eliminar, .btn-aprobar, .btn-rechazar { padding: 6px 10px; font-size: 12px; }
   .kpi { padding: 12px; border-radius: 12px; }
   .kpi span { font-size: 20px; }
   .btn-volver { padding: 7px 12px; font-size: 13px; }

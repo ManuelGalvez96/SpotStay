@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,19 +12,24 @@
 
     <title>@yield('titulo', 'Arrendador - SpotStay')</title>
 
-    <link rel="stylesheet" href="{{ asset('css/admin/layout.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}?v=8">
+    <link rel="stylesheet" href="{{ asset('css/admin/layout.css') }}?v=2">
     @yield('css')
 </head>
-<body>
-@php
+
+<body class="pagina-miembro @yield('body-class')">
+    @php
     $arrendadorIdNav = $arrendadorId ?? request('arrendador_id');
-@endphp
+    @endphp
 
-    <x-arrendador.topbar :arrendadorId="$arrendadorIdNav" :avatarInicial="$__env->yieldContent('avatar', 'A')" />
+    @include('miembro.partials.header')
+    @include('miembro.partials.nav')
 
-    <div class="content-wrapper">
-        @yield('content')
-    </div>
+    <main class="contenido-miembro">
+        <div class="content-wrapper">
+            @yield('content')
+        </div>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55RPKM/DDL/M2PgkxjQlro0Pnd8NF" crossorigin="anonymous"></script>
     <script src="{{ asset('js/admin/layout.js') }}"></script>
@@ -32,4 +38,5 @@
 
     @yield('scripts')
 </body>
+
 </html>

@@ -1,9 +1,3 @@
-/* =========================================================
-   SECCION 1: CONFIGURACION E INICIALIZACION
-   Captura los campos del formulario y registra los
-   validadores para cada uno.
-   ========================================================= */
-
 var formularioSolicitud = null;
 var botonEnviarSolicitud = null;
 var campos = {};
@@ -11,62 +5,48 @@ var tocados = {};
 var solicitudEnviando = false;
 var solicitudEnviada = false;
 
-window.onload = iniciarAplicacionSolicitudArrendador;
+window.onload = iniciarAplicacionSolicitudGestor;
 
-function iniciarAplicacionSolicitudArrendador() {
-	// Inicia la validacion cuando carga la pagina
-	iniciarValidacionSolicitudArrendador();
+function iniciarAplicacionSolicitudGestor() {
+	iniciarValidacionSolicitudGestor();
 }
 
-function iniciarValidacionSolicitudArrendador() {
-	// Pillamos el formulario y sus piezas para usarlas en validacion y envio
-    // --- REFERENCIAS DOM ---
-    const formulario = document.getElementById("formulario-solicitud-arrendador");
+function iniciarValidacionSolicitudGestor() {
+    const formulario = document.getElementById("formulario-solicitud-gestor");
     const botonEnviar = document.getElementById("boton-enviar-solicitud");
 
-    // Elementos de error
-    const errorTipoArrendador = document.getElementById("error-tipo-arrendador-solicitud");
-    const errorNumPropiedades = document.getElementById("error-num-propiedades-previstas-solicitud");
     const errorDescripcion = document.getElementById("error-descripcion-solicitud");
+    const errorExperiencia = document.getElementById("error-experiencia-solicitud");
     const errorAceptaTerminos = document.getElementById("error-acepta-terminos-solicitud");
     const errorAceptaVeracidad = document.getElementById("error-acepta-veracidad-solicitud");
 
-    // Inputs
-    const entradaTipoArrendador = document.getElementById("tipo-arrendador-solicitud");
-    const entradaNumPropiedades = document.getElementById("num-propiedades-previstas-solicitud");
     const entradaDescripcion = document.getElementById("descripcion-solicitud");
+    const entradaExperiencia = document.getElementById("experiencia-solicitud");
     const entradaAceptaTerminos = document.getElementById("acepta-terminos-solicitud");
     const entradaAceptaVeracidad = document.getElementById("acepta-veracidad-solicitud");
 
     if (!formulario || !botonEnviar) return;
 
-	// Guardamos el formulario y el boton en variables globales
 	formularioSolicitud = formulario;
 	botonEnviarSolicitud = botonEnviar;
-	// Guardamos cada campo para validar y controlar el boton
 	campos = {
-		tipoArrendador: entradaTipoArrendador,
-		numPropiedades: entradaNumPropiedades,
 		descripcion: entradaDescripcion,
+		experiencia: entradaExperiencia,
 		aceptaTerminos: entradaAceptaTerminos,
 		aceptaVeracidad: entradaAceptaVeracidad
 	};
 	tocados = {
-		tipoArrendador: false,
-		numPropiedades: false,
 		descripcion: false,
+		experiencia: false,
 		aceptaTerminos: false,
 		aceptaVeracidad: false
 	};
 
-	// Enganchamos validadores por campo
-	registrarCampo("tipoArrendador", validarSelectObligatorio);
-	registrarCampo("numPropiedades", validarNumeroPropiedades);
 	registrarCampo("descripcion", validarDescripcion);
+	registrarCampo("experiencia", validarExperiencia);
 	registrarCampo("aceptaTerminos", validarCheckboxObligatorio);
 	registrarCampo("aceptaVeracidad", validarCheckboxObligatorio);
 
-	// Controla el envio con validacion previa
 	formularioSolicitud.onsubmit = function (evento) {
 		evento.preventDefault();
 
@@ -83,7 +63,6 @@ function iniciarValidacionSolicitudArrendador() {
 		botonEnviarSolicitud.disabled = true;
 		botonEnviarSolicitud.classList.add("btn-login-desabilitado");
 		var textoOriginalBoton = botonEnviarSolicitud.innerText;
-		// Monta los datos del formulario como texto tipo query
 		var formularioDatos = "";
 		for (var i = 0; i < formularioSolicitud.elements.length; i++) {
 			var elementoFormulario = formularioSolicitud.elements[i];
@@ -110,7 +89,6 @@ function iniciarValidacionSolicitudArrendador() {
 			csrf = formularioSolicitud.elements["_token"].value || "";
 		}
 
-		// Envia el formulario y actualiza el estado segun la respuesta
 		fetch(formularioSolicitud.action, {
 			method: "POST",
 			headers: {
@@ -134,7 +112,6 @@ function iniciarValidacionSolicitudArrendador() {
 
 				if (data.success) {
 					solicitudEnviada = true;
-					// Resetea el formulario y bloquea el boton si fue bien
 					if (typeof mostrarAlertaExito === "function") {
 						mostrarAlertaExito("Solicitud enviada", data.message || "Solicitud enviada correctamente");
 					} else {
@@ -149,7 +126,6 @@ function iniciarValidacionSolicitudArrendador() {
 					botonEnviarSolicitud.disabled = true;
 					botonEnviarSolicitud.classList.add("btn-login-desabilitado");
 				} else {
-					// Devuelve el boton a su estado si hay error
 					if (typeof mostrarAlertaError === "function") {
 						mostrarAlertaError("Error", data.message || "No se pudo enviar la solicitud");
 					} else {
@@ -160,7 +136,6 @@ function iniciarValidacionSolicitudArrendador() {
 				}
 			})
 			.catch(function () {
-				// Mensaje de fallo de red
 				if (typeof mostrarAlertaError === "function") {
 					mostrarAlertaError("Error", "Error de red al enviar la solicitud");
 				} else {
@@ -170,25 +145,16 @@ function iniciarValidacionSolicitudArrendador() {
 				solicitudEnviando = false;
 			})
 			.finally(function () {
-				// Reactiva el boton si no se envio bien
 				if (!solicitudEnviada) {
 					actualizarEstadoBoton(validarFormulario(false));
 				}
 			});
 	};
 
-	// Estado inicial del boton al cargar
 	actualizarEstadoBoton(validarFormulario(false));
 }
 
-/* =========================================================
-   SECCION 2: REGISTRO DE EVENTOS Y VALIDACION
-   Asocia eventos (blur, input, change) a cada campo para
-   validar en tiempo real y controlar el estado del boton.
-   ========================================================= */
-
 function registrarCampo(clave, validador) {
-	// Conecta los eventos del campo con su validador
 	var campo = campos[clave];
 	if (!campo) {
 		return;
@@ -215,18 +181,15 @@ function registrarCampo(clave, validador) {
 }
 
 function validarFormulario(mostrarErrores) {
-	// Lanza todas las validaciones y devuelve si esta todo ok
 	var errores = 0;
-	errores += validarCampo("tipoArrendador", validarSelectObligatorio, mostrarErrores);
-	errores += validarCampo("numPropiedades", validarNumeroPropiedades, mostrarErrores);
 	errores += validarCampo("descripcion", validarDescripcion, mostrarErrores);
+	errores += validarCampo("experiencia", validarExperiencia, mostrarErrores);
 	errores += validarCampo("aceptaTerminos", validarCheckboxObligatorio, mostrarErrores);
 	errores += validarCampo("aceptaVeracidad", validarCheckboxObligatorio, mostrarErrores);
 	return errores === 0;
 }
 
 function validarCampo(clave, validador, mostrarErrores) {
-	// Valida un campo y pinta su estado segun el resultado
 	var campo = campos[clave];
 	if (!campo) {
 		return 1;
@@ -252,88 +215,21 @@ function validarCampo(clave, validador, mostrarErrores) {
 	return esValido ? 0 : 1;
 }
 
-/* =========================================================
-   SECCION 3: VALIDADORES ESPECIFICOS
-   Funciones que contienen la logica (Regex/Date) para
-   validar cada tipo de dato (IBAN, NIF, etc.).
-   ========================================================= */
-
-function validarTelefono(campo) {
-	var valor = String(campo.value || "").trim();
-	var regex = /^\+\d{1,4} \d{6,11}$/;
-
-	if (valor === "") {
-		return "El telefono es obligatorio.";
-	}
-	if (!regex.test(valor)) {
-		return "Formato invalido. Ejemplo: +34 600123456";
-	}
-	return "";
-}
-
-function validarFechaNacimiento(campo) {
-	var valor = String(campo.value || "").trim();
-	if (valor === "") {
-		return "La fecha de nacimiento es obligatoria.";
-	}
-
-	var fecha = new Date(valor + "T00:00:00");
-	if (isNaN(fecha.getTime())) {
-		return "La fecha de nacimiento no es valida.";
-	}
-
-	var hoy = new Date();
-	var edad = hoy.getFullYear() - fecha.getFullYear();
-	var diferenciaMes = hoy.getMonth() - fecha.getMonth();
-	if (diferenciaMes < 0 || (diferenciaMes === 0 && hoy.getDate() < fecha.getDate())) {
-		edad = edad - 1;
-	}
-
-	if (edad < 18) {
-		return "Debes ser mayor de edad para enviar la solicitud.";
-	}
-	return "";
-}
-
-function validarSelectObligatorio(campo) {
-	var valor = String(campo.value || "").trim();
-	if (valor === "") {
-		return "Este campo es obligatorio.";
-	}
-	return "";
-}
-
-function validarTextoObligatorio(campo) {
-	var valor = String(campo.value || "").trim();
-	if (valor === "") {
-		return "Este campo es obligatorio.";
-	}
-	return "";
-}
-
-
-
-function validarNumeroPropiedades(campo) {
-	// Valida que sea un numero entero y positivo
-	var valor = String(campo.value || "").trim();
-	if (valor === "") {
-		return "El numero de propiedades es obligatorio.";
-	}
-	var numero = Number(valor);
-	if (isNaN(numero) || numero <= 0 || numero % 1 !== 0) {
-		return "Debes indicar un numero entero mayor que 0.";
-	}
-	return "";
-}
-
 function validarDescripcion(campo) {
-	// Pide una descripcion con un minimo de texto
 	var valor = String(campo.value || "").trim();
 	if (valor === "") {
-		return "La descripcion es obligatoria.";
+		return "";
 	}
 	if (valor.length < 15) {
 		return "La descripcion debe tener al menos 15 caracteres.";
+	}
+	return "";
+}
+
+function validarExperiencia(campo) {
+	var valor = String(campo.value || "").trim();
+	if (valor === "") {
+		return "";
 	}
 	return "";
 }
@@ -347,21 +243,14 @@ function validarCheckboxObligatorio(campo) {
 
 function obtenerIdErrorPorClave(clave) {
 	var mapaErrores = {
-		tipoArrendador: "error-tipo-arrendador-solicitud",
-		numPropiedades: "error-num-propiedades-previstas-solicitud",
 		descripcion: "error-descripcion-solicitud",
+		experiencia: "error-experiencia-solicitud",
 		aceptaTerminos: "error-acepta-terminos-solicitud",
 		aceptaVeracidad: "error-acepta-veracidad-solicitud"
 	};
 
 	return mapaErrores[clave] || "";
 }
-
-/* =========================================================
-   SECCION 4: HELPERS DE UI
-   Funciones para mostrar errores visuales y habilitar
-   el boton de envio cuando todo es valido.
-   ========================================================= */
 
 function mostrarError(idError, mensaje) {
 	var error = document.getElementById(idError);
@@ -399,7 +288,6 @@ function limpiarMarcaCampo(campo) {
 }
 
 function actualizarEstadoBoton(habilitar) {
-	// Activa o bloquea el boton segun el estado del formulario
 	if (!botonEnviarSolicitud || solicitudEnviada) {
 		return;
 	}

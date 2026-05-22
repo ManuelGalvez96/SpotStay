@@ -227,11 +227,12 @@ body {
    ========================================================= */
 
 .content-wrapper {
-    background: linear-gradient(135deg, #E3F2FD 0%, #E8F5E9 100%);
+    background: #ffffff !important;
     min-height: calc(100vh - 56px);
 }
 
 @media (max-width: 1023px) {
+
     .kpi-grid,
     .kpi-grid-pequeno,
     .columna-derecha-sol {
@@ -414,3 +415,28 @@ body {
     stroke-width: 3.5;
 }
 
+body.pagina-miembro {
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+/* =========================================================
+   SECCIÓN 6: AJUSTES DE ANCHO EN MENÚS DE NAVEGACIÓN
+   Estira los fondos horizontalmente de extremo a extremo de la pantalla.
+   ========================================================= */
+.navegacion-horizontal,
+.sub-nav-arrendador {
+    width: 100% !important;
+    max-width: none !important;
+    left: 0 !important;
+    right: 0 !important;
+}
+
+.contenedor-nav,
+.contenedor-sub-nav {
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: safe center !important;
+}

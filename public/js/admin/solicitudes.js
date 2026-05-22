@@ -1,222 +1,140 @@
 /* ========================================
    GESTIÓN DE SOLICITUDES — SPOTYSTAY
-   JavaScript Vanilla — Sin frameworks, sin async/await
+   JavaScript Vanilla
    ======================================== */
 
-var csrfToken;
-var solicitudIdActual;
-var modalSolicitud;
+var csrfToken = '';
+var solicitudIdActual = null;
+var tipoSolicitudActual = 'arrendador';
+var modalSolicitud = null;
 var paginaActualSol = 1;
+var temporizadorBusqueda = null;
 
-/* ──────────────────────────────────────────
-   FUNCIÓN: Crear OSO de ÉXITO
-   Retorna SVG HTML del oso con expresión feliz
-──────────────────────────────────────────── */
-var crearOsoExito = function() {
-    return `
-    <svg viewBox="0 0 200 280" xmlns="http://www.w3.org/2000/svg">
-        <!-- Cabeza -->
-        <circle class="yeti-part" cx="100" cy="80" r="45" />
-        <!-- Orejas -->
-        <circle class="yeti-part" cx="70" cy="45" r="18" />
-        <circle class="yeti-part" cx="130" cy="45" r="18" />
-        <!-- Traje -->
-        <rect class="suit-jacket" x="55" y="120" width="90" height="100" rx="10" />
-        <!-- Camisa -->
-        <rect class="suit-shirt" x="65" y="130" width="70" height="50" rx="5" />
-        <!-- Corbata -->
-        <polygon class="suit-tie" points="100,130 95,160 105,160" />
-        <!-- Cara con expresión feliz -->
-        <g id="face-group">
-            <!-- Ojos felices -->
-            <circle cx="82" cy="75" r="5" fill="#000" />
-            <circle cx="118" cy="75" r="5" fill="#000" />
-            <!-- Boca sonriente -->
-            <path d="M85 95 Q100 110 115 95" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round" />
-        </g>
-        <!-- Manos -->
-        <circle class="hand" cx="48" cy="180" r="19" />
-        <circle class="hand" cx="152" cy="180" r="19" />
-        <!-- Checkmark de validación -->
-        <g transform="translate(100, 215)">
-            <circle cx="0" cy="0" r="15" fill="#1AA068" />
-            <path d="M -8 0 L -2 8 L 10 -5" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-        </g>
-    </svg>
-    `;
-};
-
-/* ──────────────────────────────────────────
-   FUNCIÓN: Crear OSO de ERROR
-   Retorna SVG HTML del oso con expresión triste
-──────────────────────────────────────────── */
-var crearOsoError = function() {
-    return `
-    <svg viewBox="0 0 200 280" xmlns="http://www.w3.org/2000/svg">
-        <!-- Cabeza -->
-        <circle class="yeti-part" cx="100" cy="80" r="45" />
-        <!-- Orejas -->
-        <circle class="yeti-part" cx="70" cy="45" r="18" />
-        <circle class="yeti-part" cx="130" cy="45" r="18" />
-        <!-- Traje -->
-        <rect class="suit-jacket" x="55" y="120" width="90" height="100" rx="10" />
-        <!-- Camisa -->
-        <rect class="suit-shirt" x="65" y="130" width="70" height="50" rx="5" />
-        <!-- Corbata -->
-        <polygon class="suit-tie" points="100,130 95,160 105,160" />
-        <!-- Cara con expresión triste -->
-        <g id="face-group">
-            <!-- Ojos tristes -->
-            <circle cx="82" cy="75" r="5" fill="#000" />
-            <circle cx="118" cy="75" r="5" fill="#000" />
-            <!-- Boca triste -->
-            <path d="M85 100 Q100 90 115 100" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round" />
-        </g>
-        <!-- Manos -->
-        <circle class="hand" cx="48" cy="180" r="19" />
-        <circle class="hand" cx="152" cy="180" r="19" />
-        <!-- X de error -->
-        <g transform="translate(100, 215)">
-            <circle cx="0" cy="0" r="15" fill="#EF4444" />
-            <path d="M -8 -8 L 8 8" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" />
-            <path d="M 8 -8 L -8 8" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" />
-        </g>
-    </svg>
-    `;
-};
-
-/* ──────────────────────────────────────────
-   FUNCIÓN: Mostrar alerta de éxito con oso
-──────────────────────────────────────────── */
-var mostrarAlertaExito = function(titulo, mensaje) {
+var mostrarAlertaExito = function (titulo, mensaje) {
     if (window.mostrarAlertaAdminExito) {
         window.mostrarAlertaAdminExito(titulo, mensaje);
         return;
     }
+
     window.alert(mensaje);
 };
 
-/* ──────────────────────────────────────────
-   FUNCIÓN: Mostrar alerta de error con oso
-──────────────────────────────────────────── */
-var mostrarAlertaError = function(titulo, mensaje) {
+var mostrarAlertaError = function (titulo, mensaje) {
     if (window.mostrarAlertaAdminError) {
         window.mostrarAlertaAdminError(titulo, mensaje);
         return;
     }
+
     window.alert(mensaje);
 };
 
-/* ──────────────────────────────────────────
-   FUNCIÓN: Inicializar al cargar página
-──────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', function() {
+var escaparHtml = function (texto) {
+    return String(texto || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+};
+
+document.addEventListener('DOMContentLoaded', function () {
     try {
-        csrfToken = document.querySelector('meta[name=csrf-token]').content;
-        
-        /* Inicializar instancia de Bootstrap Modal */
+        var metaCsrf = document.querySelector('meta[name=csrf-token]');
+        if (metaCsrf) {
+            csrfToken = metaCsrf.content || '';
+        }
+
         var modalElement = document.getElementById('modalSolicitud');
         if (modalElement && typeof bootstrap !== 'undefined') {
             modalSolicitud = new bootstrap.Modal(modalElement);
-            console.log('✓ Modal inicializado correctamente');
-        } else {
-            console.error('✗ Error: Modal element o bootstrap no disponible');
         }
-        
+
         asignarEventosFiltros();
         asignarEventosModal();
-        
-        /* Cargar solicitudes iniciales */
         filtrarSolicitudes();
-        
-        console.log('✓ Sistema de solicitudes cargado');
+        actualizarKpisSolicitudes();
     } catch (error) {
-        console.error('Error en DOMContentLoaded:', error);
+        console.error('Error inicializando solicitudes:', error);
     }
 });
 
-/* ──────────────────────────────────────────
-   FUNCIÓN: Asignar eventos a filtros
-──────────────────────────────────────────── */
-var asignarEventosFiltros = function() {
+var asignarEventosFiltros = function () {
     var buscador = document.getElementById('buscadorSolicitudes');
     var selectRango = document.getElementById('selectRangoSol');
+    var selectTipo = document.getElementById('selectTipoSol');
     var selectEstado = document.getElementById('selectEstadoSol');
     var selectCiudad = document.getElementById('selectCiudadSol');
 
     if (buscador) {
-        buscador.onkeyup = function() {
-            paginaActualSol = 1;
-            filtrarSolicitudes();
+        buscador.oninput = function () {
+            clearTimeout(temporizadorBusqueda);
+            temporizadorBusqueda = setTimeout(function () {
+                paginaActualSol = 1;
+                filtrarSolicitudes();
+                actualizarKpisSolicitudes();
+            }, 250);
         };
     }
 
+    var refrescar = function () {
+        paginaActualSol = 1;
+        filtrarSolicitudes();
+        actualizarKpisSolicitudes();
+    };
+
     if (selectRango) {
-        selectRango.onchange = function() {
-            paginaActualSol = 1;
-            filtrarSolicitudes();
-        };
+        selectRango.onchange = refrescar;
+    }
+
+    if (selectTipo) {
+        selectTipo.onchange = refrescar;
     }
 
     if (selectEstado) {
-        selectEstado.onchange = function() {
-            paginaActualSol = 1;
-            filtrarSolicitudes();
-        };
+        selectEstado.onchange = refrescar;
     }
 
     if (selectCiudad) {
-        selectCiudad.onchange = function() {
-            paginaActualSol = 1;
-            filtrarSolicitudes();
-        };
+        selectCiudad.onchange = refrescar;
     }
 };
 
-/* ──────────────────────────────────────────
-   FUNCIÓN: Asignar eventos a la tabla
-──────────────────────────────────────────── */
-var asignarEventosTabla = function() {
-    var botonesAprobar = document.querySelectorAll('.btn-aprobar-sol');
-    var i;
-    for (i = 0; i < botonesAprobar.length; i++) {
-        botonesAprobar[i].onclick = function(evento) {
-            evento.preventDefault();
-            var id = this.getAttribute('data-id');
-            abrirModal(id);
-        };
-    }
-
-    var botonesRechazar = document.querySelectorAll('.btn-rechazar-sol');
-    for (i = 0; i < botonesRechazar.length; i++) {
-        botonesRechazar[i].onclick = function(evento) {
-            evento.preventDefault();
-            var id = this.getAttribute('data-id');
-            abrirModal(id);
-        };
-    }
-
+var asignarEventosTabla = function () {
     var botonesVer = document.querySelectorAll('.btn-ver-sol');
+    var botonesAprobar = document.querySelectorAll('.btn-aprobar-sol');
+    var botonesRechazar = document.querySelectorAll('.btn-rechazar-sol');
+    var i;
+
     for (i = 0; i < botonesVer.length; i++) {
-        botonesVer[i].onclick = function(evento) {
+        botonesVer[i].onclick = function (evento) {
             evento.preventDefault();
-            var id = this.getAttribute('data-id');
-            abrirModal(id);
+            abrirModal(this.getAttribute('data-id'), this.getAttribute('data-tipo'));
+        };
+    }
+
+    for (i = 0; i < botonesAprobar.length; i++) {
+        botonesAprobar[i].onclick = function (evento) {
+            evento.preventDefault();
+            abrirModal(this.getAttribute('data-id'), this.getAttribute('data-tipo'));
+        };
+    }
+
+    for (i = 0; i < botonesRechazar.length; i++) {
+        botonesRechazar[i].onclick = function (evento) {
+            evento.preventDefault();
+            abrirModal(this.getAttribute('data-id'), this.getAttribute('data-tipo'));
         };
     }
 };
 
-/* ──────────────────────────────────────────
-   FUNCIÓN: Asignar eventos a paginación
-──────────────────────────────────────────── */
-var asignarEventosPaginacion = function() {
+var asignarEventosPaginacion = function () {
     var botonesPage = document.querySelectorAll('#paginacionSolicitudes .page-link[data-page]');
     var i;
+
     for (i = 0; i < botonesPage.length; i++) {
-        var btn = botonesPage[i];
-        btn.onclick = function(evento) {
+        botonesPage[i].onclick = function (evento) {
             evento.preventDefault();
-            var page = parseInt(this.getAttribute('data-page'));
+            var page = parseInt(this.getAttribute('data-page'), 10);
             if (page && page > 0) {
                 cambiarPaginaSol(page);
             }
@@ -224,146 +142,115 @@ var asignarEventosPaginacion = function() {
     }
 };
 
-/* ──────────────────────────────────────────
-   FUNCIÓN: Filtrar solicitudes
-──────────────────────────────────────────── */
-var filtrarSolicitudes = function() {
+var filtrarSolicitudes = function () {
     var selectRango = document.getElementById('selectRangoSol');
+    var selectTipo = document.getElementById('selectTipoSol');
     var selectEstado = document.getElementById('selectEstadoSol');
     var selectCiudad = document.getElementById('selectCiudadSol');
     var buscador = document.getElementById('buscadorSolicitudes');
-    
+
     var rango = selectRango ? selectRango.value : 'mes';
+    var tipo = selectTipo ? selectTipo.value : 'all';
     var estado = selectEstado ? selectEstado.value : '';
     var ciudad = selectCiudad ? selectCiudad.value : '';
     var q = buscador ? buscador.value : '';
-    
-    console.log('Filtrando con - Rango:', rango, 'Estado:', estado, 'Ciudad:', ciudad, 'Búsqueda:', q, 'Página:', paginaActualSol);
-    
+
     var url = '/admin/solicitudes/filtrar?rango=' + encodeURIComponent(rango) +
-              '&estado=' + encodeURIComponent(estado) +
-              '&ciudad=' + encodeURIComponent(ciudad) +
-              '&q=' + encodeURIComponent(q) +
-              '&page=' + paginaActualSol;
-    
-    console.log('URL:', url);
-    
+        '&tipo=' + encodeURIComponent(tipo) +
+        '&estado=' + encodeURIComponent(estado) +
+        '&ciudad=' + encodeURIComponent(ciudad) +
+        '&q=' + encodeURIComponent(q) +
+        '&page=' + encodeURIComponent(paginaActualSol);
+
     fetch(url, {
         method: 'GET',
         headers: {
             'X-CSRF-TOKEN': csrfToken
         }
     })
-    .then(function(respuesta) {
-        return respuesta.json();
-    })
-    .then(function(datos) {
-        console.log('Datos recibidos:', datos);
-        console.log('Total encontrado:', datos.total);
-        actualizarTabla(datos);
-        actualizarPaginacionUI(datos);
-        asignarEventosPaginacion();
-    })
-    .catch(function(error) {
-        console.error('Error al filtrar: ', error);
-    });
+        .then(function (respuesta) {
+            return respuesta.json();
+        })
+        .then(function (datos) {
+            actualizarTabla(datos);
+            actualizarPaginacionUI(datos);
+            asignarEventosPaginacion();
+        })
+        .catch(function (error) {
+            console.error('Error al filtrar solicitudes:', error);
+        });
 };
 
-/* ──────────────────────────────────────────
-   FUNCIÓN: Actualizar tabla con datos
-──────────────────────────────────────────── */
-var actualizarTabla = function(datos) {
+var actualizarTabla = function (datos) {
     var tablaBody = document.getElementById('tablaSolicitudes');
-    if (!tablaBody) return;
+    if (!tablaBody) {
+        return;
+    }
 
     tablaBody.innerHTML = '';
 
     if (datos.data && datos.data.length > 0) {
-        var i;
-        for (i = 0; i < datos.data.length; i++) {
+        for (var i = 0; i < datos.data.length; i++) {
             var solicitud = datos.data[i];
-            console.log('Datos solicitud:', solicitud);
-            var partes = solicitud.nombre_usuario.split(' ');
-            var iniciales = (partes[0] ? partes[0].charAt(0) : '') + (partes[1] ? partes[1].charAt(0) : '');
+            var partes = String(solicitud.nombre_usuario || '').split(' ');
+            var iniciales = ((partes[0] || '').charAt(0) + (partes[1] || '').charAt(0)).toUpperCase();
             var colores = ['#B8CCE4', '#A8D5BF', '#F9E4A0', '#FFD5CC', '#D7EAF9', '#EDE7F6', '#D5F5E3', '#FAD7D7'];
-            var color = colores[solicitud.id_solicitud_arrendador % 8];
-            var fecha = new Date(solicitud.creado_solicitud_arrendador).toLocaleDateString('es-ES');
-            
-            /* Determinar badge de estado */
-            var estado = solicitud.estado_solicitud_arrendador || 'pendiente';
-            var badgeCss = '';
-            var estadoLabel = '';
-            
-            if (estado === 'aprobada') {
-                badgeCss = 'bg-success';
-                estadoLabel = 'Aprobada';
-            } else if (estado === 'rechazada') {
-                badgeCss = 'bg-danger';
-                estadoLabel = 'Rechazada';
-            } else {
-                badgeCss = 'bg-warning';
-                estadoLabel = 'Pendiente';
-            }
+            var color = colores[(solicitud.id_solicitud || 0) % colores.length];
+            var fecha = solicitud.creado_solicitud ? new Date(solicitud.creado_solicitud).toLocaleDateString('es-ES') : '—';
+            var tipoLabel = solicitud.tipo_label || 'Solicitud';
+            var esGestor = solicitud.tipo_solicitud === 'gestor';
+            var detallePrincipal = esGestor
+                ? (solicitud.experiencia_solicitud || solicitud.descripcion_solicitud || '—')
+                : (solicitud.tipo_arrendador_solicitud || solicitud.descripcion_solicitud || '—');
+            var detalleSecundario = esGestor
+                ? (solicitud.descripcion_solicitud || '—')
+                : (solicitud.direccion_fiscal_solicitud || '—');
 
-            /* Determinar badge de pago */
-            var pagoStatus = solicitud.stripe_status === 'active' ? 'Pagado' : 'Pendiente';
-            var pagoBadgeStyle = solicitud.stripe_status === 'active' 
-                ? 'background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid #2ecc71;' 
-                : 'background: rgba(243, 156, 18, 0.1); color: #f39c12; border: 1px solid #f39c12;';
+            var pagoHtml = esGestor
+                ? '<span class="badge-estado badge-activo" style="background: rgba(52, 152, 219, 0.1); color: #3498db; border: 1px solid #3498db;">No aplica</span>'
+                : (solicitud.stripe_status === 'active'
+                    ? '<span class="badge-estado badge-activo" style="background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid #2ecc71;">Pagado</span>'
+                    : '<span class="badge-estado badge-pendiente" style="background: rgba(243, 156, 18, 0.1); color: #f39c12; border: 1px solid #f39c12;">Pendiente</span>');
 
             var fila = document.createElement('tr');
             fila.className = 'fila-solicitud';
-            fila.setAttribute('data-id', solicitud.id_solicitud_arrendador);
+            fila.setAttribute('data-id', solicitud.id_solicitud);
+            fila.setAttribute('data-tipo', solicitud.tipo_solicitud);
 
-            var htmlFila = '<td><div class="usuario-celda">' +
-                '<div class="avatar-tabla" style="background:' + color + '">' + iniciales.toUpperCase() + '</div>' +
-                '<div class="usuario-info-tabla">' +
-                '<span class="usuario-nombre-tabla">' + solicitud.nombre_usuario + '</span>' +
-                '<span class="usuario-email-tabla">' + solicitud.email_usuario + '</span>' +
-                '</div></div></td>' +
-                '<td>' + (solicitud.direccion_fiscal_solicitud || '—') + '</td>' +
-                '<td>' + (solicitud.tipo_arrendador_solicitud || '—') + '</td>' +
-                '<td>' + fecha + '</td>' +
-                '<td><span class="badge ' + badgeCss + '">' + estadoLabel + '</span></td>' +
-                '<td><span class="badge-estado" style="' + pagoBadgeStyle + '">' + pagoStatus + '</span></td>' +
-                '<td><div class="acciones-tabla">' +
-                '<button class="btn-icono btn-ver-sol" data-id="' + solicitud.id_solicitud_arrendador + '" title="Ver detalles"><i class="bi bi-eye"></i></button>' +
-                '<button class="btn-icono btn-aprobar-sol" data-id="' + solicitud.id_solicitud_arrendador + '" title="Aprobar"><i class="bi bi-check-circle"></i></button>' +
-                '<button class="btn-icono btn-rechazar-sol" data-id="' + solicitud.id_solicitud_arrendador + '" title="Rechazar"><i class="bi bi-x-circle"></i></button>' +
-                '</div></td>';
+            fila.innerHTML =
+                '<td data-label="SOLICITANTE"><div class="usuario-celda"><div class="avatar-tabla" style="background:' + color + '">' + escaparHtml(iniciales || '?') + '</div><div class="usuario-info-tabla"><span class="usuario-nombre-tabla">' + escaparHtml(solicitud.nombre_usuario) + '</span><span class="usuario-email-tabla">' + escaparHtml(solicitud.email_usuario) + '</span></div></div></td>' +
+                '<td data-label="TIPO" class="col-tablet-hide"><span class="badge-estado badge-activo" style="background: rgba(52, 152, 219, 0.1); color: #3498db; border: 1px solid #3498db;">' + escaparHtml(tipoLabel) + '</span></td>' +
+                '<td data-label="DETALLE" class="col-mobile-hide"><div class="usuario-info-tabla"><span class="usuario-nombre-tabla">' + escaparHtml(detallePrincipal) + '</span><span class="usuario-email-tabla">' + escaparHtml(detalleSecundario) + '</span></div></td>' +
+                '<td data-label="FECHA" class="col-tablet-hide">' + escaparHtml(fecha) + '</td>' +
+                '<td data-label="ESTADO"><span class="badge-estado badge-pendiente">' + escaparHtml(solicitud.estado_solicitud ? solicitud.estado_solicitud.charAt(0).toUpperCase() + solicitud.estado_solicitud.slice(1) : 'Pendiente') + '</span></td>' +
+                '<td data-label="PAGO">' + pagoHtml + '</td>' +
+                '<td data-label="ACCIONES"><div class="acciones-tabla"><button class="btn-icono btn-ver-sol" data-id="' + solicitud.id_solicitud + '" data-tipo="' + escaparHtml(solicitud.tipo_solicitud) + '" title="Ver detalles"><i class="bi bi-eye"></i></button><button class="btn-icono btn-aprobar-sol" data-id="' + solicitud.id_solicitud + '" data-tipo="' + escaparHtml(solicitud.tipo_solicitud) + '" title="Aprobar"><i class="bi bi-check-circle"></i></button><button class="btn-icono btn-rechazar-sol" data-id="' + solicitud.id_solicitud + '" data-tipo="' + escaparHtml(solicitud.tipo_solicitud) + '" title="Rechazar"><i class="bi bi-x-circle"></i></button></div></td>';
 
-            fila.innerHTML = htmlFila;
             tablaBody.appendChild(fila);
         }
     } else {
-        var fila = document.createElement('tr');
-        fila.innerHTML = '<td colspan="6" class="sin-resultados">No hay solicitudes que coincidan con los filtros</td>';
-        tablaBody.appendChild(fila);
+        var filaVacia = document.createElement('tr');
+        filaVacia.innerHTML = '<td colspan="7" class="sin-resultados">No hay solicitudes que coincidan con los filtros</td>';
+        tablaBody.appendChild(filaVacia);
     }
 
-    /* Actualizar información de paginación */
     var infoPaginacion = document.querySelector('.info-paginacion');
     if (infoPaginacion && datos.from && datos.to) {
-        var footerText = 'Mostrando ' + datos.from + '-' + datos.to + ' de ' + datos.total + ' solicitudes';
-        infoPaginacion.textContent = footerText;
+        infoPaginacion.textContent = 'Mostrando ' + datos.from + '-' + datos.to + ' de ' + datos.total + ' solicitudes';
     }
 
     asignarEventosTabla();
 };
 
-/* ──────────────────────────────────────────
-   FUNCIÓN: Actualizar controles de paginación
-──────────────────────────────────────────── */
-/* ──────────────────────────────────────────
-   FUNCIÓN: Actualizar paginación en UI
-──────────────────────────────────────────── */
-var actualizarPaginacionUI = function(datos) {
+var actualizarPaginacionUI = function (datos) {
     var paginacion = document.getElementById('paginacionSolicitudes');
-    if (!paginacion) return;
+    if (!paginacion) {
+        return;
+    }
 
     paginacion.innerHTML = '';
 
-    var crearItem = function(page, contenido, deshabilitado, activo) {
+    var crearItem = function (page, contenido, deshabilitado, activo) {
         var li = document.createElement('li');
         li.className = 'page-item' + (deshabilitado ? ' disabled' : '') + (activo ? ' active' : '');
 
@@ -380,166 +267,198 @@ var actualizarPaginacionUI = function(datos) {
 
     paginacion.appendChild(crearItem(datos.current_page - 1, '<i class="bi bi-chevron-left"></i>', datos.current_page === 1, false));
 
-    var j;
-    for (j = 1; j <= datos.last_page; j++) {
+    for (var j = 1; j <= datos.last_page; j++) {
         paginacion.appendChild(crearItem(j, String(j), false, j === datos.current_page));
     }
 
     paginacion.appendChild(crearItem(datos.current_page + 1, '<i class="bi bi-chevron-right"></i>', datos.current_page === datos.last_page, false));
 };
-/* ──────────────────────────────────────────
-   FUNCIÓN: Cambiar página de solicitudes
-──────────────────────────────────────────── */
-var cambiarPaginaSol = function(pagina) {
+
+var cambiarPaginaSol = function (pagina) {
     paginaActualSol = pagina;
     filtrarSolicitudes();
+    actualizarKpisSolicitudes();
 };
 
-/* ──────────────────────────────────────────
-   FUNCIÓN: Actualizar KPIs de solicitudes
-──────────────────────────────────────────── */
-var actualizarKpisSolicitudes = function() {
-    fetch('/admin/solicitudes/kpis')
-        .then(function(response) {
+var actualizarKpisSolicitudes = function () {
+    var selectRango = document.getElementById('selectRangoSol');
+    var selectTipo = document.getElementById('selectTipoSol');
+    var selectEstado = document.getElementById('selectEstadoSol');
+    var selectCiudad = document.getElementById('selectCiudadSol');
+    var buscador = document.getElementById('buscadorSolicitudes');
+
+    var rango = selectRango ? selectRango.value : 'mes';
+    var tipo = selectTipo ? selectTipo.value : 'all';
+    var estado = selectEstado ? selectEstado.value : '';
+    var ciudad = selectCiudad ? selectCiudad.value : '';
+    var q = buscador ? buscador.value : '';
+
+    var url = '/admin/solicitudes/kpis?rango=' + encodeURIComponent(rango) +
+        '&tipo=' + encodeURIComponent(tipo) +
+        '&estado=' + encodeURIComponent(estado) +
+        '&ciudad=' + encodeURIComponent(ciudad) +
+        '&q=' + encodeURIComponent(q);
+
+    fetch(url)
+        .then(function (response) {
             return response.json();
         })
-        .then(function(data) {
-            /* Actualizar KPI pendientes */
+        .then(function (data) {
             var elPendientes = document.getElementById('kpiPendientesSolicitudes');
+            var elAprobadas = document.getElementById('kpiAprobadasSolicitudes');
+            var elRechazadas = document.getElementById('kpiRechazadasSolicitudes');
+            var elTotal = document.getElementById('kpiTotalSolicitudes');
+            var badgeAprobadas = document.getElementById('badgeAprobadasDetalles');
+            var badgeRechazadas = document.getElementById('badgeRechazadasDetalles');
+            var txtPendientes = document.querySelector('.texto-pendientes');
+
             if (elPendientes) {
                 elPendientes.textContent = data.pendientes;
             }
-
-            /* Actualizar KPI aprobadas */
-            var elAprobadas = document.getElementById('kpiAprobadasSolicitudes');
             if (elAprobadas) {
                 elAprobadas.textContent = data.aprobadas;
             }
-
-            /* Actualizar KPI rechazadas */
-            var elRechazadas = document.getElementById('kpiRechazadasSolicitudes');
             if (elRechazadas) {
                 elRechazadas.textContent = data.rechazadas;
             }
-
-            /* Actualizar KPI total */
-            var elTotal = document.getElementById('kpiTotalSolicitudes');
             if (elTotal) {
                 elTotal.textContent = data.total;
             }
-
-            /* Actualizar badges del sidebar */
-            var badgeAprobadas = document.getElementById('badgeAprobadasDetalles');
             if (badgeAprobadas) {
                 badgeAprobadas.textContent = data.aprobadas;
             }
-
-            var badgeRechazadas = document.getElementById('badgeRechazadasDetalles');
             if (badgeRechazadas) {
                 badgeRechazadas.textContent = data.rechazadas;
             }
-
-            /* Actualizar texto de toolbar */
-            var txtPendientes = document.querySelector('.texto-pendientes');
             if (txtPendientes) {
                 txtPendientes.textContent = data.pendientes + ' pendientes de revisión este mes';
             }
         })
-        .catch(function(error) {
+        .catch(function (error) {
             console.error('Error al actualizar KPIs:', error);
         });
 };
 
-/* ──────────────────────────────────────────
-   FUNCIÓN: Abrir modal para ver solicitud
-──────────────────────────────────────────── */
-var abrirModal = function(id) {
+var abrirModal = function (id, tipo) {
     solicitudIdActual = id;
-    console.log('Abriendo modal para solicitud:', id);
-    
-    fetch('/admin/solicitudes/' + id)
-        .then(function(respuesta) {
+    tipoSolicitudActual = tipo || 'arrendador';
+
+    var url = '/admin/solicitudes/' + encodeURIComponent(id) + '?tipo=' + encodeURIComponent(tipoSolicitudActual);
+
+    fetch(url)
+        .then(function (respuesta) {
             return respuesta.json();
         })
-        .then(function(datos) {
-            console.log('Datos recibidos:', datos);
+        .then(function (datos) {
             rellenarModal(datos);
-            
-            /* Mostrar/ocultar botones según estado */
-            var estado = datos.estado_solicitud_arrendador || 'pendiente';
+
+            var estado = datos.estado_solicitud || 'pendiente';
             var btnAprobar = document.getElementById('btnAprobarModal');
             var btnRechazar = document.getElementById('btnRechazarModal');
-            
-            if (estado === 'aprobada') {
-                /* Si está aprobada, solo se puede rechazar */
-                if (btnAprobar) btnAprobar.style.display = 'none';
-                if (btnRechazar) btnRechazar.style.display = 'block';
-            } else if (estado === 'rechazada') {
-                /* Si está rechazada, solo se puede aprobar */
-                if (btnAprobar) btnAprobar.style.display = 'block';
-                if (btnRechazar) btnRechazar.style.display = 'none';
-            } else {
-                /* Si está pendiente, se pueden hacer ambas acciones */
-                if (btnAprobar) btnAprobar.style.display = 'block';
-                if (btnRechazar) btnRechazar.style.display = 'block';
+
+            if (btnAprobar) {
+                btnAprobar.style.display = estado === 'aprobada' ? 'none' : 'block';
             }
-            
-            document.getElementById('modalNotas').value = '';
-            
+
+            if (btnRechazar) {
+                btnRechazar.style.display = estado === 'rechazada' ? 'none' : 'block';
+            }
+
+            var notas = document.getElementById('modalNotas');
+            if (notas) {
+                notas.value = '';
+            }
+
             if (modalSolicitud) {
                 modalSolicitud.show();
-                console.log('✓ Modal mostrado');
-            } else {
-                console.error('✗ modalSolicitud no está inicializado');
             }
         })
-        .catch(function(error) {
+        .catch(function (error) {
             console.error('Error al abrir modal:', error);
             mostrarAlertaError('Error', 'No se pudo cargar la solicitud');
         });
 };
 
-/* ──────────────────────────────────────────
-   FUNCIÓN: Rellenar modal con datos
-──────────────────────────────────────────── */
-var rellenarModal = function(datos) {
-    var partes = datos.nombre_usuario.split(' ');
-    var iniciales = (partes[0] ? partes[0].charAt(0) : '') + (partes[1] ? partes[1].charAt(0) : '');
+var rellenarModal = function (datos) {
+    var partes = String(datos.nombre_usuario || '').split(' ');
+    var iniciales = ((partes[0] || '').charAt(0) + (partes[1] || '').charAt(0)).toUpperCase();
     var colores = ['#B8CCE4', '#A8D5BF', '#F9E4A0', '#FFD5CC', '#D7EAF9', '#EDE7F6', '#D5F5E3', '#FAD7D7'];
-    var color = colores[datos.id_solicitud_arrendador % 8];
+    var color = colores[(datos.id_solicitud || 0) % colores.length];
+    var esGestor = datos.tipo_solicitud === 'gestor';
+    var tipoLabel = datos.tipo_label || (esGestor ? 'Gestor' : 'Arrendador');
 
-    /* Header del solicitante */
-    document.getElementById('modalAvatar').style.background = color;
-    document.getElementById('modalAvatar').textContent = iniciales.toUpperCase();
-    document.getElementById('modalNombre').textContent = datos.nombre_usuario;
-    document.getElementById('modalEmail').textContent = datos.email_usuario;
-    document.getElementById('modalCiudad').innerHTML = '<i class="bi bi-geo-alt"></i> ' + (datos.direccion_fiscal_solicitud || 'No disponible');
-    
-    /* Actualizar badge de estado */
-    var estado = datos.estado_solicitud_arrendador || 'pendiente';
-    var badgeElement = document.getElementById('modalBadgeEstado');
-    if (badgeElement) {
-        var estadoLabel = estado.charAt(0).toUpperCase() + estado.slice(1);
-        badgeElement.textContent = estadoLabel;
-        badgeElement.className = 'badge';
+    var modalAvatar = document.getElementById('modalAvatar');
+    var modalNombre = document.getElementById('modalNombre');
+    var modalEmail = document.getElementById('modalEmail');
+    var modalTipoSolicitud = document.getElementById('modalTipoSolicitud');
+    var modalTelefono = document.getElementById('modalTelefono');
+    var modalEstadoTexto = document.getElementById('modalEstadoTexto');
+    var modalBadgeEstado = document.getElementById('modalBadgeEstado');
+    var bloqueArrendador = document.getElementById('bloque-arrendador-solicitud');
+    var bloqueGestor = document.getElementById('bloque-gestor-solicitud');
+
+    if (modalAvatar) {
+        modalAvatar.style.background = color;
+        modalAvatar.textContent = iniciales || 'S';
+    }
+
+    if (modalNombre) {
+        modalNombre.textContent = datos.nombre_usuario || '—';
+    }
+
+    if (modalEmail) {
+        modalEmail.textContent = datos.email_usuario || '—';
+    }
+
+    if (modalTipoSolicitud) {
+        modalTipoSolicitud.innerHTML = '<i class="bi bi-briefcase"></i> ' + tipoLabel;
+    }
+
+    if (modalTelefono) {
+        modalTelefono.textContent = datos.telefono_contacto || datos.telefono_usuario || '—';
+    }
+
+    if (modalEstadoTexto) {
+        modalEstadoTexto.textContent = datos.estado_solicitud ? datos.estado_solicitud.charAt(0).toUpperCase() + datos.estado_solicitud.slice(1) : 'Pendiente';
+    }
+
+    if (modalBadgeEstado) {
+        var estado = datos.estado_solicitud || 'pendiente';
+        modalBadgeEstado.textContent = estado.charAt(0).toUpperCase() + estado.slice(1);
+        modalBadgeEstado.className = 'badge';
         if (estado === 'aprobada') {
-            badgeElement.classList.add('bg-success');
+            modalBadgeEstado.classList.add('bg-success');
         } else if (estado === 'rechazada') {
-            badgeElement.classList.add('bg-danger');
+            modalBadgeEstado.classList.add('bg-danger');
         } else {
-            badgeElement.classList.add('bg-warning');
+            modalBadgeEstado.classList.add('bg-warning');
         }
     }
 
-    /* Llenar todos los campos del formulario */
-    
-    /* Datos personales */
-    var elementoTelefono = document.getElementById('modalTelefono');
-    if (elementoTelefono) {
-        elementoTelefono.textContent = datos.telefono_solicitud || '—';
+    if (bloqueArrendador) {
+        bloqueArrendador.style.display = esGestor ? 'none' : 'block';
     }
-    
+
+    if (bloqueGestor) {
+        bloqueGestor.style.display = esGestor ? 'block' : 'none';
+    }
+
     var elementoFechaNacimiento = document.getElementById('modalFechaNacimiento');
+    var elementoTipoDocumento = document.getElementById('modalTipoDocumento');
+    var elementoNumeroDocumento = document.getElementById('modalNumeroDocumento');
+    var elementoIban = document.getElementById('modalIban');
+    var elementoTitularCuenta = document.getElementById('modalTitularCuenta');
+    var elementoNif = document.getElementById('modalNif');
+    var elementoDireccionFiscal = document.getElementById('modalDireccionFiscal');
+    var elementoTipoArrendador = document.getElementById('modalTipoArrendador');
+    var elementoNumPropiedades = document.getElementById('modalNumPropiedades');
+    var elementoEsPropietario = document.getElementById('modalEsPropietario');
+    var elementoDescripcion = document.getElementById('modalDescripcion');
+    var elementoDescripcionGestor = document.getElementById('modalDescripcionGestor');
+    var elementoExperienciaGestor = document.getElementById('modalExperienciaGestor');
+    var elementoAceptaTerminos = document.getElementById('modalAceptaTerminos');
+    var elementoAceptaVeracidad = document.getElementById('modalAceptaVeracidad');
+
     if (elementoFechaNacimiento) {
         var fechaNac = datos.fecha_nacimiento_solicitud || '—';
         if (fechaNac !== '—') {
@@ -547,145 +466,124 @@ var rellenarModal = function(datos) {
         }
         elementoFechaNacimiento.textContent = fechaNac;
     }
-    
-    var elementoTipoDocumento = document.getElementById('modalTipoDocumento');
+
     if (elementoTipoDocumento) {
         elementoTipoDocumento.textContent = datos.tipo_documento_solicitud || '—';
     }
-    
-    var elementoNumeroDocumento = document.getElementById('modalNumeroDocumento');
+
     if (elementoNumeroDocumento) {
         elementoNumeroDocumento.textContent = datos.numero_documento_solicitud || '—';
     }
-    
-    /* Datos bancarios */
-    var elementoIban = document.getElementById('modalIban');
+
     if (elementoIban) {
         elementoIban.textContent = datos.iban_solicitud || '—';
     }
-    
-    var elementoTitularCuenta = document.getElementById('modalTitularCuenta');
+
     if (elementoTitularCuenta) {
         elementoTitularCuenta.textContent = datos.titular_cuenta_solicitud || '—';
     }
-    
-    var elementoNif = document.getElementById('modalNif');
+
     if (elementoNif) {
         elementoNif.textContent = datos.nif_solicitud || '—';
     }
-    
-    /* Información como arrendador */
-    var elementoDireccionFiscal = document.getElementById('modalDireccionFiscal');
+
     if (elementoDireccionFiscal) {
         elementoDireccionFiscal.textContent = datos.direccion_fiscal_solicitud || '—';
     }
-    
-    var elementoTipoArrendador = document.getElementById('modalTipoArrendador');
+
     if (elementoTipoArrendador) {
         elementoTipoArrendador.textContent = datos.tipo_arrendador_solicitud || '—';
     }
-    
-    var elementoNumPropiedades = document.getElementById('modalNumPropiedades');
+
     if (elementoNumPropiedades) {
         elementoNumPropiedades.textContent = datos.num_propiedades_previstas_solicitud || '—';
     }
-    
-    var elementoEsPropietario = document.getElementById('modalEsPropietario');
+
     if (elementoEsPropietario) {
-        var esProp = datos.es_propietario_solicitud ? 'Sí' : 'No';
-        elementoEsPropietario.textContent = esProp;
+        elementoEsPropietario.textContent = datos.es_propietario_solicitud ? 'Sí' : 'No';
     }
-    
-    /* Descripción */
-    var elementoDescripcion = document.getElementById('modalDescripcion');
+
     if (elementoDescripcion) {
         elementoDescripcion.textContent = datos.descripcion_solicitud || '—';
     }
-    
-    /* Aceptaciones */
-    var elementoAceptaTerminos = document.getElementById('modalAceptaTerminos');
-    if (elementoAceptaTerminos) {
-        var aceptaTerm = datos.acepta_terminos_solicitud ? 'Sí' : 'No';
-        elementoAceptaTerminos.textContent = aceptaTerm;
+
+    if (elementoDescripcionGestor) {
+        elementoDescripcionGestor.textContent = datos.descripcion_solicitud || '—';
     }
-    
-    var elementoAceptaVeracidad = document.getElementById('modalAceptaVeracidad');
+
+    if (elementoExperienciaGestor) {
+        elementoExperienciaGestor.textContent = datos.experiencia_solicitud || '—';
+    }
+
+    if (elementoAceptaTerminos) {
+        elementoAceptaTerminos.textContent = datos.acepta_terminos_solicitud ? 'Sí' : 'No';
+    }
+
     if (elementoAceptaVeracidad) {
-        var aceptaVer = datos.acepta_veracidad_solicitud ? 'Sí' : 'No';
-        elementoAceptaVeracidad.textContent = aceptaVer;
+        elementoAceptaVeracidad.textContent = datos.acepta_veracidad_solicitud ? 'Sí' : 'No';
     }
 };
 
-/* ──────────────────────────────────────────
-   FUNCIÓN: Asignar eventos a modal
-──────────────────────────────────────────── */
-var asignarEventosModal = function() {
+var asignarEventosModal = function () {
     var btnAprobar = document.getElementById('btnAprobarModal');
     var btnRechazar = document.getElementById('btnRechazarModal');
 
     if (btnAprobar) {
-        btnAprobar.onclick = function() {
-            aprobarSolicitud(solicitudIdActual);
+        btnAprobar.onclick = function () {
+            aprobarSolicitud(solicitudIdActual, tipoSolicitudActual);
         };
     }
 
     if (btnRechazar) {
-        btnRechazar.onclick = function() {
-            var notas = document.getElementById('modalNotas').value;
-            rechazarSolicitud(solicitudIdActual, notas);
+        btnRechazar.onclick = function () {
+            var notas = document.getElementById('modalNotas');
+            rechazarSolicitud(solicitudIdActual, tipoSolicitudActual, notas ? notas.value : '');
         };
     }
 };
 
-/* ──────────────────────────────────────────
-   FUNCIÓN: Aprobar solicitud
-──────────────────────────────────────────── */
-var aprobarSolicitud = function(id) {
+var aprobarSolicitud = function (id, tipo) {
     if (!id) {
         mostrarAlertaError('Error', 'ID de solicitud no disponible');
         return;
     }
 
-    fetch('/admin/solicitudes/' + id + '/aprobar', {
+    fetch('/admin/solicitudes/' + encodeURIComponent(id) + '/aprobar?tipo=' + encodeURIComponent(tipo || 'arrendador'), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': csrfToken
         }
     })
-        .then(function(respuesta) {
+        .then(function (respuesta) {
             return respuesta.json();
         })
-        .then(function(datos) {
+        .then(function (datos) {
             if (datos.success) {
-                modalSolicitud.hide();
-                mostrarAlertaExito('¡Éxito!', 'Solicitud aprobada correctamente');
-                /* Actualizar KPIs y tabla sin recargar la página */
-                setTimeout(function() {
-                    paginaActualSol = 1;
-                    filtrarSolicitudes();
-                    actualizarKpisSolicitudes();
-                }, 500);
+                if (modalSolicitud) {
+                    modalSolicitud.hide();
+                }
+                mostrarAlertaExito('¡Éxito!', datos.message || 'Solicitud aprobada correctamente');
+                paginaActualSol = 1;
+                filtrarSolicitudes();
+                actualizarKpisSolicitudes();
             } else {
-                mostrarAlertaError('Error', datos.error || 'Error desconocido al aprobar');
+                mostrarAlertaError('Error', datos.error || datos.message || 'Error desconocido al aprobar');
             }
         })
-        .catch(function(error) {
-            console.log('Error en aprobar: ', error);
+        .catch(function (error) {
+            console.error('Error en aprobar:', error);
             mostrarAlertaError('Error', 'Error al procesar la solicitud');
         });
 };
 
-/* ──────────────────────────────────────────
-   FUNCIÓN: Rechazar solicitud
-──────────────────────────────────────────── */
-var rechazarSolicitud = function(id, notas) {
+var rechazarSolicitud = function (id, tipo, notas) {
     if (!id) {
         mostrarAlertaError('Error', 'ID de solicitud no disponible');
         return;
     }
 
-    fetch('/admin/solicitudes/' + id + '/rechazar', {
+    fetch('/admin/solicitudes/' + encodeURIComponent(id) + '/rechazar?tipo=' + encodeURIComponent(tipo || 'arrendador'), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -693,25 +591,24 @@ var rechazarSolicitud = function(id, notas) {
         },
         body: JSON.stringify({ notas: notas })
     })
-        .then(function(respuesta) {
+        .then(function (respuesta) {
             return respuesta.json();
         })
-        .then(function(datos) {
+        .then(function (datos) {
             if (datos.success) {
-                modalSolicitud.hide();
-                mostrarAlertaExito('¡Rechazada!', 'Solicitud rechazada correctamente');
-                /* Actualizar KPIs y tabla sin recargar la página */
-                setTimeout(function() {
-                    paginaActualSol = 1;
-                    filtrarSolicitudes();
-                    actualizarKpisSolicitudes();
-                }, 500);
+                if (modalSolicitud) {
+                    modalSolicitud.hide();
+                }
+                mostrarAlertaExito('¡Rechazada!', datos.message || 'Solicitud rechazada correctamente');
+                paginaActualSol = 1;
+                filtrarSolicitudes();
+                actualizarKpisSolicitudes();
             } else {
-                mostrarAlertaError('Error', datos.error || 'Error desconocido al rechazar');
+                mostrarAlertaError('Error', datos.error || datos.message || 'Error desconocido al rechazar');
             }
         })
-        .catch(function(error) {
-            console.log('Error en rechazar: ', error);
+        .catch(function (error) {
+            console.error('Error en rechazar:', error);
             mostrarAlertaError('Error', 'Error al procesar la solicitud');
         });
 };

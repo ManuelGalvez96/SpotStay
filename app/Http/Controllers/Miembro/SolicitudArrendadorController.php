@@ -19,10 +19,6 @@ class SolicitudArrendadorController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'telefono_solicitud' => ['required', 'string', 'max:20'],
-            'fecha_nacimiento_solicitud' => ['required', 'date', 'before:today'],
-            'tipo_documento_solicitud' => ['required', 'string', 'in:DNI,NIE,PASAPORTE'],
-            'numero_documento_solicitud' => ['required', 'string', 'max:20'],
             'tipo_arrendador_solicitud' => ['required', 'string', 'in:particular,empresa'],
             'descripcion_solicitud' => ['nullable', 'string'],
             'num_propiedades_previstas_solicitud' => ['nullable', 'integer', 'min:1', 'max:255'],
@@ -31,7 +27,8 @@ class SolicitudArrendadorController extends Controller
             'acepta_veracidad_solicitud' => ['accepted'],
         ]);
 
-        $usuarioId = Auth::id();
+        $usuario = Auth::user();
+        $usuarioId = $usuario->id_usuario;
 
         $tienePendiente = SolicitudArrendador::where('id_usuario_fk', $usuarioId)
             ->where('estado_solicitud_arrendador', 'pendiente')
@@ -55,10 +52,10 @@ class SolicitudArrendadorController extends Controller
 
         SolicitudArrendador::create([
             'id_usuario_fk' => $usuarioId,
-            'telefono_solicitud' => $request->input('telefono_solicitud'),
-            'fecha_nacimiento_solicitud' => $request->input('fecha_nacimiento_solicitud'),
-            'tipo_documento_solicitud' => $request->input('tipo_documento_solicitud'),
-            'numero_documento_solicitud' => $request->input('numero_documento_solicitud'),
+            'telefono_solicitud' => $usuario->telefono_usuario,
+            'fecha_nacimiento_solicitud' => $usuario->fecha_nacimiento_usuario,
+            'tipo_documento_solicitud' => null,
+            'numero_documento_solicitud' => $usuario->dni_usuario,
             'iban_solicitud' => null,
             'titular_cuenta_solicitud' => null,
             'nif_solicitud' => null,

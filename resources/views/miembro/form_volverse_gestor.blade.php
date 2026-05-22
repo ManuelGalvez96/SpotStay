@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>SpotStay | Solicitud Arrendador</title>
+    <title>SpotStay | Solicitud Gestor</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}?v=8" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
@@ -20,8 +20,8 @@
                     <a class="detalle-volver" href="/miembro/inicio" aria-label="Volver">
                         <i class="bi bi-arrow-left" aria-hidden="true"></i>
                     </a>
-                    <h1 class="titulo-filtros">Solicitud para convertirse en arrendador</h1>
-                    <p class="descripcion-filtros">Completa los datos para enviar tu solicitud de alta como arrendador.</p>
+                    <h1 class="titulo-filtros">Solicitud para convertirse en gestor</h1>
+                    <p class="descripcion-filtros">Completa los datos para enviar tu solicitud de alta como gestor.</p>
 
                     @if (session('success'))
                         <div class="estado-vacio solicitud-alerta solicitud-alerta-ok">
@@ -41,36 +41,17 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('miembro.arrendador.enviar') }}" class="filtros-miembro solicitud-formulario" id="formulario-solicitud-arrendador" novalidate>
+                    <form method="POST" action="{{ route('miembro.gestor.enviar') }}" class="filtros-miembro solicitud-formulario" id="formulario-solicitud-gestor" novalidate>
                         @csrf
 
                         <div class="grupo-filtro solicitud-columna-completa">
                             <div class="solicitud-resumen-datos">
-                                <p class="solicitud-ayuda">Los datos personales y de contacto se toman de tu perfil registrado.</p>
+                                <p class="solicitud-ayuda">Los datos personales se toman de tu perfil registrado.</p>
                                 <ul class="solicitud-resumen-lista">
-                                    <li><strong>Telefono:</strong> {{ auth()->user()->telefono_usuario ?? 'No disponible' }}</li>
-                                    <li><strong>Fecha de nacimiento:</strong> {{ auth()->user()->fecha_nacimiento_usuario ? \Illuminate\Support\Carbon::parse(auth()->user()->fecha_nacimiento_usuario)->format('d/m/Y') : 'No disponible' }}</li>
-                                    <li><strong>Documento:</strong> {{ auth()->user()->dni_usuario ?? 'No disponible' }}</li>
+                                    <li><strong>Nombre:</strong> {{ auth()->user()->nombre_usuario ?? 'No disponible' }}</li>
+                                    <li><strong>Email:</strong> {{ auth()->user()->email_usuario ?? 'No disponible' }}</li>
                                 </ul>
                             </div>
-                        </div>
-
-
-
-                        <div class="grupo-filtro">
-                            <label class="etiqueta-filtro" for="tipo-arrendador-solicitud">Tipo de arrendador</label>
-                            <select class="campo-filtro" id="tipo-arrendador-solicitud" name="tipo_arrendador_solicitud">
-                                <option value="">Selecciona una opcion</option>
-                                <option value="particular" {{ old('tipo_arrendador_solicitud') === 'particular' ? 'selected' : '' }}>Particular</option>
-                                <option value="empresa" {{ old('tipo_arrendador_solicitud') === 'empresa' ? 'selected' : '' }}>Empresa</option>
-                            </select>
-                            <small id="error-tipo-arrendador-solicitud" class="solicitud-error"></small>
-                        </div>
-
-                        <div class="grupo-filtro">
-                            <label class="etiqueta-filtro" for="num-propiedades-previstas-solicitud">Numero de propiedades previstas</label>
-                            <input class="campo-filtro" id="num-propiedades-previstas-solicitud" name="num_propiedades_previstas_solicitud" type="number" value="{{ old('num_propiedades_previstas_solicitud') }}">
-                            <small id="error-num-propiedades-previstas-solicitud" class="solicitud-error"></small>
                         </div>
 
                         <div class="grupo-filtro solicitud-columna-completa">
@@ -80,10 +61,9 @@
                         </div>
 
                         <div class="grupo-filtro solicitud-columna-completa">
-                            <label class="solicitud-check-label">
-                                <input type="checkbox" name="es_propietario_solicitud" value="1" {{ old('es_propietario_solicitud') ? 'checked' : '' }}>
-                                <span>Soy propietario de al menos una vivienda</span>
-                            </label>
+                            <label class="etiqueta-filtro" for="experiencia-solicitud">Experiencia previa</label>
+                            <textarea class="campo-filtro" id="experiencia-solicitud" name="experiencia_solicitud" rows="3">{{ old('experiencia_solicitud') }}</textarea>
+                            <small id="error-experiencia-solicitud" class="solicitud-error"></small>
                         </div>
 
                         <div class="grupo-filtro solicitud-columna-completa">
@@ -110,7 +90,7 @@
     </main>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
     <script src="{{ asset('js/miembro/sweetalert_oso.js') }}"></script>
-    <script src="{{ asset('js/miembro/solicitud_arrendador.js') }}"></script>
+    <script src="{{ asset('js/miembro/solicitud_gestor.js') }}"></script>
 </body>
 
 </html>

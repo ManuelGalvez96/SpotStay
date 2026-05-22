@@ -25,32 +25,39 @@ class MiembroSuscripcionController extends Controller
     public function index()
     {
         $usuario = Auth::user();
-        $esArrendador = DB::table('tbl_rol_usuario as ru')
-            ->join('tbl_rol as r', 'r.id_rol', '=', 'ru.id_rol_fk')
-            ->where('ru.id_usuario_fk', $usuario->id_usuario)
-            ->where('r.slug_rol', 'arrendador')
-            ->exists();
-        $rutaRetorno = $esArrendador
-            ? route('arrendador.stripe.configurar')
-            : url('/miembro/inicio');
+        $usuarioModelo = Usuario::find($usuario->id_usuario);
         
-        // Buscamos la suscripción pendiente más reciente
+        // Buscamos la suscripción pendiente o activa más reciente
         $suscripcion = Suscripcion::where('id_usuario_fk', $usuario->id_usuario)
-            ->where('estado_suscripcion', 'pendiente_pago')
+            ->whereIn('estado_suscripcion', ['pendiente_pago', 'activa'])
             ->latest('id_suscripcion')
             ->first();
 
-        // Si ya está activo, al dashboard directo
-        if ($usuario->stripe_status === 'active') {
+        if (!$suscripcion) {
+            if ($usuarioModelo && $usuarioModelo->stripe_status !== 'active') {
+                $usuarioModelo->update([
+                    'stripe_status' => 'active',
+                ]);
+            }
+
+            return redirect($this->redirigirDashboard())
+                ->with('info', 'No se encontró una suscripción asociada. Se ha permitido el acceso al panel.');
+        }
+
+        // Si la suscripción ya está activa, sincronizamos el estado del usuario y vamos al dashboard
+        if ($suscripcion->estado_suscripcion === 'activa') {
+            if ($usuarioModelo && $usuarioModelo->stripe_status !== 'active') {
+                $usuarioModelo->update([
+                    'stripe_status' => 'active',
+                ]);
+            }
+
             return redirect($this->redirigirDashboard());
         }
 
-        // Si no tiene nada pendiente y no es activo, mostramos la pantalla sin entrar en bucle
-        if (!$suscripcion) {
-            return view('miembro.suscripcion', [
-                'suscripcion' => null,
-                'rutaRetorno' => $rutaRetorno,
-            ]);
+        // Si Stripe ya está activo, también vamos al dashboard aunque la suscripción siga en pendiente
+        if ($usuario->stripe_status === 'active') {
+            return redirect($this->redirigirDashboard());
         }
 
         return view('miembro.suscripcion', compact('suscripcion', 'rutaRetorno'));
@@ -122,6 +129,7 @@ class MiembroSuscripcionController extends Controller
         // Recuperar ID de suscripción de los metadatos
         $idSuscripcion = $checkoutSession->metadata->id_suscripcion;
         $usuario = Auth::user();
+        $usuarioModelo = Usuario::find($usuario->id_usuario);
         
         // Buscar la suscripción específica
         $suscripcion = Suscripcion::where('id_suscripcion', $idSuscripcion)
@@ -140,12 +148,15 @@ class MiembroSuscripcionController extends Controller
                 ]);
 
                 // 2. Actualizar estado del usuario
-                DB::table('tbl_usuario')
-                    ->where('id_usuario', $usuario->id_usuario)
-                    ->update([
-                    'stripe_status' => 'active',
-                    'stripe_subscription_id' => $checkoutSession->subscription ?? null
+                if ($usuarioModelo) {
+                    $usuarioModelo->update([
+                        'stripe_status' => 'active',
+                        'stripe_subscription_id' => $checkoutSession->subscription ?? null
                     ]);
+
+                    // Refrescamos el modelo para que el Middleware vea los cambios inmediatamente
+                    $usuarioModelo->refresh();
+                }
 
                 // 3. Registrar el Pago en la tabla de pagos
                 $pago = Pago::create([

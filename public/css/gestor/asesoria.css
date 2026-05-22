@@ -1,7 +1,3 @@
-.dashboard-wrapper {
-    padding-top: 80px;
-}
-
 .hero-admin {
     background: linear-gradient(135deg, #035498, #00A3E0);
     padding: 36px 40px;
@@ -38,8 +34,8 @@
 
 .asesoria-grid {
     padding: 0 40px 40px;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     gap: 12px;
     max-width: 1000px;
     margin: 0 auto;
@@ -48,7 +44,7 @@
 /* --- Search bar (index) --- */
 .asesoria-buscador {
     position: relative;
-    margin-bottom: 4px;
+    grid-column: 1 / -1;
 }
 .asesoria-buscador-icono {
     position: absolute;
@@ -205,10 +201,22 @@
     border-top: none;
 }
 
+@media (max-width: 1024px) {
+    .asesoria-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .asesoria-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 768px) {
     .asesoria-grid {
         padding: 0 12px 24px;
-        gap: 16px;
+        gap: 12px;
     }
 
     .asesoria-card {

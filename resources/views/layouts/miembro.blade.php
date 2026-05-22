@@ -18,6 +18,30 @@
     @include('miembro.partials.header')
     @include('miembro.partials.nav')
 
+    @if (session('success') || session('error') || session('info'))
+        <div class="container pt-3">
+                <div class="d-flex justify-content-center">
+                    @if (session('success'))
+                        <div class="alert alert-success text-center mx-auto mb-1" style="max-width:60%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:1.05rem; padding:.5rem 1rem; line-height:1.2;">
+                            {!! session('success') !!}
+                        </div>
+                    @endif
+
+                    @if (session('error'))
+                        <div class="alert alert-danger text-center mx-auto mb-1" style="max-width:60%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:1.05rem; padding:.5rem 1rem; line-height:1.2;">
+                            {!! session('error') !!}
+                        </div>
+                    @endif
+
+                    @if (session('info'))
+                        <div class="alert alert-info text-center mx-auto mb-1" style="max-width:60%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:1.05rem; padding:.5rem 1rem; line-height:1.2;">
+                            {!! session('info') !!}
+                        </div>
+                    @endif
+                </div>
+        </div>
+    @endif
+
     <main class="contenido-miembro">
         @if(session('info'))
             <div class="container mt-3">

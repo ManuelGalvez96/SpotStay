@@ -364,20 +364,22 @@ class IncidenciaController extends Controller
         $mesActual = $ahora->format('Y-m-01');
         $vencimiento = $ahora->addDay(5)->format('Y-m-d');
 
-        // Crear gasto
+        // Crear gasto vinculado a la incidencia de origen
         $idGasto = DB::table('tbl_gasto')->insertGetId([
-            'id_propiedad_fk' => $incidencia->id_propiedad,
-            'id_gestor_fk' => $incidencia->id_gestor,
-            'concepto_gasto' => 'Reparación: ' . $incidencia->titulo_incidencia,
-            'categoria_gasto' => 'reparacion',
-            'importe_estimado' => $incidencia->presupuesto_importe_incidencia,
-            'ambito_gasto' => 'propiedad',
-            'pagador_gasto' => $responsablePago,
+            'id_propiedad_fk'    => $incidencia->id_propiedad,
+            'id_alquiler_fk'     => $this->obtenerIdAlquilerDelIncidente($incidencia->id_propiedad),
+            'id_incidencia_fk'   => $idIncidencia, // FK nueva: trazabilidad hacia la incidencia
+            'id_gestor_fk'       => $incidencia->id_gestor,
+            'concepto_gasto'     => 'Reparación: ' . $incidencia->titulo_incidencia,
+            'categoria_gasto'    => 'reparacion',
+            'importe_estimado'   => $incidencia->presupuesto_importe_incidencia,
+            'ambito_gasto'       => 'propiedad',
+            'pagador_gasto'      => $responsablePago,
             'periodicidad_gasto' => 'unica',
             'fecha_inicio_gasto' => $ahora->format('Y-m-d'),
-            'estado_gasto' => 'activo',
-            'creado_gasto' => $ahora,
-            'actualizado_gasto' => $ahora,
+            'estado_gasto'       => 'activo',
+            'creado_gasto'       => $ahora,
+            'actualizado_gasto'  => $ahora,
         ]);
 
         // Crear cuota

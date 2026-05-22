@@ -270,11 +270,13 @@ class InquilinoPagoController extends Controller
 
                         $cat = ucfirst($gasto->categoria_gasto ?? 'general');
                         $con = trim($gasto->concepto_gasto ?? '');
+                        // Usar prefijo correcto según categoría
+                        $prefijo = ($gasto->categoria_gasto === 'reparacion') ? 'Reparación' : 'Suministro';
 
                         if (!empty($con) && strtolower($con) !== strtolower($cat)) {
-                            $conceptoPago = "Suministro: {$cat} ({$con})";
+                            $conceptoPago = "{$prefijo}: {$con}";
                         } else {
-                            $conceptoPago = "Suministro: {$cat}";
+                            $conceptoPago = "{$prefijo}: {$cat}";
                         }
 
                         Pago::create([
@@ -418,11 +420,13 @@ class InquilinoPagoController extends Controller
 
             $cat = ucfirst($gasto->categoria_gasto ?? 'general');
             $con = trim($gasto->concepto_gasto ?? '');
+            // Usar prefijo correcto según categoría
+            $prefijo = ($gasto->categoria_gasto === 'reparacion') ? 'Reparación' : 'Suministro';
 
             if (!empty($con) && strtolower($con) !== strtolower($cat)) {
-                $conceptoFinal = "Suministro: {$cat} ({$con})";
+                $conceptoFinal = "{$prefijo}: {$con}";
             } else {
-                $conceptoFinal = "Suministro: {$cat}";
+                $conceptoFinal = "{$prefijo}: {$cat}";
             }
 
             $pago = Pago::create([
@@ -487,11 +491,13 @@ class InquilinoPagoController extends Controller
                     if ($gastoDb) {
                         $cat = ucfirst($gastoDb->categoria_gasto ?? 'general');
                         $con = trim($gastoDb->concepto_gasto ?? '');
+                        // Usar prefijo correcto según categoría (retrocompatibilidad)
+                        $prefijo = ($gastoDb->categoria_gasto === 'reparacion') ? 'Reparación' : 'Suministro';
 
                         if (!empty($con) && strtolower($con) !== strtolower($cat)) {
-                            $concepto = "Suministro: {$cat} ({$con})";
+                            $concepto = "{$prefijo}: {$con}";
                         } else {
-                            $concepto = "Suministro: {$cat}";
+                            $concepto = "{$prefijo}: {$cat}";
                         }
                     }
                 }

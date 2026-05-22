@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Log;
@@ -95,6 +96,7 @@ class AlquilerController extends Controller
             ->join('tbl_propiedad', 'tbl_alquiler.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad')
             ->join('tbl_usuario as inquilino', 'tbl_alquiler.id_inquilino_fk', '=', 'inquilino.id_usuario')
             ->join('tbl_usuario as arrendador', 'tbl_propiedad.id_arrendador_fk', '=', 'arrendador.id_usuario')
+            ->leftJoin('tbl_contrato as c', 'tbl_alquiler.id_alquiler', '=', 'c.id_alquiler_fk')
             ->select(
                 'tbl_alquiler.id_alquiler',
                 'tbl_alquiler.id_propiedad_fk',
@@ -112,8 +114,46 @@ class AlquilerController extends Controller
                 'arrendador.nombre_usuario as nombre_arrendador',
                 'arrendador.email_usuario as email_arrendador',
                 'arrendador.telefono_usuario as telefono_arrendador'
+                , DB::raw("COALESCE(c.url_pdf_contrato, '') as url_pdf_contrato")
             )
             ->paginate(10);
+
+        // Añadir marca de disponibilidad física del PDF por cada alquiler
+        $alquileres->getCollection()->transform(function ($alq) {
+            $alq->pdf_disponible = false;
+            $url = $alq->url_pdf_contrato ?? '';
+            if (!empty($url)) {
+                // Si es URL absoluta que apunta al mismo host, comprobar ruta en public/
+                if (preg_match('#^https?://#i', $url)) {
+                    $componentes = parse_url($url);
+                    $hostRemoto = $componentes['host'] ?? null;
+                    $requestHost = request()->getHost();
+                    if ($hostRemoto && $hostRemoto === $requestHost) {
+                        $ruta = ltrim($componentes['path'] ?? '', '/\\');
+                        $alq->pdf_disponible = File::exists(public_path($ruta));
+                    } else {
+                        // URL remota: asumimos no disponible localmente
+                        $alq->pdf_disponible = false;
+                    }
+                } else {
+                    $rutaRelativa = ltrim($url, '/\\');
+                    $candidates = [
+                        public_path($rutaRelativa),
+                        public_path('storage/' . $rutaRelativa),
+                        storage_path('app/public/' . $rutaRelativa),
+                    ];
+                    $exists = false;
+                    foreach ($candidates as $p) {
+                        if (File::exists($p)) {
+                            $exists = true;
+                            break;
+                        }
+                    }
+                    $alq->pdf_disponible = $exists;
+                }
+            }
+            return $alq;
+        });
 
         $activos = DB::table('tbl_alquiler')
             ->where('estado_alquiler', 'activo')
@@ -263,6 +303,7 @@ class AlquilerController extends Controller
             ->join('tbl_propiedad', 'tbl_alquiler.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad')
             ->join('tbl_usuario as inquilino', 'tbl_alquiler.id_inquilino_fk', '=', 'inquilino.id_usuario')
             ->join('tbl_usuario as arrendador', 'tbl_propiedad.id_arrendador_fk', '=', 'arrendador.id_usuario')
+            ->leftJoin('tbl_contrato as c', 'tbl_alquiler.id_alquiler', '=', 'c.id_alquiler_fk')
             ->select(
                 'tbl_alquiler.id_alquiler',
                 'tbl_alquiler.id_propiedad_fk',
@@ -275,7 +316,8 @@ class AlquilerController extends Controller
                 'tbl_propiedad.precio_propiedad',
                 'inquilino.nombre_usuario as nombre_inquilino',
                 'arrendador.id_usuario as id_arrendador',
-                'arrendador.nombre_usuario as nombre_arrendador'
+                'arrendador.nombre_usuario as nombre_arrendador',
+                DB::raw("COALESCE(c.url_pdf_contrato, '') as url_pdf_contrato")
             );
 
         if ($request->has('estado') && $request->estado) {
@@ -330,8 +372,33 @@ class AlquilerController extends Controller
                 'color_arr' => $colores[$alq->id_arrendador % 10],
                 'iniciales_inq' => $inicialesInq,
                 'iniciales_arr' => $inicialesArr,
+                'url_pdf_contrato' => $alq->url_pdf_contrato ?? '',
             ];
         })->values();
+
+            // Añadir URL de descarga solo si el fichero existe físicamente
+            $alquileres = $alquileres->map(function ($a) {
+                $url = $a['url_pdf_contrato'] ?? '';
+                $exists = false;
+                if (!empty($url)) {
+                    $rutaRel = ltrim($url, '/\\');
+                    $candidates = [public_path($rutaRel), public_path('storage/' . $rutaRel), storage_path('app/public/' . $rutaRel)];
+                    foreach ($candidates as $p) {
+                        if (file_exists($p)) {
+                            $exists = true;
+                            break;
+                        }
+                    }
+                }
+
+                if ($exists) {
+                    $a['url_pdf_contrato'] = route('admin.alquileres.descargar-contrato', ['id' => $a['id']]);
+                } else {
+                    $a['url_pdf_contrato'] = '';
+                }
+
+                return $a;
+            });
 
         return response()->json([
             'alquileres' => $alquileres,
@@ -419,6 +486,98 @@ class AlquilerController extends Controller
             DB::rollBack();
             return response()->json(['success' => false, 'error' => $e->getMessage()]);
         }
+    }
+
+    /**
+     * Descargar el contrato asociado a un alquiler (si existe).
+     * Devuelve un attachment si el fichero es local, o redirige a la URL si es remota.
+     */
+    public function descargarContrato($id)
+    {
+        $contrato = DB::table('tbl_contrato')
+            ->where('id_alquiler_fk', $id)
+            ->first();
+
+        if (!$contrato || empty($contrato->url_pdf_contrato)) {
+            return abort(404, 'Contrato no encontrado');
+        }
+
+        $url = $contrato->url_pdf_contrato;
+
+        // Si es una URL absoluta
+        if (preg_match('#^https?://#i', $url)) {
+            $componentes = parse_url($url);
+            $hostRemoto = $componentes['host'] ?? null;
+            $requestHost = request()->getHost();
+
+            if ($hostRemoto && $hostRemoto === $requestHost) {
+                $ruta = ltrim($componentes['path'] ?? '', '/\\');
+                $rutaCompleta = public_path($ruta);
+                if (File::exists($rutaCompleta)) {
+                    return response()->download($rutaCompleta, basename($rutaCompleta));
+                }
+            }
+
+            // remota o no encontrada localmente: redirigimos
+            return redirect()->away($url);
+        }
+
+        // Ruta relativa
+        $rutaRelativa = ltrim($url, '/\\');
+        $rutaCompleta = public_path($rutaRelativa);
+        if (File::exists($rutaCompleta)) {
+            return response()->download($rutaCompleta, basename($rutaCompleta));
+        }
+
+        return abort(404, 'Fichero de contrato no disponible');
+    }
+
+    // Debug helper: return contrato DB row and file existence for given alquiler id
+    public function contratoDebug($id)
+    {
+        $contrato = DB::table('tbl_contrato')->where('id_alquiler_fk', $id)->first();
+
+        if (!$contrato) {
+            return response()->json([
+                'exists' => false,
+                'message' => 'No se encontró fila en tbl_contrato para id_alquiler_fk = ' . $id,
+            ], 200);
+        }
+
+        $url = $contrato->url_pdf_contrato ?? '';
+        $localPath = null;
+        $fileExists = false;
+        $checkedPaths = [];
+
+        if ($url) {
+            // Normalize leading slash
+            $ruta = ltrim($url, '/');
+
+            // Candidate paths to check
+            $candidates = [
+                public_path($ruta), // e.g. public/contratos/contrato_3.pdf
+                public_path('storage/' . $ruta), // e.g. public/storage/contratos/contrato_3.pdf (when using storage:link)
+                storage_path('app/public/' . $ruta), // e.g. storage/app/public/contratos/contrato_3.pdf
+            ];
+
+            foreach ($candidates as $p) {
+                $checkedPaths[] = $p;
+                if (file_exists($p)) {
+                    $localPath = $p;
+                    $fileExists = true;
+                    break;
+                }
+            }
+        }
+
+        return response()->json([
+            'exists' => true,
+            'contrato' => $contrato,
+            'url_pdf_contrato' => $url,
+            'checked_paths' => $checkedPaths,
+            'local_path_found' => $localPath,
+            'file_exists' => $fileExists,
+        ], 200);
     }
 
     /**

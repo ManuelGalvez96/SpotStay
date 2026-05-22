@@ -40,6 +40,27 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
 .btn-rechazar:hover { background: #de4c2e; }
 .btn-eliminar { background: #dc2626; color: #fff; }
 .btn-eliminar:hover { background: #b91c1c; }
+
+/* Icon buttons used in admin views; keep consistent look in arrendador */
+.btn-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #035498;
+  border: 1px solid #E5EEF9;
+  cursor: pointer;
+  transition: background .12s ease, transform .08s ease;
+}
+.btn-icono i { font-size: 18px; }
+.btn-icono:hover { background: #F3F9FF; transform: translateY(-1px); }
+.btn-icono.btn-rechazar-sol { background: #fff7f7; color: #b42318; border-color: #FCE3E3; }
+.btn-icono.btn-rechazar-sol:hover { background: #fff1f1; }
+.btn-icono.btn-aprobar-sol { background: #f3fffb; color: #0f9f6e; border-color: #e6fbf3; }
+.btn-icono.btn-aprobar-sol:hover { background: #e9fff5; }
 .paginacion { margin-top: 12px; }
 .paginacion nav { display: flex; justify-content: center; }
 

@@ -61,16 +61,17 @@
                             <div class="acciones" data-acciones="{{ $solicitud->id_solicitud_alquiler }}" data-estado="{{ $estado }}" data-arrendador="{{ $arrendadorId }}">
                                 @if ($estado === 'activo')
                                     <button class="btn-ver" data-ver="{{ $solicitud->id_solicitud_alquiler }}">Ver</button>
-                                @elseif ($estado === 'pendiente')
-                                    <button class="btn-ver" data-ver="{{ $solicitud->id_solicitud_alquiler }}">Ver</button>
-                                    <button class="btn-editar" data-editar="{{ $solicitud->id_solicitud_alquiler }}">Editar</button>
-                                    <button class="btn-aprobar" data-aprobar="{{ $solicitud->id_solicitud_alquiler }}">Aceptar</button>
-                                    <button class="btn-rechazar" data-rechazar="{{ $solicitud->id_solicitud_alquiler }}">Rechazar</button>
-                                @elseif ($estado === 'rechazado')
-                                    <button class="btn-ver" data-ver="{{ $solicitud->id_solicitud_alquiler }}">Ver</button>
-                                    <button class="btn-aprobar" data-aprobar="{{ $solicitud->id_solicitud_alquiler }}">Aceptar</button>
                                 @else
                                     <button class="btn-ver" data-ver="{{ $solicitud->id_solicitud_alquiler }}">Ver</button>
+                                    <button class="btn-editar" data-editar="{{ $solicitud->id_solicitud_alquiler }}">Editar</button>
+                                    @if ($estado === 'pendiente')
+                                        <button class="btn-icono btn-aprobar-sol" data-id="{{ $solicitud->id_solicitud_alquiler }}" title="Aprobar">
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                        <button class="btn-icono btn-rechazar-sol" data-id="{{ $solicitud->id_solicitud_alquiler }}" title="Rechazar">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    @endif
                                 @endif
                             </div>
                         </td>

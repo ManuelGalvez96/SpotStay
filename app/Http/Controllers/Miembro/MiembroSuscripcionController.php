@@ -60,7 +60,7 @@ class MiembroSuscripcionController extends Controller
             return redirect($this->redirigirDashboard());
         }
 
-        return view('miembro.suscripcion', compact('suscripcion'));
+        return view('miembro.suscripcion', compact('suscripcion', 'rutaRetorno'));
     }
 
     /**

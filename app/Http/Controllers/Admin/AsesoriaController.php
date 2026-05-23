@@ -56,4 +56,34 @@ class AsesoriaController extends Controller
             'message' => $categoria->estado ? 'Categoría activada.' : 'Categoría desactivada.',
         ]);
     }
+
+    public function edit($id)
+    {
+        $categoria = CategoriaArticulo::findOrFail($id);
+        $maxOrden = CategoriaArticulo::max('orden') ?? 0;
+
+        return response()->json([
+            'categoria' => $categoria,
+            'maxOrden'  => $maxOrden,
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $categoria = CategoriaArticulo::findOrFail($id);
+
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'slug'   => 'required|string|max:255|unique:tbl_asesoria_categoria,slug,' . $id,
+            'icono'  => 'required|string|max:50',
+            'orden'  => 'required|integer|min:1',
+        ]);
+
+        $categoria->update($validated);
+
+        return response()->json([
+            'message'   => 'Categoría actualizada correctamente.',
+            'categoria' => $categoria,
+        ]);
+    }
 }

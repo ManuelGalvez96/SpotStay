@@ -90,11 +90,11 @@
     <div class="gestor-modal-backdrop" onclick="cerrarModalNuevaCategoria()"></div>
     <div class="gestor-modal-content gestor-modal-content--med">
         <div class="gestor-modal-header">
-            <h2>Nueva categoría</h2>
+            <h2 id="modal-categoria-titulo">Nueva categoría</h2>
             <button class="gestor-modal-close" onclick="cerrarModalNuevaCategoria()">&times;</button>
         </div>
         <div class="gestor-modal-body">
-            <form class="property-form" data-ajax-nueva-categoria="true" action="{{ route('admin.asesoria.categoria.crear') }}">
+            <form class="property-form" data-ajax-form="true" data-create-url="{{ route('admin.asesoria.categoria.crear') }}" action="{{ route('admin.asesoria.categoria.crear') }}">
                 @csrf
                 <div class="form-grid">
                     <div class="form-section">
@@ -131,7 +131,7 @@
                 <div class="mensaje-estado mensaje-error mensaje-error-js" style="display:none;"></div>
                 <div class="modal-acciones">
                     <button type="button" class="btn-cancelar" onclick="cerrarModalNuevaCategoria()">Cancelar</button>
-                    <button type="submit" class="btn-primary">Crear categoría</button>
+                    <button type="submit" id="modal-categoria-boton" class="btn-primary">Crear categoría</button>
                 </div>
             </form>
         </div>
@@ -165,6 +165,7 @@
         poblarSelectOrden({{ $nextOrden }});
         cargarIconos();
         asignarToggleCategorias();
+        asignarBotonesEditar();
     });
 </script>
 @endsection

@@ -44,10 +44,11 @@ function poblarSelectOrden(maxOrden) {
     }
 }
 
-function obtenerSlugsExistentes() {
+function obtenerSlugsExistentes(excluirSlug) {
     var slugs = [];
     document.querySelectorAll('.tabla-admin tbody tr td[data-label="ENLACE"] code').forEach(function (el) {
-        slugs.push(el.textContent.trim());
+        var slug = el.textContent.trim();
+        if (slug !== excluirSlug) slugs.push(slug);
     });
     return slugs;
 }
@@ -86,7 +87,18 @@ function abrirModalNuevaCategoria() {
 
 function cerrarModalNuevaCategoria() {
     var modal = document.getElementById('modal-nueva-categoria');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.style.display = 'none';
+        var form = modal.querySelector('form');
+        if (form) {
+            form.removeAttribute('data-edit-id');
+            form.action = form.getAttribute('data-create-url');
+        }
+        var titulo = document.getElementById('modal-categoria-titulo');
+        if (titulo) titulo.textContent = 'Nueva categoría';
+        var btn = document.getElementById('modal-categoria-boton');
+        if (btn) btn.textContent = 'Crear categoría';
+    }
 }
 
 function abrirSelectorIconos() {
@@ -139,7 +151,7 @@ function obtenerTokenCsrf() {
     return tag ? tag.getAttribute('content') : '';
 }
 
-document.querySelectorAll('form[data-ajax-nueva-categoria="true"]').forEach(function (form) {
+document.querySelectorAll('form[data-ajax-form="true"]').forEach(function (form) {
     form.addEventListener('submit', function (evento) {
         evento.preventDefault();
         var modal = document.getElementById('modal-nueva-categoria');
@@ -149,10 +161,16 @@ document.querySelectorAll('form[data-ajax-nueva-categoria="true"]').forEach(func
         var slug = form.querySelector('input[name="slug"]');
         var orden = form.querySelector('select[name="orden"]');
         var icono = form.querySelector('input[name="icono"]');
+        var editId = form.getAttribute('data-edit-id');
         var errors = [];
         if (!nombre || !nombre.value.trim()) errors.push('El nombre es obligatorio.');
         if (!slug || !slug.value.trim()) errors.push('El enlace es obligatorio.');
-        var slugsExistentes = obtenerSlugsExistentes();
+        var slugExcluir = null;
+        if (editId) {
+            var tr = document.querySelector('tr[data-id="' + editId + '"]');
+            if (tr) slugExcluir = tr.querySelector('td[data-label="ENLACE"] code').textContent.trim();
+        }
+        var slugsExistentes = obtenerSlugsExistentes(slugExcluir);
         if (slug && slug.value.trim() && slugsExistentes.includes(slug.value.trim())) {
             errors.push('El enlace ya está en uso. Modifica el nombre para generar un enlace diferente.');
         }
@@ -163,7 +181,8 @@ document.querySelectorAll('form[data-ajax-nueva-categoria="true"]').forEach(func
             return;
         }
         var btn = form.querySelector('button[type="submit"]');
-        if (btn) { btn.disabled = true; btn.textContent = 'Creando...'; }
+        var esEdicion = !!form.getAttribute('data-edit-id');
+        if (btn) { btn.disabled = true; btn.textContent = esEdicion ? 'Guardando...' : 'Creando...'; }
         var formData = new FormData(form);
         fetch(form.action, {
             method: 'POST',
@@ -188,8 +207,10 @@ document.querySelectorAll('form[data-ajax-nueva-categoria="true"]').forEach(func
                 throw new Error(msg);
             }
             cerrarModalNuevaCategoria();
+            var mensajeExito = resultado.datos.message || (esEdicion ? 'Categoría actualizada correctamente.' : 'Categoría creada correctamente.');
+            var tituloExito = esEdicion ? 'Categoría actualizada' : 'Categoría creada';
             if (window.swalSuccess) {
-                swalSuccess('Categoría creada', resultado.datos.message || 'Categoría creada correctamente.').then(function () {
+                swalSuccess(tituloExito, mensajeExito).then(function () {
                     window.location.reload();
                 });
             } else {
@@ -198,10 +219,10 @@ document.querySelectorAll('form[data-ajax-nueva-categoria="true"]').forEach(func
         })
         .catch(function (error) {
             if (errorDiv) { errorDiv.textContent = error.message || 'Error al procesar la solicitud.'; errorDiv.style.display = ''; }
-            else if (window.swalError) swalError('Error', error.message || 'No se pudo crear la categoría.');
+            else if (window.swalError) swalError('Error', error.message || (esEdicion ? 'No se pudo actualizar la categoría.' : 'No se pudo crear la categoría.'));
         })
         .finally(function () {
-            if (btn) { btn.disabled = false; btn.textContent = 'Crear categoría'; }
+            if (btn) { btn.disabled = false; btn.textContent = esEdicion ? 'Guardar cambios' : 'Crear categoría'; }
         });
     });
 });
@@ -271,4 +292,57 @@ function toggleEstadoCategoria(id) {
         console.error('Error en toggle estado categoría:', error);
         swalError('Error', 'No se pudo cambiar el estado de la categoría.');
     });
+}
+
+function asignarBotonesEditar() {
+    var btns = document.querySelectorAll('.btn-editar');
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].onclick = function (event) {
+            event.preventDefault();
+            var id = this.getAttribute('data-id');
+            abrirModalEditarCategoria(id);
+        };
+    }
+}
+
+function abrirModalEditarCategoria(id) {
+    var modal = document.getElementById('modal-nueva-categoria');
+    if (!modal) return;
+
+    fetch('/admin/asesoria/categoria/' + id + '/editar')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            var cat = data.categoria;
+            var form = modal.querySelector('form');
+            if (!form) return;
+
+            form.setAttribute('data-edit-id', id);
+            form.action = '/admin/asesoria/categoria/' + id + '/actualizar';
+
+            form.querySelector('input[name="nombre"]').value = cat.nombre;
+            form.querySelector('input[name="slug"]').value = cat.slug;
+
+            poblarSelectOrden(data.maxOrden);
+            var sel = form.querySelector('select[name="orden"]');
+            if (sel) sel.value = cat.orden;
+
+            iconoSeleccionado = cat.icono;
+            var preview = document.getElementById('icono-preview');
+            if (preview) preview.innerHTML = '<i class="' + cat.icono + '"></i>';
+            var hidden = form.querySelector('input[name="icono"]');
+            if (hidden) hidden.value = cat.icono;
+
+            document.getElementById('modal-categoria-titulo').textContent = 'Editar categoría';
+            var btn = document.getElementById('modal-categoria-boton');
+            if (btn) btn.textContent = 'Guardar cambios';
+
+            var errorDiv = modal.querySelector('.mensaje-error-js');
+            if (errorDiv) { errorDiv.style.display = 'none'; errorDiv.textContent = ''; }
+
+            modal.style.display = 'flex';
+        })
+        .catch(function (error) {
+            console.error('Error al cargar categoría:', error);
+            if (window.swalError) swalError('Error', 'No se pudo cargar la categoría.');
+        });
 }

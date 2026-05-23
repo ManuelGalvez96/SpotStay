@@ -129,6 +129,8 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/asesoria', [\App\Http\Controllers\Admin\AsesoriaController::class, 'index'])->name('admin.asesoria');
     Route::post('/admin/asesoria/categoria/crear', [\App\Http\Controllers\Admin\AsesoriaController::class, 'store'])->name('admin.asesoria.categoria.crear');
     Route::post('/admin/asesoria/categoria/{id}/toggle-estado', [\App\Http\Controllers\Admin\AsesoriaController::class, 'toggleEstado'])->name('admin.asesoria.categoria.toggle');
+    Route::get('/admin/asesoria/categoria/{id}/editar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'edit'])->name('admin.asesoria.categoria.edit');
+    Route::post('/admin/asesoria/categoria/{id}/actualizar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'update'])->name('admin.asesoria.categoria.update');
 
     // Códigos de Gestor
     Route::get('/admin/codigos-gestores', [CodigoGestorController::class, 'index']);

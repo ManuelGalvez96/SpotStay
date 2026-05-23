@@ -260,3 +260,349 @@ body {
     border-radius: 4px;
     white-space: nowrap;
 }
+
+/* ── Info Tooltip ── */
+.info-tooltip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #9CA3AF;
+    color: white;
+    font-size: 10px;
+    font-style: italic;
+    font-weight: 700;
+    cursor: help;
+    position: relative;
+    vertical-align: middle;
+    margin-left: 4px;
+    line-height: 1;
+}
+
+.info-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1F2937;
+    color: white;
+    font-size: 11px;
+    font-weight: 400;
+    font-style: normal;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    max-width: 260px;
+    white-space: normal;
+    width: max-content;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 10;
+}
+
+.info-tooltip:hover::after {
+    opacity: 1;
+}
+
+/* ── Botón Nuevo Recibo ── */
+.btn-nuevo-recibo {
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 8px 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.15s ease;
+    white-space: nowrap;
+}
+
+.btn-nuevo-recibo:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Modal Gestor ── */
+.gestor-modal {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+}
+
+.gestor-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+}
+
+.gestor-modal-content {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    z-index: 1001;
+}
+
+.gestor-modal-content--med {
+    max-width: 560px;
+}
+
+.gestor-modal-content--sm {
+    max-width: 480px;
+}
+
+.gestor-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.gestor-modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.gestor-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gestor-modal-close:hover {
+    color: #000;
+}
+
+.gestor-modal-body {
+    padding: 20px;
+}
+
+/* ── Formulario del modal ── */
+.property-form .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.form-section {
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    grid-column: 1 / -1;
+}
+
+.form-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #035498;
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: 600;
+    border-bottom: 2px solid #035498;
+    padding-bottom: 10px;
+}
+
+.form-subsection {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.form-subsection label {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-subsection label span {
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-subsection input[type="text"],
+.form-subsection input[type="number"],
+.form-subsection select,
+.form-subsection textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.form-subsection input[type="text"]:focus,
+.form-subsection input[type="number"]:focus,
+.form-subsection select:focus,
+.form-subsection textarea:focus {
+    outline: none;
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
+}
+
+.form-subsection input[readonly] {
+    background: #f0f0f0;
+    cursor: default;
+    color: #666;
+}
+
+/* ── Icono Selector ── */
+.icono-selector-label {
+    grid-column: 1 / -1;
+}
+
+.icono-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.icono-preview {
+    width: 48px;
+    height: 48px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #035498;
+    background: #fff;
+    flex-shrink: 0;
+}
+
+.btn-secundario {
+    border: 1px solid #035498;
+    border-radius: 8px;
+    background: transparent;
+    color: #035498;
+    padding: 8px 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s ease;
+}
+
+.btn-secundario:hover {
+    background: #EEF4FF;
+}
+
+/* ── Icon Picker Grid ── */
+.icono-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 4px;
+}
+
+.icono-picker-item {
+    width: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 22px;
+    color: #555;
+    transition: all 0.15s;
+}
+
+.icono-picker-item:hover {
+    border-color: #035498;
+    background: #EEF4FF;
+    color: #035498;
+}
+
+.icono-picker-item.seleccionado {
+    border-color: #035498;
+    background: #035498;
+    color: white;
+}
+
+/* ── Acciones del modal ── */
+.modal-acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.btn-cancelar {
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    background: white;
+    color: #374151;
+    padding: 10px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s ease;
+}
+
+.btn-cancelar:hover {
+    background: #F3F4F6;
+}
+
+.btn-primary {
+    border: none;
+    border-radius: 8px;
+    background: #035498;
+    color: #fff;
+    padding: 10px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.15s ease;
+}
+
+.btn-primary:hover {
+    background: #024080;
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ── Mensaje de error en modal ── */
+.mensaje-error-js {
+    background: #FEE2E2;
+    color: #991B1B;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-top: 8px;
+}

@@ -302,9 +302,25 @@ class PerfilController extends Controller
 
         if ($rolDestinatario !== null) {
             $idPlanActual = $suscripcionActual?->id_plan_fk;
-            $precioPlanActual = $suscripcionActual && $suscripcionActual->estado_suscripcion === 'activa'
-                ? (float) $suscripcionActual->precio_pagado_suscripcion
-                : null;
+
+            // Considerar suscripción todavía vigente aunque esté marcada como 'cancelada'
+            $precioPlanActual = null;
+            if ($suscripcionActual) {
+                $esVigentePorFecha = false;
+                if ($suscripcionActual->estado_suscripcion === 'activa') {
+                    $esVigentePorFecha = true;
+                } elseif ($suscripcionActual->estado_suscripcion === 'cancelada' && $suscripcionActual->fin_suscripcion) {
+                    $fin = Carbon::parse($suscripcionActual->fin_suscripcion);
+                    if (Carbon::now()->lt($fin)) {
+                        // Cancelada pero aún dentro del periodo pagado
+                        $esVigentePorFecha = true;
+                    }
+                }
+
+                if ($esVigentePorFecha) {
+                    $precioPlanActual = (float) $suscripcionActual->precio_pagado_suscripcion;
+                }
+            }
 
             $planesDisponibles = Plan::where('activo_plan', true)
                 ->where('rol_destino', $rolDestinatario)

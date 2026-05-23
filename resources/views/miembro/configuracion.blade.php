@@ -172,13 +172,13 @@
                                 </div>
 
                                 <div class="row g-3 mt-3">
-                                    <div class="col-12 col-sm-6 col-lg-4">
+                                    <div class="col-12 col-sm-6 col-lg-6">
                                         <div class="p-3 rounded-3 bg-light h-100">
                                             <div class="text-muted small">Plan</div>
                                             <div class="fw-semibold">{{ $suscripcionActual->plan_suscripcion }}</div>
                                         </div>
                                     </div>
-                                    <div class="col-12 col-sm-6 col-lg-4">
+                                    <div class="col-12 col-sm-6 col-lg-6">
                                         <div class="p-3 rounded-3 bg-light h-100">
                                             <div class="text-muted small">Estado</div>
                                             <div class="fw-semibold">{{ ucfirst(str_replace('_', ' ', $suscripcionActual->estado_suscripcion)) }}</div>
@@ -195,7 +195,7 @@
                                     @endif
 
                                     @if ((float) $suscripcionActual->precio_pagado_suscripcion > 0 && isset($diasRestantesSuscripcion))
-                                        <div class="col-12 col-sm-6 col-lg-4">
+                                        <div class="mb-3 p-3 rounded-3 bg-light">
                                             <div class="p-3 rounded-3 bg-light h-100">
                                                 <div class="text-muted small">Días restantes</div>
                                                 <div class="fw-semibold">

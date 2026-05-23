@@ -97,7 +97,7 @@
                                 <div class="{{ $rolDestinatario === 'arrendador' ? 'col-md-4' : 'col-md-12' }}">
                                     <div class="p-3 rounded-3 bg-light h-100">
                                         <div class="text-muted small">Días restantes</div>
-                                        <div class="fw-semibold text-warning">
+                                        <div class="fw-semibold">
                                             @if ($suscripcionActual->estado_suscripcion === 'cancelada')
                                                 {{ $diasRestantesSuscripcion }} {{ $diasRestantesSuscripcion === 1 ? 'día' : 'días' }} para cancelar
                                             @else

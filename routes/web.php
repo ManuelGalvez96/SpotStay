@@ -131,6 +131,7 @@ Route::middleware(['role:admin'])->group(function () {
     Route::post('/admin/asesoria/categoria/{id}/toggle-estado', [\App\Http\Controllers\Admin\AsesoriaController::class, 'toggleEstado'])->name('admin.asesoria.categoria.toggle');
     Route::get('/admin/asesoria/categoria/{id}/editar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'edit'])->name('admin.asesoria.categoria.edit');
     Route::post('/admin/asesoria/categoria/{id}/actualizar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'update'])->name('admin.asesoria.categoria.update');
+    Route::delete('/admin/asesoria/categoria/{id}/eliminar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'destroy'])->name('admin.asesoria.categoria.destroy');
 
     // Códigos de Gestor
     Route::get('/admin/codigos-gestores', [CodigoGestorController::class, 'index']);

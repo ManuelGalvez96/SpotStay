@@ -324,6 +324,42 @@ th .info-tooltip::after {
     top: calc(100% + 8px);
 }
 
+/* ── Tooltip botón eliminar deshabilitado ── */
+.btn-eliminar--disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.tooltip-wrapper {
+    position: relative;
+    display: inline-flex;
+    cursor: not-allowed;
+}
+
+.tooltip-wrapper::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1F2937;
+    color: white;
+    font-size: 11px;
+    font-weight: 400;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 10;
+}
+
+.tooltip-wrapper:hover::after {
+    opacity: 1;
+}
+
 /* ── Botón Nuevo Recibo ── */
 .btn-nuevo-recibo {
     border: none;

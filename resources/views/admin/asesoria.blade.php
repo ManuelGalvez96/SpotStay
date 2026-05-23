@@ -67,9 +67,17 @@
                                 <button class="btn-accion btn-editar" data-id="{{ $categoria->id }}" title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn-accion btn-eliminar" data-id="{{ $categoria->id }}" title="Eliminar">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                @if($categoria->articulos_count > 0)
+                                    <span class="tooltip-wrapper" data-tooltip="No puedes eliminar esta categoría porque tiene artículos.">
+                                        <button class="btn-accion btn-eliminar btn-eliminar--disabled" disabled>
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </span>
+                                @else
+                                    <button class="btn-accion btn-eliminar" data-id="{{ $categoria->id }}" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                @endif
                                 <div class="toggle-switch {{ $activo === '1' ? 'activo' : '' }}" data-id="{{ $categoria->id }}">
                                     <div class="toggle-circulo"></div>
                                 </div>
@@ -168,6 +176,7 @@
         cargarIconos();
         asignarToggleCategorias();
         asignarBotonesEditar();
+        asignarBotonesEliminar();
     });
 </script>
 @endsection

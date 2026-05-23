@@ -346,3 +346,57 @@ function abrirModalEditarCategoria(id) {
             if (window.swalError) swalError('Error', 'No se pudo cargar la categoría.');
         });
 }
+
+function asignarBotonesEliminar() {
+    var btns = document.querySelectorAll('.btn-eliminar:not(.btn-eliminar--disabled)');
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].onclick = function (event) {
+            event.preventDefault();
+            var id = this.getAttribute('data-id');
+            eliminarCategoria(id);
+        };
+    }
+}
+
+function eliminarCategoria(id) {
+    var tr = document.querySelector('tr[data-id="' + id + '"]');
+    var nombre = tr ? tr.querySelector('td[data-label="NOMBRE"]').textContent.trim() : '';
+
+    if (window.Swal) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: '¿Estás seguro de que quieres eliminar la categoría ' + nombre + '? Esta acción no se puede deshacer.',
+            iconHtml: crearOsoPregunta(),
+            customClass: { icon: 'oso-icon' },
+            showCancelButton: true,
+            confirmButtonColor: '#d9534f',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+
+            fetch('/admin/asesoria/categoria/' + id + '/eliminar', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success) {
+                    swalSuccess('Categoría eliminada', 'Categoría eliminada correctamente.').then(function () {
+                        window.location.reload();
+                    });
+                } else {
+                    swalError('Error', data.message || 'No se pudo eliminar la categoría.');
+                }
+            })
+            .catch(function (error) {
+                console.error('Error al eliminar categoría:', error);
+                swalError('Error', 'No se pudo eliminar la categoría.');
+            });
+        });
+    }
+}

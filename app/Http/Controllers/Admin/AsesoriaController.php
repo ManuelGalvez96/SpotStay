@@ -86,4 +86,23 @@ class AsesoriaController extends Controller
             'categoria' => $categoria,
         ]);
     }
+
+    public function destroy($id)
+    {
+        $categoria = CategoriaArticulo::findOrFail($id);
+
+        if ($categoria->articulos()->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede eliminar la categoría porque tiene artículos asociados.',
+            ], 409);
+        }
+
+        $categoria->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Categoría eliminada correctamente.',
+        ]);
+    }
 }

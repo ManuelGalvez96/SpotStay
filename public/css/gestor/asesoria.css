@@ -66,12 +66,19 @@ html {
     color: #065f46;
 }
 
+/* Override flex gap when asesoria is inside contenido-miembro (miembro/arrendador) */
+.pagina-asesoria .contenido-miembro {
+    display: block;
+    gap: 0;
+}
+
 .asesoria-grid {
     padding: 0 40px 40px;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
     max-width: 1000px;
+    width: 100%;
     margin: 0 auto;
 }
 
@@ -208,9 +215,77 @@ html {
 .asesoria-grid .card-admin {
     grid-column: 1 / -1;
     border-radius: 14px;
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    overflow: hidden;
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+}
+
+.asesoria-grid .card-con-franja {
+    position: relative;
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+}
+
+.asesoria-grid .card-con-franja .card-franja {
+    height: 3px;
+    background: linear-gradient(90deg, #035498, #1AA068);
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
 }
 
 .asesoria-grid .accordion {
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+    --bs-accordion-bg: #fff;
+    --bs-accordion-border-color: #E5E7EB;
+    --bs-accordion-active-bg: #F9FAFB;
+    --bs-accordion-active-color: #035498;
+    --bs-accordion-btn-focus-box-shadow: none;
+    --bs-accordion-btn-padding-y: 14px;
+    --bs-accordion-btn-padding-x: 20px;
+    --bs-accordion-body-padding-y: 16px;
+    --bs-accordion-body-padding-x: 20px;
+}
+
+.asesoria-grid .accordion-item {
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+}
+
+.asesoria-grid .accordion-header {
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+}
+
+.asesoria-grid .accordion-button {
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
+}
+
+.asesoria-grid .card-con-franja {
+    position: relative;
+}
+
+.asesoria-grid .card-con-franja .card-franja {
+    height: 3px;
+    width: 100%;
+    background: linear-gradient(90deg, #035498, #1AA068);
+}
+
+.asesoria-grid .accordion {
+    width: 100%;
     --bs-accordion-bg: #fff;
     --bs-accordion-border-color: #E5E7EB;
     --bs-accordion-active-bg: #F9FAFB;

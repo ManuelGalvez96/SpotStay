@@ -43,6 +43,14 @@ function poblarSelectOrden(maxOrden) {
     }
 }
 
+function obtenerSlugsExistentes() {
+    var slugs = [];
+    document.querySelectorAll('.tabla-admin tbody tr td[data-label="ENLACE"] code').forEach(function (el) {
+        slugs.push(el.textContent.trim());
+    });
+    return slugs;
+}
+
 function generarSlug() {
     var nombre = document.querySelector('input[name="nombre"]');
     var slug = document.querySelector('input[name="slug"]');
@@ -143,6 +151,10 @@ document.querySelectorAll('form[data-ajax-nueva-categoria="true"]').forEach(func
         var errors = [];
         if (!nombre || !nombre.value.trim()) errors.push('El nombre es obligatorio.');
         if (!slug || !slug.value.trim()) errors.push('El enlace es obligatorio.');
+        var slugsExistentes = obtenerSlugsExistentes();
+        if (slug && slug.value.trim() && slugsExistentes.includes(slug.value.trim())) {
+            errors.push('El enlace ya está en uso. Modifica el nombre para generar un enlace diferente.');
+        }
         if (!orden || !orden.value) errors.push('Selecciona un orden.');
         if (!icono || !icono.value) errors.push('Selecciona un icono.');
         if (errors.length) {
@@ -175,8 +187,8 @@ document.querySelectorAll('form[data-ajax-nueva-categoria="true"]').forEach(func
                 throw new Error(msg);
             }
             cerrarModalNuevaCategoria();
-            if (window.Swal) {
-                Swal.fire({ icon: 'success', title: 'Categoría creada', text: resultado.datos.message || 'Categoría creada correctamente.', confirmButtonColor: '#035498' }).then(function () {
+            if (window.swalSuccess) {
+                swalSuccess('Categoría creada', resultado.datos.message || 'Categoría creada correctamente.').then(function () {
                     window.location.reload();
                 });
             } else {
@@ -185,7 +197,7 @@ document.querySelectorAll('form[data-ajax-nueva-categoria="true"]').forEach(func
         })
         .catch(function (error) {
             if (errorDiv) { errorDiv.textContent = error.message || 'Error al procesar la solicitud.'; errorDiv.style.display = ''; }
-            else if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'No se pudo crear la categoría.', confirmButtonColor: '#035498' });
+            else if (window.swalError) swalError('Error', error.message || 'No se pudo crear la categoría.');
         })
         .finally(function () {
             if (btn) { btn.disabled = false; btn.textContent = 'Crear categoría'; }

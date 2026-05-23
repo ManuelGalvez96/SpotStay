@@ -130,6 +130,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script src="{{ asset('js/admin/layout.js') }}"></script>
+    <script src="{{ asset('js/shared/swal-oso.js') }}"></script>
     
     @yield('scripts')
 </body>

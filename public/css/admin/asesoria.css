@@ -379,13 +379,16 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
-    border-bottom: 1px solid #eee;
+    padding: 16px 24px;
+    border-bottom: 0;
+    background: linear-gradient(90deg, #035498, #1AA068);
+    border-radius: 12px 12px 0 0;
 }
 
 .gestor-modal-header h2 {
     margin: 0;
-    font-size: 20px;
+    font-size: 18px;
+    color: white;
 }
 
 .gestor-modal-close {
@@ -393,7 +396,7 @@ body {
     border: none;
     font-size: 24px;
     cursor: pointer;
-    color: #666;
+    color: rgba(255, 255, 255, 0.7);
     padding: 0;
     width: 30px;
     height: 30px;
@@ -403,7 +406,7 @@ body {
 }
 
 .gestor-modal-close:hover {
-    color: #000;
+    color: white;
 }
 
 .gestor-modal-body {

@@ -10,7 +10,7 @@ use Carbon\Carbon;
 
 class SolicitudAlquilerController extends Controller
 {
-    public function store(Request $request, $id)
+    public function store(Request $request, int $id)
     {
         $request->validate([
             'fecha_inicio_solicitud' => 'required|date|after:today',
@@ -54,7 +54,7 @@ class SolicitudAlquilerController extends Controller
                 'id_propiedad_fk' => $id,
                 'id_usuario_fk' => $usuario->id_usuario,
                 'fecha_inicio_solicitud_alquiler' => $request->input('fecha_inicio_solicitud'),
-                'mensaje_solicitud_alquiler' => $request->input('mensaje_solicitud'),
+                'mensaje_solicitud_alquiler' => $request->input('mensaje_solicitud') ?? '',
                 'estado_solicitud_alquiler' => 'pendiente',
                 'creado_solicitud_alquiler' => Carbon::now(),
                 'actualizado_solicitud_alquiler' => Carbon::now(),
@@ -84,14 +84,34 @@ class SolicitudAlquilerController extends Controller
             );
         }
 
-        if ($debeCerrarSesion) {
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+        $tieneRolInquilino = DB::table('tbl_rol_usuario')
+            ->where('id_usuario_fk', $usuario->id_usuario)
+            ->join('tbl_rol', 'tbl_rol.id_rol', '=', 'tbl_rol_usuario.id_rol_fk')
+            ->where('tbl_rol.slug_rol', 'inquilino')
+            ->exists();
+        // $debeCerrarSesion = false;
 
-            return redirect('/login');
+        if (!$tieneRolInquilino) {
+            $rolInquilino = DB::table('tbl_rol')->where('slug_rol', 'inquilino')->first();
+            if ($rolInquilino) {
+                DB::table('tbl_rol_usuario')->insert([
+                    'id_usuario_fk' => $usuario->id_usuario,
+                    'id_rol_fk' => $rolInquilino->id_rol,
+                    'asignado_rol_usuario' => Carbon::now(),
+                ]);
+                // $debeCerrarSesion = true;
+            }
         }
 
-        return redirect('/inquilino/gestionar-propiedades');
+        // if ($debeCerrarSesion) {
+        //     Auth::logout();
+        //     $request->session()->invalidate();
+        //     $request->session()->regenerateToken();
+
+        //     return redirect('/login');
+        // }
+
+        return redirect()->back()->with('success', 'Solicitud de alquiler enviada correctamente.');
+        // return redirect('/inquilino/gestionar-propiedades');
     }
 }

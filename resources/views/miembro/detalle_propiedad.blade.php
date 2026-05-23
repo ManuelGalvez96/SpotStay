@@ -84,6 +84,9 @@
                 <p>
                     {{ $propiedad->descripcion_propiedad ?? 'Sin descripcion disponible.' }}
                 </p>
+                @if ($mostrarAnuncios)
+                    @include('miembro.partials.anuncio')
+                @endif
             </div>
             <div class="detalle-contacto">
                 <h2>Detalles de contacto</h2>
@@ -130,6 +133,11 @@
                     </div>
                     <button class="boton-aplicar boton-contacto" type="submit">Enviar solicitud <i class="bi bi-house"></i></button>
                 </form>
+
+                @if ($mostrarAnuncios)
+                    @include('miembro.partials.anuncio')
+                @endif
+                
             </div>
         </section>
 

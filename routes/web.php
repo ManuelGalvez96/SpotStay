@@ -125,6 +125,9 @@ Route::middleware(['role:admin'])->group(function () {
     Route::put('/admin/categorias/{id}', [CategoriaController::class, 'editar']);
     Route::delete('/admin/categorias/{id}', [CategoriaController::class, 'eliminar']);
 
+    // Asesoría Legal
+    Route::get('/admin/asesoria', [\App\Http\Controllers\Admin\AsesoriaController::class, 'index'])->name('admin.asesoria');
+
     // Códigos de Gestor
     Route::get('/admin/codigos-gestores', [CodigoGestorController::class, 'index']);
     Route::post('/admin/codigos-gestores/generar', [CodigoGestorController::class, 'generar']);

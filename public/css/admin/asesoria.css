@@ -1,0 +1,189 @@
+/* ── Submenú de pestañas ── */
+.asesoria-admin-submenu {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #E5E7EB;
+    margin-bottom: 24px;
+    padding: 0;
+}
+
+.asesoria-admin-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6B7280;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.asesoria-admin-tab:hover {
+    color: #111827;
+}
+
+.asesoria-admin-tab.activo {
+    color: #035498;
+    border-bottom-color: #035498;
+    font-weight: 600;
+}
+
+.asesoria-admin-tab i {
+    font-size: 16px;
+}
+
+/* ── Card Admin ── */
+.card-admin {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #E5E7EB;
+    overflow: hidden;
+    margin-top: 16px;
+}
+
+.tabla-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 0;
+    background: linear-gradient(90deg, #035498, #1AA068);
+    font-size: 13px;
+    color: white;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.tabla-header .info-paginacion {
+    color: rgba(255, 255, 255, 0.92);
+}
+
+/* ── Tabla Admin ── */
+.tabla-admin {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-admin thead th {
+    padding: 6px 20px;
+}
+
+.tabla-admin tbody td {
+    padding: 6px 20px;
+}
+
+.tabla-admin tbody tr {
+    border-bottom: 1px solid #F3F4F6;
+    transition: background-color 0.2s ease;
+}
+
+.tabla-admin tbody tr:hover {
+    background: #F9FAFB;
+}
+
+.tabla-admin tbody td {
+    padding: 10px 20px;
+    font-size: 14px;
+    color: #111827;
+    border: none;
+    vertical-align: middle;
+}
+
+.fila-inactiva {
+    opacity: 0.65;
+}
+
+/* ── Badges Estado ── */
+.badge-estado {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.badge-activo {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.badge-inactivo {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+/* ── Toggle Switch ── */
+.toggle-switch {
+    width: 36px;
+    height: 20px;
+    border-radius: 10px;
+    background: #CBD5E1;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    display: inline-block;
+}
+
+.toggle-switch.activo {
+    background: #1AA068;
+}
+
+.toggle-circulo {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: left 0.2s ease;
+}
+
+.toggle-switch.activo .toggle-circulo {
+    left: 18px;
+}
+
+/* ── Acciones Tabla ── */
+.acciones-tabla {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-accion {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #9CA3AF;
+    font-size: 16px;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-accion:hover {
+    color: #035498;
+    background: #EEF4FF;
+}
+
+/* ── Icono en tabla ── */
+.tabla-admin td i.bi {
+    font-size: 20px;
+    color: #035498;
+}
+
+/* ── Enlace en tabla ── */
+.tabla-admin td code {
+    font-size: 12px;
+    color: #6366f1;
+    background: #EEF2FF;
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+}

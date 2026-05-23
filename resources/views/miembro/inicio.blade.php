@@ -124,6 +124,10 @@
                         </div>
 
                         <button class="boton-aplicar" type="button" id="boton-borrar-filtros">Borrar filtros</button>
+
+                        @if ($mostrarAnuncios)
+                            @include('miembro.partials.anuncio')
+                        @endif
                     </div>
                 </form>
             </aside>

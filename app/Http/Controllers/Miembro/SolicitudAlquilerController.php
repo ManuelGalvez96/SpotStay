@@ -10,7 +10,7 @@ use Carbon\Carbon;
 
 class SolicitudAlquilerController extends Controller
 {
-    public function store(Request $request, $id)
+    public function store(Request $request, int $id)
     {
         $request->validate([
             'fecha_inicio_solicitud' => 'required|date|after:today',
@@ -56,7 +56,7 @@ class SolicitudAlquilerController extends Controller
                 'id_propiedad_fk' => $id,
                 'id_usuario_fk' => $usuario->id_usuario,
                 'fecha_inicio_solicitud_alquiler' => $request->input('fecha_inicio_solicitud'),
-                'mensaje_solicitud_alquiler' => $request->input('mensaje_solicitud'),
+                'mensaje_solicitud_alquiler' => $request->input('mensaje_solicitud') ?? '',
                 'estado_solicitud_alquiler' => 'pendiente',
                 'creado_solicitud_alquiler' => Carbon::now(),
                 'actualizado_solicitud_alquiler' => Carbon::now(),

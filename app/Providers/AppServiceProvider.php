@@ -52,6 +52,13 @@ class AppServiceProvider extends ServiceProvider
                     }
                 }
 
+                $suscripcionActiva = $usuario->suscripciones()
+                    ->where('estado_suscripcion', 'activa')
+                    ->latest('id_suscripcion')
+                    ->first();
+
+                $mostrarAnuncios = !$suscripcionActiva || $suscripcionActiva->precio_pagado_suscripcion <= 0;
+
                 $view->with([
                     'nombreUsuario' => $nombre,
                     'tieneFoto' => $tieneFoto,
@@ -60,10 +67,10 @@ class AppServiceProvider extends ServiceProvider
                     'esInquilino' => $usuario->alquileres()->where('estado_alquiler', 'activo')->exists(),
                     'tienePagos' => $usuario->alquileres()->where('estado_alquiler', 'activo')->exists() || \Illuminate\Support\Facades\DB::table('tbl_pago')->where('id_pagador_fk', $usuario->id_usuario)->exists(),
                     'esArrendador' => $usuario->roles()->where('slug_rol', 'arrendador')->exists(),
-                    'esGestor' => $usuario->roles()->where('slug_rol', 'gestor')->exists()
-                        || \Illuminate\Support\Facades\DB::table('tbl_propiedad')
+                    'esGestor' => $usuario->roles()->where('slug_rol', 'gestor')->exists() || \Illuminate\Support\Facades\DB::table('tbl_propiedad')
                             ->where('id_gestor_fk', $usuario->id_usuario)
                             ->exists(),
+                    'mostrarAnuncios' => $mostrarAnuncios,
                 ]);
             } else {
                 $view->with([
@@ -74,6 +81,7 @@ class AppServiceProvider extends ServiceProvider
                     'esInquilino' => false,
                     'esArrendador' => false,
                     'esGestor' => false,
+                    'mostrarAnuncios' => true,
                 ]);
             }
         });

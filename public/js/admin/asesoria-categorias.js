@@ -59,7 +59,11 @@ function abrirModalNuevaCategoria() {
     var modal = document.getElementById('modal-nueva-categoria');
     if (!modal) return;
     var form = modal.querySelector('form');
-    if (form) form.reset();
+    if (form) {
+        form.reset();
+        var sel = form.querySelector('select[name="orden"]');
+        if (sel && sel.options.length) sel.value = sel.options[sel.options.length - 1].value;
+    }
     iconoSeleccionado = null;
     var preview = document.getElementById('icono-preview');
     if (preview) preview.innerHTML = '<i class="bi bi-question-circle"></i>';

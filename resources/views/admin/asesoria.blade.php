@@ -34,6 +34,7 @@
         <span class="info-paginacion">{{ $categorias->count() }} categoría(s)</span>
         <button type="button" class="btn-nuevo-recibo" onclick="abrirModalNuevaCategoria()">+ Nueva categoría</button>
     </div>
+    <div class="tabla-body-wrap">
     <div class="table-responsive">
         <table class="tabla-admin">
             <thead>
@@ -82,6 +83,7 @@
             </tbody>
         </table>
     </div>
+    </div>
 </div>
 
 {{-- Modal Nueva Categoría --}}
@@ -93,7 +95,7 @@
             <button class="gestor-modal-close" onclick="cerrarModalNuevaCategoria()">&times;</button>
         </div>
         <div class="gestor-modal-body">
-            <form class="property-form" data-ajax-nueva-categoria="true">
+            <form class="property-form" data-ajax-nueva-categoria="true" action="{{ route('admin.asesoria.categoria.crear') }}">
                 @csrf
                 <div class="form-grid">
                     <div class="form-section">
@@ -114,9 +116,7 @@
                                 <span>Orden</span>
                                 <select name="orden" required></select>
                             </label>
-                        </div>
-                        <div class="form-subsection">
-                            <label class="icono-selector-label">
+                            <div class="icono-selector-label">
                                 <span>Icono</span>
                                 <div class="icono-selector">
                                     <div class="icono-preview" id="icono-preview">
@@ -125,7 +125,7 @@
                                     <button type="button" class="btn-secundario" onclick="abrirSelectorIconos()">Seleccionar icono</button>
                                     <input type="hidden" name="icono" value="bi bi-question-circle">
                                 </div>
-                            </label>
+                            </div>
                         </div>
                     </div>
                 </div>

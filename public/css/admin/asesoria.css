@@ -102,7 +102,6 @@ body {
     background: white;
     border-radius: 14px;
     border: 1px solid #E5E7EB;
-    overflow: hidden;
     margin: 16px 40px;
 }
 
@@ -117,6 +116,13 @@ body {
     color: white;
     flex-wrap: wrap;
     gap: 12px;
+    border-radius: 14px 14px 0 0;
+    overflow: hidden;
+}
+
+.tabla-body-wrap {
+    border-radius: 0 0 14px 14px;
+    overflow: hidden;
 }
 
 .tabla-header .info-paginacion {
@@ -477,7 +483,15 @@ body {
 
 /* ── Icono Selector ── */
 .icono-selector-label {
-    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+}
+
+.icono-selector-label > span {
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
 }
 
 .icono-selector {

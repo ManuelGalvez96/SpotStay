@@ -53,9 +53,8 @@
                         $activo = $categoria->estado ? '1' : '0';
                         $estadoLabel = $categoria->estado ? 'Activo' : 'Inactivo';
                         $estadoClass = $categoria->estado ? 'activo' : 'inactivo';
-                        $inactivaClass = $activo === '0' ? 'class="fila-inactiva"' : '';
                     @endphp
-                    <tr data-id="{{ $categoria->id }}" data-activo="{{ $activo }}" {{ $inactivaClass }}>
+                    <tr data-id="{{ $categoria->id }}" data-activo="{{ $activo }}" class="{{ $activo === '0' ? 'fila-inactiva' : '' }}">
                         <td data-label="ORDEN">{{ $categoria->orden }}</td>
                         <td data-label="NOMBRE">{{ $categoria->nombre }}</td>
                         <td data-label="ENLACE"><code>{{ $categoria->slug }}</code></td>

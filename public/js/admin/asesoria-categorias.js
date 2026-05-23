@@ -260,7 +260,11 @@ function toggleEstadoCategoria(id) {
                 }
             }
 
-            tr.classList.toggle('fila-inactiva');
+            if (nuevoActivo === '1') {
+                tr.classList.remove('fila-inactiva');
+            } else {
+                tr.classList.add('fila-inactiva');
+            }
         } else {
             swalError('Error', data.message || 'No se pudo cambiar el estado de la categoría.');
         }

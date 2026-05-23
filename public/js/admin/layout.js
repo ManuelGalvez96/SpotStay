@@ -160,6 +160,8 @@ window.onload = function() {
 var asignarEventosAdmin = function() {
     var adminContainer = document.getElementById('adminContainer');
     var adminDropdown = document.getElementById('adminDropdown');
+    var campanaContainer = document.getElementById('campanaContainer');
+    var campanaDropdown = document.getElementById('campanaDropdown');
     var btnLogout = document.getElementById('btnLogout');
     var botonesNav = document.querySelectorAll('.btn-nav-icon');
 
@@ -170,6 +172,73 @@ var asignarEventosAdmin = function() {
                 window.location.href = ruta;
             }
         };
+    }
+
+    if (campanaContainer && campanaDropdown) {
+        campanaContainer.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (adminDropdown) {
+                adminDropdown.classList.remove('visible');
+            }
+
+            var visible = campanaDropdown.classList.contains('visible');
+            campanaDropdown.classList.toggle('visible', !visible);
+            campanaContainer.setAttribute('aria-expanded', visible ? 'false' : 'true');
+        };
+    }
+
+    if (campanaDropdown) {
+        campanaDropdown.addEventListener('click', function(e) {
+            var botonBorrar = e.target.closest('.campana-item-borrar');
+            if (botonBorrar) {
+                e.preventDefault();
+                e.stopPropagation();
+                var id = botonBorrar.getAttribute('data-notif-id');
+                if (!id) return;
+                fetch('/notificaciones/' + id + '/eliminar', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Content-Type': 'application/json'
+                    }
+                }).then(function(resp) {
+                    return resp.json();
+                }).then(function(data) {
+                    if (data && data.ok) {
+                        var wrap = botonBorrar.closest('.campana-item-wrap');
+                        if (wrap) wrap.remove();
+                        var badge = document.getElementById('badgeCampana');
+                        if (badge) {
+                            var n = parseInt(badge.textContent || '0', 10) - 1;
+                            if (n <= 0) badge.remove(); else badge.textContent = n;
+                        }
+                    }
+                }).catch(function() {
+                    // ignore
+                });
+                return;
+            }
+
+            var item = e.target.closest('.campana-item');
+            if (item) {
+                var id = item.getAttribute('data-notif-id');
+                var href = item.getAttribute('href') || '#';
+                if (!id) return;
+                e.preventDefault();
+                e.stopPropagation();
+                fetch('/notificaciones/' + id + '/marcar-leida', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Content-Type': 'application/json'
+                    }
+                }).finally(function() {
+                    window.location.href = href;
+                });
+            }
+        });
     }
     
     if (!adminContainer || !adminDropdown) return;
@@ -195,6 +264,13 @@ var asignarEventosAdmin = function() {
         if (adminContainer && adminDropdown) {
             if (!adminContainer.contains(e.target)) {
                 adminDropdown.classList.remove('visible');
+            }
+        }
+
+        if (campanaContainer && campanaDropdown) {
+            if (!campanaContainer.contains(e.target) && !campanaDropdown.contains(e.target)) {
+                campanaDropdown.classList.remove('visible');
+                campanaContainer.setAttribute('aria-expanded', 'false');
             }
         }
     };

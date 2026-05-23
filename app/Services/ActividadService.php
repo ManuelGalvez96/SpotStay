@@ -32,12 +32,22 @@ class ActividadService
 
     public function mensajeNuevo(int $usuarioId, int $conversacionId, string $propiedadTitulo, string $nombreRemitente, string $extracto): void
     {
+        $rutaMensaje = '/miembro/chat/' . $conversacionId;
+
+        $usuario = Usuario::query()
+            ->with('roles')
+            ->find($usuarioId);
+
+        if ($usuario && $usuario->roles->contains('slug_rol', 'gestor')) {
+            $rutaMensaje = '/gestor/mensajes?activa=' . $conversacionId;
+        }
+
         $this->crear(
             $usuarioId,
             'mensaje_nuevo',
             "Nuevo mensaje en {$propiedadTitulo}",
             "{$nombreRemitente}: {$extracto}",
-            "/miembro/chat/{$conversacionId}",
+            $rutaMensaje,
             'chat-dots',
             '#7C3AED',
             'conversacion',

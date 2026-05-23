@@ -165,6 +165,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         poblarSelectOrden({{ $nextOrden }});
         cargarIconos();
+        asignarToggleCategorias();
     });
 </script>
 @endsection

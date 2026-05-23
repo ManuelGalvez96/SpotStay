@@ -1,4 +1,5 @@
 
+var csrfToken = document.querySelector('meta[name=csrf-token]').content;
 var iconoSeleccionado = null;
 
 var iconosDisponibles = [
@@ -211,3 +212,61 @@ document.onkeydown = function (evento) {
         cerrarSelectorIconos();
     }
 };
+
+function asignarToggleCategorias() {
+    var toggles = document.querySelectorAll('.toggle-switch');
+    for (var i = 0; i < toggles.length; i++) {
+        var toggle = toggles[i];
+        toggle.onclick = function (event) {
+            event.preventDefault();
+            var id = this.getAttribute('data-id');
+            toggleEstadoCategoria(id);
+        };
+    }
+}
+
+function toggleEstadoCategoria(id) {
+    var url = '/admin/asesoria/categoria/' + id + '/toggle-estado';
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        }
+    })
+    .then(function (response) { return response.json(); })
+    .then(function (data) {
+        if (data.success) {
+            var tr = document.querySelector('tr[data-id="' + id + '"]');
+            if (!tr) return;
+
+            var toggle = tr.querySelector('.toggle-switch');
+            if (toggle) toggle.classList.toggle('activo');
+
+            var nuevoActivo = tr.getAttribute('data-activo') === '1' ? '0' : '1';
+            tr.setAttribute('data-activo', nuevoActivo);
+
+            var badge = tr.querySelector('.badge-estado');
+            if (badge) {
+                if (nuevoActivo === '1') {
+                    badge.textContent = 'Activo';
+                    badge.className = 'badge-estado badge-activo';
+                    swalSuccess('¡Éxito!', 'Categoría activada.');
+                } else {
+                    badge.textContent = 'Inactivo';
+                    badge.className = 'badge-estado badge-inactivo';
+                    swalSuccess('¡Éxito!', 'Categoría desactivada.');
+                }
+            }
+
+            tr.classList.toggle('fila-inactiva');
+        } else {
+            swalError('Error', data.message || 'No se pudo cambiar el estado de la categoría.');
+        }
+    })
+    .catch(function (error) {
+        console.error('Error en toggle estado categoría:', error);
+        swalError('Error', 'No se pudo cambiar el estado de la categoría.');
+    });
+}

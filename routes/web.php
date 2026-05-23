@@ -128,6 +128,7 @@ Route::middleware(['role:admin'])->group(function () {
     // Asesoría Legal
     Route::get('/admin/asesoria', [\App\Http\Controllers\Admin\AsesoriaController::class, 'index'])->name('admin.asesoria');
     Route::post('/admin/asesoria/categoria/crear', [\App\Http\Controllers\Admin\AsesoriaController::class, 'store'])->name('admin.asesoria.categoria.crear');
+    Route::post('/admin/asesoria/categoria/{id}/toggle-estado', [\App\Http\Controllers\Admin\AsesoriaController::class, 'toggleEstado'])->name('admin.asesoria.categoria.toggle');
 
     // Códigos de Gestor
     Route::get('/admin/codigos-gestores', [CodigoGestorController::class, 'index']);

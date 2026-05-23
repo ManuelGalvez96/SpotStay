@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CategoriaArticulo;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class AsesoriaController extends Controller
 {
@@ -43,6 +42,18 @@ class AsesoriaController extends Controller
         return response()->json([
             'message'   => 'Categoría creada correctamente.',
             'categoria' => $categoria,
+        ]);
+    }
+
+    public function toggleEstado($id)
+    {
+        $categoria = CategoriaArticulo::findOrFail($id);
+        $categoria->estado = !$categoria->estado;
+        $categoria->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => $categoria->estado ? 'Categoría activada.' : 'Categoría desactivada.',
         ]);
     }
 }

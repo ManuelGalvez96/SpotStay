@@ -42,6 +42,7 @@
                     <th>Orden</th>
                     <th>Nombre</th>
                     <th>Enlace <span class="info-tooltip" data-tooltip="Identificador único para la URL de esta categoría. Se genera automáticamente a partir del nombre.">i</span></th>
+                    <th>Artículos</th>
                     <th>Icono</th>
                     <th>Estado</th>
                     <th>Acciones</th>
@@ -58,6 +59,7 @@
                         <td data-label="ORDEN">{{ $categoria->orden }}</td>
                         <td data-label="NOMBRE">{{ $categoria->nombre }}</td>
                         <td data-label="ENLACE"><code>{{ $categoria->slug }}</code></td>
+                        <td data-label="ARTÍCULOS">{{ $categoria->articulos_count }}</td>
                         <td data-label="ICONO"><i class="bi {{ $categoria->icono }}"></i></td>
                         <td data-label="ESTADO"><span class="badge-estado badge-{{ $estadoClass }}">{{ $estadoLabel }}</span></td>
                         <td data-label="ACCIONES">
@@ -76,7 +78,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" style="text-align: center; color: #999; padding: 20px;">No hay categorías para mostrar</td>
+                        <td colspan="7" style="text-align: center; color: #999; padding: 20px;">No hay categorías para mostrar</td>
                     </tr>
                 @endforelse
             </tbody>

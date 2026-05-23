@@ -150,7 +150,9 @@ body {
 .tabla-admin th:nth-child(4),
 .tabla-admin td:nth-child(4),
 .tabla-admin th:nth-child(5),
-.tabla-admin td:nth-child(5) {
+.tabla-admin td:nth-child(5),
+.tabla-admin th:nth-child(6),
+.tabla-admin td:nth-child(6) {
     text-align: center;
 }
 
@@ -264,6 +266,10 @@ body {
     padding: 2px 8px;
     border-radius: 4px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 /* ── Info Tooltip ── */

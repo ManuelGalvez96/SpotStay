@@ -11,7 +11,7 @@
 <div class="hero-admin">
     <div class="hero-content">
         <h1>Buenos días, {{ auth()->user()->nombre_usuario ?? 'Admin' }} 👋</h1>
-        <p>Miércoles, 14 de abril de 2025</p>
+        <p>{{ \Illuminate\Support\Str::ucfirst(\Carbon\Carbon::now()->locale('es')->translatedFormat('l, j \d\e F \d\e Y')) }}</p>
     </div>
     <div class="hero-deco hero-deco-1"></div>
     <div class="hero-deco hero-deco-2"></div>

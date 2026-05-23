@@ -62,6 +62,7 @@ body {
 /* ── Submenú de pestañas ── */
 .asesoria-admin-submenu {
     display: flex;
+    justify-content: center;
     gap: 0;
     border-bottom: 1px solid #E5E7EB;
     margin-bottom: 24px;

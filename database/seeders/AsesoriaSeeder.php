@@ -17,7 +17,7 @@ class AsesoriaSeeder extends Seeder
         $categorias = [
             [
                 'nombre' => 'Legal y normativa',
-                'icono' => 'bi bi-shield-check',
+                'icono' => 'bi bi-bank2',
                 'orden' => 1,
                 'articulos' => [
                     [
@@ -208,7 +208,7 @@ class AsesoriaSeeder extends Seeder
             ],
             [
                 'nombre' => 'Seguros y responsabilidad',
-                'icono' => 'bi bi-umbrella',
+                'icono' => 'bi bi-shield-check',
                 'orden' => 8,
                 'articulos' => [
                     [

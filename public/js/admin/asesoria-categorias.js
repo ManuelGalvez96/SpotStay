@@ -252,11 +252,9 @@ function toggleEstadoCategoria(id) {
                 if (nuevoActivo === '1') {
                     badge.textContent = 'Activo';
                     badge.className = 'badge-estado badge-activo';
-                    swalSuccess('¡Éxito!', 'Categoría activada.');
                 } else {
                     badge.textContent = 'Inactivo';
                     badge.className = 'badge-estado badge-inactivo';
-                    swalSuccess('¡Éxito!', 'Categoría desactivada.');
                 }
             }
 

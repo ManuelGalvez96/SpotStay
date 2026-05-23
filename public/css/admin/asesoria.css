@@ -172,7 +172,7 @@ body {
     vertical-align: middle;
 }
 
-.fila-inactiva {
+.fila-inactiva td:not(:last-child) {
     opacity: 0.65;
 }
 

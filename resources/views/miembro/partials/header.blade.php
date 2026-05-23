@@ -19,7 +19,6 @@
                             <span class="campana-dropdown-titulo">Notificaciones</span>
                             <p class="campana-dropdown-subtitulo">Últimos avisos del sistema</p>
                         </div>
-                        <a href="{{ url('/notificaciones') }}" class="campana-dropdown-ver-todo">Ver todo</a>
                     </div>
 
                     <div class="campana-dropdown-lista">
@@ -27,10 +26,9 @@
                             @php
                                 $icono = $notificacion->icono_notificacion ?? 'bell';
                                 $color = $notificacion->color_notificacion ?? '#035498';
-                                $url = !empty($notificacion->url_notificacion) ? $notificacion->url_notificacion : route('miembro.actividad');
                             @endphp
                             <div class="campana-item-wrap">
-                                <a href="{{ $url }}" class="campana-item {{ $notificacion->leida_notificacion ? '' : 'no-leida' }}" data-notif-id="{{ $notificacion->id_notificacion }}">
+                                <div class="campana-item {{ $notificacion->leida_notificacion ? '' : 'no-leida' }}" data-notif-id="{{ $notificacion->id_notificacion }}">
                                     <span class="campana-item-icono" style="background: {{ $color }};">
                                         <i class="bi bi-{{ $icono }}"></i>
                                     </span>
@@ -39,7 +37,7 @@
                                         <span class="campana-item-mensaje">{{ \Illuminate\Support\Str::limit($notificacion->mensaje_notificacion ?? '', 80) }}</span>
                                         <span class="campana-item-tiempo">{{ \Carbon\Carbon::parse($notificacion->creado_notificacion)->diffForHumans() }}</span>
                                     </span>
-                                </a>
+                                </div>
                                 <button type="button" class="campana-item-borrar" data-notif-id="{{ $notificacion->id_notificacion }}" title="Borrar" aria-label="Borrar notificación">
                                     <i class="bi bi-x-lg" aria-hidden="true"></i>
                                 </button>
@@ -52,6 +50,7 @@
             </div>
             <div class="perfil-miembro" id="boton-perfil">
                 <span class="nombre-miembro">{{ $nombreUsuario }}</span>
+                
                 @if ($tieneFoto)
                 <img class="foto-perfil" src="{{ $fotoUsuario }}" alt="Foto de perfil" />
                 @else

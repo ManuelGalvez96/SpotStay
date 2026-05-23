@@ -77,7 +77,7 @@
                                 }
                             @endphp
                             <div class="campana-item-wrap">
-                                <a href="{{ $url }}" class="campana-item {{ $notificacion->leida_notificacion ? '' : 'no-leida' }}" data-notif-id="{{ $notificacion->id_notificacion }}">
+                                <div class="campana-item {{ $notificacion->leida_notificacion ? '' : 'no-leida' }}" data-notif-id="{{ $notificacion->id_notificacion }}">
                                     <span class="campana-item-icono" style="background: {{ $color }};">
                                         <i class="bi bi-{{ $icono }}"></i>
                                     </span>
@@ -86,7 +86,7 @@
                                         <span class="campana-item-mensaje">{{ \Illuminate\Support\Str::limit($notificacion->mensaje_notificacion ?? '', 80) }}</span>
                                         <span class="campana-item-tiempo">{{ \Carbon\Carbon::parse($notificacion->creado_notificacion)->diffForHumans() }}</span>
                                     </span>
-                                </a>
+                                </div>
                                 <button type="button" class="campana-item-borrar" data-notif-id="{{ $notificacion->id_notificacion }}" title="Borrar" aria-label="Borrar notificación">
                                     <i class="bi bi-x-lg" aria-hidden="true"></i>
                                 </button>
@@ -102,6 +102,7 @@
             <div class="admin-container" id="adminContainer">
                 <div class="avatar-admin">G</div>
                 <span class="admin-nombre">Gestor</span>
+                
                 <i class="bi bi-chevron-down chevron-admin"></i>
 
                 <div class="admin-dropdown" id="adminDropdown">

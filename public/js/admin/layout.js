@@ -224,7 +224,6 @@ var asignarEventosAdmin = function() {
             var item = e.target.closest('.campana-item');
             if (item) {
                 var id = item.getAttribute('data-notif-id');
-                var href = item.getAttribute('href') || '#';
                 if (!id) return;
                 e.preventDefault();
                 e.stopPropagation();
@@ -234,8 +233,18 @@ var asignarEventosAdmin = function() {
                         'X-CSRF-TOKEN': csrfToken,
                         'Content-Type': 'application/json'
                     }
-                }).finally(function() {
-                    window.location.href = href;
+                }).then(function(resp) { return resp.json(); }).then(function(data) {
+                    if (data && data.ok) {
+                        var wrap = item.closest('.campana-item-wrap');
+                        if (wrap) wrap.remove();
+                        var badge = document.getElementById('badgeCampana');
+                        if (badge) {
+                            var n = parseInt(badge.textContent || '0', 10) - 1;
+                            if (n <= 0) badge.remove(); else badge.textContent = n;
+                        }
+                    }
+                }).catch(function() {
+                    // ignore errors silently
                 });
             }
         });

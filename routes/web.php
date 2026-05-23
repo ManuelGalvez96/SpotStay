@@ -337,6 +337,8 @@ Route::get('/ejecutar-migraciones-seguras', function () {
     }
 });
 
+// (dev route removed)
+
 // Limpiar cachés de Laravel (config, route, view, cache)
 Route::get('/limpiar-cache', function () {
     try {

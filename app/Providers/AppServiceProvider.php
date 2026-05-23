@@ -50,7 +50,9 @@ class AppServiceProvider extends ServiceProvider
                     ->where('leida_notificacion', false)
                     ->count();
 
-                $notificacionesUsuario = $notificacionesQueryBase
+                // Mostrar únicamente notificaciones sin leer en el dropdown
+                $notificacionesUsuario = (clone $notificacionesQueryBase)
+                    ->where('leida_notificacion', false)
                     ->select(
                         'id_notificacion',
                         'tipo_notificacion',

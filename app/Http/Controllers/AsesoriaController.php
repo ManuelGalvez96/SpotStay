@@ -12,6 +12,7 @@ class AsesoriaController extends Controller
     {
         $categorias = CategoriaArticulo::withCount('articulos')
             ->where('estado', 1)
+            ->has('articulos')
             ->orderBy('orden')
             ->get();
 

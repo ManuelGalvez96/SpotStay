@@ -400,3 +400,229 @@ function eliminarCategoria(id) {
         });
     }
 }
+
+/* ================================================
+   FILTROS, ORDENACIÓN Y PAGINACIÓN
+   ================================================ */
+var paginaActual = 1;
+var sortCol = 'orden';
+var sortDir = 'asc';
+
+function filtrarCategorias() {
+    var busqueda = document.getElementById('filtro-busqueda').value;
+    var estado = document.getElementById('filtro-estado').value;
+    var perPage = document.getElementById('filtro-paginacion').value;
+
+    var params = new URLSearchParams();
+    if (busqueda) params.set('q', busqueda);
+    if (estado)   params.set('estado', estado);
+    params.set('sort', sortCol);
+    params.set('direction', sortDir);
+    params.set('page', paginaActual);
+    params.set('per_page', perPage);
+
+    var url = (typeof filtrarUrl !== 'undefined' ? filtrarUrl : '/admin/asesoria/filtrar') + '?' + params.toString();
+
+    fetch(url, {
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+        actualizarTabla(data);
+        actualizarPaginacion(data);
+    })
+    .catch(function (error) {
+        console.error('Error al filtrar categorías:', error);
+    });
+}
+
+function cambiarPagina(n) {
+    paginaActual = n;
+    filtrarCategorias();
+}
+
+function ordenar(col) {
+    if (sortCol === col) {
+        sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortCol = col;
+        sortDir = 'asc';
+    }
+    paginaActual = 1;
+
+    document.querySelectorAll('.sortable').forEach(function (th) {
+        th.classList.remove('active');
+        var arrow = th.querySelector('.sort-arrow');
+        if (arrow) arrow.textContent = '';
+    });
+
+    var th = document.querySelector('th[data-sort="' + col + '"]');
+    if (th) {
+        th.classList.add('active');
+        var arrow = th.querySelector('.sort-arrow');
+        if (arrow) arrow.textContent = sortDir === 'asc' ? '\u25B2' : '\u25BC';
+    }
+
+    filtrarCategorias();
+}
+
+function actualizarTabla(data) {
+    var tbody = document.getElementById('tabla-categorias-body');
+    if (!tbody) return;
+
+    var rows = data.data || [];
+    if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999; padding: 20px;">No hay categorías para mostrar</td></tr>';
+        return;
+    }
+
+    var html = '';
+    for (var i = 0; i < rows.length; i++) {
+        var cat = rows[i];
+        var activo = cat.estado ? '1' : '0';
+        var estadoLabel = cat.estado ? 'Activo' : 'Inactivo';
+        var estadoClass = cat.estado ? 'activo' : 'inactivo';
+        var inactivaClass = activo === '0' ? 'fila-inactiva' : '';
+        var toggleClass = activo === '1' ? 'activo' : '';
+
+        var deleteBtn = '';
+        if (cat.articulos_count > 0) {
+            deleteBtn = '<span class="tooltip-wrapper" data-tooltip="No puedes eliminar esta categoría porque tiene artículos.">'
+                + '<button class="btn-accion btn-eliminar btn-eliminar--disabled" disabled>'
+                + '<i class="bi bi-trash"></i></button></span>';
+        } else {
+            deleteBtn = '<button class="btn-accion btn-eliminar" data-id="' + cat.id + '" title="Eliminar">'
+                + '<i class="bi bi-trash"></i></button>';
+        }
+
+        html += '<tr data-id="' + cat.id + '" data-activo="' + activo + '" class="' + inactivaClass + '">'
+            + '<td data-label="ORDEN">' + cat.orden + '</td>'
+            + '<td data-label="NOMBRE">' + escHtml(cat.nombre) + '</td>'
+            + '<td data-label="ENLACE"><code>' + escHtml(cat.slug) + '</code></td>'
+            + '<td data-label="ARTÍCULOS">' + cat.articulos_count + '</td>'
+            + '<td data-label="ICONO"><i class="bi ' + escHtml(cat.icono) + '"></i></td>'
+            + '<td data-label="ESTADO"><span class="badge-estado badge-' + estadoClass + '">' + estadoLabel + '</span></td>'
+            + '<td data-label="ACCIONES"><div class="acciones-tabla">'
+            + '<button class="btn-accion btn-editar" data-id="' + cat.id + '" title="Editar"><i class="bi bi-pencil"></i></button>'
+            + deleteBtn
+            + '<div class="toggle-switch ' + toggleClass + '" data-id="' + cat.id + '"><div class="toggle-circulo"></div></div>'
+            + '</div></td>'
+            + '</tr>';
+    }
+
+    tbody.innerHTML = html;
+
+    asignarToggleCategorias();
+    asignarBotonesEditar();
+    asignarBotonesEliminar();
+}
+
+function actualizarPaginacion(data) {
+    var container = document.getElementById('paginacion-categorias');
+    if (!container) return;
+
+    var current = data.current_page;
+    var last = data.last_page;
+    var total = data.total;
+
+    if (last <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+
+    var html = '<ul style="display:flex;gap:4px;padding:0;margin:0;list-style:none;">';
+
+    var prevDisabled = current <= 1 ? 'disabled' : '';
+    html += '<li class="page-item"><button class="page-link ' + prevDisabled + '" data-page="' + (current - 1) + '">&laquo;</button></li>';
+
+    var startPage = Math.max(1, current - 2);
+    var endPage = Math.min(last, current + 2);
+
+    if (startPage > 1) {
+        html += '<li class="page-item"><button class="page-link" data-page="1">1</button></li>';
+        if (startPage > 2) html += '<li class="page-item"><span class="page-link disabled">...</span></li>';
+    }
+
+    for (var p = startPage; p <= endPage; p++) {
+        var active = p === current ? 'active' : '';
+        html += '<li class="page-item"><button class="page-link ' + active + '" data-page="' + p + '">' + p + '</button></li>';
+    }
+
+    if (endPage < last) {
+        if (endPage < last - 1) html += '<li class="page-item"><span class="page-link disabled">...</span></li>';
+        html += '<li class="page-item"><button class="page-link" data-page="' + last + '">' + last + '</button></li>';
+    }
+
+    var nextDisabled = current >= last ? 'disabled' : '';
+    html += '<li class="page-item"><button class="page-link ' + nextDisabled + '" data-page="' + (current + 1) + '">&raquo;</button></li>';
+
+    html += '</ul>';
+
+    html += '<div style="font-size:12px;color:#9CA3AF;text-align:center;width:100%;margin-top:4px;">'
+        + total + ' categoría(s) &mdash; Página ' + current + ' de ' + last
+        + '</div>';
+
+    container.innerHTML = html;
+
+    asignarEventosPaginacion();
+}
+
+function asignarEventosFiltros() {
+    var busqueda = document.getElementById('filtro-busqueda');
+    var estado = document.getElementById('filtro-estado');
+    var perPage = document.getElementById('filtro-paginacion');
+    var limpiar = document.getElementById('btn-limpiar-filtros');
+
+    function onFilterChange() {
+        paginaActual = 1;
+        filtrarCategorias();
+    }
+
+    if (busqueda) busqueda.addEventListener('input', onFilterChange);
+    if (estado) estado.addEventListener('change', onFilterChange);
+    if (perPage) perPage.addEventListener('change', onFilterChange);
+    if (limpiar) limpiar.addEventListener('click', function () {
+        if (busqueda) busqueda.value = '';
+        if (estado) estado.value = '';
+        if (perPage) perPage.value = '10';
+        paginaActual = 1;
+        sortCol = 'orden';
+        sortDir = 'asc';
+        document.querySelectorAll('.sortable').forEach(function (th) {
+            th.classList.remove('active');
+            var arrow = th.querySelector('.sort-arrow');
+            if (arrow) arrow.textContent = '';
+        });
+        filtrarCategorias();
+    });
+}
+
+function asignarEventosPaginacion() {
+    var links = document.querySelectorAll('#paginacion-categorias .page-link[data-page]');
+    for (var i = 0; i < links.length; i++) {
+        links[i].onclick = function (event) {
+            event.preventDefault();
+            var page = parseInt(this.getAttribute('data-page'));
+            if (!isNaN(page)) cambiarPagina(page);
+        };
+    }
+
+    document.querySelectorAll('th[data-sort]').forEach(function (th) {
+        th.onclick = function () {
+            var col = this.getAttribute('data-sort');
+            ordenar(col);
+        };
+    });
+}
+
+function escHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}

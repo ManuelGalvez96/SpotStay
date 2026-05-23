@@ -127,6 +127,7 @@ Route::middleware(['role:admin'])->group(function () {
 
     // Asesoría Legal
     Route::get('/admin/asesoria', [\App\Http\Controllers\Admin\AsesoriaController::class, 'index'])->name('admin.asesoria');
+    Route::get('/admin/asesoria/filtrar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'filtrar'])->name('admin.asesoria.filtrar');
     Route::post('/admin/asesoria/categoria/crear', [\App\Http\Controllers\Admin\AsesoriaController::class, 'store'])->name('admin.asesoria.categoria.crear');
     Route::post('/admin/asesoria/categoria/{id}/toggle-estado', [\App\Http\Controllers\Admin\AsesoriaController::class, 'toggleEstado'])->name('admin.asesoria.categoria.toggle');
     Route::get('/admin/asesoria/categoria/{id}/editar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'edit'])->name('admin.asesoria.categoria.edit');

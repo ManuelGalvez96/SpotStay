@@ -10,13 +10,45 @@ class AsesoriaController extends Controller
 {
     public function index()
     {
-        $categorias = CategoriaArticulo::withCount('articulos')
-            ->orderBy('orden')
-            ->get();
-
         $nextOrden = (CategoriaArticulo::max('orden') ?? 0) + 1;
 
-        return view('admin.asesoria', compact('categorias', 'nextOrden'));
+        return view('admin.asesoria', compact('nextOrden'));
+    }
+
+    public function filtrar(Request $request)
+    {
+        $query = CategoriaArticulo::withCount('articulos');
+
+        if ($request->filled('q')) {
+            $query->where('nombre', 'like', '%' . $request->q . '%');
+        }
+
+        $estado = $request->input('estado');
+        if ($estado !== null && $estado !== '') {
+            $query->where('estado', (int)$estado);
+        }
+
+        $sort = $request->input('sort', 'orden');
+        $direction = $request->input('direction', 'asc');
+
+        $allowedSorts = ['orden', 'nombre', 'slug', 'estado'];
+        if (in_array($sort, $allowedSorts)) {
+            $query->orderBy($sort, $direction === 'desc' ? 'desc' : 'asc');
+        } elseif ($sort === 'articulos') {
+            $query->orderBy('articulos_count', $direction === 'desc' ? 'desc' : 'asc');
+        } else {
+            $query->orderBy('orden');
+        }
+
+        $perPage = $request->input('per_page', 10);
+        if ($perPage == 0) {
+            $perPage = $query->count();
+            if ($perPage < 1) $perPage = 1;
+        }
+
+        $categorias = $query->paginate($perPage);
+
+        return response()->json($categorias);
     }
 
     public function store(Request $request)
@@ -78,6 +110,21 @@ class AsesoriaController extends Controller
             'icono'  => 'required|string|max:50',
             'orden'  => 'required|integer|min:1',
         ]);
+
+        $oldOrden = $categoria->orden;
+        $newOrden = $validated['orden'];
+
+        if ($oldOrden !== $newOrden) {
+            if ($newOrden < $oldOrden) {
+                CategoriaArticulo::where('orden', '>=', $newOrden)
+                    ->where('orden', '<', $oldOrden)
+                    ->increment('orden');
+            } else {
+                CategoriaArticulo::where('orden', '<=', $newOrden)
+                    ->where('orden', '>', $oldOrden)
+                    ->decrement('orden');
+            }
+        }
 
         $categoria->update($validated);
 

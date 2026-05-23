@@ -5,11 +5,10 @@ body {
 /* ── Hero Admin ── */
 .hero-admin {
     background: #035498;
-    padding: 36px 40px;
+    padding: 15px 40px;
     border-radius: 0 0 20px 20px;
     position: relative;
     overflow: hidden;
-    margin: 0 0 16px 0;
 }
 
 .hero-content {
@@ -103,29 +102,78 @@ body {
     border-radius: 14px;
     border: 1px solid #E5E7EB;
     margin: 16px 40px;
+    overflow: hidden;
 }
 
 .tabla-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 24px;
-    border-bottom: 0;
-    background: linear-gradient(90deg, #035498, #1AA068);
-    font-size: 13px;
-    color: white;
+    padding: 12px 24px;
+    background: white;
+    border-bottom: 1px solid #E5E7EB;
     flex-wrap: wrap;
     gap: 12px;
-    border-radius: 14px 14px 0 0;
-    overflow: hidden;
+}
+
+.filtros-categorias {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+#filtro-busqueda {
+    padding: 8px 12px;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    font-size: 13px;
+    width: 220px;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+#filtro-busqueda:focus {
+    border-color: #035498;
+    box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
+}
+
+#filtro-estado,
+#filtro-paginacion {
+    padding: 8px 12px;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    font-size: 13px;
+    background: white;
+    outline: none;
+    cursor: pointer;
+}
+
+.filtro-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    white-space: nowrap;
+}
+
+.btn-limpiar-filtros {
+    padding: 8px 14px;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    background: white;
+    font-size: 13px;
+    cursor: pointer;
+    color: #6B7280;
+    transition: all 0.15s;
+}
+
+.btn-limpiar-filtros:hover {
+    background: #F3F4F6;
+    color: #374151;
 }
 
 .tabla-body-wrap {
     border-radius: 0 0 14px 14px;
-}
-
-.tabla-header .info-paginacion {
-    color: rgba(255, 255, 255, 0.92);
 }
 
 /* ── Tabla Admin ── */
@@ -134,8 +182,43 @@ body {
     border-collapse: collapse;
 }
 
+.tabla-admin thead {
+    background: linear-gradient(90deg, #035498, #1AA068);
+    color: white;
+}
+
 .tabla-admin thead th {
-    padding: 6px 20px;
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 13px;
+    color: white;
+    border: none;
+}
+
+.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+}
+
+.sortable:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sort-arrow {
+    display: inline-block;
+    margin-left: 4px;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.5);
+    transition: color 0.15s;
+}
+
+.sortable.active .sort-arrow {
+    color: white;
+}
+
+.tabla-admin thead th .info-tooltip {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .tabla-admin tbody td {
@@ -360,22 +443,23 @@ th .info-tooltip::after {
     opacity: 1;
 }
 
-/* ── Botón Nuevo Recibo ── */
+/* ── Botón Nueva Categoría ── */
 .btn-nuevo-recibo {
-    border: none;
+    border: 1px solid #a7f3d0;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.2);
-    color: #fff;
+    background: #ecfdf5;
+    color: #065f46;
     padding: 8px 14px;
     font-weight: 600;
     cursor: pointer;
     font-size: 13px;
-    transition: background 0.15s ease;
+    transition: all 0.15s ease;
     white-space: nowrap;
 }
 
 .btn-nuevo-recibo:hover {
-    background: rgba(255, 255, 255, 0.35);
+    background: #d1fae5;
+    border-color: #10b981;
 }
 
 /* ── Modal Gestor ── */
@@ -668,4 +752,50 @@ th .info-tooltip::after {
     border-radius: 6px;
     font-size: 13px;
     margin-top: 8px;
+}
+
+/* ── Paginación ── */
+.paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    padding: 16px;
+    flex-wrap: wrap;
+}
+
+.page-item {
+    list-style: none;
+    display: inline-block;
+}
+
+.page-link {
+    display: inline-block;
+    padding: 6px 12px;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    background: white;
+    color: #374151;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+    min-width: 36px;
+    text-align: center;
+}
+
+.page-link:hover {
+    background: #F3F4F6;
+}
+
+.page-link.active {
+    background: #035498;
+    color: white;
+    border-color: #035498;
+}
+
+.page-link.disabled {
+    opacity: 0.4;
+    cursor: default;
+    pointer-events: none;
 }

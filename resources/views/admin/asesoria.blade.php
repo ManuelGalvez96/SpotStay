@@ -31,7 +31,24 @@
 
 <div class="card-admin">
     <div class="tabla-header">
-        <span class="info-paginacion">{{ $categorias->count() }} categoría(s)</span>
+        <div class="filtros-categorias">
+            <span class="filtro-label">Filtrar por:</span>
+            <input type="text" id="filtro-busqueda" placeholder="Nombre">
+            <span class="filtro-label">Estado:</span>
+            <select id="filtro-estado">
+                <option value="">Todos</option>
+                <option value="1">Activo</option>
+                <option value="0">Inactivo</option>
+            </select>
+            <span class="filtro-label">Número de resultados:</span>
+            <select id="filtro-paginacion">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="0">Todos</option>
+            </select>
+            <button type="button" class="btn-limpiar-filtros" id="btn-limpiar-filtros">Limpiar</button>
+        </div>
         <button type="button" class="btn-nuevo-recibo" onclick="abrirModalNuevaCategoria()">+ Nueva categoría</button>
     </div>
     <div class="tabla-body-wrap">
@@ -39,61 +56,25 @@
         <table class="tabla-admin">
             <thead>
                 <tr>
-                    <th>Orden</th>
-                    <th>Nombre</th>
-                    <th>Enlace <span class="info-tooltip" data-tooltip="Identificador único para la URL de esta categoría. Se genera automáticamente a partir del nombre.">i</span></th>
-                    <th>Artículos</th>
+                    <th data-sort="orden" class="sortable">Orden <span class="sort-arrow"></span></th>
+                    <th data-sort="nombre" class="sortable">Nombre <span class="sort-arrow"></span></th>
+                    <th data-sort="slug" class="sortable">Enlace <span class="info-tooltip" data-tooltip="Identificador único para la URL de esta categoría. Se genera automáticamente a partir del nombre.">i</span> <span class="sort-arrow"></span></th>
+                    <th data-sort="articulos" class="sortable">Artículos <span class="sort-arrow"></span></th>
                     <th>Icono</th>
-                    <th>Estado</th>
+                    <th data-sort="estado" class="sortable">Estado <span class="sort-arrow"></span></th>
                     <th>Acciones</th>
                 </tr>
             </thead>
-            <tbody>
-                @forelse($categorias as $categoria)
-                    @php
-                        $activo = $categoria->estado ? '1' : '0';
-                        $estadoLabel = $categoria->estado ? 'Activo' : 'Inactivo';
-                        $estadoClass = $categoria->estado ? 'activo' : 'inactivo';
-                    @endphp
-                    <tr data-id="{{ $categoria->id }}" data-activo="{{ $activo }}" class="{{ $activo === '0' ? 'fila-inactiva' : '' }}">
-                        <td data-label="ORDEN">{{ $categoria->orden }}</td>
-                        <td data-label="NOMBRE">{{ $categoria->nombre }}</td>
-                        <td data-label="ENLACE"><code>{{ $categoria->slug }}</code></td>
-                        <td data-label="ARTÍCULOS">{{ $categoria->articulos_count }}</td>
-                        <td data-label="ICONO"><i class="bi {{ $categoria->icono }}"></i></td>
-                        <td data-label="ESTADO"><span class="badge-estado badge-{{ $estadoClass }}">{{ $estadoLabel }}</span></td>
-                        <td data-label="ACCIONES">
-                            <div class="acciones-tabla">
-                                <button class="btn-accion btn-editar" data-id="{{ $categoria->id }}" title="Editar">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                @if($categoria->articulos_count > 0)
-                                    <span class="tooltip-wrapper" data-tooltip="No puedes eliminar esta categoría porque tiene artículos.">
-                                        <button class="btn-accion btn-eliminar btn-eliminar--disabled" disabled>
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </span>
-                                @else
-                                    <button class="btn-accion btn-eliminar" data-id="{{ $categoria->id }}" title="Eliminar">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                @endif
-                                <div class="toggle-switch {{ $activo === '1' ? 'activo' : '' }}" data-id="{{ $categoria->id }}">
-                                    <div class="toggle-circulo"></div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" style="text-align: center; color: #999; padding: 20px;">No hay categorías para mostrar</td>
-                    </tr>
-                @endforelse
+            <tbody id="tabla-categorias-body">
+                <tr>
+                    <td colspan="7" style="text-align: center; color: #999; padding: 20px;">Cargando...</td>
+                </tr>
             </tbody>
         </table>
     </div>
     </div>
 </div>
+<div id="paginacion-categorias" class="paginacion"></div>
 
 {{-- Modal Nueva Categoría --}}
 <div id="modal-nueva-categoria" class="gestor-modal">
@@ -171,12 +152,19 @@
 @section('scripts')
 <script src="{{ asset('js/admin/asesoria-categorias.js') }}"></script>
 <script>
+    var filtrarUrl = "{{ route('admin.asesoria.filtrar') }}";
     document.addEventListener('DOMContentLoaded', function () {
         poblarSelectOrden({{ $nextOrden }});
         cargarIconos();
-        asignarToggleCategorias();
-        asignarBotonesEditar();
-        asignarBotonesEliminar();
+        asignarEventosFiltros();
+        asignarEventosPaginacion();
+        var th = document.querySelector('th[data-sort="orden"]');
+        if (th) {
+            th.classList.add('active');
+            var arrow = th.querySelector('.sort-arrow');
+            if (arrow) arrow.textContent = '\u25B2';
+        }
+        filtrarCategorias();
     });
 </script>
 @endsection

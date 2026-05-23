@@ -122,7 +122,6 @@ body {
 
 .tabla-body-wrap {
     border-radius: 0 0 14px 14px;
-    overflow: hidden;
 }
 
 .tabla-header .info-paginacion {
@@ -312,6 +311,11 @@ body {
 
 .info-tooltip:hover::after {
     opacity: 1;
+}
+
+th .info-tooltip::after {
+    bottom: auto;
+    top: calc(100% + 8px);
 }
 
 /* ── Botón Nuevo Recibo ── */

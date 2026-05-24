@@ -218,6 +218,11 @@ body {
     color: white;
 }
 
+#tabla-articulos-admin th:nth-child(2),
+#tabla-articulos-admin td:nth-child(2) {
+    text-align: center;
+}
+
 .tabla-admin thead th .info-tooltip {
     background: rgba(255, 255, 255, 0.3);
 }

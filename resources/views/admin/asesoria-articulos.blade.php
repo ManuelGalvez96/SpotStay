@@ -34,19 +34,19 @@
     <div class="tabla-header">
         <div class="filtros-categorias">
             <span class="filtro-label">Filtrar por:</span>
-            <input type="text" id="filtro-busqueda" placeholder="Título">
-            <span class="filtro-label">Estado:</span>
-            <select id="filtro-estado">
-                <option value="">Todos</option>
-                <option value="1">Activo</option>
-                <option value="0">Inactivo</option>
-            </select>
             <span class="filtro-label">Categoría:</span>
             <select id="filtro-categoria">
                 <option value="">Todas</option>
                 @foreach($categorias as $cat)
                     <option value="{{ $cat->id }}">{{ $cat->nombre }}</option>
                 @endforeach
+            </select>
+            <input type="text" id="filtro-busqueda" placeholder="Título">
+            <span class="filtro-label">Estado:</span>
+            <select id="filtro-estado">
+                <option value="">Todos</option>
+                <option value="1">Activo</option>
+                <option value="0">Inactivo</option>
             </select>
             <span class="filtro-label">Núm. resultados:</span>
             <select id="filtro-paginacion">
@@ -61,7 +61,7 @@
     </div>
     <div class="tabla-body-wrap">
     <div class="table-responsive">
-        <table class="tabla-admin">
+        <table class="tabla-admin" id="tabla-articulos-admin">
             <thead>
                 <tr>
                     <th data-sort="categoria" class="sortable">Categoría <span class="sort-arrow"></span></th>

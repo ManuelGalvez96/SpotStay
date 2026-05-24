@@ -668,7 +668,7 @@
 
             <div class="modal-footer">
                 <div class="d-flex align-items-center w-100 justify-content-between">
-                    <button id="btnDesactivarPropiedad" class="btn btn-outline-secondary">
+                    <button id="btnDesactivarPropiedad" class="btn-desactivar">
                         Desactivar propiedad
                     </button>
                     <div class="d-flex gap-2">

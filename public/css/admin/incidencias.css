@@ -17,6 +17,33 @@
     overflow: hidden;
 }
 
+
+.btn-contactar-inc-modal {
+    background: linear-gradient(135deg, #035498 0%, #1565c0 100%);
+    border: none;
+    color: #ffffff;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 42px;
+}
+
+.btn-contactar-inc-modal:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(3, 84, 152, 0.3);
+}
+
+.btn-contactar-inc-modal:active {
+    transform: translateY(0);
+}
 .hero-content {
     position: relative;
     z-index: 2;
@@ -97,12 +124,39 @@
     align-items: flex-start;
 }
 
+.kpi-mini-abierta {
+    background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+    border-left: 4px solid #1E40AF;
+}
+
+.kpi-mini-esperando-decision {
+    background: linear-gradient(135deg, #FFEDD5, #FED7AA);
+    border-left: 4px solid #C2410C;
+}
+
+.kpi-mini-esperando-pago {
+    background: linear-gradient(135deg, #EDE9FE, #DDD6FE);
+    border-left: 4px solid #6D21D9;
+}
+
+.kpi-mini-solucionada {
+    background: linear-gradient(135deg, #CCFBF1, #99F6E4);
+    border-left: 4px solid #0F766E;
+}
+
 .kpi-mini-rojo {
     border-left-color: #EF4444;
 }
 
+.kpi-mini-azul {
+    border-left-color: #DBEAFE;
+}
+
 .kpi-mini-naranja {
     border-left-color: #D97706;
+}
+.kpi-mini-amarillo {
+    border-left-color: #EDE9FE;
 }
 
 .kpi-mini-verde {
@@ -122,18 +176,27 @@
 }
 
 .kpi-mini-icono.kpi-mini-rojo {
-    background: rgba(255, 255, 255, 0.18);
-    color: #ffffff;
+    background: rgba(255, 255, 255, 0.72);
+    color: #991B1B;
+}
+
+.kpi-mini-icono.kpi-mini-azul {
+    background: rgba(255, 255, 255, 0.72);
+    color: #1E40AF;
 }
 
 .kpi-mini-icono.kpi-mini-naranja {
-    background: rgba(255, 255, 255, 0.18);
-    color: #ffffff;
+    background: rgba(255, 255, 255, 0.72);
+    color: #C2410C;
+}
+.kpi-mini-icono.kpi-mini-amarillo {
+    background: rgba(255, 255, 255, 0.72);
+    color: #6D21D9;
 }
 
 .kpi-mini-icono.kpi-mini-verde {
-    background: rgba(255, 255, 255, 0.18);
-    color: #ffffff;
+    background: rgba(255, 255, 255, 0.72);
+    color: #0F766E;
 }
 
 .kpi-mini-datos {
@@ -149,11 +212,43 @@
     color: white;
 }
 
+.kpi-mini-abierta .kpi-mini-numero,
+.kpi-mini-abierta .kpi-mini-label {
+    color: #1E40AF;
+}
+
+.kpi-mini-esperando-decision .kpi-mini-numero,
+.kpi-mini-esperando-decision .kpi-mini-label {
+    color: #C2410C;
+}
+
+.kpi-mini-esperando-pago .kpi-mini-numero,
+.kpi-mini-esperando-pago .kpi-mini-label {
+    color: #6D21D9;
+}
+
+.kpi-mini-solucionada .kpi-mini-numero,
+.kpi-mini-solucionada .kpi-mini-label {
+    color: #0F766E;
+}
+
+.kpi-mini-urgente .kpi-mini-numero,
+.kpi-mini-urgente .kpi-mini-label {
+    color: #991B1B;
+}
+
 .kpi-mini-numero-rojo {
     color: #ffffff;
 }
 
+.kpi-mini-numero-azul {
+    color: #ffffff;
+}
+
 .kpi-mini-numero-naranja {
+    color: #ffffff;
+}
+.kpi-mini-numero-amarillo {
     color: #ffffff;
 }
 
@@ -166,6 +261,14 @@
     color: rgba(255, 255, 255, 0.82);
 }
 
+.kpi-mini-abierta .kpi-mini-label,
+.kpi-mini-esperando-decision .kpi-mini-label,
+.kpi-mini-esperando-pago .kpi-mini-label,
+.kpi-mini-solucionada .kpi-mini-label,
+.kpi-mini-urgente .kpi-mini-label {
+    color: rgba(0, 0, 0, 0.65);
+}
+
 .kpi-urgente-fila {
     display: flex;
     align-items: center;
@@ -174,6 +277,8 @@
 
 .kpi-mini-urgente {
     animation: pulse-card 2s ease-in-out infinite;
+    background: linear-gradient(135deg, #FEE2E2, #FCA5A5);
+    border-left: 4px solid #991B1B;
 }
 
 @keyframes pulse-card {
@@ -790,8 +895,8 @@
 }
 
 .kanban-col-abierta {
-    background: #FEF9F9;
-    border-top: 4px solid #EF4444;
+    background: #EFF6FF;
+    border-top: 4px solid #1E40AF;
 }
 
 .kanban-col-esperando-decision {
@@ -800,8 +905,8 @@
 }
 
 .kanban-col-esperando-pago {
-    background: #FFFEF0;
-    border-top: 4px solid #FBBF24;
+    background: #F3F0FF;
+    border-top: 4px solid #6D21D9;
 }
 
 .kanban-col-solucionada {
@@ -810,8 +915,8 @@
 }
 
 .kanban-col-resuelta {
-    background: #F8F9FA;
-    border-top: 4px solid #CBD5E1;
+    background: #F8FAFC;
+    border-top: 4px solid #475569;
 }
 
 /* Kanban header */
@@ -836,19 +941,26 @@
 }
 
 .kanban-punto-rojo {
-    background: #EF4444;
+    background: #DBEAFE;
+}
+
+.kanban-punto-azul {
+    background: #DBEAFE;
 }
 
 .kanban-punto-naranja {
-    background: #D97706;
+    background: #FFEDD5;
+}
+.kanban-punto-amarillo {
+    background: #EDE9FE;
 }
 
 .kanban-punto-verde {
-    background: #1AA068;
+    background: #CCFBF1;
 }
 
 .kanban-punto-gris {
-    background: #CBD5E1;
+    background: #E5E7EB;
 }
 
 .kanban-col-header span:nth-child(2) {
@@ -872,23 +984,28 @@
 }
 
 .badge-kanban-rojo {
-    background: #FEE2E2;
-    color: #EF4444;
+    background: #DBEAFE;
+    color: #1E40AF;
+}
+
+.badge-kanban-azul {
+    background: #DBEAFE;
+    color: #1E40AF;
 }
 
 .badge-kanban-naranja {
-    background: #FEF3C7;
-    color: #92400e;
+    background: #FFEDD5;
+    color: #C2410C;
 }
 
 .badge-kanban-amarillo {
-    background: #FFFBEB;
-    color: #D97706;
+    background: #EDE9FE;
+    color: #6D21D9;
 }
 
 .badge-kanban-verde {
-    background: #D1FAE5;
-    color: #065F46;
+    background: #CCFBF1;
+    color: #0F766E;
 }
 
 .badge-kanban-gris {
@@ -1448,13 +1565,23 @@
 }
 
 .badge-estado.badge-abierta {
-    background: #FEE2E2;
-    color: #991B1B;
+    background: #DBEAFE;
+    color: #1E40AF;
 }
 
 .badge-estado.badge-en_proceso {
     background: #FEF3C7;
-    color: #92400e;
+    color: #92400E;
+}
+
+.badge-estado.badge-esperando_decision {
+    background: #FFEDD5;
+    color: #C2410C;
+}
+
+.badge-estado.badge-esperando_pago {
+    background: #EDE9FE;
+    color: #6D21D9;
 }
 
 .badge-estado.badge-resuelta {

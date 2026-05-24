@@ -126,6 +126,12 @@
     padding-left: 16px;
 }
 
+.campo-error {
+    color: #c71c1c;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
 .error-lista li {
     font-size: 13px;
 }

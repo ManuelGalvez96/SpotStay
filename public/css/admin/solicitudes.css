@@ -1085,6 +1085,25 @@ body {
     border-radius: 0 0 12px 12px;
 }
 
+.modal-footer .btn-cancelar-gris,
+.modal-footer .btn-cancelar-accion,
+.modal-footer .btn-secondary {
+    background: #F3F4F6 !important;
+    border: 1px solid #D1D5DB !important;
+    color: #4B5563 !important;
+    padding: 10px 24px !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+}
+
+.modal-footer .btn-cancelar-gris:hover,
+.modal-footer .btn-cancelar-accion:hover,
+.modal-footer .btn-secondary:hover {
+    background: #E5E7EB !important;
+    border-color: #9CA3AF !important;
+    color: #111827 !important;
+}
+
 /* Bootstrap close button personalizados */
 .btn-close {
     background: transparent;

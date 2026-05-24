@@ -239,6 +239,139 @@ body {
     font-size: 14px;
 }
 
+/* =========================================================
+   ADMIN - Botones semánticos
+   Forzar colores coherentes para acciones en admin solamente
+   ========================================================= */
+
+/* Botones primarios (guardar, crear, enviar) */
+body.admin .btn-primario,
+body.admin .btn-primary,
+body.admin .btn-guardar-plan,
+body.admin .btn-guardar-sus,
+body.admin .btn-guardar-accion,
+body.admin .btn-guardar,
+body.admin .btn-cancelar-gris,
+body.admin button[type="submit"].btn-primario,
+body.admin a.btn-primario {
+    background: #035498 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+body.admin .btn-primario:hover,
+body.admin .btn-primary:hover,
+body.admin .btn-guardar-plan:hover,
+body.admin .btn-guardar-sus:hover,
+body.admin .btn-guardar-accion:hover,
+body.admin .btn-cancelar-gris:hover {
+    background: #024080 !important;
+}
+
+/* Botones peligrosos (eliminar, rechazar, cancelar, desactivar) */
+body.admin .btn-danger,
+body.admin .btn-rechazar,
+body.admin .btn-eliminar,
+body.admin .btn-desactivar,
+body.admin .btn-cancelar,
+body.admin .btn-cancelar-accion,
+body.admin .btn-accion.btn-eliminar,
+body.admin .btn-rechazar-sol,
+body.admin .btn-rechazar-alq,
+body.admin button[id^="btnRechazar"],
+body.admin button[id^="btnEliminar"],
+body.admin button[aria-label*="Eliminar"] {
+    background: transparent !important;
+    border: 1px solid #EF4444 !important;
+    color: #EF4444 !important;
+}
+
+body.admin .btn-danger:hover,
+body.admin .btn-rechazar:hover,
+body.admin .btn-eliminar:hover,
+body.admin .btn-desactivar:hover,
+body.admin .btn-cancelar:hover,
+body.admin .btn-cancelar-accion:hover,
+body.admin .btn-accion.btn-eliminar:hover,
+body.admin .btn-rechazar-sol:hover,
+body.admin .btn-rechazar-alq:hover,
+body.admin button[id^="btnRechazar"]:hover,
+body.admin button[id^="btnEliminar"]:hover,
+body.admin button[aria-label*="Eliminar"]:hover {
+    background: #FEE2E2 !important;
+    color: #DC2626 !important;
+    border-color: #DC2626 !important;
+}
+
+/* Excepciones: mantener botones secundarios grises cuando se use la clase específica */
+body.admin .btn-cancelar-gris {
+    background: #F3F4F6 !important;
+    border: 1px solid #D1D5DB !important;
+    color: #4B5563 !important;
+}
+
+body.admin .btn-cancelar-gris:hover {
+    background: #E5E7EB !important;
+    border-color: #9CA3AF !important;
+    color: #111827 !important;
+}
+
+/* Botones dentro de modales (forzar apariencia en admin) */
+body.admin .modal .modal-footer button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 48px !important;
+    padding: 12px 24px !important;
+    border-radius: 10px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+}
+
+body.admin .modal .modal-footer .btn-primary,
+body.admin .modal .modal-footer button.btn-primary,
+body.admin .modal .btn-primary {
+    background: #035498 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+body.admin .modal .modal-footer .btn-primary:hover,
+body.admin .modal .btn-primary:hover {
+    background: #024080 !important;
+}
+
+body.admin .modal .modal-footer .btn-danger,
+body.admin .modal .btn-danger {
+    background: #EF4444 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+body.admin .modal .modal-footer .btn-danger:hover,
+body.admin .modal .btn-danger:hover {
+    background: #DC2626 !important;
+}
+
+/* Asegurar contraste en botones de aceptar/cancelar dentro de modales */
+body.admin .modal .modal-footer .btn-secondary,
+body.admin .modal .modal-footer .btn-cancelar-accion,
+body.admin .modal .modal-footer .btn-cancelar-gris {
+    background: #F3F4F6 !important;
+    border: 1px solid #D1D5DB !important;
+    color: #4B5563 !important;
+}
+
+body.admin .modal .modal-footer .btn-cancelar-gris:hover,
+body.admin .modal .modal-footer .btn-cancelar-accion:hover,
+body.admin .modal .modal-footer .btn-secondary:hover {
+    background: #E5E7EB !important;
+    border-color: #9CA3AF !important;
+    color: #111827 !important;
+}
+
+
 .campana-item-wrap:hover .campana-item-borrar {
     opacity: 1;
     transform: translateY(-50%) translateY(-2px);
@@ -249,6 +382,21 @@ body {
     background: #F8FAFC;
     color: #111827;
     transform: translateY(-50%) translateY(-2px);
+}
+
+.error-mensaje {
+    color: #ff4d4d;
+    font-size: 0.75rem;
+    margin-top: 4px;
+    margin-left: 12px;
+    display: block;
+    text-align: left;
+}
+
+.btn-login-desabilitado {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    filter: grayscale(1);
 }
 
 /* Ajustes scrollbar más suave */

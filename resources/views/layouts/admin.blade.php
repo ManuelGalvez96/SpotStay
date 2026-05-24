@@ -18,7 +18,7 @@
     
     @yield('css')
 </head>
-<body>
+<body class="admin">
     <!-- TOPBAR -->
     <div class="topbar">
         <!-- Zona izquierda -->
@@ -52,8 +52,8 @@
             {{-- <button class="btn-nav-icon {{ request()->is('admin/suscripciones*') ? 'activo' : '' }}" data-ruta="/admin/suscripciones" title="Suscripciones">
                 <i class="bi bi-credit-card"></i>
             </button> --}}
-            <button class="btn-nav-icon {{ request()->is('admin/configuracion*') ? 'activo' : '' }}" data-ruta="/admin/configuracion" title="Configuración">
-                <i class="bi bi-gear"></i>
+            <button class="btn-nav-icon {{ request()->is('admin/configuracion*') ? 'activo' : '' }}" data-ruta="/admin/configuracion" title="Notificaciones">
+                <i class="bi bi-bell"></i>
             </button>
         </div>
         

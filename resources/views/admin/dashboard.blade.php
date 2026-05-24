@@ -381,7 +381,7 @@
             </div>
             
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn-cancelar-gris" data-bs-dismiss="modal">Cerrar</button>
                 <button type="button" class="btn btn-danger" id="btnRechazarSolicitudDash">Rechazar</button>
                 <button type="button" class="btn btn-primary" id="btnAprobarSolicitudDash">Aprobar</button>
             </div>
@@ -435,31 +435,34 @@
                 <!-- Campo destinatario -->
                 <div class="modal-seccion-dash">
                     <label for="modalDestinoContacto" class="modal-label-dash">Enviar a:</label>
-                    <select id="modalDestinoContacto" class="form-select" required>
+                    <select id="modalDestinoContacto" class="form-select">
                         <option value="">— Selecciona destinatario —</option>
                         <option value="inquilino">Inquilino</option>
                         <option value="arrendador">Arrendador</option>
                         <option value="gestor">Gestor asignado</option>
                     </select>
+                    <small class="error-mensaje" id="errorDestinoContacto"></small>
                 </div>
 
                 <!-- Campo asunto -->
                 <div class="modal-seccion-dash">
                     <label for="modalAsuntoContacto" class="modal-label-dash">Asunto:</label>
-                    <input type="text" id="modalAsuntoContacto" class="form-control" value="Incidencia inactiva — Requiere atención" required>
+                    <input type="text" id="modalAsuntoContacto" class="form-control" value="Incidencia inactiva — Requiere atención">
+                    <small class="error-mensaje" id="errorAsuntoContacto"></small>
                 </div>
 
                 <!-- Campo mensaje -->
                 <div class="modal-seccion-dash">
                     <label for="modalMensajeContacto" class="modal-label-dash">Mensaje:</label>
-                    <textarea id="modalMensajeContacto" class="form-control" rows="5" placeholder="Escribe tu mensaje..." required></textarea>
+                    <textarea id="modalMensajeContacto" class="form-control" rows="5" placeholder="Escribe tu mensaje..."></textarea>
+                    <small class="error-mensaje" id="errorMensajeContacto"></small>
                 </div>
 
                 <p class="modal-incidencia-nota-dash">Se enviará un correo con los detalles de la incidencia.</p>
             </div>
             
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-cancelar-gris" data-bs-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-primary" id="btnEnviarContactoIncidencia">
                     <i class="bi bi-send"></i> Enviar correo
                 </button>

@@ -114,41 +114,8 @@ window.mostrarAlertaAdminValidacion = function(mensaje) {
 // Confirmación global que devuelve una Promise<boolean>
 window.confirmarAdmin = function(titulo, mensaje) {
     return new Promise(function(resolve) {
-        var modalElement = document.getElementById('modalConfirmAdmin');
-        var tituloElement = document.getElementById('modalConfirmTituloAdmin');
-        var mensajeElement = document.getElementById('modalConfirmMensajeAdmin');
-        var botonConfirmar = document.getElementById('modalConfirmBotonConfirmarAdmin');
-
-        if (!modalElement || !botonConfirmar || typeof bootstrap === 'undefined') {
-            var ok = window.confirm(mensaje || titulo || 'Confirmar?');
-            resolve(Boolean(ok));
-            return;
-        }
-
-        tituloElement.textContent = titulo || 'Confirmar';
-        mensajeElement.textContent = mensaje || '';
-
-        var bsModal = bootstrap.Modal.getOrCreateInstance(modalElement);
-
-        var limpiar = function() {
-            botonConfirmar.removeEventListener('click', confirmarHandler);
-            modalElement.removeEventListener('hidden.bs.modal', hiddenHandler);
-        };
-
-        var confirmarHandler = function() {
-            limpiar();
-            bsModal.hide();
-            resolve(true);
-        };
-
-        var hiddenHandler = function() {
-            limpiar();
-            resolve(false);
-        };
-
-        botonConfirmar.addEventListener('click', confirmarHandler);
-        modalElement.addEventListener('hidden.bs.modal', hiddenHandler);
-        bsModal.show();
+        var ok = window.confirm(mensaje || titulo || 'Confirmar?');
+        resolve(Boolean(ok));
     });
 };
 
@@ -190,7 +157,7 @@ var asignarEventosAdmin = function() {
     }
 
     if (campanaDropdown) {
-        campanaDropdown.addEventListener('click', function(e) {
+        campanaDropdown.onclick = function(e) {
             var botonBorrar = e.target.closest('.campana-item-borrar');
             if (botonBorrar) {
                 e.preventDefault();
@@ -247,7 +214,7 @@ var asignarEventosAdmin = function() {
                     // ignore errors silently
                 });
             }
-        });
+        };
     }
     
     if (!adminContainer || !adminDropdown) return;

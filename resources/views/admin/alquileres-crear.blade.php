@@ -60,7 +60,7 @@
 
             <div class="campo-full">
                 <label for="id_propiedad">Propiedad</label>
-                <select id="id_propiedad" name="id_propiedad" required>
+                <select id="id_propiedad" name="id_propiedad">
                     <option value="">Selecciona una propiedad publicada...</option>
                     @foreach($propiedadesPublicadas as $propiedad)
                         <option value="{{ $propiedad->id_propiedad }}" data-precio="{{ $propiedad->precio_propiedad }}" {{ old('id_propiedad', $alquilerEditando->id_propiedad_fk ?? '') == $propiedad->id_propiedad ? 'selected' : '' }}>
@@ -68,11 +68,12 @@
                         </option>
                     @endforeach
                 </select>
+                <small class="error-mensaje" id="errorPropiedadAlquiler"></small>
             </div>
 
             <div class="campo-full">
                 <label for="id_inquilino">Inquilino</label>
-                <select id="id_inquilino" name="id_inquilino" required>
+                <select id="id_inquilino" name="id_inquilino">
                     <option value="">Selecciona un inquilino...</option>
                     @foreach($inquilinos as $inquilino)
                         <option value="{{ $inquilino->id_usuario }}" {{ old('id_inquilino', $alquilerEditando->id_inquilino_fk ?? '') == $inquilino->id_usuario ? 'selected' : '' }}>
@@ -80,11 +81,13 @@
                         </option>
                     @endforeach
                 </select>
+                <small class="error-mensaje" id="errorInquilinoAlquiler"></small>
             </div>
 
             <div>
                 <label for="fecha_inicio">Fecha de inicio</label>
-                <input id="fecha_inicio" name="fecha_inicio" type="date" value="{{ old('fecha_inicio', isset($alquilerEditando->fecha_inicio_alquiler) ? \Carbon\Carbon::parse($alquilerEditando->fecha_inicio_alquiler)->format('Y-m-d') : '') }}" required>
+                <input id="fecha_inicio" name="fecha_inicio" type="date" value="{{ old('fecha_inicio', isset($alquilerEditando->fecha_inicio_alquiler) ? \Carbon\Carbon::parse($alquilerEditando->fecha_inicio_alquiler)->format('Y-m-d') : '') }}">
+                <small class="error-mensaje" id="errorFechaInicioAlquiler"></small>
             </div>
 
             <div>
@@ -94,8 +97,9 @@
 
             <div class="campo-full">
                 <label for="precio">Precio mensual</label>
-                <input id="precio" name="precio" type="number" min="0" step="0.01" value="{{ old('precio', $alquilerEditando->precio_referencia ?? '') }}" required>
+                <input id="precio" name="precio" type="number" min="0" step="0.01" value="{{ old('precio', $alquilerEditando->precio_referencia ?? '') }}">
                 <small class="texto-ayuda">Puedes usar el precio de la propiedad o indicar uno distinto.</small>
+                <small class="error-mensaje" id="errorPrecioAlquiler"></small>
             </div>
 
             <div class="acciones-form campo-full">

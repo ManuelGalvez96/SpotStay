@@ -29,7 +29,7 @@
             <i class="bi bi-clock"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-naranja" id="kpiPendientesSolicitudes">{{ $solicitudesPendientes->total() }}</span>
+            <span class="kpi-mini-numero kpi-mini-numero-naranja" id="kpiPendientesSolicitudes">{{ $pendientesMes }}</span>
             <span class="kpi-mini-label">Pendientes este mes</span>
         </div>
     </div>
@@ -65,42 +65,42 @@
     </div>
 </div>
 
-<div class="toolbar-admin">
+<form class="toolbar-admin" id="formFiltrosSolicitudes" method="GET" action="{{ url('/admin/solicitudes') }}">
     <div class="toolbar-izquierda">
         <div class="input-busqueda">
             <i class="bi bi-search"></i>
-            <input type="text" id="buscadorSolicitudes" placeholder="Buscar por nombre, email o detalle...">
+            <input type="text" id="buscadorSolicitudes" name="q" value="{{ request('q') }}" placeholder="Buscar por nombre, email o detalle...">
         </div>
-        <select id="selectRangoSol" class="select-filtro">
-            <option value="mes">Este mes</option>
-            <option value="3meses">Últimos 3 meses</option>
-            <option value="anio">Este año</option>
-            <option value="all">Todas</option>
+        <select id="selectRangoSol" name="rango" class="select-filtro">
+            <option value="mes" @selected(request('rango', 'mes') === 'mes')>Este mes</option>
+            <option value="3meses" @selected(request('rango') === '3meses')>Últimos 3 meses</option>
+            <option value="anio" @selected(request('rango') === 'anio')>Este año</option>
+            <option value="all" @selected(request('rango') === 'all')>Todas</option>
         </select>
-        <select id="selectTipoSol" class="select-filtro">
-            <option value="all">Todos los tipos</option>
-            <option value="arrendador">Arrendador</option>
-            <option value="gestor">Gestor</option>
+        <select id="selectTipoSol" name="tipo" class="select-filtro">
+            <option value="all" @selected(request('tipo', 'all') === 'all')>Todos los tipos</option>
+            <option value="arrendador" @selected(request('tipo') === 'arrendador')>Arrendador</option>
+            <option value="gestor" @selected(request('tipo') === 'gestor')>Gestor</option>
         </select>
-        <select id="selectEstadoSol" class="select-filtro">
-            <option value="">Todos los estados</option>
-            <option value="pendiente">Pendiente</option>
-            <option value="aprobada">Aprobada</option>
-            <option value="rechazada">Rechazada</option>
+        <select id="selectEstadoSol" name="estado" class="select-filtro">
+            <option value="" @selected(request('estado', 'pendiente') === '')>Todos los estados</option>
+            <option value="pendiente" @selected(request('estado', 'pendiente') === 'pendiente')>Pendiente</option>
+            <option value="aprobada" @selected(request('estado') === 'aprobada')>Aprobada</option>
+            <option value="rechazada" @selected(request('estado') === 'rechazada')>Rechazada</option>
         </select>
-        <select id="selectCiudadSol" class="select-filtro">
-            <option value="">Todas las ubicaciones</option>
-            <option value="Madrid">Madrid</option>
-            <option value="Barcelona">Barcelona</option>
-            <option value="Valencia">Valencia</option>
-            <option value="Sevilla">Sevilla</option>
-            <option value="Bilbao">Bilbao</option>
+        <select id="selectCiudadSol" name="ciudad" class="select-filtro">
+            <option value="" @selected(request('ciudad') === '')>Todas las ubicaciones</option>
+            <option value="Madrid" @selected(request('ciudad') === 'Madrid')>Madrid</option>
+            <option value="Barcelona" @selected(request('ciudad') === 'Barcelona')>Barcelona</option>
+            <option value="Valencia" @selected(request('ciudad') === 'Valencia')>Valencia</option>
+            <option value="Sevilla" @selected(request('ciudad') === 'Sevilla')>Sevilla</option>
+            <option value="Bilbao" @selected(request('ciudad') === 'Bilbao')>Bilbao</option>
         </select>
     </div>
     <div class="toolbar-derecha">
-        <span class="texto-pendientes">{{ $solicitudesPendientes->total() }} pendientes de revisión este mes</span>
+        <span class="texto-pendientes">{{ $solicitudesPendientes->total() }} resultados filtrados</span>
     </div>
-</div>
+</form>
 
 <div class="solicitudes-grid">
     <div class="columna-izquierda-sol">
@@ -115,9 +115,8 @@
                     <span id="contadorResultados" class="info-paginacion">Mostrando 0-0 de 0 solicitudes</span>
                 </div>
 
-                <nav aria-label="Paginación de solicitudes">
-                    <ul class="pagination pagination-sm mb-0" id="paginacionSolicitudes">
-                    </ul>
+                <nav aria-label="Paginación de solicitudes" id="paginacionSolicitudes">
+                    {{ $solicitudesPendientes->withQueryString()->links('pagination::bootstrap-5') }}
                 </nav>
             </div>
 
@@ -184,13 +183,13 @@
                                 </td>
                                 <td data-label="ACCIONES">
                                     <div class="acciones-tabla">
-                                        <button class="btn-icono btn-ver-sol" data-id="{{ $solicitud->id_solicitud }}" data-tipo="{{ $solicitud->tipo_solicitud }}" title="Ver detalles">
+                                        <button type="button" class="btn-icono btn-ver-sol" data-id="{{ $solicitud->id_solicitud }}" data-tipo="{{ $solicitud->tipo_solicitud }}" title="Ver detalles" onclick="abrirModal(this.getAttribute('data-id'), this.getAttribute('data-tipo'))">
                                             <i class="bi bi-eye"></i>
                                         </button>
-                                        <button class="btn-icono btn-aprobar-sol" data-id="{{ $solicitud->id_solicitud }}" data-tipo="{{ $solicitud->tipo_solicitud }}" title="Aprobar">
+                                        <button type="button" class="btn-icono btn-aprobar-sol" data-id="{{ $solicitud->id_solicitud }}" data-tipo="{{ $solicitud->tipo_solicitud }}" title="Aprobar" onclick="abrirModal(this.getAttribute('data-id'), this.getAttribute('data-tipo'))">
                                             <i class="bi bi-check-circle"></i>
                                         </button>
-                                        <button class="btn-icono btn-rechazar-sol" data-id="{{ $solicitud->id_solicitud }}" data-tipo="{{ $solicitud->tipo_solicitud }}" title="Rechazar">
+                                        <button type="button" class="btn-icono btn-rechazar-sol" data-id="{{ $solicitud->id_solicitud }}" data-tipo="{{ $solicitud->tipo_solicitud }}" title="Rechazar" onclick="abrirModal(this.getAttribute('data-id'), this.getAttribute('data-tipo'))">
                                             <i class="bi bi-x-circle"></i>
                                         </button>
                                     </div>
@@ -399,7 +398,7 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn-cancelar-gris" data-bs-dismiss="modal">Cerrar</button>
                 <button type="button" class="btn-danger" id="btnRechazarModal">Rechazar solicitud</button>
                 <button type="button" class="btn-primary" id="btnAprobarModal">Aprobar solicitud</button>
             </div>

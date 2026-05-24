@@ -15,14 +15,29 @@ use Illuminate\Support\Facades\DB;
 
 class SolicitudController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $solicitudesPendientes = $this->paginarColeccion(
-            $this->obtenerSolicitudesCombinadas('pendiente', 'mes'),
-            7,
-            1
+        $estado = $request->has('estado') ? $request->input('estado') : 'pendiente';
+        $rango = $request->input('rango', 'mes');
+        $tipoSolicitud = $request->input('tipo', 'all');
+        $q = $request->input('q');
+        $ciudad = $request->input('ciudad');
+
+        $solicitudesFiltradas = $this->obtenerSolicitudesCombinadas(
+            $estado !== '' ? $estado : null,
+            $rango,
+            $tipoSolicitud,
+            $q,
+            $ciudad
         );
 
+        $solicitudesPendientes = $this->paginarColeccion(
+            $solicitudesFiltradas,
+            7,
+            (int) $request->input('page', 1)
+        );
+
+        $pendientesMes = $this->contarSolicitudesCombinadas('pendiente', 'mes');
         $aprobadas = $this->contarSolicitudesCombinadas('aprobada', 'mes');
         $rechazadas = $this->contarSolicitudesCombinadas('rechazada', 'mes');
         $totalSolicitudes = $this->contarSolicitudesCombinadas(null, 'all');
@@ -38,6 +53,7 @@ class SolicitudController extends Controller
 
         return view('admin.solicitudes', compact(
             'solicitudesPendientes',
+            'pendientesMes',
             'aprobadas',
             'rechazadas',
             'totalSolicitudes',

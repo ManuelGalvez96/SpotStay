@@ -36,8 +36,11 @@ class AsesoriaController extends Controller
             $q->where('estado', 1);
         }])
             ->where('slug', $slug)
-            ->where('estado', 1)
-            ->firstOrFail();
+            ->first();
+
+        if (!$categoria || !$categoria->estado) {
+            return redirect()->route($this->routePrefix() . '.asesoria');
+        }
 
         return view('asesoria.categoria', [
             'layout' => $this->layout(),

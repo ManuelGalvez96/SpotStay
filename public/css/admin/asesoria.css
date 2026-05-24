@@ -831,3 +831,12 @@ th .info-tooltip::after {
     cursor: default;
     pointer-events: none;
 }
+
+.badge-aviso {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: help;
+    margin-left: 4px;
+    font-size: 13px;
+}

@@ -284,6 +284,17 @@ function toggleEstadoCategoria(id) {
             } else {
                 tr.classList.add('fila-inactiva');
             }
+
+            var nombreTd = tr.querySelector('td[data-label="NOMBRE"]');
+            if (nombreTd) {
+                var textNode = nombreTd.childNodes[0];
+                var nombre = textNode ? textNode.textContent.trim() : '';
+                var badgeHtml = '';
+                if (data.destacados_count > 0 && !data.estado) {
+                    badgeHtml = ' <span class="badge-aviso" title="Tiene artículos destacados">⚠️</span>';
+                }
+                nombreTd.innerHTML = escHtml(nombre) + badgeHtml;
+            }
         } else {
             swalError('Error', data.message || 'No se pudo cambiar el estado de la categoría.');
         }
@@ -488,6 +499,11 @@ function actualizarTabla(data) {
         var inactivaClass = activo === '0' ? 'fila-inactiva' : '';
         var toggleClass = activo === '1' ? 'activo' : '';
 
+        var destacadoBadge = '';
+        if (cat.destacados_count > 0 && !cat.estado) {
+            destacadoBadge = ' <span class="badge-aviso" title="Tiene artículos destacados">⚠️</span>';
+        }
+
         var deleteBtn = '';
         if (cat.articulos_count > 0) {
             deleteBtn = '<span class="tooltip-wrapper" data-tooltip="No puedes eliminar esta categoría porque tiene artículos.">'
@@ -500,7 +516,7 @@ function actualizarTabla(data) {
 
         html += '<tr data-id="' + cat.id + '" data-activo="' + activo + '" class="' + inactivaClass + '">'
             + '<td data-label="ORDEN">' + cat.orden + '</td>'
-            + '<td data-label="NOMBRE">' + escHtml(cat.nombre) + '</td>'
+            + '<td data-label="NOMBRE">' + escHtml(cat.nombre) + destacadoBadge + '</td>'
             + '<td data-label="ENLACE"><code>' + escHtml(cat.slug) + '</code></td>'
             + '<td data-label="ARTÍCULOS">' + cat.articulos_count + '</td>'
             + '<td data-label="ICONO"><i class="bi ' + escHtml(cat.icono) + '"></i></td>'

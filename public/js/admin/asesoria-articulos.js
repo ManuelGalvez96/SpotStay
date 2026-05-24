@@ -289,6 +289,9 @@ function actualizarTablaArticulos(data) {
         var destacadoIcono = art.destacado ? 'bi-star-fill' : 'bi-star';
 
         var categoriaNombre = art.categoria ? escHtml(art.categoria.nombre) : '-';
+        if (art.categoria && !art.categoria.estado) {
+            categoriaNombre += ' <span class="badge-aviso" title="La categoría está inactiva">⚠️</span>';
+        }
         var contenidoPreview = truncate(stripHtml(art.contenido || ''), 80);
 
         html += '<tr data-id="' + art.id + '" data-activo="' + activo + '" class="' + inactivaClass + '">'

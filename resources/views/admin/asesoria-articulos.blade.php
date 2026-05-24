@@ -38,7 +38,7 @@
             <select id="filtro-categoria">
                 <option value="">Todas</option>
                 @foreach($categorias as $cat)
-                    <option value="{{ $cat->id }}">{{ $cat->nombre }}</option>
+                    <option value="{{ $cat->id }}">{{ $cat->nombre }}@if(!$cat->estado) (inactiva)@endif</option>
                 @endforeach
             </select>
             <input type="text" id="filtro-busqueda" placeholder="Título">

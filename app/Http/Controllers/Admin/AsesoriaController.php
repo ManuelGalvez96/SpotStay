@@ -18,7 +18,12 @@ class AsesoriaController extends Controller
 
     public function filtrar(Request $request)
     {
-        $query = CategoriaArticulo::withCount('articulos');
+        $query = CategoriaArticulo::withCount([
+            'articulos',
+            'articulos as destacados_count' => function ($q) {
+                $q->where('destacado', true);
+            }
+        ]);
 
         if ($request->filled('q')) {
             $query->where('nombre', 'like', '%' . $request->q . '%');
@@ -84,9 +89,15 @@ class AsesoriaController extends Controller
         $categoria->estado = !$categoria->estado;
         $categoria->save();
 
+        $categoria->loadCount(['articulos as destacados_count' => function ($q) {
+            $q->where('destacado', true);
+        }]);
+
         return response()->json([
-            'success' => true,
-            'message' => $categoria->estado ? 'Categoría activada.' : 'Categoría desactivada.',
+            'success'          => true,
+            'message'          => $categoria->estado ? 'Categoría activada.' : 'Categoría desactivada.',
+            'estado'           => $categoria->estado,
+            'destacados_count' => $categoria->destacados_count,
         ]);
     }
 
@@ -163,14 +174,14 @@ class AsesoriaController extends Controller
 
     public function articulos()
     {
-        $categorias = CategoriaArticulo::orderBy('nombre')->get(['id', 'nombre']);
+        $categorias = CategoriaArticulo::orderBy('nombre')->get(['id', 'nombre', 'estado']);
 
         return view('admin.asesoria-articulos', compact('categorias'));
     }
 
     public function filtrarArticulos(Request $request)
     {
-        $query = ArticuloAsesoria::with('categoria:id,nombre');
+        $query = ArticuloAsesoria::with('categoria:id,nombre,estado');
 
         if ($request->filled('q')) {
             $query->where('tbl_asesoria_articulo.titulo', 'like', '%' . $request->q . '%');

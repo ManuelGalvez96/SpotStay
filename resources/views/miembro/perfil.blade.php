@@ -54,17 +54,44 @@
                             <div class="fw-semibold">{{ $usuario->telefono_usuario ?: 'No indicado' }}</div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-muted mb-1">DNI</label>
+                            <label class="form-label text-muted mb-1">Documento de Identidad (DNI/NIE)</label>
                             <div class="fw-semibold">{{ $usuario->dni_usuario ?: 'No indicado' }}</div>
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label text-muted mb-1">Dirección fiscal</label>
-                            <div class="fw-semibold">{{ $usuario->direccion_fiscal_usuario ?: 'No indicada' }}</div>
                         </div>
 
                     </div>
                 </div>
             </div>
+
+            @if($rolDestinatario === 'arrendador')
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h2 class="h4 mb-3">Datos de Facturación</h2>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted mb-1">Tipo de Arrendador</label>
+                            <div class="fw-semibold">{{ ucfirst($usuario->tipo_arrendador_usuario) ?: 'No indicado' }}</div>
+                        </div>
+                        
+                        @if($usuario->tipo_arrendador_usuario === 'empresa')
+                        <div class="col-md-6">
+                            <label class="form-label text-muted mb-1">NIF de la Empresa</label>
+                            <div class="fw-semibold">{{ $usuario->cif_usuario ?: 'No indicado' }}</div>
+                        </div>
+                        @endif
+                        
+                        <div class="col-md-{{ $usuario->tipo_arrendador_usuario === 'empresa' ? '12' : '6' }}">
+                            <label class="form-label text-muted mb-1">Cuenta Bancaria (IBAN)</label>
+                            <div class="fw-semibold">{{ $usuario->iban_usuario ?: 'No indicado' }}</div>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <label class="form-label text-muted mb-1">Dirección fiscal</label>
+                            <div class="fw-semibold">{{ $usuario->direccion_fiscal_usuario ?: 'No indicada' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
 
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">

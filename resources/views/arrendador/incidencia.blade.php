@@ -107,6 +107,11 @@
                 <p class="nota-pago" style="background-color: rgba(255, 193, 7, 0.15); color: #856404; border: 1px solid #ffeeba; padding: 12px; border-radius: 8px;">El responsable del pago aún no ha sido definido.</p>
                 @endif
             </div>
+            @elseif($accionActual === 'solucionada')
+            <div class="bloque-accion info">
+                <h3>Incidencia solucionada</h3>
+                <p>El presupuesto ya se pagó. El inquilino puede revisarla y marcarla como resuelta cuando confirme que está correcta.</p>
+            </div>
             @elseif($accionActual === 'resuelta')
             <div class="bloque-accion info">
                 <h3>Incidencia resuelta</h3>

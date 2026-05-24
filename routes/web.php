@@ -289,10 +289,12 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
     Route::get('/miembro/chat/{id}', [MensajesController::class, 'show'])->name('miembro.mensajes.show');
     Route::get('/miembro/chat/{id}/mensajes', [MensajesController::class, 'obtenerMensajes'])->name('miembro.mensajes.mensajes');
     Route::post('/miembro/chat/{id}/mensaje', [MensajesController::class, 'enviarMensaje'])->name('miembro.mensajes.enviar');
+    Route::post('/miembro/propiedad/{id}/chat-gestor', [MensajesController::class, 'iniciarDesdePropiedadGestor'])->name('miembro.mensajes.iniciar_gestor');
     Route::get('/miembro/mapa', [MapaController::class, 'index'])->name('miembro.mapa');
 
     Route::get('/inquilino/gestionar-propiedades', [InquilinoController::class, 'gestionarPropiedades'])->name('gestionar_propiedades');
     Route::get('/inquilino/propiedad/{id}', [InquilinoController::class, 'verPropiedad'])->name('inquilino.ver_propiedad');
+    Route::get('/inquilino/propiedad/{id}/descargar-contrato', [InquilinoController::class, 'descargarContrato'])->name('inquilino.descargar_contrato');
 
     // Rutas de Incidencias (Controlador Especializado)
     Route::get('/inquilino/propiedad/{id}/incidencias', [InquilinoIncidenciaController::class, 'getIncidencias'])->name('inquilino.get_incidencias');

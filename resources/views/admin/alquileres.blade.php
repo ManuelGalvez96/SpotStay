@@ -266,7 +266,7 @@
                 </option>
             @endforeach
         </select>
-        <div id="propiedadSeleccionada" class="propiedad-preview" style="display:none">
+        <div id="propiedadSeleccionada" class="propiedad-preview d-none">
             <div class="thumb-propiedad" id="thumbNuevaProp"></div>
             <div>
                 <p id="nombreNuevaProp" class="propiedad-nombre"></p>
@@ -277,7 +277,7 @@
     </div>
 
     <!-- PASO 2 -->
-    <div class="paso-contenido" id="paso2" style="display:none">
+    <div class="paso-contenido d-none" id="paso2">
         <span class="seccion-label">SELECCIONA EL INQUILINO</span>
         <select id="nuevoInquilinoId" class="select-filtro select-full">
             <option value="">Selecciona un inquilino...</option>
@@ -287,7 +287,7 @@
                 </option>
             @endforeach
         </select>
-        <div id="inquilinoSeleccionado" class="persona-preview" style="display:none">
+        <div id="inquilinoSeleccionado" class="persona-preview d-none">
             <div class="modal-avatar" id="avatarNuevoInq"></div>
             <div>
                 <p id="nombreNuevoInq" class="parte-nombre"></p>
@@ -297,7 +297,7 @@
     </div>
 
     <!-- PASO 3 -->
-    <div class="paso-contenido" id="paso3" style="display:none">
+    <div class="paso-contenido d-none" id="paso3">
         <span class="seccion-label">FECHAS DEL ALQUILER</span>
         <div class="fechas-grid">
             <div>
@@ -316,7 +316,7 @@
     </div>
 
     <!-- PASO 4 -->
-    <div class="paso-contenido" id="paso4" style="display:none">
+    <div class="paso-contenido d-none" id="paso4">
         <span class="seccion-label">RESUMEN DEL ALQUILER</span>
         <div class="resumen-alquiler">
             <div class="resumen-fila">
@@ -355,11 +355,11 @@
     </div>
 
     <div class="modal-footer-admin">
-        <button id="btnPasoAnterior" class="btn-exportar" style="display:none">← Anterior</button>
+        <button id="btnPasoAnterior" class="btn-exportar d-none">← Anterior</button>
         <div class="modal-footer-derecha">
             <button id="btnCancelarNuevo" class="btn-exportar">Cancelar</button>
             <button id="btnPasoSiguiente" class="btn-primario">Siguiente →</button>
-            <button id="btnCrearAlquiler" class="btn-aprobar-verde" style="display:none">
+            <button id="btnCrearAlquiler" class="btn-aprobar-verde d-none">
                 <i class="bi bi-check"></i>
                 <span>Crear alquiler</span>
             </button>

@@ -27,6 +27,9 @@ class InquilinoGastosController extends Controller
 
         $propiedadId = $request->query('propiedad_id');
 
+        $tipoGasto = $request->query('tipo_gasto');
+        $nombreGasto = $request->query('nombre_gasto');
+
         // Obtener lista de propiedades para el filtro
         $propiedades = \App\Models\Alquiler::where('id_inquilino_fk', $usuario->id_usuario)
             ->where('estado_alquiler', 'activo')
@@ -35,7 +38,7 @@ class InquilinoGastosController extends Controller
             ->get();
 
         // Obtenemos los datos unificados del servicio (con filtro opcional)
-        $resumen = $this->financeService->obtenerResumenCompletoGastos($usuario->id_usuario, $propiedadId);
+        $resumen = $this->financeService->obtenerResumenCompletoGastos($usuario->id_usuario, $propiedadId, $tipoGasto, $nombreGasto);
 
         if ($request->ajax() || $request->expectsJson()) {
             return response()->json([

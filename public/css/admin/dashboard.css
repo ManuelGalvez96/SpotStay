@@ -1068,3 +1068,9 @@ body {
     border-color: #035498;
     box-shadow: 0 0 0 3px rgba(3, 84, 152, 0.1);
 }
+
+/* ── Estilos extraídos de la vista ── */
+.min-w-220 { min-width: 220px; }
+.min-w-150 { min-width: 150px; }
+.ml-8px { margin-left: 8px; }
+.d-none { display: none !important; }

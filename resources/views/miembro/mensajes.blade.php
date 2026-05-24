@@ -51,43 +51,45 @@
             <p>Selecciona una conversación para empezar a chatear.</p>
         </div>
         @else
-        <header class="mensajes-cabecera">
-            <h2 class="titulo-listado">{{ $otroUsuario->nombre_usuario ?? 'Chat' }}</h2>
-            <span class="contador-propiedades">{{ $conversacionActiva->propiedad->titulo_propiedad ?? 'Sin propiedad' }}</span>
-        </header>
+        <div class="mensajes-card">
+            <header class="mensajes-cabecera">
+                <h2 class="titulo-listado">{{ $otroUsuario->nombre_usuario ?? 'Chat' }}</h2>
+                <span class="contador-propiedades">{{ $conversacionActiva->propiedad->titulo_propiedad ?? 'Sin propiedad' }}</span>
+            </header>
 
-        <div
-            id="mensajes-datos"
-            data-conversacion-id="{{ $conversacionActiva->id_conversacion }}"
-            data-url-mensajes="{{ route('miembro.mensajes.mensajes', ['id' => $conversacionActiva->id_conversacion]) }}"
-            data-url-enviar="{{ route('miembro.mensajes.enviar', ['id' => $conversacionActiva->id_conversacion]) }}"></div>
+            <div
+                id="mensajes-datos"
+                data-conversacion-id="{{ $conversacionActiva->id_conversacion }}"
+                data-url-mensajes="{{ route('miembro.mensajes.mensajes', ['id' => $conversacionActiva->id_conversacion]) }}"
+                data-url-enviar="{{ route('miembro.mensajes.enviar', ['id' => $conversacionActiva->id_conversacion]) }}"></div>
 
-        <div class="mensajes-mensajes" id="mensajes-mensajes">
-            @forelse ($mensajes as $mensaje)
-            @php
-            $esMio = (int) $mensaje->id_remitente_fk === (int) auth()->id();
-            @endphp
+            <div class="mensajes-mensajes" id="mensajes-mensajes">
+                @forelse ($mensajes as $mensaje)
+                @php
+                $esMio = (int) $mensaje->id_remitente_fk === (int) auth()->id();
+                @endphp
 
-            <div class="mensajes-burbuja {{ $esMio ? 'mio' : 'otro' }}">
-                <p class="mensajes-burbuja-texto">{{ $mensaje->cuerpo_mensaje }}</p>
-                <span class="mensajes-burbuja-fecha">{{ optional($mensaje->creado_mensaje)->format('d/m/Y H:i') }}</span>
+                <div class="mensajes-burbuja {{ $esMio ? 'mio' : 'otro' }}">
+                    <p class="mensajes-burbuja-texto">{{ $mensaje->cuerpo_mensaje }}</p>
+                    <span class="mensajes-burbuja-fecha">{{ optional($mensaje->creado_mensaje)->format('d/m/Y H:i') }}</span>
+                </div>
+                @empty
+                <div class="estado-vacio">
+                    <p>Aun no hay mensajes en esta conversación.</p>
+                </div>
+                @endforelse
             </div>
-            @empty
-            <div class="estado-vacio">
-                <p>Aun no hay mensajes en esta conversación.</p>
-            </div>
-            @endforelse
+
+            <form id="mensajes-formulario" action="{{ route('miembro.mensajes.enviar', ['id' => $conversacionActiva->id_conversacion]) }}" method="POST" class="mensajes-formulario-whatsapp">
+                @csrf
+                <div class="input-whatsapp-container">
+                    <textarea id="mensaje" name="mensaje" class="input-whatsapp-texto" placeholder="Escribe un mensaje..." rows="1" required>{{ old('mensaje') }}</textarea>
+                </div>
+                <button type="submit" class="boton-whatsapp-enviar" aria-label="Enviar mensaje">
+                    <i class="bi bi-send-fill" aria-hidden="true"></i>
+                </button>
+            </form>
         </div>
-
-        <form id="mensajes-formulario" action="{{ route('miembro.mensajes.enviar', ['id' => $conversacionActiva->id_conversacion]) }}" method="POST" class="mensajes-formulario-whatsapp">
-            @csrf
-            <div class="input-whatsapp-container">
-                <textarea id="mensaje" name="mensaje" class="input-whatsapp-texto" placeholder="Escribe un mensaje..." rows="1" required>{{ old('mensaje') }}</textarea>
-            </div>
-            <button type="submit" class="boton-whatsapp-enviar" aria-label="Enviar mensaje">
-                <i class="bi bi-send-fill" aria-hidden="true"></i>
-            </button>
-        </form>
         @endif
     </section>
 </section>

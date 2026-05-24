@@ -298,7 +298,7 @@
         </div>
         <div class="kanban-col-body">
             @forelse($solucionadas ?? [] as $inc)
-                <div class="tarjeta-inc tarjeta-inc-solucionada" data-id="{{ $inc->id_incidencia }}" style="position:relative">
+                <div class="tarjeta-inc tarjeta-inc-solucionada pos-relative" data-id="{{ $inc->id_incidencia }}">
                     <i class="bi bi-check-circle-fill check-solucionada"></i>
                     <p class="tarjeta-titulo">{{ $inc->titulo_incidencia }}</p>
                     <div class="tarjeta-inc-bottom">
@@ -320,7 +320,7 @@
         </div>
         <div class="kanban-col-body">
             @forelse($resueltas ?? [] as $inc)
-                <div class="tarjeta-inc tarjeta-inc-resuelta" data-id="{{ $inc->id_incidencia }}" style="position:relative">
+                <div class="tarjeta-inc tarjeta-inc-resuelta pos-relative" data-id="{{ $inc->id_incidencia }}">
                     <i class="bi bi-lock-fill lock-resuelta"></i>
                     <p class="tarjeta-titulo tarjeta-titulo-resuelta">{{ $inc->titulo_incidencia }}</p>
                     <p class="tarjeta-propiedad">{{ \Illuminate\Support\Str::limit($inc->direccion_propiedad ?? '', 20) }}</p>
@@ -335,7 +335,7 @@
 </div>
 
 <!-- Vista de Lista -->
-<div class="card-admin" id="vistaLista" style="display: none;">
+<div class="card-admin d-none" id="vistaLista">
     <div class="tabla-header d-flex flex-wrap justify-content-between align-items-center gap-3">
         <div class="tabla-header-info">
             <span class="tabla-header-titulo">Incidencias</span>
@@ -367,7 +367,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="d-flex align-items-center gap-3" style="flex: 1;">
+                <div class="d-flex align-items-center gap-3 flex-1">
                     <h5 class="modal-title mb-0">Detalle de incidencia</h5>
                     <span id="modalBadgePrioridad" class="badge"></span>
                     <span id="modalBadgeCategoria" class="badge bg-secondary"></span>
@@ -422,7 +422,7 @@
             </div>
 
             <div class="modal-footer">
-                <div style="flex:1; text-align:left;">
+                <div class="flex-1 text-left">
                     <select id="modalContactarDestino" class="form-select form-select-sm mb-2">
                         <option value="inquilino">Contactar inquilino</option>
                         <option value="arrendador">Contactar arrendador</option>

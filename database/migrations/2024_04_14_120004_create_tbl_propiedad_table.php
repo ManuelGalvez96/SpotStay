@@ -37,7 +37,7 @@ return new class extends Migration {
             $table->boolean('calefaccion_propiedad')->default(false);
             $table->boolean('trastero_propiedad')->default(false);
             $table->string('adicional_propiedad', 255)->nullable();
-            $table->unsignedTinyInteger('banos_propiedad')->nullable();
+            $table->string('banos_propiedad', 20)->nullable();
             $table->unsignedBigInteger('id_admin_aprueba_fk')->nullable();
             $table->string('estado_propiedad', 30)->default('borrador');
             $table->text('notas_admin_propiedad')->nullable();

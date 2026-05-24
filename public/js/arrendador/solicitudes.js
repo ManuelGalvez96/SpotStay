@@ -33,34 +33,34 @@ function mostrarToast(texto) {
 function crearModal(titulo, contenido) {
   var modal = document.createElement('div');
   modal.className = 'modal-overlay';
-  
+
   var contenedor = document.createElement('div');
   contenedor.className = 'modal-contenedor';
-  
+
   var encabezado = document.createElement('div');
   encabezado.className = 'modal-encabezado';
-  
+
   var h2 = document.createElement('h2');
   h2.textContent = titulo;
   encabezado.appendChild(h2);
-  
+
   var botonCerrar = document.createElement('button');
   botonCerrar.className = 'modal-cerrar';
   botonCerrar.textContent = '✕';
   botonCerrar.onclick = function () { modal.remove(); };
   encabezado.appendChild(botonCerrar);
-  
+
   var cuerpo = document.createElement('div');
   cuerpo.className = 'modal-cuerpo';
   cuerpo.innerHTML = contenido;
-  
+
   contenedor.appendChild(encabezado);
   contenedor.appendChild(cuerpo);
   modal.appendChild(contenedor);
   modal.onclick = function (e) {
     if (e.target === modal) modal.remove();
   };
-  
+
   return { modal: modal, cuerpo: cuerpo, contenedor: contenedor };
 }
 
@@ -80,16 +80,16 @@ function actualizarFila(id, estado) {
 
   if (accionesNodo) {
     if (estado === 'activo') {
-      accionesNodo.innerHTML = 
+      accionesNodo.innerHTML =
         '<button class="btn-ver" data-ver="' + id + '">Ver</button>';
     } else if (estado === 'pendiente') {
-      accionesNodo.innerHTML = 
+      accionesNodo.innerHTML =
         '<button class="btn-ver" data-ver="' + id + '">Ver</button>' +
         '<button class="btn-editar" data-editar="' + id + '">Editar</button>' +
         '<button class="btn-icono btn-aprobar-sol" data-id="' + id + '" title="Aprobar"><i class="bi bi-check-circle"></i></button>' +
         '<button class="btn-icono btn-rechazar-sol" data-id="' + id + '" title="Rechazar"><i class="bi bi-x-circle"></i></button>';
     } else {
-      accionesNodo.innerHTML = 
+      accionesNodo.innerHTML =
         '<button class="btn-ver" data-ver="' + id + '">Ver</button>' +
         '<button class="btn-editar" data-editar="' + id + '">Editar</button>';
     }
@@ -123,7 +123,7 @@ function verSolicitud(id, arrendadorId) {
       }
 
       var datos = resultado.datosRespuesta.data;
-      var contenido = 
+      var contenido =
         '<div class="detalles-solicitud">' +
         '  <p><strong>Propiedad:</strong> ' + datos.titulo_propiedad + '</p>' +
         '  <p><strong>Dirección:</strong> ' + datos.direccion_propiedad + '</p>' +
@@ -168,7 +168,7 @@ function editarSolicitud(id, arrendadorId) {
       }
 
       var datos = resultado.datosRespuesta.data;
-      var contenido = 
+      var contenido =
         '<form id="formulario-editar-' + id + '" class="formulario-editar">' +
         '  <div class="campo-formulario">' +
         '    <label>Propiedad:</label>' +
@@ -185,28 +185,28 @@ function editarSolicitud(id, arrendadorId) {
         '</form>';
 
       var miModal = crearModal('Editar Solicitud', contenido);
-      
+
       var pieModal = document.createElement('div');
       pieModal.className = 'modal-pie';
-      
+
       var botonGuardar = document.createElement('button');
       botonGuardar.className = 'btn-guardar';
       botonGuardar.textContent = 'Guardar Cambios';
       botonGuardar.onclick = function () {
         guardarEdicion(id, arrendadorId, miModal.modal);
       };
-      
+
       var botonCancelar = document.createElement('button');
       botonCancelar.className = 'btn-cancelar';
       botonCancelar.textContent = 'Cancelar';
       botonCancelar.onclick = function () {
         miModal.modal.remove();
       };
-      
+
       pieModal.appendChild(botonGuardar);
       pieModal.appendChild(botonCancelar);
       miModal.contenedor.appendChild(pieModal);
-      
+
       document.body.appendChild(miModal.modal);
     })
     .catch(function (error) {
@@ -366,104 +366,21 @@ function agregarEventosAcciones() {
     };
   });
 
-<<<<<<< HEAD
-  // El botón eliminar ha sido retirado de la UI para arrendadores.
-
-  /* Botones de aprobar */
-  document.querySelectorAll('.btn-aprobar-sol').forEach(function (boton) {
-=======
   document.querySelectorAll('[data-aprobar]').forEach(function (boton) {
->>>>>>> 72647d469c4f31f377c4072d2c3e3ca494fd0a5c
     boton.onclick = function (e) {
       e.preventDefault();
       var accionesDiv = boton.closest('[data-acciones]');
       var arrendadorId = accionesDiv ? accionesDiv.getAttribute('data-arrendador') : '';
-<<<<<<< HEAD
-      var id = boton.getAttribute('data-id');
-
-      Swal.fire({
-        title: 'Aprobar solicitud',
-        text: '¿Confirmas que deseas aprobar esta solicitud? Esto activará el alquiler.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, aprobar',
-        cancelButtonText: 'Cancelar'
-      }).then(function (result) {
-        if (!result.isConfirmed) return;
-
-        fetch('/arrendador/solicitudes/' + id + '/aprobar', {
-          method: 'POST',
-          headers: {
-            'X-CSRF-TOKEN': obtenerTokenCsrf(),
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json'
-          },
-          body: new URLSearchParams({ arrendador_id: arrendadorId }),
-          credentials: 'same-origin'
-        })
-          .then(function (respuesta) { return respuesta.json().then(function (d) { return { ok: respuesta.ok, d: d }; }); })
-          .then(function (resultado) {
-            if (!resultado.ok || !resultado.d.success) {
-              throw new Error(resultado.d.message || 'Error al aprobar la solicitud');
-            }
-            actualizarFila(id, 'activo');
-            mostrarToast('Solicitud aprobada correctamente.');
-          })
-          .catch(function (error) { mostrarToast(error.message || 'Error al aprobar la solicitud'); });
-      });
-    };
-  });
-
-  /* Botones de rechazar */
-  document.querySelectorAll('.btn-rechazar-sol').forEach(function (boton) {
-=======
       aprobarSolicitud(boton.getAttribute('data-aprobar'), arrendadorId);
     };
   });
 
   document.querySelectorAll('[data-rechazar]').forEach(function (boton) {
->>>>>>> 72647d469c4f31f377c4072d2c3e3ca494fd0a5c
     boton.onclick = function (e) {
       e.preventDefault();
       var accionesDiv = boton.closest('[data-acciones]');
       var arrendadorId = accionesDiv ? accionesDiv.getAttribute('data-arrendador') : '';
-<<<<<<< HEAD
-      var id = boton.getAttribute('data-id');
-
-      Swal.fire({
-        title: 'Rechazar solicitud',
-        input: 'textarea',
-        inputPlaceholder: 'Motivo del rechazo (opcional)',
-        showCancelButton: true,
-        confirmButtonText: 'Rechazar',
-        cancelButtonText: 'Cancelar'
-      }).then(function (result) {
-        if (!result.isConfirmed) return;
-        var notas = result.value || '';
-
-        fetch('/arrendador/solicitudes/' + id + '/rechazar', {
-          method: 'POST',
-          headers: {
-            'X-CSRF-TOKEN': obtenerTokenCsrf(),
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json'
-          },
-          body: new URLSearchParams({ arrendador_id: arrendadorId, notas: notas }),
-          credentials: 'same-origin'
-        })
-          .then(function (respuesta) { return respuesta.json().then(function (d) { return { ok: respuesta.ok, d: d }; }); })
-          .then(function (resultado) {
-            if (!resultado.ok || !resultado.d.success) {
-              throw new Error(resultado.d.message || 'Error al rechazar la solicitud');
-            }
-            actualizarFila(id, 'rechazado');
-            mostrarToast('Solicitud rechazada correctamente.');
-          })
-          .catch(function (error) { mostrarToast(error.message || 'Error al rechazar la solicitud'); });
-      });
-=======
       rechazarSolicitud(boton.getAttribute('data-rechazar'), arrendadorId);
->>>>>>> 72647d469c4f31f377c4072d2c3e3ca494fd0a5c
     };
   });
 }

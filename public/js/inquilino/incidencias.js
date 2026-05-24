@@ -115,7 +115,7 @@ function pintarIncidencias(incidencias) {
     let html = "";
     incidencias.forEach(incidencia => {
         const esAutor = incidencia.id_reporta === incidencia.auth_id;
-        const botónResolver = (esAutor && incidencia.estado !== "resuelta")
+        const botónResolver = (esAutor && incidencia.estado === "solucionada")
             ? `<button type="button" class="btn-resolver" title="Marcar como resuelta" onclick="cerrarIncidencia(${incidencia.id})">
                 <i class="bi bi-check-circle"></i>
             </button>`

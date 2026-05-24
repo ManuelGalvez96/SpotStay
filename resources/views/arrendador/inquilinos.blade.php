@@ -58,12 +58,19 @@
     </section>
 </div>
 
-<div class="modal" id="modalInquilino" hidden>
-    <div class="modal-contenido">
-        <button class="cerrar" id="cerrarModalInquilino">×</button>
-        <h2 id="tituloInquilino">Detalle de inquilino</h2>
-        <p id="datosInquilino" class="muted"></p>
-        <div id="listaPropiedades"></div>
+<!-- Modal Bootstrap para detalle de inquilino -->
+<div class="modal fade" id="modalInquilino" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tituloInquilino">Detalle de inquilino</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p id="datosInquilino" class="muted"></p>
+                <div id="listaPropiedades"></div>
+            </div>
+        </div>
     </div>
 </div>
 @endsection

@@ -183,9 +183,9 @@ function cargarDetalleIncidencia(idIncidencia) {
                             </div>
                         </div>
                         ${datos.estado_workflow === 'esperando_pago' ? `
-                            <button class="btn btn-primary w-100 mt-3 btn-pagar-incidencia" onclick="pagarPresupuestoStripe(${datos.id})">
-                                <i class="bi bi-credit-card"></i> Pagar Reparación Ahora
-                            </button>
+                            <div class="alert alert-warning w-100 mb-0 mt-3 py-2 text-center" style="font-size: 0.95rem;">
+                                <i class="bi bi-info-circle"></i> Para abonar esta incidencia, por favor dirígete a la sección de <strong>Gestionar mis Gastos</strong>.
+                            </div>
                         ` : (datos.estado_workflow === 'pagado' ? `
                             <div class="alert alert-success mb-0 mt-3 py-2 text-center">
                                 <i class="bi bi-check-circle"></i> Pago completado
@@ -200,52 +200,7 @@ function cargarDetalleIncidencia(idIncidencia) {
         });
 }
 
-/**
- * Redirige al pago de un presupuesto de incidencia vía Stripe
- */
-function pagarPresupuestoStripe(idIncidencia) {
-    const boton = document.querySelector('.btn-pagar-incidencia');
-    if (boton) {
-        boton.disabled = true;
-        boton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Redirigiendo a Stripe...';
-    }
 
-    const token = document.querySelector('input[name="_token"]')?.value;
-
-    fetch(`../incidencia/${idIncidencia}/pagar-presupuesto`, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': token,
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json'
-        }
-    })
-    .then(r => r.json())
-    .then(datos => {
-        if (datos.success && datos.url) {
-            window.location.href = datos.url;
-        } else {
-            Swal.fire({
-                title: 'Error',
-                text: datos.message || 'No se pudo iniciar el pago.',
-                iconHtml: crearOsoError(),
-                customClass: { icon: 'oso-icon' },
-                confirmButtonColor: '#d33'
-            });
-            if (boton) {
-                boton.disabled = false;
-                boton.innerHTML = '<i class="bi bi-credit-card"></i> Pagar Reparación Ahora';
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        if (boton) {
-            boton.disabled = false;
-            boton.innerHTML = '<i class="bi bi-credit-card"></i> Pagar Reparación Ahora';
-        }
-    });
-}
 
 /**
  * Función para marcar una incidencia como resuelta

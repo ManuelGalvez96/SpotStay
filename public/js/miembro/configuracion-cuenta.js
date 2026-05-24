@@ -13,7 +13,11 @@ function iniciarValidacionConfiguracionCuenta() {
     var entradaEmail = document.getElementById('email_usuario');
     var entradaTelefono = document.getElementById('telefono_usuario');
     var entradaDni = document.getElementById('dni_usuario');
+    var selectorTipoDoc = document.getElementById('tipo_documento_selector');
+    var entradaTipoArrendador = document.getElementById('tipo_arrendador_usuario');
     var entradaDireccion = document.getElementById('direccion_fiscal_usuario');
+    var entradaCif = document.getElementById('cif_usuario');
+    var contenedorCif = document.getElementById('contenedor_cif_usuario');
     var entradaFechaNacimiento = document.getElementById('fecha_nacimiento_usuario');
     var entradaAvatar = document.getElementById('avatar_usuario');
     var entradaContrasenaNueva = document.getElementById('contrasena_usuario');
@@ -24,6 +28,7 @@ function iniciarValidacionConfiguracionCuenta() {
     var errorTelefono = document.getElementById('error-telefono-usuario');
     var errorDni = document.getElementById('error-dni-usuario');
     var errorDireccion = document.getElementById('error-direccion-fiscal-usuario');
+    var errorCif = document.getElementById('error-cif-usuario');
     var errorFechaNacimiento = document.getElementById('error-fecha-nacimiento-usuario');
     var errorAvatar = document.getElementById('error-avatar-usuario');
     var errorContrasenaNueva = document.getElementById('error-contrasena-usuario');
@@ -34,6 +39,7 @@ function iniciarValidacionConfiguracionCuenta() {
     var estadoTelefono = true;
     var estadoDni = true;
     var estadoDireccion = true;
+    var estadoCif = true;
     var estadoFechaNacimiento = true;
     var estadoAvatar = true;
     var estadoContrasenaNueva = true;
@@ -50,10 +56,53 @@ function iniciarValidacionConfiguracionCuenta() {
         return;
     }
 
+    if (entradaDni && selectorTipoDoc && entradaDni.value.trim() !== '') {
+        var valorInicial = entradaDni.value.trim().toUpperCase();
+        if (/^[XYZ]/.test(valorInicial)) {
+            selectorTipoDoc.value = 'NIE';
+        } else {
+            selectorTipoDoc.value = 'DNI';
+        }
+    }
+
+    function actualizarVisibilidadCif() {
+        if (entradaTipoArrendador && contenedorCif) {
+            if (entradaTipoArrendador.value === 'empresa') {
+                contenedorCif.style.display = 'block';
+            } else {
+                contenedorCif.style.display = 'none';
+                if (entradaCif) {
+                    entradaCif.value = '';
+                    limpiarError(errorCif);
+                    estadoCif = true;
+                }
+            }
+            comprobarBoton();
+        }
+    }
+
+    if (entradaTipoArrendador) {
+        entradaTipoArrendador.addEventListener('change', function() {
+            actualizarVisibilidadCif();
+            if (entradaCif && entradaTipoArrendador.value === 'empresa') {
+                validarCif(true);
+            }
+        });
+        actualizarVisibilidadCif();
+    }
+
+    if (selectorTipoDoc) {
+        selectorTipoDoc.addEventListener('change', function() {
+            if (entradaDni.value.trim() !== '') {
+                validarDni();
+            }
+        });
+    }
+
     botonEnviar.disabled = true;
 
     function comprobarBoton() {
-        var formularioValido = estadoNombre && estadoEmail && estadoTelefono && estadoDni && estadoDireccion && estadoFechaNacimiento && estadoAvatar && estadoContrasenaNueva && estadoContrasenaConfirmacion;
+        var formularioValido = estadoNombre && estadoEmail && estadoTelefono && estadoDni && estadoDireccion && estadoCif && estadoFechaNacimiento && estadoAvatar && estadoContrasenaNueva && estadoContrasenaConfirmacion;
 
         botonEnviar.disabled = !formularioValido;
     }
@@ -238,9 +287,51 @@ function iniciarValidacionConfiguracionCuenta() {
 
         var patronDni = /^[0-9]{8}[TRWAGMYFPDXBNJZSQVHLCKE]$/;
         var patronNie = /^[XYZ][0-9]{7}[TRWAGMYFPDXBNJZSQVHLCKE]$/;
+        var tipoSeleccionado = selectorTipoDoc ? selectorTipoDoc.value : 'DNI';
 
-        if (!patronDni.test(valor) && !patronNie.test(valor)) {
-            establecerError(errorDni, 'Introduce un DNI o NIE válido.');
+        var esValido = false;
+        var mensajeError = 'Formato de documento inválido.';
+        var letrasValidas = 'TRWAGMYFPDXBNJZSQVHLCKE';
+
+        if (tipoSeleccionado === 'DNI') {
+            if (patronDni.test(valor)) {
+                var numeroDni = parseInt(valor.substring(0, 8), 10);
+                var letraDni = valor.charAt(8);
+                var letraEsperada = letrasValidas.charAt(numeroDni % 23);
+                
+                if (letraDni === letraEsperada) {
+                    esValido = true;
+                } else {
+                    mensajeError = 'La letra del DNI no es correcta.';
+                }
+            } else {
+                mensajeError = 'Introduce un DNI válido (8 números y 1 letra).';
+            }
+        } else if (tipoSeleccionado === 'NIE') {
+            if (patronNie.test(valor)) {
+                var primeraLetra = valor.charAt(0);
+                var numeroNieStr = valor.substring(1, 8);
+                var prefijo = '0';
+                
+                if (primeraLetra === 'Y') prefijo = '1';
+                else if (primeraLetra === 'Z') prefijo = '2';
+                
+                var numeroCompleto = parseInt(prefijo + numeroNieStr, 10);
+                var letraNie = valor.charAt(8);
+                var letraEsperadaNie = letrasValidas.charAt(numeroCompleto % 23);
+                
+                if (letraNie === letraEsperadaNie) {
+                    esValido = true;
+                } else {
+                    mensajeError = 'La letra del NIE no es correcta.';
+                }
+            } else {
+                mensajeError = 'Introduce un NIE válido (Letra, 7 números, Letra).';
+            }
+        }
+
+        if (!esValido) {
+            establecerError(errorDni, mensajeError);
             estadoDni = false;
             comprobarBoton();
             return;
@@ -296,6 +387,34 @@ function iniciarValidacionConfiguracionCuenta() {
         } else {
             limpiarError(errorDireccion);
             estadoDireccion = true;
+        }
+
+        comprobarBoton();
+    }
+
+    function validarCif(ignorarVacio = false) {
+        if (!entradaCif || !contenedorCif || contenedorCif.style.display === 'none') {
+            estadoCif = true;
+            comprobarBoton();
+            return;
+        }
+
+        var valor = entradaCif.value.trim().toUpperCase();
+        var patronCif = /^[A-JUV][0-9]{7}[0-9A-J]$/;
+
+        if (valor === '') {
+            if (ignorarVacio === true) {
+                limpiarError(errorCif);
+            } else {
+                establecerError(errorCif, 'El NIF de la empresa es obligatorio.');
+            }
+            estadoCif = false;
+        } else if (!patronCif.test(valor)) {
+            establecerError(errorCif, 'Introduce un NIF válido (Letra, 7 números, número/letra).');
+            estadoCif = false;
+        } else {
+            limpiarError(errorCif);
+            estadoCif = true;
         }
 
         comprobarBoton();
@@ -455,6 +574,11 @@ function iniciarValidacionConfiguracionCuenta() {
         entradaDireccion.addEventListener('blur', validarDireccion);
     }
 
+    if (entradaCif) {
+        entradaCif.addEventListener('input', function() { validarCif(false); });
+        entradaCif.addEventListener('blur', function() { validarCif(false); });
+    }
+
     if (entradaFechaNacimiento) {
         entradaFechaNacimiento.addEventListener('change', validarFechaNacimiento);
         entradaFechaNacimiento.addEventListener('blur', validarFechaNacimiento);
@@ -480,6 +604,7 @@ function iniciarValidacionConfiguracionCuenta() {
         validarTelefono();
         validarDni();
         validarDireccion();
+        validarCif(false);
         validarFechaNacimiento();
         validarAvatar();
         validarContrasena();
@@ -494,6 +619,7 @@ function iniciarValidacionConfiguracionCuenta() {
     validarTelefono();
     validarDni();
     validarDireccion();
+    validarCif(true);
     validarFechaNacimiento();
     validarAvatar();
     validarContrasena();

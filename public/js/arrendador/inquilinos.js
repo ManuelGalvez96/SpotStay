@@ -1,17 +1,11 @@
+// Usaremos la API de Bootstrap Modal en lugar de manipular hidden/overflow manualmente.
+var bsModalInstance = null;
 function abrirModal() {
-  var modal = document.getElementById('modalInquilino');
-  if (modal) {
-    modal.hidden = false;
-    document.body.style.overflow = 'hidden';
-  }
+  if (bsModalInstance) bsModalInstance.show();
 }
 
 function cerrarModal() {
-  var modal = document.getElementById('modalInquilino');
-  if (modal) {
-    modal.hidden = true;
-    document.body.style.overflow = '';
-  }
+  if (bsModalInstance) bsModalInstance.hide();
 }
 
 function renderizarDetalle(datosRespuesta) {
@@ -68,28 +62,17 @@ function obtenerDetalleInquilino(id, arrendadorId) {
     });
 }
 
-document.querySelectorAll('[data-ver-inquilino]').forEach(function (boton) {
-  boton.addEventListener('click', function () {
-    obtenerDetalleInquilino(boton.getAttribute('data-ver-inquilino'), boton.getAttribute('data-arrendador'));
-  });
-});
-
-var botonCerrar = document.getElementById('cerrarModalInquilino');
-if (botonCerrar) {
-  botonCerrar.addEventListener('click', cerrarModal);
-}
-
-var modalInquilino = document.getElementById('modalInquilino');
-if (modalInquilino) {
-  modalInquilino.addEventListener('click', function (evento) {
-    if (evento.target === modalInquilino) {
-      cerrarModal();
-    }
-  });
-}
-
-document.addEventListener('keydown', function (evento) {
-  if (evento.key === 'Escape') {
-    cerrarModal();
+document.addEventListener('DOMContentLoaded', function () {
+  var modalEl = document.getElementById('modalInquilino');
+  if (modalEl && typeof bootstrap !== 'undefined') {
+    bsModalInstance = new bootstrap.Modal(modalEl, { keyboard: true });
   }
+
+  document.querySelectorAll('[data-ver-inquilino]').forEach(function (boton) {
+    boton.addEventListener('click', function () {
+      obtenerDetalleInquilino(boton.getAttribute('data-ver-inquilino'), boton.getAttribute('data-arrendador'));
+    });
+  });
+
+  // Bootstrap gestiona cierre por backdrop y tecla Escape; no precisamos handlers manuales
 });

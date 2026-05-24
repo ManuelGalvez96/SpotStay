@@ -20,6 +20,17 @@ function inicializarGastos() {
 
     let historialCargado = false;
     let historialCargando = false;
+    let timeoutNombreGasto;
+
+    const filtroTipoGasto = document.getElementById('filtro-tipo-gasto');
+    const filtroNombreGasto = document.getElementById('filtro-nombre-gasto');
+
+    const filtroFechaDesde = document.getElementById('filtro-fecha-desde');
+    const filtroFechaHasta = document.getElementById('filtro-fecha-hasta');
+    const filtroOrden = document.getElementById('filtro-orden');
+
+    const btnLimpiarPendientes = document.getElementById('btn-limpiar-pendientes');
+    const btnLimpiarHistorial = document.getElementById('btn-limpiar-historial');
 
     tabs.forEach(tab => {
         tab.onclick = () => {
@@ -46,6 +57,93 @@ function inicializarGastos() {
         });
     }
 
+    if (filtroTipoGasto) {
+        filtroTipoGasto.onchange = () => {
+            cargarDatosPorPropiedad();
+        };
+    }
+
+    if (filtroNombreGasto) {
+        const errorConcepto = document.getElementById('error-filtro-concepto');
+        filtroNombreGasto.oninput = () => {
+            const valor = filtroNombreGasto.value.trim();
+            const regex = /^[a-zA-Z0-9\s]*$/;
+
+            if (valor.length > 50) {
+                if (errorConcepto) {
+                    errorConcepto.textContent = 'El concepto no puede tener más de 50 caracteres.';
+                    errorConcepto.classList.remove('d-none');
+                }
+                return;
+            }
+
+            if (!regex.test(valor)) {
+                if (errorConcepto) {
+                    errorConcepto.textContent = 'Solo se permiten letras y números.';
+                    errorConcepto.classList.remove('d-none');
+                }
+                return;
+            }
+
+            if (errorConcepto) {
+                errorConcepto.textContent = '';
+                errorConcepto.classList.add('d-none');
+            }
+
+            clearTimeout(timeoutNombreGasto);
+            timeoutNombreGasto = setTimeout(() => {
+                cargarDatosPorPropiedad();
+            }, 300);
+        };
+    }
+
+    if (filtroFechaDesde) {
+        filtroFechaDesde.onchange = () => {
+            if (filtroFechaHasta) {
+                filtroFechaHasta.min = filtroFechaDesde.value || '';
+            }
+            cargarHistorialPagos(true);
+        };
+    }
+
+    if (filtroFechaHasta) {
+        filtroFechaHasta.onchange = () => {
+            if (filtroFechaDesde) {
+                filtroFechaDesde.max = filtroFechaHasta.value || '';
+            }
+            cargarHistorialPagos(true);
+        };
+    }
+
+    if (filtroOrden) {
+        filtroOrden.onchange = () => {
+            cargarHistorialPagos(true);
+        };
+    }
+
+    if (btnLimpiarPendientes) {
+        btnLimpiarPendientes.onclick = () => {
+            if (filtroTipoGasto) filtroTipoGasto.value = '';
+            if (filtroNombreGasto) filtroNombreGasto.value = '';
+            cargarDatosPorPropiedad();
+        };
+    }
+
+    if (btnLimpiarHistorial) {
+        btnLimpiarHistorial.onclick = () => {
+            if (filtroFechaDesde) {
+                filtroFechaDesde.value = '';
+                filtroFechaDesde.max = '';
+            }
+            if (filtroFechaHasta) {
+                filtroFechaHasta.value = '';
+                filtroFechaHasta.min = '';
+            }
+            if (filtroOrden) filtroOrden.value = 'desc';
+            cargarHistorialPagos(true);
+        };
+    }
+
     const btnPagarTodo = document.getElementById('btn-pagar-todo');
     if (btnPagarTodo) {
         btnPagarTodo.onclick = pagarTodo;
@@ -56,8 +154,9 @@ function inicializarGastos() {
         kpiAccion.style.display = 'none';
     }
 
-    function cargarHistorialPagos() {
+    function cargarHistorialPagos(forzarRecarga = false) {
         if (!historialLista || historialCargando) return;
+        if (historialCargado && !forzarRecarga) return;
 
         const historialUrl = seccion?.dataset?.historialUrl;
         if (!historialUrl) return;
@@ -74,6 +173,15 @@ function inicializarGastos() {
         const url = new URL(historialUrl, window.location.origin);
         if (propiedadId) {
             url.searchParams.set('propiedad_id', propiedadId);
+        }
+        if (filtroFechaDesde && filtroFechaDesde.value) {
+            url.searchParams.set('fecha_desde', filtroFechaDesde.value);
+        }
+        if (filtroFechaHasta && filtroFechaHasta.value) {
+            url.searchParams.set('fecha_hasta', filtroFechaHasta.value);
+        }
+        if (filtroOrden && filtroOrden.value) {
+            url.searchParams.set('orden', filtroOrden.value);
         }
 
         fetch(url.toString(), {
@@ -115,9 +223,18 @@ function inicializarGastos() {
         const historialUrl = seccion?.dataset?.historialUrl;
         const formData = new FormData(formFiltroPropiedad);
         const propiedadId = formData.get('propiedad_id') || '';
+        const tipoGasto = filtroTipoGasto ? filtroTipoGasto.value : '';
+        const nombreGasto = filtroNombreGasto ? filtroNombreGasto.value : '';
+        
         const url = new URL(formFiltroPropiedad.action, window.location.origin);
         if (propiedadId) {
             url.searchParams.set('propiedad_id', propiedadId);
+        }
+        if (tipoGasto) {
+            url.searchParams.set('tipo_gasto', tipoGasto);
+        }
+        if (nombreGasto) {
+            url.searchParams.set('nombre_gasto', nombreGasto);
         }
 
         fetch(url.toString(), {
@@ -150,6 +267,16 @@ function inicializarGastos() {
                     if (datos.propiedad_seleccionada) {
                         kpiAccion.classList.remove('d-none', 'oculto');
                         kpiAccion.style.display = '';
+                        
+                        const textoPagarTodo = document.getElementById('texto-pagar-todo');
+                        if (textoPagarTodo) {
+                            if (tipoGasto) {
+                                const tipoCapitalizado = tipoGasto.charAt(0).toUpperCase() + tipoGasto.slice(1);
+                                textoPagarTodo.textContent = 'Pagar ' + tipoCapitalizado;
+                            } else {
+                                textoPagarTodo.textContent = 'Pagar Todo Ahora';
+                            }
+                        }
                     } else {
                         kpiAccion.classList.add('d-none', 'oculto');
                         kpiAccion.style.display = 'none';
@@ -200,9 +327,16 @@ function pagarTodo() {
     });
 
     const propiedadId = document.getElementById('form-filtro-propiedad')?.querySelector('[name="propiedad_id"]')?.value || '';
+    const tipoGasto = document.getElementById('filtro-tipo-gasto')?.value || '';
+    const nombreGasto = document.getElementById('filtro-nombre-gasto')?.value || '';
+
+    let tituloModal = 'Pagar todo';
+    if (tipoGasto) {
+        tituloModal = 'Pagar ' + tipoGasto.charAt(0).toUpperCase() + tipoGasto.slice(1);
+    }
 
     mostrarAlertaConfirmacion(
-        'Pagar todo',
+        tituloModal,
         'Se procesarán todos tus pagos pendientes en una sola transacción segura.' +
             '<br><br>Importe total: <strong>' + total.toFixed(2).replace('.', ',') + ' €</strong>',
         'Sí, pagar ahora',
@@ -217,7 +351,11 @@ function pagarTodo() {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ propiedad_id: propiedadId || null })
+            body: JSON.stringify({ 
+                propiedad_id: propiedadId || null,
+                tipo_gasto: tipoGasto || null,
+                nombre_gasto: nombreGasto || null
+            })
         })
         .then(r => r.json())
         .then(data => {
@@ -335,7 +473,7 @@ function renderPendientes(items) {
         const id = String(item.id || '');
         const etiquetaEstado = estado === 'atrasado' ? 'Atrasado' : 'Pendiente';
         const textoDias = estado === 'atrasado'
-            ? `Hace ${Math.abs(Number(item.dias_restantes || 0))} días`
+            ? `Hace ${Math.round(Math.abs(Number(item.dias_restantes || 0)))} días`
             : 'Vence pronto';
 
         return `

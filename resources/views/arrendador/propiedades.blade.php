@@ -33,7 +33,6 @@
     <div class="panel list-panel">
         <div class="panel-header">
             <h2>Mis propiedades</h2>
-            <a class="link-secondary" href="{{ route('arrendador.dashboard', ['arrendador_id' => $arrendadorId]) }}">Volver al dashboard</a>
         </div>
 
         <table class="properties-table">

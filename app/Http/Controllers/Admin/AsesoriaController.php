@@ -146,7 +146,10 @@ class AsesoriaController extends Controller
             ], 409);
         }
 
+        $oldOrden = $categoria->orden;
         $categoria->delete();
+
+        CategoriaArticulo::where('orden', '>', $oldOrden)->decrement('orden');
 
         return response()->json([
             'success' => true,
@@ -262,12 +265,27 @@ class AsesoriaController extends Controller
     public function toggleDestacadoArticulo($id)
     {
         $articulo = ArticuloAsesoria::findOrFail($id);
-        $articulo->destacado = !$articulo->destacado;
+
+        if (!$articulo->destacado) {
+            $maxOrdenFaq = ArticuloAsesoria::max('orden_faq') ?? 0;
+            $articulo->orden_faq = $maxOrdenFaq + 1;
+            $articulo->destacado = true;
+        } else {
+            $oldOrdenFaq = $articulo->orden_faq;
+            $articulo->orden_faq = null;
+            $articulo->destacado = false;
+            if ($oldOrdenFaq !== null) {
+                ArticuloAsesoria::where('orden_faq', '>', $oldOrdenFaq)
+                    ->decrement('orden_faq');
+            }
+        }
+
         $articulo->save();
 
         return response()->json([
             'success'    => true,
             'destacado'  => $articulo->destacado,
+            'orden_faq'  => $articulo->orden_faq,
             'message'    => $articulo->destacado ? 'Artículo marcado como destacado.' : 'Artículo desmarcado como destacado.',
         ]);
     }
@@ -347,7 +365,19 @@ class AsesoriaController extends Controller
     public function destroyArticulo($id)
     {
         $articulo = ArticuloAsesoria::findOrFail($id);
+        $oldOrden = $articulo->orden;
+        $oldOrdenFaq = $articulo->orden_faq;
+        $oldCategoria = $articulo->id_categoria_fk;
         $articulo->delete();
+
+        ArticuloAsesoria::where('id_categoria_fk', $oldCategoria)
+            ->where('orden', '>', $oldOrden)
+            ->decrement('orden');
+
+        if ($oldOrdenFaq !== null) {
+            ArticuloAsesoria::where('orden_faq', '>', $oldOrdenFaq)
+                ->decrement('orden_faq');
+        }
 
         return response()->json([
             'success' => true,

@@ -590,6 +590,12 @@ function toggleDestacadoArticulo(btn, id) {
                 icon.className = 'bi bi-star';
                 btn.title = 'Marcar como destacado';
             }
+
+            var tr = btn.closest('tr');
+            if (tr) {
+                var ordenFaqTd = tr.querySelector('td[data-label="ORDEN DESTACADO"]');
+                if (ordenFaqTd) ordenFaqTd.textContent = data.orden_faq != null ? data.orden_faq : '-';
+            }
         } else {
             swalError('Error', data.message || 'No se pudo cambiar el destacado del artículo.');
         }

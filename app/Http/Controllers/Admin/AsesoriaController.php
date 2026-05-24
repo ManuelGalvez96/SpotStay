@@ -357,7 +357,39 @@ class AsesoriaController extends Controller
                 ->increment('orden');
         }
 
-        $validated['destacado'] = $request->boolean('destacado');
+        $oldDestacado = $articulo->destacado;
+        $oldOrdenFaq = $articulo->orden_faq;
+        $newDestacado = $request->boolean('destacado');
+        $newOrdenFaq = $validated['orden_faq'] ?? null;
+
+        if ($oldDestacado && !$newDestacado) {
+            $validated['destacado'] = false;
+            $validated['orden_faq'] = null;
+            if ($oldOrdenFaq !== null) {
+                ArticuloAsesoria::where('orden_faq', '>', $oldOrdenFaq)->decrement('orden_faq');
+            }
+        } elseif (!$oldDestacado && $newDestacado) {
+            $validated['destacado'] = true;
+            if ($newOrdenFaq !== null) {
+                ArticuloAsesoria::where('orden_faq', '>=', $newOrdenFaq)
+                    ->where('id', '!=', $id)->increment('orden_faq');
+            } else {
+                $newOrdenFaq = (ArticuloAsesoria::max('orden_faq') ?? 0) + 1;
+            }
+            $validated['orden_faq'] = $newOrdenFaq;
+        } elseif ($oldDestacado && $newDestacado && $oldOrdenFaq != $newOrdenFaq) {
+            if ($newOrdenFaq > $oldOrdenFaq) {
+                ArticuloAsesoria::where('orden_faq', '>', $oldOrdenFaq)
+                    ->where('orden_faq', '<=', $newOrdenFaq)
+                    ->where('id', '!=', $id)->decrement('orden_faq');
+            } else {
+                ArticuloAsesoria::where('orden_faq', '>=', $newOrdenFaq)
+                    ->where('orden_faq', '<', $oldOrdenFaq)
+                    ->where('id', '!=', $id)->increment('orden_faq');
+            }
+            $validated['orden_faq'] = $newOrdenFaq;
+        }
+
         $articulo->update($validated);
 
         return response()->json([
@@ -371,6 +403,12 @@ class AsesoriaController extends Controller
         $max = ArticuloAsesoria::where('id_categoria_fk', $categoriaId)->max('orden') ?? 0;
 
         return response()->json(['max_orden' => (int)$max]);
+    }
+
+    public function maxOrdenFaq()
+    {
+        $max = ArticuloAsesoria::max('orden_faq') ?? 0;
+        return response()->json(['max_orden_faq' => (int)$max]);
     }
 
     public function destroyArticulo($id)

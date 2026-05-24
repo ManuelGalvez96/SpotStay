@@ -139,13 +139,18 @@
                         <h3>Opciones</h3>
                         <div class="form-subsection">
                             <label style="flex-direction:row;align-items:center;gap:8px;">
-                                <input type="checkbox" name="destacado" value="1">
-                                <span style="margin:0;font-weight:500;font-size:14px;color:#333;">Marcar como artículo destacado</span>
+                                <input type="checkbox" name="destacado" value="1" id="check-destacado">
+                                <span style="margin:0;font-weight:500;font-size:14px;color:#333;">
+                                    Marcar como artículo destacado
+                                </span>
                             </label>
-                            <label>
+                            <label id="label-orden-faq" style="display:none;">
                                 <span>Orden en FAQ</span>
-                                <input type="number" name="orden_faq" min="1" placeholder="Vacío si no es FAQ">
+                                <select name="orden_faq"></select>
                             </label>
+                            <p style="margin:0 0 8px 0;font-size:11px;color:#9CA3AF;font-style:italic;">
+                                Los artículos destacados aparecen en Preguntas frecuentes
+                            </p>
                         </div>
                     </div>
                 </div>

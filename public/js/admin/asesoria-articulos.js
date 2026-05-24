@@ -16,6 +16,38 @@ function poblarSelectOrdenArticulo(maxOrden) {
     }
 }
 
+function poblarSelectOrdenFaq(maxOrden, selectedValue) {
+    var select = document.querySelector('select[name="orden_faq"]');
+    if (!select) return;
+    select.innerHTML = '';
+    var items = Math.max(maxOrden, 1);
+    for (var i = 1; i <= items; i++) {
+        var op = document.createElement('option');
+        op.value = i;
+        op.textContent = i;
+        select.appendChild(op);
+    }
+    if (selectedValue !== undefined && selectedValue !== null) {
+        select.value = selectedValue;
+    }
+}
+
+function toggleOrdenFaqField() {
+    var check = document.getElementById('check-destacado');
+    var label = document.getElementById('label-orden-faq');
+    if (!check || !label) return;
+    if (check.checked) {
+        label.style.display = '';
+        fetch('/admin/asesoria/articulos/max-orden-faq')
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                poblarSelectOrdenFaq(data.max_orden_faq);
+            });
+    } else {
+        label.style.display = 'none';
+    }
+}
+
 function generarSlugArticulo() {
     var titulo = document.querySelector('input[name="titulo"]');
     var slug = document.querySelector('input[name="slug"]');
@@ -68,6 +100,12 @@ function abrirModalNuevoArticulo() {
         });
     }
     actualizarOrdenPorCategoria();
+    var check = document.getElementById('check-destacado');
+    if (check) {
+        check.checked = false;
+        check.onchange = toggleOrdenFaqField;
+    }
+    toggleOrdenFaqField();
     var errorDiv = modal.querySelector('.mensaje-error-js');
     if (errorDiv) { errorDiv.style.display = 'none'; errorDiv.textContent = ''; }
     modal.style.display = 'flex';
@@ -652,10 +690,21 @@ function abrirModalEditarArticulo(id) {
             textarea.value = art.contenido;
 
             var destacadoCheck = form.querySelector('input[name="destacado"]');
-            if (destacadoCheck) destacadoCheck.checked = art.destacado;
-
-            var ordenFaqInput = form.querySelector('input[name="orden_faq"]');
-            if (ordenFaqInput) ordenFaqInput.value = art.orden_faq != null ? art.orden_faq : '';
+            if (destacadoCheck) {
+                destacadoCheck.checked = art.destacado;
+                destacadoCheck.onchange = toggleOrdenFaqField;
+                var labelFaq = document.getElementById('label-orden-faq');
+                if (art.destacado) {
+                    labelFaq.style.display = '';
+                    fetch('/admin/asesoria/articulos/max-orden-faq')
+                        .then(function (r) { return r.json(); })
+                        .then(function (faqData) {
+                            poblarSelectOrdenFaq(faqData.max_orden_faq, art.orden_faq);
+                        });
+                } else {
+                    labelFaq.style.display = 'none';
+                }
+            }
 
             document.getElementById('modal-articulo-titulo').textContent = 'Editar artículo';
             var btn = document.getElementById('modal-articulo-boton');

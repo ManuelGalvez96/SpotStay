@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SolicitudArrendador;
 use App\Models\SolicitudGestor;
+use App\Services\CodigoGestorService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -76,6 +77,12 @@ class SolicitudController extends Controller
 
                 $this->asegurarRolUsuario((int) $solicitud->id_usuario_fk, 'gestor');
                 $this->asegurarPerfilGestor((int) $solicitud->id_usuario_fk);
+                DB::table('tbl_usuario')
+                    ->where('id_usuario', $solicitud->id_usuario_fk)
+                    ->update([
+                        'actualizado_usuario' => Carbon::now(),
+                    ]);
+                $codigoGestor = CodigoGestorService::obtenerOCrearCodigoParaGestor((int) $solicitud->id_usuario_fk);
                 $this->limpiarSesionesUsuario((int) $solicitud->id_usuario_fk);
             } else {
                 $solicitud = DB::table('tbl_solicitud_arrendador')
@@ -106,7 +113,11 @@ class SolicitudController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Solicitud aprobada correctamente.'
+                'message' => 'Solicitud aprobada correctamente.',
+                'data' => isset($codigoGestor) ? [
+                    'codigo_gestor' => $codigoGestor->codigo_gestor,
+                    'estado_codigo_gestor' => $codigoGestor->estado_codigo_gestor,
+                ] : null,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();

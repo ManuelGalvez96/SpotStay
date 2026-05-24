@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 use App\Services\ActividadService;
 use App\Services\PdfMonkeyService;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ContratoSubido;
 
 class ContratoController extends Controller
 {
@@ -266,6 +268,28 @@ class ContratoController extends Controller
         // Devolver la URL completa para que el JS pueda montar el enlace "Ver PDF"
         $urlCompleta = $request->getSchemeAndHttpHost() . $request->getBasePath() . '/' . $rutaRelativa;
 
+        // Intentamos notificar al inquilino asociado a este contrato
+        try {
+            $infoAlquiler = DB::table('tbl_contrato as c')
+                ->join('tbl_alquiler as a', 'a.id_alquiler', '=', 'c.id_alquiler_fk')
+                ->join('tbl_usuario as inquilino', 'inquilino.id_usuario', '=', 'a.id_inquilino_fk')
+                ->where('c.id_contrato', $id)
+                ->select('a.id_alquiler', 'inquilino.email_usuario', 'inquilino.nombre_usuario as nombre_inquilino')
+                ->first();
+
+            if ($infoAlquiler && !empty($infoAlquiler->email_usuario)) {
+                Mail::to($infoAlquiler->email_usuario)->send(new ContratoSubido(
+                    $infoAlquiler->id_alquiler,
+                    $infoAlquiler->nombre_inquilino,
+                    $urlCompleta
+                ));
+            }
+        } catch (\Exception $e) {
+            Log::error('Error enviando notificación de contrato al inquilino: ' . $e->getMessage(), [
+                'contrato_id' => $id,
+            ]);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'PDF subido correctamente.',
@@ -313,11 +337,17 @@ class ContratoController extends Controller
     private function esUrlRemotaVigente(string $urlPdf): bool
     {
         $componentes = parse_url($urlPdf);
-        if (!$componentes || empty($componentes['query'])) {
+        // Asegurarnos de que 'query' es una cadena válida antes de usar parse_str
+        $query = '';
+        if (is_array($componentes) && array_key_exists('query', $componentes)) {
+            $query = $componentes['query'];
+        }
+
+        if (empty($query) || !is_string($query)) {
             return true;
         }
 
-        parse_str($componentes['query'], $parametros);
+        parse_str((string) $query, $parametros);
         $ahora = Carbon::now('UTC')->timestamp;
         $margenSeguridad = 30;
 

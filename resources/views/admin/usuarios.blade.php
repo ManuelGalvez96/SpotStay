@@ -245,6 +245,10 @@
                         <small class="text-muted d-block">Suscripción</small>
                         <p id="dataSuscripcion" class="fw-500">Premium</p>
                     </div>
+                    <div class="col-md-6" id="bloqueCodigoGestor" style="display: none;">
+                        <small class="text-muted d-block">Código del gestor</small>
+                        <p id="dataCodigoGestor" class="fw-500">—</p>
+                    </div>
                 </div>
                 
                 <hr>

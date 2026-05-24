@@ -544,6 +544,7 @@ function abrirModalGestor(propiedadId) {
       if (btnGuardar) {
         btnGuardar.dataset.propiedadId = propiedadId;
         btnGuardar.dataset.gestorId = data.id_gestor || '';
+        btnGuardar.dataset.codigoGestor = '';
         btnGuardar.disabled = !tieneGestor;
       }
 
@@ -637,7 +638,7 @@ function crearDropdownGestores(gestores, propiedadId) {
     `;
     
     item.addEventListener('click', function() {
-      seleccionarGestor(
+      solicitarCodigoGestor(
         parseInt(this.dataset.gestorId),
         this.dataset.gestorNombre,
         this.dataset.gestorEmail,
@@ -661,7 +662,7 @@ function crearDropdownGestores(gestores, propiedadId) {
 
 // Cerrar dropdown de gestores
 function cerrarDropdownGestores(evento) {
-  if (evento && (evento.target.closest('.gestor-selector-box') || evento.target.closest('.gestor-selector-dropdown'))) {
+  if (evento && (evento.target.closest('.gestor-selector-box') || evento.target.closest('.gestor-dropdown'))) {
     return; // No cerrar si se hace click en el selector o dropdown
   }
   
@@ -672,8 +673,49 @@ function cerrarDropdownGestores(evento) {
   }
 }
 
+function solicitarCodigoGestor(gestorId, nombreGestor, emailGestor, propiedadId) {
+  if (!window.Swal) {
+    var codigoManual = prompt('Introduce el código del gestor para asignarlo:');
+    if (codigoManual === null) {
+      return;
+    }
+
+    codigoManual = codigoManual.trim();
+    if (!codigoManual) {
+      return;
+    }
+
+    seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId, codigoManual);
+    return;
+  }
+
+  Swal.fire({
+    title: 'Código del gestor',
+    text: 'Introduce el código para poder asignar este gestor a la propiedad.',
+    input: 'password',
+    inputPlaceholder: 'Código del gestor',
+    showCancelButton: true,
+    confirmButtonText: 'Validar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#035498',
+    reverseButtons: true,
+    inputValidator: function (valor) {
+      if (!valor || !valor.trim()) {
+        return 'Debes introducir el código del gestor.';
+      }
+      return null;
+    }
+  }).then(function (resultado) {
+    if (!resultado.isConfirmed) {
+      return;
+    }
+
+    seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId, resultado.value.trim());
+  });
+}
+
 // Seleccionar gestor y actualizar modal
-function seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId) {
+function seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId, codigoGestor) {
   // Actualizar display del selector
   const inicialGestor = nombreGestor && nombreGestor.length > 0 
     ? nombreGestor.trim().charAt(0).toUpperCase() 
@@ -687,6 +729,7 @@ function seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId) {
   const btnGuardar = document.getElementById('btnGuardarPermisosGestor');
   if (btnGuardar) {
     btnGuardar.dataset.gestorId = gestorId;
+    btnGuardar.dataset.codigoGestor = codigoGestor || '';
   }
   
   // Habilitar checkboxes de permisos
@@ -705,7 +748,7 @@ function seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId) {
   // Cerrar dropdown
   cerrarDropdownGestores();
   
-  mostrarMensaje('Gestor seleccionado: ' + nombreGestor, false);
+  mostrarMensaje('Gestor seleccionado: ' + nombreGestor + '. Pulsa guardar para confirmar la asignación.', false);
 }
 
 document.addEventListener('click', function (evento) {
@@ -729,6 +772,7 @@ function guardarPermisos() {
     }
     var propiedadId = btn.dataset.propiedadId;
     var gestorId = btn.dataset.gestorId;
+    var codigoGestor = btn.dataset.codigoGestor || '';
 
     if (!propiedadId) {
       if (window.swalError) {
@@ -743,7 +787,8 @@ function guardarPermisos() {
       chat: document.getElementById('permiso-chat').checked,
       editar_propiedad: document.getElementById('permiso-editar').checked,
       gastos: document.getElementById('permiso-gastos').checked,
-      incidencias: document.getElementById('permiso-incidencias').checked
+      incidencias: document.getElementById('permiso-incidencias').checked,
+      codigo_gestor: codigoGestor
     };
     // Incluir gestorId en la carga útil para que el controlador lo reciba
     permisos.gestor_id = gestorId;
@@ -761,6 +806,7 @@ function guardarPermisos() {
     .then(response => response.json())
     .then(data => {
     if (data.success) {
+      btn.dataset.codigoGestor = '';
       cerrarModalGestor();
       cargarTablaPropiedades();
       if (window.swalSuccess) {
@@ -768,6 +814,9 @@ function guardarPermisos() {
         } else {
           mostrarMensaje(data.message || 'Permisos actualizados correctamente.', false);
         }
+    } else if (data.requiere_desasignar) {
+      mostrarMensaje(data.message || 'El código del gestor no es correcto.', true);
+      ejecutarDesasignar(propiedadId);
       } else {
         throw new Error(data.message || 'Error al actualizar permisos.');
       }

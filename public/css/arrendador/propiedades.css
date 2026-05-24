@@ -95,15 +95,24 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
 .gestor-left-panel, .gestor-right-panel { border: 1px solid var(--borde); border-radius: 14px; padding: 18px; background: #fff; }
 .gestor-left-panel h3, .gestor-right-panel h3 { margin: 0; font-size: 22px; }
 .gestor-panel-help { margin: 8px 0 16px; color: #6b7280; font-size: 15px; line-height: 1.45; }
-.gestor-selector-wrap { margin-bottom: 18px; }
+.gestor-selector-wrap { margin-bottom: 18px; position: relative; }
 .gestor-selector-label { display: block; margin-bottom: 8px; font-size: 14px; color: #374151; font-weight: 600; }
-.gestor-selector-box { display: flex; align-items: center; gap: 12px; width: 100%; border: 1px solid #d6dbe3; border-radius: 10px; padding: 10px 12px; background: #fafbfd; transition: all .2s ease; }
-.gestor-selector-box:hover { border-color: var(--primario-claro); background: #f0f6ff; }
-.gestor-selector-box .bi { margin-left: auto; color: #98a2b3; font-size: 13px; }
+.gestor-selector-box { display: flex; align-items: center; gap: 12px; width: 100%; border: 1px solid var(--borde); border-radius: 12px; padding: 12px 14px; background: #fff; box-shadow: 0 8px 24px -20px rgba(15, 27, 45, 0.28); transition: all .2s ease; cursor: pointer; }
+.gestor-selector-box:hover { border-color: var(--primario-claro); box-shadow: 0 12px 28px -22px rgba(3, 84, 152, 0.35); transform: translateY(-1px); }
+.gestor-selector-box .bi { margin-left: auto; color: #98a2b3; font-size: 14px; }
 .gestor-avatar { width: 34px; height: 34px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; background: linear-gradient(135deg, #f59e0b, #d97706); text-transform: uppercase; }
 .gestor-selector-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.gestor-selector-name { font-size: 20px; font-weight: 700; color: #101828; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gestor-selector-name { font-size: 17px; font-weight: 700; color: #101828; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gestor-selector-email { font-size: 13px; color: #667085; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gestor-dropdown { position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 30; background: #fff; border: 1px solid var(--borde); border-radius: 14px; box-shadow: 0 18px 42px -28px rgba(15, 27, 45, 0.4); overflow: hidden; }
+.gestor-dropdown-content { max-height: 280px; overflow-y: auto; }
+.gestor-dropdown-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer; border-bottom: 1px solid #eef2f7; transition: background .2s ease, transform .2s ease; }
+.gestor-dropdown-item:last-child { border-bottom: none; }
+.gestor-dropdown-item:hover { background: #f8fbff; }
+.gestor-dropdown-avatar { width: 34px; height: 34px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; background: linear-gradient(135deg, #0ea5e9, #2563eb); text-transform: uppercase; flex: 0 0 auto; }
+.gestor-dropdown-info { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.gestor-dropdown-nombre { font-size: 14px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gestor-dropdown-email { font-size: 12px; color: #667085; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .btn-gestor-profile, .btn-modal-secondary, .btn-primary, .btn-desasignar-gestor { border-radius: 10px; border: 1px solid #d0d5dd; padding: 10px 12px; font-weight: 600; cursor: pointer; transition: all .2s ease; }
 .btn-gestor-profile { width: 100%; background: #fff; color: #111827; }
 .btn-gestor-profile:hover:not(:disabled) { background: #f8fafc; }
@@ -145,6 +154,7 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
 @media (max-width: 900px) {
   .permissions-grid, .gestor-config-grid { grid-template-columns: 1fr; }
   .propiedad-context-card { flex-direction: column; align-items: flex-start; }
+  .gestor-dropdown { position: static; margin-top: 10px; }
 }
 
 @media (max-width: 680px) {

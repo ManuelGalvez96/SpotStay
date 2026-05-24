@@ -140,6 +140,7 @@ Route::middleware(['role:admin'])->group(function () {
     Route::post('/admin/asesoria/articulos/crear', [\App\Http\Controllers\Admin\AsesoriaController::class, 'storeArticulo'])->name('admin.asesoria.articulos.crear');
     Route::post('/admin/asesoria/articulos/{articulo}/toggle-estado', [\App\Http\Controllers\Admin\AsesoriaController::class, 'toggleEstadoArticulo'])->name('admin.asesoria.articulos.toggle-estado');
     Route::post('/admin/asesoria/articulos/{articulo}/toggle-destacado', [\App\Http\Controllers\Admin\AsesoriaController::class, 'toggleDestacadoArticulo'])->name('admin.asesoria.articulos.toggle-destacado');
+    Route::get('/admin/asesoria/articulos/max-orden/{categoria}', [\App\Http\Controllers\Admin\AsesoriaController::class, 'maxOrdenArticulo'])->name('admin.asesoria.articulos.max-orden');
     Route::get('/admin/asesoria/articulos/{articulo}/editar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'editArticulo'])->name('admin.asesoria.articulos.editar');
     Route::post('/admin/asesoria/articulos/{articulo}/actualizar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'updateArticulo'])->name('admin.asesoria.articulos.actualizar');
     Route::delete('/admin/asesoria/articulos/{articulo}/eliminar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'destroyArticulo'])->name('admin.asesoria.articulos.eliminar');

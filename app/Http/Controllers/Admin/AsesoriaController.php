@@ -215,11 +215,13 @@ class AsesoriaController extends Controller
             'titulo'          => 'required|string|max:255',
             'slug'            => 'required|string|max:255|unique:tbl_asesoria_articulo,slug',
             'contenido'       => 'required|string',
+            'orden'           => 'required|integer|min:1',
             'destacado'       => 'sometimes|boolean',
         ]);
 
-        $maxOrden = ArticuloAsesoria::where('id_categoria_fk', $validated['id_categoria_fk'])->max('orden') ?? 0;
-        $validated['orden'] = $maxOrden + 1;
+        ArticuloAsesoria::where('orden', '>=', $validated['orden'])
+            ->where('id_categoria_fk', $validated['id_categoria_fk'])
+            ->increment('orden');
 
         $articulo = ArticuloAsesoria::create([
             'id_categoria_fk' => $validated['id_categoria_fk'],
@@ -324,6 +326,13 @@ class AsesoriaController extends Controller
             'message'  => 'Artículo actualizado correctamente.',
             'articulo' => $articulo,
         ]);
+    }
+
+    public function maxOrdenArticulo($categoriaId)
+    {
+        $max = ArticuloAsesoria::where('id_categoria_fk', $categoriaId)->max('orden') ?? 0;
+
+        return response()->json(['max_orden' => (int)$max]);
     }
 
     public function destroyArticulo($id)

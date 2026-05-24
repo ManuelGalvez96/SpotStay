@@ -64,8 +64,8 @@
         <table class="tabla-admin">
             <thead>
                 <tr>
-                    <th data-sort="orden" class="sortable">Orden <span class="sort-arrow"></span></th>
                     <th data-sort="categoria" class="sortable">Categoría <span class="sort-arrow"></span></th>
+                    <th data-sort="orden" class="sortable">Orden <span class="sort-arrow"></span></th>
                     <th data-sort="titulo" class="sortable">Título <span class="sort-arrow"></span></th>
                     <th>Contenido</th>
                     <th data-sort="estado" class="sortable">Estado <span class="sort-arrow"></span></th>
@@ -113,11 +113,14 @@
                             <label>
                                 <span>Categoría</span>
                                 <select name="id_categoria_fk" required>
-                                    <option value="">Seleccionar categoría</option>
-                                    @foreach($categorias as $cat)
-                                        <option value="{{ $cat->id }}">{{ $cat->nombre }}</option>
+                                    @foreach($categorias as $i => $cat)
+                                        <option value="{{ $cat->id }}" {{ $i === 0 ? 'selected' : '' }}>{{ $cat->nombre }}</option>
                                     @endforeach
                                 </select>
+                            </label>
+                            <label>
+                                <span>Orden</span>
+                                <select name="orden" required></select>
                             </label>
                         </div>
                     </div>
@@ -153,6 +156,7 @@
     var filtrarUrl = "{{ route('admin.asesoria.articulos.filtrar') }}";
     document.addEventListener('DOMContentLoaded', function () {
         asignarEventosFiltrosArticulos();
+        actualizarOrdenPorCategoria();
         asignarEventosPaginacionArticulos();
         var th = document.querySelector('th[data-sort="orden"]');
         if (th) {

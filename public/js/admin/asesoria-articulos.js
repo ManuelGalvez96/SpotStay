@@ -28,13 +28,46 @@ function generarSlugArticulo() {
     slug.value = valor;
 }
 
+function actualizarOrdenPorCategoria() {
+    var catSel = document.querySelector('select[name="id_categoria_fk"]');
+    if (!catSel || !catSel.value) {
+        var ordSel = document.querySelector('select[name="orden"]');
+        if (ordSel) {
+            ordSel.innerHTML = '<option value="1">1</option>';
+        }
+        return;
+    }
+    fetch('/admin/asesoria/articulos/max-orden/' + catSel.value)
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            var maxOrden = data.max_orden || 0;
+            poblarSelectOrdenArticulo(maxOrden + 1);
+        });
+}
+
 function abrirModalNuevoArticulo() {
     var modal = document.getElementById('modal-nuevo-articulo');
     if (!modal) return;
     var form = modal.querySelector('form');
     if (form) {
         form.reset();
+        var catSel = form.querySelector('select[name="id_categoria_fk"]');
+        if (catSel && catSel.options.length > 0) {
+            catSel.selectedIndex = 0;
+        }
     }
+    if (typeof tinymce !== 'undefined') {
+        tinymce.remove('#contenido-articulo');
+        tinymce.init({
+            selector: '#contenido-articulo',
+            height: 350,
+            plugins: 'lists link',
+            toolbar: 'bold italic underline | bullist numlist | link',
+            branding: false,
+            promotion: false,
+        });
+    }
+    actualizarOrdenPorCategoria();
     var errorDiv = modal.querySelector('.mensaje-error-js');
     if (errorDiv) { errorDiv.style.display = 'none'; errorDiv.textContent = ''; }
     modal.style.display = 'flex';
@@ -190,8 +223,8 @@ function actualizarTablaArticulos(data) {
         var contenidoPreview = truncate(stripHtml(art.contenido || ''), 80);
 
         html += '<tr data-id="' + art.id + '" data-activo="' + activo + '" class="' + inactivaClass + '">'
-            + '<td data-label="ORDEN">' + art.orden + '</td>'
             + '<td data-label="CATEGORÍA">' + categoriaNombre + '</td>'
+            + '<td data-label="ORDEN">' + art.orden + '</td>'
             + '<td data-label="TÍTULO">' + escHtml(art.titulo) + '</td>'
             + '<td data-label="CONTENIDO" style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#6B7280;font-size:13px;">' + escHtml(contenidoPreview) + '</td>'
             + '<td data-label="ESTADO"><span class="badge-estado badge-' + estadoClass + '">' + estadoLabel + '</span></td>'
@@ -276,7 +309,15 @@ function asignarEventosFiltrosArticulos() {
 
     if (busqueda) busqueda.addEventListener('input', onFilterChange);
     if (estado) estado.addEventListener('change', onFilterChange);
-    if (categoria) categoria.addEventListener('change', onFilterChange);
+    if (categoria) {
+        categoria.addEventListener('change', onFilterChange);
+        var modalCat = document.querySelector('#modal-nuevo-articulo select[name="id_categoria_fk"]');
+        if (modalCat) {
+            modalCat.addEventListener('change', function () {
+                actualizarOrdenPorCategoria();
+            });
+        }
+    }
     if (perPage) perPage.addEventListener('change', onFilterChange);
     if (limpiar) limpiar.addEventListener('click', function () {
         if (busqueda) busqueda.value = '';
@@ -331,12 +372,14 @@ document.querySelectorAll('form[data-ajax-form-articulo="true"]').forEach(functi
         var titulo = form.querySelector('input[name="titulo"]');
         var slug = form.querySelector('input[name="slug"]');
         var categoria = form.querySelector('select[name="id_categoria_fk"]');
+        var orden = form.querySelector('select[name="orden"]');
         var contenido = form.querySelector('textarea[name="contenido"]');
 
         var errors = [];
         if (!titulo || !titulo.value.trim()) errors.push('El título es obligatorio.');
         if (!slug || !slug.value.trim()) errors.push('El enlace es obligatorio.');
         if (!categoria || !categoria.value) errors.push('Selecciona una categoría.');
+        if (!orden || !orden.value) errors.push('Selecciona un orden.');
         if (!contenido || !contenido.value.trim()) errors.push('El contenido es obligatorio.');
 
         var editId = form.getAttribute('data-edit-id');

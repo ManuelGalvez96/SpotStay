@@ -48,6 +48,12 @@
                 <option value="1">Activo</option>
                 <option value="0">Inactivo</option>
             </select>
+            <span class="filtro-label">Destacado:</span>
+            <select id="filtro-destacado">
+                <option value="">Todos</option>
+                <option value="1">Solo destacados</option>
+                <option value="0">No destacados</option>
+            </select>
             <span class="filtro-label">Núm. resultados:</span>
             <select id="filtro-paginacion">
                 <option value="10">10</option>
@@ -70,12 +76,13 @@
                     <th>Contenido</th>
                     <th data-sort="estado" class="sortable">Estado <span class="sort-arrow"></span></th>
                     <th data-sort="destacado" class="sortable">Destacado <span class="info-tooltip" data-tooltip="Los artículos destacados aparecen en Preguntas frecuentes">i</span> <span class="sort-arrow"></span></th>
+                    <th>Orden Destacado <span class="info-tooltip" data-tooltip="Orden que tienen los artículos en el panel de Preguntas frecuentes">i</span></th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody id="tabla-articulos-body">
                 <tr>
-                    <td colspan="7" style="text-align: center; color: #999; padding: 20px;">Cargando...</td>
+                    <td colspan="8" style="text-align: center; color: #999; padding: 20px;">Cargando...</td>
                 </tr>
             </tbody>
         </table>
@@ -134,6 +141,10 @@
                             <label style="flex-direction:row;align-items:center;gap:8px;">
                                 <input type="checkbox" name="destacado" value="1">
                                 <span style="margin:0;font-weight:500;font-size:14px;color:#333;">Marcar como artículo destacado</span>
+                            </label>
+                            <label>
+                                <span>Orden en FAQ</span>
+                                <input type="number" name="orden_faq" min="1" placeholder="Vacío si no es FAQ">
                             </label>
                         </div>
                     </div>

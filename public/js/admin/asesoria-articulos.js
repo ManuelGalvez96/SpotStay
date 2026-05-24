@@ -138,12 +138,43 @@ function filtrarArticulos() {
     var busqueda = document.getElementById('filtro-busqueda').value;
     var estado = document.getElementById('filtro-estado').value;
     var categoria = document.getElementById('filtro-categoria') ? document.getElementById('filtro-categoria').value : '';
+    var destacadoFiltro = document.getElementById('filtro-destacado') ? document.getElementById('filtro-destacado').value : '';
     var perPage = document.getElementById('filtro-paginacion').value;
 
     var params = new URLSearchParams();
     if (busqueda) params.set('q', busqueda);
     if (estado)   params.set('estado', estado);
     if (categoria) params.set('categoria', categoria);
+    if (destacadoFiltro) {
+        params.set('destacado_filtro', destacadoFiltro);
+    }
+    if (destacadoFiltro === '1') {
+        if (sortCol !== 'orden_faq') {
+            sortCol = 'orden_faq';
+            sortDir = 'asc';
+            paginaActual = 1;
+            document.querySelectorAll('.sortable').forEach(function (th) {
+                th.classList.remove('active');
+                var arrow = th.querySelector('.sort-arrow');
+                if (arrow) arrow.textContent = '';
+            });
+        }
+    } else if (sortCol === 'orden_faq') {
+        sortCol = 'categoria';
+        sortDir = 'asc';
+        paginaActual = 1;
+        document.querySelectorAll('.sortable').forEach(function (th) {
+            th.classList.remove('active');
+            var arrow = th.querySelector('.sort-arrow');
+            if (arrow) arrow.textContent = '';
+        });
+        var th = document.querySelector('th[data-sort="categoria"]');
+        if (th) {
+            th.classList.add('active');
+            var arrow = th.querySelector('.sort-arrow');
+            if (arrow) arrow.textContent = '\u25B2';
+        }
+    }
     params.set('sort', sortCol);
     params.set('direction', sortDir);
     params.set('page', paginaActual);
@@ -203,7 +234,7 @@ function actualizarTablaArticulos(data) {
 
     var rows = data.data || [];
     if (rows.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999; padding: 20px;">No hay artículos para mostrar</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #999; padding: 20px;">No hay artículos para mostrar</td></tr>';
         return;
     }
 
@@ -229,6 +260,7 @@ function actualizarTablaArticulos(data) {
             + '<td data-label="CONTENIDO" style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#6B7280;font-size:13px;">' + escHtml(contenidoPreview) + '</td>'
             + '<td data-label="ESTADO"><span class="badge-estado badge-' + estadoClass + '">' + estadoLabel + '</span></td>'
             + '<td data-label="DESTACADO"><button class="btn-destacado ' + destacadoClass + '" data-id="' + art.id + '" title="' + (art.destacado ? 'Quitar destacado' : 'Marcar como destacado') + '"><i class="bi ' + destacadoIcono + '"></i></button></td>'
+            + '<td data-label="ORDEN DESTACADO">' + (art.orden_faq != null ? art.orden_faq : '-') + '</td>'
             + '<td data-label="ACCIONES"><div class="acciones-tabla">'
             + '<button class="btn-accion btn-editar-articulo" data-id="' + art.id + '" title="Editar"><i class="bi bi-pencil"></i></button>'
             + '<button class="btn-accion btn-eliminar-articulo" data-id="' + art.id + '" title="Eliminar"><i class="bi bi-trash"></i></button>'
@@ -309,6 +341,8 @@ function asignarEventosFiltrosArticulos() {
 
     if (busqueda) busqueda.addEventListener('input', onFilterChange);
     if (estado) estado.addEventListener('change', onFilterChange);
+    var destacadoFiltroEl = document.getElementById('filtro-destacado');
+    if (destacadoFiltroEl) destacadoFiltroEl.addEventListener('change', onFilterChange);
     if (categoria) {
         categoria.addEventListener('change', onFilterChange);
         var modalCat = document.querySelector('#modal-nuevo-articulo select[name="id_categoria_fk"]');
@@ -323,6 +357,7 @@ function asignarEventosFiltrosArticulos() {
         if (busqueda) busqueda.value = '';
         if (estado) estado.value = '';
         if (categoria) categoria.value = '';
+        if (destacadoFiltroEl) destacadoFiltroEl.value = '';
         if (perPage) perPage.value = '10';
         paginaActual = 1;
         sortCol = 'categoria';
@@ -607,6 +642,9 @@ function abrirModalEditarArticulo(id) {
 
             var destacadoCheck = form.querySelector('input[name="destacado"]');
             if (destacadoCheck) destacadoCheck.checked = art.destacado;
+
+            var ordenFaqInput = form.querySelector('input[name="orden_faq"]');
+            if (ordenFaqInput) ordenFaqInput.value = art.orden_faq != null ? art.orden_faq : '';
 
             document.getElementById('modal-articulo-titulo').textContent = 'Editar artículo';
             var btn = document.getElementById('modal-articulo-boton');

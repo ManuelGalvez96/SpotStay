@@ -183,10 +183,15 @@ class AsesoriaController extends Controller
             $query->where('tbl_asesoria_articulo.id_categoria_fk', (int)$categoriaId);
         }
 
+        $destacadoFiltro = $request->input('destacado_filtro');
+        if ($destacadoFiltro !== null && $destacadoFiltro !== '') {
+            $query->where('tbl_asesoria_articulo.destacado', (int)$destacadoFiltro);
+        }
+
         $sort = $request->input('sort', 'categoria');
         $direction = $request->input('direction', 'asc');
 
-        $allowedSorts = ['titulo', 'slug', 'estado', 'destacado'];
+        $allowedSorts = ['titulo', 'slug', 'estado', 'destacado', 'orden_faq'];
         if (in_array($sort, $allowedSorts)) {
             $query->orderBy('tbl_asesoria_articulo.' . $sort, $direction === 'desc' ? 'desc' : 'asc');
         } elseif ($sort === 'categoria') {
@@ -218,6 +223,7 @@ class AsesoriaController extends Controller
             'contenido'       => 'required|string',
             'orden'           => 'required|integer|min:1',
             'destacado'       => 'sometimes|boolean',
+            'orden_faq'       => 'nullable|integer|min:1',
         ]);
 
         ArticuloAsesoria::where('orden', '>=', $validated['orden'])
@@ -232,6 +238,7 @@ class AsesoriaController extends Controller
             'orden'           => $validated['orden'],
             'estado'          => false,
             'destacado'       => $request->boolean('destacado'),
+            'orden_faq'       => $validated['orden_faq'],
         ]);
 
         return response()->json([
@@ -289,6 +296,7 @@ class AsesoriaController extends Controller
             'contenido'       => 'required|string',
             'orden'           => 'required|integer|min:1',
             'destacado'       => 'sometimes|boolean',
+            'orden_faq'       => 'nullable|integer|min:1',
         ]);
 
         $oldCategoria = $articulo->id_categoria_fk;

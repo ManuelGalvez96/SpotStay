@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             IncidenciaSeeder::class,
             HistorialIncidenciaSeeder::class,
             SolicitudArrendadorSeeder::class,
+            SolicitudGestorSeeder::class,
             ConversacionSeeder::class,
             ConversacionUsuarioSeeder::class,
             MensajeSeeder::class,
@@ -38,6 +39,7 @@ class DatabaseSeeder extends Seeder
             ChatbotSesionSeeder::class,
             ChatbotMensajeSeeder::class,
             DocumentoSeeder::class,
+            AsesoriaSeeder::class,
         ]);
     }
 }

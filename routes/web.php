@@ -40,6 +40,8 @@ use App\Http\Controllers\Arrendador\ConfiguracionCobrosController;
 use App\Http\Controllers\Gestor\MensajeController as GestorMensajeController;
 use App\Http\Controllers\Gestor\PerfilController as GestorPerfilController;
 use App\Http\Controllers\Gestor\ActividadController as GestorActividadController;
+use App\Http\Controllers\AsesoriaController;
+use App\Http\Controllers\Miembro\PerfilController as MiembroPerfilController;
 
 // Rutas Públicas
 Route::get('/', function () {
@@ -63,6 +65,8 @@ Route::middleware(['role:admin'])->group(function () {
 
     // Dashboard
     Route::get('/admin/dashboard', [DashboardController::class, 'index']);
+    Route::get('/admin/dashboard/solicitudes-filtrar', [DashboardController::class, 'filtrarSolicitudesNuevas']);
+    Route::get('/admin/dashboard/incidencias-filtrar', [DashboardController::class, 'filtrarIncidenciasInactivas']);
     Route::get('/admin/configuracion', [ConfiguracionController::class, 'index']);
     Route::get('/admin/planes', [ConfiguracionController::class, 'planes'])->name('admin.planes');
     Route::post('/admin/planes/crear', [ConfiguracionController::class, 'crearPlan'])->name('admin.planes.crear');
@@ -93,6 +97,8 @@ Route::middleware(['role:admin'])->group(function () {
     Route::post('/admin/propiedades/{id}/desactivar', [PropiedadController::class, 'desactivar']);
     Route::post('/admin/propiedades/{id}/publicar', [PropiedadController::class, 'publicar']);
     Route::get('/admin/propiedades/{id}/descargar-pdf', [PropiedadController::class, 'descargarPdf']);
+    Route::get('/admin/alquileres/{id}/descargar-contrato', [\App\Http\Controllers\Admin\AlquilerController::class, 'descargarContrato'])->name('admin.alquileres.descargar-contrato');
+    Route::get('/admin/alquileres/{id}/contrato-debug', [\App\Http\Controllers\Admin\AlquilerController::class, 'contratoDebug'])->name('admin.alquileres.contrato-debug');
     Route::get('/admin/propiedades/exportar', [PropiedadController::class, 'exportar']);
 
     // Solicitudes
@@ -187,11 +193,18 @@ Route::middleware(['role:gestor'])->group(function () {
 
     Route::get('/gestor/perfil', [GestorPerfilController::class, 'index'])->name('gestor.perfil');
     Route::post('/gestor/perfil', [GestorPerfilController::class, 'update'])->name('gestor.perfil.update');
+
+    Route::get('/gestor/asesoria', [AsesoriaController::class, 'index'])->name('gestor.asesoria');
+    Route::get('/gestor/asesoria/buscar', [AsesoriaController::class, 'buscar'])->name('gestor.asesoria.buscar');
+    Route::get('/gestor/asesoria/{slug}', [AsesoriaController::class, 'categoria'])->name('gestor.asesoria.categoria');
 });
 
 // Rutas Arrendador
 Route::middleware(['role:arrendador', 'arrendador.activo'])->group(function () {
     Route::get('/arrendador/dashboard', [ArrendadorDashboardController::class, 'inicio'])->name('arrendador.dashboard');
+    Route::get('/arrendador/asesoria', [AsesoriaController::class, 'index'])->name('arrendador.asesoria');
+    Route::get('/arrendador/asesoria/buscar', [AsesoriaController::class, 'buscar'])->name('arrendador.asesoria.buscar');
+    Route::get('/arrendador/asesoria/{slug}', [AsesoriaController::class, 'categoria'])->name('arrendador.asesoria.categoria');
 
     Route::get('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'inicio'])->name('arrendador.propiedades');
     Route::post('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'guardar'])->name('arrendador.propiedades.store');
@@ -218,7 +231,6 @@ Route::middleware(['role:arrendador', 'arrendador.activo'])->group(function () {
 
 
     Route::get('/arrendador/contratos', [ArrendadorContratoController::class, 'inicio'])->name('arrendador.contratos');
-    Route::post('/arrendador/contratos/{id}/firmar', [ArrendadorContratoController::class, 'firmarArrendador'])->name('arrendador.contratos.firmar');
     Route::get('/arrendador/contratos/{id}/descargar-pdf', [ArrendadorContratoController::class, 'descargarPDF'])->name('arrendador.contratos.descargar-pdf');
     Route::post('/arrendador/contratos/{id}/subir-pdf', [ArrendadorContratoController::class, 'subirPDF'])->name('arrendador.contratos.subir-pdf');
 
@@ -243,6 +255,13 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
     Route::post('/miembro/chat/{id}/mensaje', [MensajesController::class, 'enviarMensaje'])->name('miembro.mensajes.enviar');
     Route::get('/miembro/mapa', [MapaController::class, 'index'])->name('miembro.mapa');
 
+    Route::get('/miembro/asesoria', [AsesoriaController::class, 'index'])->name('miembro.asesoria');
+    Route::get('/miembro/asesoria/buscar', [AsesoriaController::class, 'buscar'])->name('miembro.asesoria.buscar');
+    Route::get('/miembro/asesoria/{slug}', [AsesoriaController::class, 'categoria'])->name('miembro.asesoria.categoria');
+    Route::get('/inquilino/asesoria', [AsesoriaController::class, 'index'])->name('inquilino.asesoria');
+    Route::get('/inquilino/asesoria/buscar', [AsesoriaController::class, 'buscar'])->name('inquilino.asesoria.buscar');
+    Route::get('/inquilino/asesoria/{slug}', [AsesoriaController::class, 'categoria'])->name('inquilino.asesoria.categoria');
+
     Route::get('/inquilino/gestionar-propiedades', [InquilinoController::class, 'gestionarPropiedades'])->name('gestionar_propiedades');
 });
 
@@ -251,6 +270,12 @@ Route::middleware(['auth', 'role:miembro,inquilino,arrendador'])->group(function
     Route::get('/miembro/suscripcion', [App\Http\Controllers\Miembro\MiembroSuscripcionController::class, 'index'])->name('miembro.suscripcion.index');
     Route::post('/miembro/suscripcion/checkout', [App\Http\Controllers\Miembro\MiembroSuscripcionController::class, 'checkout'])->name('miembro.suscripcion.checkout');
     Route::get('/miembro/suscripcion/success', [App\Http\Controllers\Miembro\MiembroSuscripcionController::class, 'success'])->name('miembro.suscripcion.success');
+    Route::get('/miembro/perfil/{id}', [MiembroPerfilController::class, 'show'])->whereNumber('id')->name('miembro.perfil.show');
+    Route::get('/miembro/configuracion', [MiembroPerfilController::class, 'configuracion'])->name('miembro.configuracion');
+    Route::put('/miembro/configuracion', [MiembroPerfilController::class, 'actualizar'])->name('miembro.configuracion.actualizar');
+    Route::put('/miembro/configuracion/plan', [MiembroPerfilController::class, 'actualizarPlan'])->name('miembro.configuracion.plan');
+    Route::post('/miembro/configuracion/cancelar-suscripcion', [MiembroPerfilController::class, 'cancelarSuscripcion'])->name('miembro.configuracion.cancelar-suscripcion');
+    Route::post('/miembro/configuracion/reactivar-suscripcion', [MiembroPerfilController::class, 'reactivarSuscripcion'])->name('miembro.configuracion.reactivar-suscripcion');
 
     Route::get('/arrendador/configurar-stripe', [ConfiguracionCobrosController::class, 'index'])->name('arrendador.stripe.configurar');
     Route::post('/arrendador/guardar-iban', [ConfiguracionCobrosController::class, 'store'])->name('arrendador.guardar-iban');
@@ -264,10 +289,12 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
     Route::get('/miembro/chat/{id}', [MensajesController::class, 'show'])->name('miembro.mensajes.show');
     Route::get('/miembro/chat/{id}/mensajes', [MensajesController::class, 'obtenerMensajes'])->name('miembro.mensajes.mensajes');
     Route::post('/miembro/chat/{id}/mensaje', [MensajesController::class, 'enviarMensaje'])->name('miembro.mensajes.enviar');
+    Route::post('/miembro/propiedad/{id}/chat-gestor', [MensajesController::class, 'iniciarDesdePropiedadGestor'])->name('miembro.mensajes.iniciar_gestor');
     Route::get('/miembro/mapa', [MapaController::class, 'index'])->name('miembro.mapa');
 
     Route::get('/inquilino/gestionar-propiedades', [InquilinoController::class, 'gestionarPropiedades'])->name('gestionar_propiedades');
     Route::get('/inquilino/propiedad/{id}', [InquilinoController::class, 'verPropiedad'])->name('inquilino.ver_propiedad');
+    Route::get('/inquilino/propiedad/{id}/descargar-contrato', [InquilinoController::class, 'descargarContrato'])->name('inquilino.descargar_contrato');
 
     // Rutas de Incidencias (Controlador Especializado)
     Route::get('/inquilino/propiedad/{id}/incidencias', [InquilinoIncidenciaController::class, 'getIncidencias'])->name('inquilino.get_incidencias');
@@ -289,6 +316,7 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
 
     Route::get('/inquilino/alquiler/{id}/estado-contrato', [InquilinoController::class, 'obtenerEstadoContrato'])->name('inquilino.estado_contrato');
     Route::get('/miembro/mapa/propiedades', [MapaController::class, 'propiedades'])->name('miembro.mapa.propiedades');
+
 });
 
 // Ruta temporal para ejecutar migraciones y seeders de forma segura desde el navegador

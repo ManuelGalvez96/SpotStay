@@ -836,3 +836,19 @@
         width: 100%;
     }
 }
+
+/* ── Estilos extraídos de la vista ── */
+.d-flex { display: flex; }
+.align-items-center { align-items: center; }
+.gap-8px { gap: 8px; }
+.avatar-28 { width: 28px; height: 28px; }
+.font-12 { font-size: 12px; }
+.font-13 { font-size: 13px; }
+.font-14 { font-size: 14px; }
+.fw-600 { font-weight: 600; }
+.fw-700 { font-weight: 700; }
+.m-0 { margin: 0; }
+.color-primary { color: #035498; }
+.color-gray { color: #6B7280; }
+.ml-auto { margin-left: auto; }
+.flex-1 { flex: 1; }

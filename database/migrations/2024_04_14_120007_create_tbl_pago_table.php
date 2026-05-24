@@ -12,12 +12,12 @@ return new class extends Migration {
     {
         Schema::create('tbl_pago', function (Blueprint $table) {
             $table->unsignedBigInteger('id_pago')->autoIncrement()->primary();
-            $table->unsignedBigInteger('id_alquiler_fk');
+            $table->unsignedBigInteger('id_alquiler_fk')->nullable();
             $table->unsignedBigInteger('id_alquiler_cuota_fk')->nullable();
             $table->unsignedBigInteger('id_pagador_fk');
             $table->unsignedBigInteger('id_gasto_cuota_detalle_fk')->nullable();
             $table->unsignedBigInteger('id_gasto_cuota_fk')->nullable();
-            $table->enum('tipo_pago', ['alquiler', 'gasto', 'fianza', 'incidencia']);
+            $table->enum('tipo_pago', ['alquiler', 'gasto', 'fianza', 'incidencia', 'suscripcion', 'liquidacion']);
             $table->string('concepto_pago', 200);
             $table->decimal('importe_pago', 8, 2);
             $table->date('mes_pago')->nullable();

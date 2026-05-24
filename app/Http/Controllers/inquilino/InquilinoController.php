@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Alquiler;
 use App\Models\AlquilerCuota;
 use App\Services\InquilinoFinanceService;
+use App\Services\ContratoService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -15,10 +16,12 @@ use Carbon\Carbon;
 class InquilinoController extends Controller
 {
     protected $financeService;
+    protected $contratoService;
 
-    public function __construct(InquilinoFinanceService $financeService)
+    public function __construct(InquilinoFinanceService $financeService, ContratoService $contratoService)
     {
         $this->financeService = $financeService;
+        $this->contratoService = $contratoService;
     }
 
     public function gestionarPropiedades(Request $request)
@@ -146,13 +149,32 @@ class InquilinoController extends Controller
             ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_alquiler.id_propiedad_fk')
             ->leftJoin('tbl_contrato', 'tbl_contrato.id_alquiler_fk', '=', 'tbl_alquiler.id_alquiler')
             ->leftJoin('tbl_usuario as propietario', 'propietario.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
+            ->leftJoin('tbl_usuario as gestor', 'gestor.id_usuario', '=', 'tbl_propiedad.id_gestor_fk')
+            ->leftJoin('tbl_propiedad_permisos as permisos', function ($join) {
+                $join->on('permisos.id_propiedad_fk', '=', 'tbl_propiedad.id_propiedad')
+                    ->on('permisos.id_gestor_fk', '=', 'tbl_propiedad.id_gestor_fk');
+            })
             ->where('tbl_alquiler.id_propiedad_fk', $id)
             ->where('tbl_alquiler.estado_alquiler', 'activo')
             ->where(fn($q) => $q->where('tbl_alquiler.id_inquilino_fk', $userId)->orWhere('tbl_propiedad.id_arrendador_fk', $userId))
-            ->select('tbl_alquiler.*', 'tbl_propiedad.*', DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"), 'tbl_contrato.url_pdf_contrato', 'propietario.nombre_usuario as nombre_propietario')
+            ->select('tbl_alquiler.*', 'tbl_propiedad.*', DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', tbl_propiedad.calle_propiedad, tbl_propiedad.numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(tbl_propiedad.piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(tbl_propiedad.puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"), 'tbl_contrato.url_pdf_contrato', 'propietario.nombre_usuario as nombre_propietario', 'gestor.nombre_usuario as nombre_gestor', 'gestor.email_usuario as email_gestor', 'permisos.chat as chat_gestor')
             ->first();
 
         if (!$alquiler) return redirect()->route('gestionar_propiedades');
+
+        // Obtener estado real del contrato (si existe el fichero o es URL externa)
+        try {
+            $infoContrato = $this->contratoService->obtenerInfoContratoParaUsuario($alquiler->id_propiedad, $userId);
+            if (empty($infoContrato['url']) || !$infoContrato['exists']) {
+                // Forzamos a null para que la vista muestre "No disponible"
+                $alquiler->url_pdf_contrato = null;
+            } else {
+                $alquiler->url_pdf_contrato = $infoContrato['url'];
+            }
+        } catch (\Exception $e) {
+            // Si hay cualquier error, consideramos que no está disponible
+            $alquiler->url_pdf_contrato = null;
+        }
 
         // Lógica de contrato (Alerta fin de contrato)
         $proximaFinalizacion = false;
@@ -247,5 +269,35 @@ class InquilinoController extends Controller
             'dias_exceso' => $expirado ? (int) $fechaFin->diffInDays(Carbon::now()) : 0,
             'semana_excedida' => $expirado && $fechaFin->diffInDays(Carbon::now()) >= 7
         ]);
+    }
+
+    /**
+     * Descargar contrato PDF asociado a una propiedad/alquiler
+     * Verifica que el usuario tenga permisos (inquilino del alquiler o arrendador de la propiedad)
+     */
+    public function descargarContrato($propiedadId)
+    {
+        $usuario = Auth::user();
+        if (!$usuario) return redirect()->route('login');
+        $userId = $usuario->id_usuario;
+
+        try {
+            $url = $this->contratoService->obtenerUrlContratoParaUsuario($propiedadId, $userId);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+
+        // Si la URL es externa (http...), redirigimos directamente
+        if (preg_match('#^https?://#i', $url)) {
+            return redirect()->away($url);
+        }
+
+        $rutaArchivo = public_path($url);
+        if (!file_exists($rutaArchivo)) {
+            return redirect()->back()->with('error', 'Fichero de contrato no encontrado en el servidor.');
+        }
+
+        $nombreDescarga = 'contrato_alquiler_' . ($propiedadId) . '.pdf';
+        return response()->download($rutaArchivo, $nombreDescarga);
     }
 }

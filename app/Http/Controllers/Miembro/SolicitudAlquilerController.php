@@ -37,7 +37,8 @@ class SolicitudAlquilerController extends Controller
             ->exists();
 
         if ($existeAlquilerActivo) {
-            return redirect()->back()->with('error', 'Esta propiedad ya tiene un alquiler activo o pendiente.');
+            return redirect()->route('miembro.detalle_propiedad', ['id' => $id])
+                ->with('error', 'Esta propiedad ya tiene un alquiler activo o pendiente.');
         }
 
         $solicitudExistente = DB::table('tbl_solicitud_alquiler')
@@ -46,7 +47,8 @@ class SolicitudAlquilerController extends Controller
             ->exists();
 
         if ($solicitudExistente) {
-            return redirect()->back()->with('error', 'Ya has solicitado esta propiedad anteriormente.');
+            return redirect()->route('miembro.detalle_propiedad', ['id' => $id])
+                ->with('error', 'Ya has solicitado esta propiedad anteriormente.');
         }
 
         try {
@@ -60,7 +62,8 @@ class SolicitudAlquilerController extends Controller
                 'actualizado_solicitud_alquiler' => Carbon::now(),
             ]);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'No se pudo enviar la solicitud de alquiler. Detalle: ' . $e->getMessage());
+            return redirect()->route('miembro.detalle_propiedad', ['id' => $id])
+                ->with('error', 'No se pudo enviar la solicitud de alquiler. Detalle: ' . $e->getMessage());
         }
 
         if ($propiedad->id_gestor_fk) {

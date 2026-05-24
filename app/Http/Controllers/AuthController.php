@@ -105,6 +105,16 @@ class AuthController extends Controller
             }
 
             if ($user->roles()->whereIn('slug_rol', ['arrendador', 'miembro', 'inquilino'])->exists()) {
+                // Si tiene una suscripción pendiente de pago, redirigimos a la página de pago
+                $suscripcionPendiente = \App\Models\Suscripcion::where('id_usuario_fk', $user->id_usuario)
+                    ->where('estado_suscripcion', 'pendiente_pago')
+                    ->latest('id_suscripcion')
+                    ->first();
+
+                if ($suscripcionPendiente) {
+                    return redirect()->intended(route('miembro.suscripcion.index'));
+                }
+
                 return redirect()->intended('/miembro/inicio');
             }
 
@@ -164,6 +174,10 @@ class AuthController extends Controller
             'fecha_nacimiento.required_if' => 'La fecha de nacimiento es obligatoria.',
         ]);
 
+        // Normalizar DNI/NIF: convertir letra a mayúscula y eliminar espacios
+        $dniInput = $request->dni ? strtoupper(trim($request->dni)) : null;
+        $nifInput = $request->nif ? strtoupper(trim($request->nif)) : null;
+
         // 1.5 Validación de Seguridad: Arrendadores no pueden elegir planes gratuitos
         $plan = Plan::find($request->plan_id);
         if ($request->rol === 'arrendador' && $plan->precio_plan <= 0) {
@@ -176,7 +190,7 @@ class AuthController extends Controller
             'email_usuario' => $request->email,
             'telefono_usuario' => $request->telefono,
             'contrasena_usuario' => Hash::make($request->password),
-            'dni_usuario' => ($request->tipo_arrendador === 'empresa') ? $request->nif : $request->dni,
+            'dni_usuario' => ($request->tipo_arrendador === 'empresa') ? $nifInput : $dniInput,
             'fecha_nacimiento_usuario' => $request->fecha_nacimiento,
             'tipo_arrendador_usuario' => $request->tipo_arrendador,
             'activo_usuario' => true,
@@ -199,7 +213,7 @@ class AuthController extends Controller
                 'telefono_solicitud' => $usuario->telefono_usuario,
                 'fecha_nacimiento_solicitud' => $request->fecha_nacimiento,
                 'tipo_documento_solicitud' => $request->tipo_documento,
-                'numero_documento_solicitud' => ($request->tipo_arrendador === 'empresa') ? $request->nif : $request->dni,
+                'numero_documento_solicitud' => ($request->tipo_arrendador === 'empresa') ? $nifInput : $dniInput,
                 'tipo_arrendador_solicitud' => $request->tipo_arrendador,
                 'estado_solicitud_arrendador' => 'pendiente',
                 'creado_solicitud_arrendador' => Carbon::now(),

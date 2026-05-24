@@ -34,6 +34,22 @@ class CodigoGestorService
             'estado_codigo_gestor' => 'activo',
         ]);
     }
+
+    /**
+     * Obtiene el código activo del gestor o crea uno nuevo si no existe.
+     */
+    public static function obtenerOCrearCodigoParaGestor(int $idGestor): CodigoGestor
+    {
+        $codigoExistente = CodigoGestor::where('id_gestor_fk', $idGestor)
+            ->where('estado_codigo_gestor', 'activo')
+            ->first();
+
+        if ($codigoExistente) {
+            return $codigoExistente;
+        }
+
+        return self::crearCodigoParaGestor($idGestor);
+    }
     
     /**
      * Busca un gestor por código válido

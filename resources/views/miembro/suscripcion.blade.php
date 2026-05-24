@@ -40,24 +40,41 @@
         <div class="payment-card">
             <div class="card-header-gradient">
                 <h2 class="mb-0 fw-bold">Completa tu Registro</h2>
-                <p class="mb-0 text-white-50 mt-1">Activa tu suscripción {{ $suscripcion->plan_suscripcion }}</p>
+                @if($suscripcion)
+                    <p class="mb-0 text-white-50 mt-1">Activa tu suscripción {{ $suscripcion->plan_suscripcion }}</p>
+                @else
+                    <p class="mb-0 text-white-50 mt-1">Aún no tienes una suscripción pendiente</p>
+                @endif
             </div>
-            
-            <div class="card-body">
-                <div class="price-display">
-                    <span class="period">Pago Total</span>
-                    <span class="amount">{{ number_format($suscripcion->precio_pagado_suscripcion, 2) }}€</span>
-                    <span class="period">Incluye todos los servicios</span>
-                </div>
 
-                <div class="px-4">
-                    <form action="{{ route('miembro.suscripcion.checkout') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="btn-pay">
-                            <i class="bi bi-credit-card-2-front-fill me-2"></i> Pagar con Tarjeta
-                        </button>
-                    </form>
-                </div>
+            <div class="card-body">
+                @if($suscripcion)
+                    <div class="price-display">
+                        <span class="period">Pago Total</span>
+                        <span class="amount">{{ number_format($suscripcion->precio_pagado_suscripcion, 2) }}€</span>
+                        <span class="period">Incluye todos los servicios</span>
+                    </div>
+
+                    <div class="px-4">
+                        <form action="{{ route('miembro.suscripcion.checkout') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn-pay">
+                                <i class="bi bi-credit-card-2-front-fill me-2"></i> Pagar con Tarjeta
+                            </button>
+                        </form>
+                    </div>
+                @else
+                    <div class="px-4 py-3">
+                        <p class="mb-3 text-center text-muted">
+                            No se ha encontrado ninguna suscripción pendiente para esta cuenta.
+                        </p>
+                        <div class="d-grid gap-2">
+                            <a href="{{ $rutaRetorno ?? url('/miembro/inicio') }}" class="btn-pay text-center text-decoration-none">
+                                Volver al inicio
+                            </a>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <div class="card-footer">

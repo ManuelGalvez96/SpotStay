@@ -7,6 +7,7 @@
 var csrfToken = null;
 var modalSolicitud = null;
 var solicitudActualId = null;
+var solicitudActualTipo = 'arrendador';
 
 /* ── window.onload ── */
 window.onload = function() {
@@ -22,6 +23,7 @@ window.onload = function() {
     asignarEventosBotones();
     asignarEventoBuscadorAlquileres();
     asignarEventoBuscadorSolicitudes();
+    asignarEventoFiltroTipoSolicitudes();
     asignarEventosBotonesSolicitudes();
     asignarEventosNavIconos();
     asignarEventosModalSolicitudes();
@@ -56,13 +58,13 @@ function asignarEventoFiltroEstadoIncidencias() {
 
 /* ================================================
    FUNCIÓN: filtrarTablaIncidencias
-   Filtra filas por texto y estado seleccionado
+   Filtra incidencias inactivas por texto y estado seleccionado
    ================================================ */
 function filtrarTablaIncidencias() {
     var texto = (document.getElementById('buscadorIncidencias') || { value: '' }).value.trim();
     var estadoSel = (document.getElementById('filtroEstadoIncidencias') || { value: '' }).value;
 
-    var url = '/admin/incidencias/filtrar?q=' + encodeURIComponent(texto) + '&estado=' + encodeURIComponent(estadoSel);
+    var url = '/admin/dashboard/incidencias-filtrar?q=' + encodeURIComponent(texto) + '&estado=' + encodeURIComponent(estadoSel);
 
     fetch(url, {
         method: 'GET',
@@ -72,53 +74,66 @@ function filtrarTablaIncidencias() {
     })
     .then(function(response) { return response.json(); })
     .then(function(data) {
-        var filas = data.tabla || [];
-        var tbody = document.getElementById('tbodyIncidencias');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-
-        if (filas.length === 0) {
-            var tr = document.createElement('tr');
-            tr.innerHTML = '<td colspan="6" class="tabla-vacia-cell">No hay incidencias</td>';
-            tbody.appendChild(tr);
-            return;
-        }
-
-        filas.forEach(function(inc) {
-            var tr = document.createElement('tr');
-            tr.setAttribute('data-id', inc.id_incidencia);
-            tr.setAttribute('data-titulo', inc.titulo_incidencia || '');
-            tr.setAttribute('data-propiedad', inc.titulo_propiedad || '');
-            tr.setAttribute('data-estado', inc.estado_incidencia || '');
-            tr.setAttribute('data-inquilino', inc.nombre_inquilino || '—');
-            tr.setAttribute('data-arrendador', inc.nombre_arrendador || '—');
-            tr.setAttribute('data-gestor', inc.nombre_gestor || 'Sin asignar');
-            tr.setAttribute('data-encargado-pago', inc.encargado_pago || '—');
-
-            var prioridad = inc.prioridad_incidencia || '';
-            var prioridadClass = 'badge-' + (prioridad || 'baja');
-            var prioridadLabel = prioridad ? prioridad.charAt(0).toUpperCase() + prioridad.slice(1) : '—';
-
-            var categoriaHtml = inc.nombre_categoria ? '<span class="badge bg-info">' + inc.nombre_categoria + '</span>' : '<span class="text-muted">—</span>';
-
-            var estadoLabel = (inc.estado_incidencia || '').replace('_', ' ');
-
-            tr.innerHTML = '<td>' + (inc.titulo_propiedad ? inc.titulo_propiedad + ', ' + (inc.ciudad_propiedad || '') : '—') + '</td>' +
-                '<td>' + categoriaHtml + '</td>' +
-                '<td><span class="badge badge-prioridad ' + prioridadClass + '">' + prioridadLabel + '</span></td>' +
-                '<td><span class="badge-estado badge-' + (inc.estado_incidencia || '').replace('_','-') + '">' + (estadoLabel.charAt(0).toUpperCase() + estadoLabel.slice(1)) + '</span></td>' +
-                '<td class="col-mobile-hide"><small class="text-muted">' + (inc.actualizado_incidencia ? new Date(inc.actualizado_incidencia).toLocaleString() : '—') + '</small></td>' +
-                '<td class="col-mobile-hide"><button class="btn-contactar-inc" data-id="' + inc.id_incidencia + '">📧 Contactar</button></td>';
-
-            tbody.appendChild(tr);
-        });
-
-        // Reasignar eventos de botones contactar en las nuevas filas
-        asignarEventosContactarIncidencias();
+        actualizarTablaIncidenciasDashboard(data.data || []);
     })
     .catch(function(error) {
         console.error('Error al filtrar incidencias:', error);
     });
+}
+
+/* ================================================
+   FUNCIÓN: actualizarTablaIncidenciasDashboard
+   Reemplaza el contenido visible de incidencias inactivas
+   ================================================ */
+function actualizarTablaIncidenciasDashboard(incidencias) {
+    var tbody = document.getElementById('tbodyIncidencias');
+
+    if (!tbody) {
+        return;
+    }
+
+    tbody.innerHTML = '';
+
+    if (!incidencias || incidencias.length === 0) {
+        var filaVacia = document.createElement('tr');
+        filaVacia.innerHTML = '<td colspan="6" class="tabla-vacia-cell">No hay incidencias inactivas</td>';
+        tbody.appendChild(filaVacia);
+        return;
+    }
+
+    for (var i = 0; i < incidencias.length; i++) {
+        var incidencia = incidencias[i];
+        var prioridad = incidencia.prioridad_incidencia || '';
+        var prioridadClass = 'badge-' + (prioridad || 'baja');
+        var prioridadLabel = prioridad ? prioridad.charAt(0).toUpperCase() + prioridad.slice(1) : '—';
+        var categoriaHtml = incidencia.nombre_categoria ? '<span class="badge bg-info">' + incidencia.nombre_categoria + '</span>' : '<span class="text-muted">—</span>';
+        var estadoLabel = (incidencia.estado_incidencia || '').replace('_', ' ');
+        var estadoTexto = estadoLabel ? estadoLabel.charAt(0).toUpperCase() + estadoLabel.slice(1) : '—';
+        var fecha = incidencia.actualizado_incidencia ? new Date(incidencia.actualizado_incidencia).toLocaleDateString('es-ES') : '—';
+        var propiedadTexto = incidencia.titulo_propiedad ? incidencia.titulo_propiedad + ', ' + (incidencia.ciudad_propiedad || '') : '—';
+
+        var fila = document.createElement('tr');
+        fila.setAttribute('data-id', incidencia.id_incidencia || '');
+        fila.setAttribute('data-titulo', incidencia.titulo_incidencia || '');
+        fila.setAttribute('data-propiedad', propiedadTexto);
+        fila.setAttribute('data-estado', incidencia.estado_incidencia || '');
+        fila.setAttribute('data-inquilino', incidencia.nombre_inquilino || '—');
+        fila.setAttribute('data-arrendador', incidencia.nombre_arrendador || '—');
+        fila.setAttribute('data-gestor', incidencia.nombre_gestor || 'Sin asignar');
+        fila.setAttribute('data-encargado-pago', incidencia.encargado_pago || '—');
+
+        fila.innerHTML = '' +
+            '<td>' + propiedadTexto + '</td>' +
+            '<td>' + categoriaHtml + '</td>' +
+            '<td><span class="badge badge-prioridad ' + prioridadClass + '">' + prioridadLabel + '</span></td>' +
+            '<td><span class="badge-estado badge-' + (incidencia.estado_incidencia || '').replace('_', '-') + '">' + estadoTexto + '</span></td>' +
+            '<td class="col-mobile-hide"><small class="text-muted">' + fecha + '</small></td>' +
+            '<td class="col-mobile-hide"><button class="btn-contactar-inc" data-id="' + (incidencia.id_incidencia || '') + '" data-toggle="modal" data-target="#modalContactarIncidencia">📧 Contactar</button></td>';
+
+        tbody.appendChild(fila);
+    }
+
+    asignarEventosContactarIncidencias();
 }
 
 /* ================================================
@@ -329,9 +344,110 @@ function asignarEventoBuscadorSolicitudes() {
     }
     
     // Evento onkeyup para búsqueda en vivo
-    buscador.onkeyup = function() {
+    buscador.oninput = function() {
         filtrarSolicitudesDash();
     };
+}
+
+/* ================================================
+   FUNCIÓN: asignarEventoFiltroTipoSolicitudes
+   Asigna evento al filtro de tipo de solicitud
+   ================================================ */
+function asignarEventoFiltroTipoSolicitudes() {
+    var filtro = document.getElementById('filtroTipoSolicitudes');
+
+    if (!filtro) {
+        return;
+    }
+
+    filtro.onchange = function() {
+        filtrarSolicitudesDash();
+    };
+}
+
+/* ================================================
+   FUNCIÓN: filtrarSolicitudesDash
+   Filtra las solicitudes nuevas por nombre y tipo
+    ================================================ */
+function filtrarSolicitudesDash() {
+    var buscador = document.getElementById('buscadorSolicitudes');
+    var filtroTipo = document.getElementById('filtroTipoSolicitudes');
+    var lista = document.getElementById('listaSolicitudes');
+
+    if (!lista) {
+        return;
+    }
+
+    var textoBusqueda = (buscador ? buscador.value : '').trim().toLowerCase();
+    var tipoSeleccionado = filtroTipo ? filtroTipo.value : 'all';
+
+    fetch('/admin/dashboard/solicitudes-filtrar?tipo=' + encodeURIComponent(tipoSeleccionado) + '&q=' + encodeURIComponent(textoBusqueda), {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken
+        }
+    })
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (data) {
+            actualizarListaSolicitudesDashboard(data.data || []);
+        })
+        .catch(function (error) {
+            console.error('Error al filtrar solicitudes nuevas:', error);
+        });
+}
+
+/* ================================================
+   FUNCIÓN: actualizarListaSolicitudesDashboard
+   Reemplaza el contenido visible de solicitudes nuevas
+   ================================================ */
+function actualizarListaSolicitudesDashboard(solicitudes) {
+    var lista = document.getElementById('listaSolicitudes');
+    if (!lista) {
+        return;
+    }
+
+    lista.innerHTML = '';
+
+    if (!solicitudes || solicitudes.length === 0) {
+        var sinResultados = document.createElement('p');
+        sinResultados.className = 'sin-solicitudes';
+        sinResultados.textContent = 'No hay solicitudes que coincidan con el filtro';
+        lista.appendChild(sinResultados);
+        return;
+    }
+
+    for (var i = 0; i < solicitudes.length; i++) {
+        var solicitud = solicitudes[i];
+        var partes = String(solicitud.nombre_usuario || '').split(' ');
+        var iniciales = ((partes[0] || '').charAt(0) + (partes[1] || '').charAt(0)).toUpperCase();
+        var detalle = solicitud.tipo_solicitud === 'gestor'
+            ? (solicitud.experiencia_solicitud || solicitud.descripcion_solicitud || 'Sin detalle')
+            : (solicitud.direccion_fiscal_solicitud || solicitud.descripcion_solicitud || 'Sin detalle');
+
+        var item = document.createElement('div');
+        item.className = 'solicitud-item';
+        item.setAttribute('data-id', solicitud.id_solicitud);
+        item.setAttribute('data-nombre', solicitud.nombre_usuario || '');
+        item.setAttribute('data-tipo', solicitud.tipo_solicitud || 'arrendador');
+
+        item.innerHTML = '' +
+            '<div class="solicitud-avatar avatar-default">' + iniciales + '</div>' +
+            '<div class="solicitud-info">' +
+                '<p class="solicitud-nombre">' + (solicitud.nombre_usuario || '—') + '</p>' +
+                '<p class="solicitud-ciudad">' + detalle + '</p>' +
+                '<p class="solicitud-tipo"><span class="badge bg-primary">' + (solicitud.tipo_label || 'Solicitud') + '</span></p>' +
+            '</div>' +
+            '<div class="solicitud-meta">' +
+                '<span class="solicitud-tiempo">' + (solicitud.creado_solicitud ? new Date(solicitud.creado_solicitud).toLocaleDateString('es-ES') : '—') + '</span>' +
+                '<button class="btn-revisar" data-id="' + solicitud.id_solicitud + '" data-tipo="' + (solicitud.tipo_solicitud || 'arrendador') + '" type="button">Revisar →</button>' +
+            '</div>';
+
+        lista.appendChild(item);
+    }
+
+    asignarEventosBotonesSolicitudes();
 }
 
 /* ================================================
@@ -446,7 +562,8 @@ function asignarEventosBotonesSolicitudes() {
         btnRevisar.onclick = function(event) {
             event.preventDefault();
             var id = this.getAttribute('data-id');
-            abrirModalSolicitud(id);
+            var tipo = this.getAttribute('data-tipo') || 'arrendador';
+            abrirModalSolicitud(id, tipo);
         };
     }
 }
@@ -455,10 +572,11 @@ function asignarEventosBotonesSolicitudes() {
    FUNCIÓN: abrirModalSolicitud
    Abre modal con datos de la solicitud
    ================================================ */
-function abrirModalSolicitud(id) {
+function abrirModalSolicitud(id, tipo) {
     solicitudActualId = id;
+    solicitudActualTipo = tipo || 'arrendador';
 
-    fetch('/admin/solicitudes/' + id)
+    fetch('/admin/solicitudes/' + id + '?tipo=' + encodeURIComponent(solicitudActualTipo))
         .then(function(response) {
             return response.json();
         })
@@ -482,7 +600,7 @@ function rellenarModalSolicitud(datos) {
     var partes = (datos.nombre_usuario || '').split(' ');
     var iniciales = (partes[0] ? partes[0].charAt(0) : '') + (partes[1] ? partes[1].charAt(0) : '');
     var colores = ['#B8CCE4', '#A8D5BF', '#F9E4A0', '#FFD5CC', '#D7EAF9', '#EDE7F6', '#D5F5E3', '#FAD7D7'];
-    var color = colores[datos.id_solicitud_arrendador % 8];
+    var color = colores[datos.id_solicitud % 8];
     
     function establecerTexto(id, valor) {
         var elemento = document.getElementById(id);
@@ -520,13 +638,15 @@ function rellenarModalSolicitud(datos) {
     
     var emailEl = document.getElementById('modalEmailSolicitudDash');
     if (emailEl) emailEl.textContent = datos.email_usuario || '—';
+
+    establecerTexto('modalTipoSolicitudDash', datos.tipo_label || 'Solicitud');
     
     var ciudadEl = document.getElementById('modalCiudadSolicitudDash');
     if (ciudadEl) {
         ciudadEl.innerHTML = '<i class="bi bi-geo-alt"></i> ' + (datos.direccion_fiscal_solicitud || 'No disponible');
     }
     
-    establecerTexto('modalTelefonoSolicitudDash', datos.telefono_solicitud);
+    establecerTexto('modalTelefonoSolicitudDash', datos.telefono_contacto || datos.telefono_usuario);
     establecerTexto('modalFechaNacimientoSolicitudDash', formatearFecha(datos.fecha_nacimiento_solicitud));
     establecerTexto('modalTipoDocumentoSolicitudDash', datos.tipo_documento_solicitud);
     establecerTexto('modalNumeroDocumentoSolicitudDash', datos.numero_documento_solicitud);
@@ -540,12 +660,13 @@ function rellenarModalSolicitud(datos) {
     establecerTexto('modalAceptaTerminosSolicitudDash', formatearBooleano(datos.acepta_terminos_solicitud));
     establecerTexto('modalAceptaVeracidadSolicitudDash', formatearBooleano(datos.acepta_veracidad_solicitud));
     establecerTexto('modalDescripcionSolicitudDash', datos.descripcion_solicitud || '—');
+    establecerTexto('modalExperienciaSolicitudDash', datos.experiencia_solicitud || '—');
     establecerTexto('modalFechaAceptacionSolicitudDash', formatearFecha(datos.fecha_aceptacion_solicitud));
     
     // Actualizar estado
     var badgeEl = document.getElementById('modalBadgeEstadoSolicitudDash');
     if (badgeEl) {
-        var estado = datos.estado_solicitud_arrendador || 'pendiente';
+        var estado = datos.estado_solicitud || 'pendiente';
         var estadoLabel = estado.charAt(0).toUpperCase() + estado.slice(1);
         badgeEl.textContent = estadoLabel;
         badgeEl.className = 'badge';
@@ -558,7 +679,7 @@ function rellenarModalSolicitud(datos) {
         }
     }
     
-    establecerTexto('modalEstadoSolicitudDash', (datos.estado_solicitud_arrendador || 'pendiente').charAt(0).toUpperCase() + (datos.estado_solicitud_arrendador || 'pendiente').slice(1));
+    establecerTexto('modalEstadoSolicitudDash', (datos.estado_solicitud || 'pendiente').charAt(0).toUpperCase() + (datos.estado_solicitud || 'pendiente').slice(1));
     
     // Limpiar notas
     var notasEl = document.getElementById('modalNotasSolicitudDash');
@@ -598,7 +719,7 @@ function aprobarSolicitudModal() {
         return;
     }
 
-    fetch('/admin/solicitudes/' + solicitudActualId + '/aprobar', {
+    fetch('/admin/solicitudes/' + solicitudActualId + '/aprobar?tipo=' + encodeURIComponent(solicitudActualTipo), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -637,7 +758,7 @@ function rechazarSolicitudModal() {
     var notasEl = document.getElementById('modalNotasSolicitudDash');
     var notas = notasEl ? notasEl.value.trim() : '';
 
-    fetch('/admin/solicitudes/' + solicitudActualId + '/rechazar', {
+    fetch('/admin/solicitudes/' + solicitudActualId + '/rechazar?tipo=' + encodeURIComponent(solicitudActualTipo), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

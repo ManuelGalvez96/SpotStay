@@ -10,7 +10,7 @@
 <!-- BLOQUE HERO -->
 <div class="hero-admin">
     <div class="hero-content">
-        <h1>Buenos días, Admin 👋</h1>
+        <h1>Buenos días, {{ auth()->user()->nombre_usuario ?? 'Admin' }} 👋</h1>
         <p>Miércoles, 14 de abril de 2025</p>
     </div>
     <div class="hero-deco hero-deco-1"></div>
@@ -73,17 +73,16 @@
         <div class="card-header-admin card-header-gradient">
             <span>Incidencias inactivas</span>
             <div class="card-header-actions">
-                <div class="input-busqueda" style="min-width:220px;">
+                <div class="input-busqueda min-w-220">
                     <i class="bi bi-search"></i>
                     <input type="text" id="buscadorIncidencias" placeholder="Buscar incidencia...">
                 </div>
-                <select id="filtroEstadoIncidencias" class="select-filtro" style="margin-left:8px;">
-                    <option value="">Todos los estados</option>
+                <select id="filtroEstadoIncidencias" class="select-filtro ml-8px">
+                    <option value="all" selected>Todos los estados</option>
                     <option value="abierta">Abierta</option>
                     <option value="esperando_decision">Esperando decisión</option>
                     <option value="esperando_pago">Esperando pago</option>
                     <option value="solucionada">Solucionada</option>
-                    <option value="inactivas">Inactivas (2+ semanas)</option>
                 </select>
                 <a href="/admin/incidencias" class="link-ver-todos">Ver todas →</a>
             </div>
@@ -155,42 +154,43 @@
             <span>Solicitudes nuevas</span>
             <div class="card-header-acciones">
                 <input type="text" id="buscadorSolicitudes" placeholder="Buscar por nombre..." class="buscador-input">
-                <span class="badge-contador">{{ $solicitudesNuevas }}</span>
+                <select id="filtroTipoSolicitudes" class="select-filtro ml-8px min-w-150">
+                    <option value="all">Todos los tipos</option>
+                    <option value="arrendador">Arrendador</option>
+                    <option value="gestor">Gestor</option>
+                </select>
+                <a href="/admin/solicitudes" class="link-ver-todos">Ver todas →</a>
             </div>
         </div>
         
         <div class="lista-solicitudes-scroll">
             <div class="lista-solicitudes" id="listaSolicitudes">
-                @php $contadorSolicitudes = 0; @endphp
                 @forelse($ultimasSolicitudes as $solicitud)
                 @php
-                    if ($contadorSolicitudes >= 5) {
-                        continue;
-                    }
-                    $contadorSolicitudes++;
                     $partes = explode(' ', $solicitud->nombre_usuario);
                     $iniciales = strtoupper(substr($partes[0], 0, 1)) . 
                                  strtoupper(substr($partes[1] ?? '', 0, 1));
+                    $tipoLabel = $solicitud->tipo_label ?? 'Solicitud';
+                    $detalle = $solicitud->tipo_solicitud === 'gestor'
+                        ? ($solicitud->experiencia_solicitud ?: $solicitud->descripcion_solicitud ?: 'Sin detalle')
+                        : ($solicitud->direccion_fiscal_solicitud ?: $solicitud->descripcion_solicitud ?: 'Sin detalle');
                 @endphp
-                <div class="solicitud-item" data-id="{{ $solicitud->id_solicitud_arrendador }}" data-nombre="{{ $solicitud->nombre_usuario }}">
+                <div class="solicitud-item" data-id="{{ $solicitud->id_solicitud }}" data-nombre="{{ $solicitud->nombre_usuario }}" data-tipo="{{ $solicitud->tipo_solicitud }}">
                     <div class="solicitud-avatar avatar-default">{{ $iniciales }}</div>
                     <div class="solicitud-info">
                         <p class="solicitud-nombre">{{ $solicitud->nombre_usuario }}</p>
-                        <p class="solicitud-ciudad">{{ $solicitud->direccion_fiscal_solicitud ?? 'N/A' }}</p>
+                        <p class="solicitud-ciudad">{{ $detalle }}</p>
+                        <p class="solicitud-tipo"><span class="badge bg-primary">{{ $tipoLabel }}</span></p>
                     </div>
                     <div class="solicitud-meta">
-                        <span class="solicitud-tiempo">{{ \Carbon\Carbon::parse($solicitud->creado_solicitud_arrendador)->diffForHumans() }}</span>
-                        <button class="btn-revisar" data-id="{{ $solicitud->id_solicitud_arrendador }}" type="button">Revisar →</button>
+                        <span class="solicitud-tiempo">{{ \Carbon\Carbon::parse($solicitud->creado_solicitud)->diffForHumans() }}</span>
+                        <button class="btn-revisar" data-id="{{ $solicitud->id_solicitud }}" data-tipo="{{ $solicitud->tipo_solicitud }}" type="button">Revisar →</button>
                     </div>
                 </div>
                 @empty
                 <p class="sin-solicitudes">No hay solicitudes nuevas</p>
                 @endforelse
             </div>
-        </div>
-        
-        <div class="card-footer-admin">
-            <a href="/admin/solicitudes">Ver todas las solicitudes →</a>
         </div>
     </div>
 </div>
@@ -295,6 +295,10 @@
                     <p id="modalTelefonoSolicitudDash" class="modal-data-dash">—</p>
                 </div>
                 <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Tipo de solicitud</label>
+                    <p id="modalTipoSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                <div class="modal-seccion-dash">
                     <label class="modal-label-dash">Fecha de nacimiento</label>
                     <p id="modalFechaNacimientoSolicitudDash" class="modal-data-dash">—</p>
                 </div>
@@ -357,6 +361,10 @@
                     <p id="modalDescripcionSolicitudDash" class="modal-data-dash">—</p>
                 </div>
                 <div class="modal-seccion-dash">
+                    <label class="modal-label-dash">Experiencia previa</label>
+                    <p id="modalExperienciaSolicitudDash" class="modal-data-dash">—</p>
+                </div>
+                <div class="modal-seccion-dash">
                     <label class="modal-label-dash">Fecha de aceptación</label>
                     <p id="modalFechaAceptacionSolicitudDash" class="modal-data-dash">—</p>
                 </div>
@@ -417,7 +425,7 @@
                     <p class="modal-data-dash" id="modalGestorIncidencia">—</p>
                 </div>
 
-                <div class="modal-seccion-dash" id="modalEncargadoPagoSeccion" style="display: none;">
+                <div class="modal-seccion-dash d-none" id="modalEncargadoPagoSeccion">
                     <label class="modal-label-dash">Encargado de pago</label>
                     <p class="modal-data-dash" id="modalEncargadoPagoIncidencia">—</p>
                 </div>

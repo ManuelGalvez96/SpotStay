@@ -7,6 +7,7 @@ use App\Models\Usuario;
 use App\Models\Suscripcion;
 use App\Models\Plan;
 use App\Models\Pago;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
 use Stripe\Stripe;
 use Stripe\Checkout\Session;
-use Carbon\Carbon;
 
 class MiembroSuscripcionController extends Controller
 {
@@ -24,10 +24,10 @@ class MiembroSuscripcionController extends Controller
      */
     public function index()
     {
+        /** @var Usuario $usuario */
         $usuario = Auth::user();
-        $usuarioModelo = Usuario::find($usuario->id_usuario);
-        
-        // Buscamos la suscripción pendiente o activa más reciente
+
+        // Buscamos la suscripción pendiente más reciente
         $suscripcion = Suscripcion::where('id_usuario_fk', $usuario->id_usuario)
             ->whereIn('estado_suscripcion', ['pendiente_pago', 'activa'])
             ->latest('id_suscripcion')
@@ -60,7 +60,10 @@ class MiembroSuscripcionController extends Controller
             return redirect($this->redirigirDashboard());
         }
 
-        return view('miembro.suscripcion', compact('suscripcion'));
+        // Valor por defecto para la ruta de retorno (puede sobrescribirse si se necesita)
+        $rutaRetorno = url('/miembro/inicio');
+
+        return view('miembro.suscripcion', compact('suscripcion', 'rutaRetorno'));
     }
 
     /**
@@ -68,6 +71,7 @@ class MiembroSuscripcionController extends Controller
      */
     public function checkout(Request $request)
     {
+        /** @var Usuario $usuario */
         $usuario = Auth::user();
         $suscripcion = Suscripcion::where('id_usuario_fk', $usuario->id_usuario)
             ->where('estado_suscripcion', 'pendiente_pago')
@@ -125,9 +129,25 @@ class MiembroSuscripcionController extends Controller
         // Configurar Stripe para recuperar la sesión
         Stripe::setApiKey(config('services.stripe.secret'));
         $checkoutSession = Session::retrieve($sessionId);
-        
+
         // Recuperar ID de suscripción de los metadatos
         $idSuscripcion = $checkoutSession->metadata->id_suscripcion;
+
+        // Intentar obtener una referencia de pago válida desde la sesión o la suscripción
+        $referenciaPago = $checkoutSession->payment_intent ?? null;
+        if (!$referenciaPago && !empty($checkoutSession->subscription)) {
+            try {
+                $sub = \Stripe\Subscription::retrieve($checkoutSession->subscription, ['expand' => ['latest_invoice.payment_intent']]);
+                if (!empty($sub->latest_invoice->payment_intent->id)) {
+                    $referenciaPago = $sub->latest_invoice->payment_intent->id;
+                } elseif (!empty($sub->latest_invoice->charge)) {
+                    $referenciaPago = $sub->latest_invoice->charge;
+                }
+            } catch (\Exception $e) {
+                Log::warning("No se pudo obtener referencia de Stripe: " . $e->getMessage());
+            }
+        }
+        /** @var Usuario $usuario */
         $usuario = Auth::user();
         $usuarioModelo = Usuario::find($usuario->id_usuario);
         
@@ -143,7 +163,7 @@ class MiembroSuscripcionController extends Controller
                 $suscripcion->update([
                     'estado_suscripcion' => 'activa',
                     'inicio_suscripcion' => Carbon::now(),
-                    'fin_suscripcion' => Carbon::now()->addMonth(),
+                    'fin_suscripcion' => Carbon::now()->copy()->addMonth(),
                     'actualizado_suscripcion' => Carbon::now()
                 ]);
 
@@ -165,7 +185,7 @@ class MiembroSuscripcionController extends Controller
                     'concepto_pago' => 'Suscripción Plan: ' . $suscripcion->plan_suscripcion,
                     'importe_pago' => $suscripcion->precio_pagado_suscripcion,
                     'estado_pago' => 'pagado',
-                    'referencia_pago' => $checkoutSession->payment_intent,
+                    'referencia_pago' => $referenciaPago,
                     'fecha_confirmacion_pago' => now(),
                     'creado_pago' => now(),
                     'actualizado_pago' => now(),
@@ -179,7 +199,6 @@ class MiembroSuscripcionController extends Controller
                 } catch (\Exception $eFactura) {
                     Log::warning("Pago procesado pero falló la factura: " . $eFactura->getMessage());
                 }
-
             } catch (\Exception $e) {
                 if (DB::transactionLevel() > 0) {
                     DB::rollBack();
@@ -201,13 +220,13 @@ class MiembroSuscripcionController extends Controller
             $pagoInfo = Pago::with('pagador')->findOrFail($idPago);
             $usuario = $pagoInfo->pagador;
 
-            $fechaPago = Carbon::parse($pagoInfo->fecha_confirmacion_pago)->format('d/m/Y H:i');
-            $mesReferencia = Carbon::parse($pagoInfo->fecha_confirmacion_pago)->translatedFormat('F Y');
+            $fechaPagoCarbon = Carbon::parse($pagoInfo->fecha_confirmacion_pago);
+            $fechaPago = $fechaPagoCarbon->format('d/m/Y H:i');
+            $inicioPeriodo = $fechaPagoCarbon->copy();
+            $finPeriodo = $fechaPagoCarbon->copy()->addMonth();
+            $periodoTexto = 'Mensual';
 
-            $suscripcion = \App\Models\Suscripcion::where('id_usuario_fk', $usuario->id_usuario)->latest('id_suscripcion')->first();
-            $periodoFin = $suscripcion && str_contains(strtolower($suscripcion->plan_suscripcion), 'mensual') 
-                ? Carbon::parse($pagoInfo->fecha_confirmacion_pago)->addMonth()->format('d/m/Y') 
-                : Carbon::parse($pagoInfo->fecha_confirmacion_pago)->addYear()->format('d/m/Y');
+            $suscripcion = Suscripcion::where('id_usuario_fk', $usuario->id_usuario)->latest('id_suscripcion')->first();
 
             $total = (float) $pagoInfo->importe_pago;
             $base = $total / 1.21;
@@ -219,19 +238,20 @@ class MiembroSuscripcionController extends Controller
                 'dni_cliente' => $usuario->dni_usuario ?? 'No especificado',
                 'direccion_cliente' => $usuario->direccion_fiscal_usuario ?? 'Dirección no especificada',
                 'email_cliente' => $usuario->email_usuario,
-                
+
                 'numero_factura' => date('Y') . '-' . str_pad((string) $idPago, 6, '0', STR_PAD_LEFT),
                 'fecha_emision' => $fechaPago,
-                
+
                 'plan_nombre' => str_replace('Suscripción Plan: ', '', $pagoInfo->concepto_pago),
-                'periodo_inicio' => Carbon::parse($pagoInfo->fecha_confirmacion_pago)->format('d/m/Y'),
-                'periodo_fin' => $periodoFin,
-                
+                'periodo_inicio' => $inicioPeriodo->format('d/m/Y'),
+                'periodo_fin' => $finPeriodo->format('d/m/Y'),
+                'periodo_facturacion' => $periodoTexto,
+
                 'precio_base' => number_format($base, 2, ',', '.') . ' €',
                 'porcentaje_iva' => '21',
                 'importe_iva' => number_format($iva, 2, ',', '.') . ' €',
                 'total_pagado' => number_format($total, 2, ',', '.') . ' €',
-                
+
                 'referencia_pago' => $pagoInfo->referencia_pago
             ];
 
@@ -255,7 +275,7 @@ class MiembroSuscripcionController extends Controller
                     $check = Http::withoutVerifying()
                         ->withToken(config('services.pdfmonkey.api_key'))
                         ->get("https://api.pdfmonkey.io/api/v1/documents/{$docId}");
-                    
+
                     if ($check->successful() && !empty($check->json()['document']['download_url'])) {
                         $downloadUrl = $check->json()['document']['download_url'];
                         break;
@@ -296,7 +316,7 @@ class MiembroSuscripcionController extends Controller
     {
         /** @var \App\Models\Usuario $user */
         $user = Auth::user();
-        
+
         // Si es Arrendador
         if ($user->roles()->where('slug_rol', 'arrendador')->exists()) {
             // Si aún no tiene configurado el IBAN/Stripe Account, lo mandamos a configurar
@@ -305,7 +325,7 @@ class MiembroSuscripcionController extends Controller
             }
             return '/arrendador/dashboard';
         }
-        
+
         // Si es Miembro normal
         return '/miembro/inicio';
     }

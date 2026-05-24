@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 use App\Services\ActividadService;
 use App\Services\PdfMonkeyService;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ContratoSubido;
 
 class ContratoController extends Controller
 {
@@ -44,8 +46,7 @@ class ContratoController extends Controller
                 DB::raw($this->obtenerSelectDireccionPropiedad('p')),
                 'inquilino.nombre_usuario as nombre_inquilino',
                 DB::raw($this->seleccionarColumnaContrato($columnas['url_pdf'], 'url_pdf_contrato', "''")),
-                DB::raw($this->seleccionarColumnaContrato($columnas['firmado_arrendador'], 'firmado_arrendador', '0')),
-                DB::raw($this->seleccionarColumnaContrato($columnas['fecha_firma_arrendador'], 'fecha_firma_arrendador', 'NULL')),
+                // Eliminado firmado_arrendador y fecha_firma_arrendador según requerimiento.
                 DB::raw($this->seleccionarColumnaContrato($columnas['firmado_inquilino'], 'firmado_inquilino', '0')),
                 DB::raw($this->seleccionarColumnaContrato($columnas['fecha_firma_inquilino'], 'fecha_firma_inquilino', 'NULL')),
                 DB::raw($this->seleccionarColumnaContrato($columnas['estado'], 'estado_contrato', "'pendiente'"))
@@ -53,14 +54,27 @@ class ContratoController extends Controller
             ->orderByDesc('c.id_contrato')
             ->paginate(10);
 
+        // Añadimos una marca por cada contrato indicando si el PDF está disponible
+        // físicamente en el servidor. Esto evita mostrar el enlace "Ver Contrato"
+        // cuando la BD contiene una ruta pero el archivo no existe.
+        $contratos->getCollection()->transform(function ($item) {
+            $item->pdf_disponible = false;
+            if (!empty($item->url_pdf_contrato) && $this->esUrlPdfLocalExistente($item->url_pdf_contrato)) {
+                $item->pdf_disponible = true;
+            }
+            return $item;
+        });
+
         $total = DB::table('tbl_contrato as c')
             ->join('tbl_alquiler as a', 'a.id_alquiler', '=', 'c.id_alquiler_fk')
             ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'a.id_propiedad_fk')
             ->where('p.id_arrendador_fk', $arrendadorId)
             ->count('c.id_contrato');
 
-        $firmados = $this->contarFirmados($arrendadorId, $columnas);
-        $pendientes = max(0, $total - $firmados);
+        // La funcionalidad de firma por arrendador ha sido eliminada.
+        // Mantener métricas sencillas: todos pendientes de firma por defecto.
+        $firmados = 0;
+        $pendientes = $total;
 
         return view('arrendador.contratos', [
             'arrendador' => $arrendador,
@@ -75,89 +89,7 @@ class ContratoController extends Controller
         ]);
     }
 
-    public function firmarArrendador(Request $request, int $id): JsonResponse
-    {
-        $arrendadorId = $this->obtenerIdArrendador($request);
-        $columnas = $this->obtenerColumnasContrato();
-
-        $contrato = DB::table('tbl_contrato as c')
-            ->join('tbl_alquiler as a', 'a.id_alquiler', '=', 'c.id_alquiler_fk')
-            ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'a.id_propiedad_fk')
-            ->where('c.id_contrato', $id)
-            ->where('p.id_arrendador_fk', $arrendadorId)
-            ->select(
-                'c.id_contrato',
-                'p.id_gestor_fk',
-                'p.titulo_propiedad',
-                'a.id_propiedad_fk',
-                DB::raw($this->seleccionarColumnaContrato($columnas['firmado_arrendador'], 'firmado_arrendador', '0')),
-                DB::raw($this->seleccionarColumnaContrato($columnas['firmado_inquilino'], 'firmado_inquilino', '0'))
-            )
-            ->first();
-
-        if (!$contrato) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No se encontro el contrato.',
-            ], 404);
-        }
-
-        if ((bool) $contrato->firmado_arrendador) {
-            return response()->json([
-                'success' => true,
-                'message' => 'El contrato ya estaba firmado por el arrendador.',
-                'estado' => (bool) $contrato->firmado_inquilino ? 'firmado' : 'pendiente',
-            ]);
-        }
-
-        $datosActualizar = [];
-
-        if ($columnas['firmado_arrendador']) {
-            $datosActualizar[$columnas['firmado_arrendador']] = true;
-        }
-
-        if ($columnas['fecha_firma_arrendador']) {
-            $datosActualizar[$columnas['fecha_firma_arrendador']] = Carbon::now();
-        }
-
-        if ($columnas['ip_firma_arrendador']) {
-            $datosActualizar[$columnas['ip_firma_arrendador']] = $request->ip();
-        }
-
-        $estadoNuevo = (bool) $contrato->firmado_inquilino ? 'firmado' : 'pendiente';
-
-        if ($columnas['estado']) {
-            $datosActualizar[$columnas['estado']] = $estadoNuevo;
-        }
-
-        if ($columnas['actualizado']) {
-            $datosActualizar[$columnas['actualizado']] = Carbon::now();
-        }
-
-        DB::table('tbl_contrato')
-            ->where('id_contrato', $id)
-            ->update($datosActualizar);
-
-        $arrendador = DB::table('tbl_usuario')
-            ->where('id_usuario', $arrendadorId)
-            ->value('nombre_usuario');
-
-        if ($contrato->id_gestor_fk) {
-            $this->actividadService->contratoFirmado(
-                $contrato->id_gestor_fk,
-                $contrato->id_propiedad_fk,
-                $contrato->titulo_propiedad,
-                $arrendador ?? 'Arrendador'
-            );
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Contrato firmado por el arrendador.',
-            'estado' => $estadoNuevo,
-            'firmado_arrendador' => true,
-        ]);
-    }
+    // Método de firma eliminado: la funcionalidad "firmar arrendador" ha sido deshabilitada.
 
     /**
      * GESTIONA LA DESCARGA O VISUALIZACIÓN DEL PDF DE UN CONTRATO.
@@ -199,9 +131,32 @@ class ContratoController extends Controller
 
         // 2. VERIFICACIÓN DE CACHE: ¿Tenemos ya una URL guardada?
         if (!empty($contrato->url_pdf_contrato)) {
-            // Verificamos que el archivo exista (si es local) o que el enlace no haya caducado (si es remoto)
+            // Verificamos si la URL apunta a un fichero local accesible.
             if ($this->esUrlPdfLocalExistente($contrato->url_pdf_contrato)) {
-                // ¡Éxito! La URL es buena. Enviamos al usuario allí directamente.
+                // Si es una URL absoluta que apunta al mismo host, extraemos la ruta
+                if (preg_match('#^https?://#i', $contrato->url_pdf_contrato)) {
+                    $componentes = parse_url($contrato->url_pdf_contrato);
+                    $hostRemoto = $componentes['host'] ?? null;
+                    $requestHost = request()->getHost();
+
+                    if ($hostRemoto && $hostRemoto === $requestHost) {
+                        $ruta = ltrim($componentes['path'] ?? '', '/\\');
+                        $rutaCompleta = public_path($ruta);
+                        if (File::exists($rutaCompleta)) {
+                            return response()->download($rutaCompleta, basename($rutaCompleta));
+                        }
+                    }
+                } else {
+                    // Ruta relativa (ej: storage/contratos/xxx.pdf o contratos/xxx.pdf)
+                    $rutaRelativa = ltrim($contrato->url_pdf_contrato, '/\\');
+                    $rutaCompleta = public_path($rutaRelativa);
+                    if (File::exists($rutaCompleta)) {
+                        return response()->download($rutaCompleta, basename($rutaCompleta));
+                    }
+                }
+
+                // Si no hemos podido forzar la descarga local por alguna razón,
+                // continuamos con la redirección normal a la URL normalizada.
                 return redirect()->away($this->normalizarUrlPdf($contrato->url_pdf_contrato));
             }
 
@@ -313,6 +268,28 @@ class ContratoController extends Controller
         // Devolver la URL completa para que el JS pueda montar el enlace "Ver PDF"
         $urlCompleta = $request->getSchemeAndHttpHost() . $request->getBasePath() . '/' . $rutaRelativa;
 
+        // Intentamos notificar al inquilino asociado a este contrato
+        try {
+            $infoAlquiler = DB::table('tbl_contrato as c')
+                ->join('tbl_alquiler as a', 'a.id_alquiler', '=', 'c.id_alquiler_fk')
+                ->join('tbl_usuario as inquilino', 'inquilino.id_usuario', '=', 'a.id_inquilino_fk')
+                ->where('c.id_contrato', $id)
+                ->select('a.id_alquiler', 'inquilino.email_usuario', 'inquilino.nombre_usuario as nombre_inquilino')
+                ->first();
+
+            if ($infoAlquiler && !empty($infoAlquiler->email_usuario)) {
+                Mail::to($infoAlquiler->email_usuario)->send(new ContratoSubido(
+                    $infoAlquiler->id_alquiler,
+                    $infoAlquiler->nombre_inquilino,
+                    $urlCompleta
+                ));
+            }
+        } catch (\Exception $e) {
+            Log::error('Error enviando notificación de contrato al inquilino: ' . $e->getMessage(), [
+                'contrato_id' => $id,
+            ]);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'PDF subido correctamente.',
@@ -341,17 +318,36 @@ class ContratoController extends Controller
 
         $rutaRelativa = ltrim($urlPdf, '/\\');
 
-        return File::exists(public_path($rutaRelativa));
+        // Comprobar varias ubicaciones posibles donde puede residir el PDF:
+        $candidates = [
+            public_path($rutaRelativa),
+            public_path('storage/' . $rutaRelativa),
+            storage_path('app/public/' . $rutaRelativa),
+        ];
+
+        foreach ($candidates as $p) {
+            if (File::exists($p)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function esUrlRemotaVigente(string $urlPdf): bool
     {
         $componentes = parse_url($urlPdf);
-        if (!$componentes || empty($componentes['query'])) {
+        // Asegurarnos de que 'query' es una cadena válida antes de usar parse_str
+        $query = '';
+        if (is_array($componentes) && array_key_exists('query', $componentes)) {
+            $query = $componentes['query'];
+        }
+
+        if (empty($query) || !is_string($query)) {
             return true;
         }
 
-        parse_str($componentes['query'], $parametros);
+        parse_str((string) $query, $parametros);
         $ahora = Carbon::now('UTC')->timestamp;
         $margenSeguridad = 30;
 
@@ -521,28 +517,8 @@ class ContratoController extends Controller
         }
     }
 
-    private function contarFirmados(int $arrendadorId, array $columnas): int
-    {
-        $consulta = DB::table('tbl_contrato as c')
-            ->join('tbl_alquiler as a', 'a.id_alquiler', '=', 'c.id_alquiler_fk')
-            ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'a.id_propiedad_fk')
-            ->where('p.id_arrendador_fk', $arrendadorId);
-
-        if ($columnas['estado']) {
-            return (clone $consulta)
-                ->where("c.{$columnas['estado']}", 'firmado')
-                ->count('c.id_contrato');
-        }
-
-        if ($columnas['firmado_arrendador'] && $columnas['firmado_inquilino']) {
-            return (clone $consulta)
-                ->where("c.{$columnas['firmado_arrendador']}", true)
-                ->where("c.{$columnas['firmado_inquilino']}", true)
-                ->count('c.id_contrato');
-        }
-
-        return 0;
-    }
+    // El método de conteo de contratos firmados por arrendador se ha eliminado
+    // porque la funcionalidad de firma por arrendador fue deshabilitada.
 
     private function seleccionarColumnaContrato(?string $columna, string $alias, string $valorDefecto): string
     {

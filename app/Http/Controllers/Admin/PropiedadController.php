@@ -93,6 +93,23 @@ class PropiedadController extends Controller
                 ->withInput();
         }
 
+        if ($datos['estado'] === 'publicada') {
+            $validacionLimite = $this->validarLimitePublicacionPorPlan((int) $arrendador->id_usuario);
+
+            if (!$validacionLimite['ok']) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $validacionLimite['message'],
+                    ], 422);
+                }
+
+                return back()
+                    ->withErrors(['estado' => $validacionLimite['message']])
+                    ->withInput();
+            }
+        }
+
         $precioColumna = $this->obtenerColumnaPrecio();
         $ahora = Carbon::now();
 
@@ -196,6 +213,23 @@ class PropiedadController extends Controller
             return back()
                 ->withErrors(['arrendador_email' => 'No existe un arrendador con ese email.'])
                 ->withInput();
+        }
+
+        if ($datos['estado'] === 'publicada') {
+            $validacionLimite = $this->validarLimitePublicacionPorPlan((int) $arrendador->id_usuario, (int) $id);
+
+            if (!$validacionLimite['ok']) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $validacionLimite['message'],
+                    ], 422);
+                }
+
+                return back()
+                    ->withErrors(['estado' => $validacionLimite['message']])
+                    ->withInput();
+            }
         }
 
         $precioColumna = $this->obtenerColumnaPrecio();
@@ -455,7 +489,7 @@ class PropiedadController extends Controller
     {
         $propiedad = DB::table('tbl_propiedad')
             ->where('id_propiedad', $id)
-            ->select('id_propiedad', 'estado_propiedad')
+            ->select('id_propiedad', 'id_arrendador_fk', 'estado_propiedad')
             ->first();
 
         if (!$propiedad) {
@@ -476,6 +510,15 @@ class PropiedadController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Solo se pueden publicar propiedades en estado borrador.'
+            ], 422);
+        }
+
+        $validacionLimite = $this->validarLimitePublicacionPorPlan((int) $propiedad->id_arrendador_fk, (int) $id);
+
+        if (!$validacionLimite['ok']) {
+            return response()->json([
+                'success' => false,
+                'message' => $validacionLimite['message']
             ], 422);
         }
 
@@ -694,6 +737,71 @@ class PropiedadController extends Controller
         }
 
         return redirect()->away($this->normalizarUrlPdf($contrato->url_pdf_contrato));
+    }
+
+    private function validarLimitePublicacionPorPlan(int $idArrendador, ?int $idPropiedadExcluir = null): array
+    {
+        $hoy = Carbon::now()->toDateString();
+
+        $suscripcionActiva = DB::table('tbl_suscripcion as sus')
+            ->leftJoin('tbl_plan as plan', 'plan.id_plan', '=', 'sus.id_plan_fk')
+            ->where('sus.id_usuario_fk', $idArrendador)
+            ->where('sus.estado_suscripcion', 'activa')
+            ->where(function ($query) use ($hoy) {
+                $query->whereNull('sus.fin_suscripcion')
+                    ->orWhere('sus.fin_suscripcion', '>=', $hoy);
+            })
+            ->orderByDesc('sus.id_suscripcion')
+            ->select(
+                'sus.max_propiedades_suscripcion',
+                'sus.plan_suscripcion',
+                'plan.nombre_plan as nombre_plan'
+            )
+            ->first();
+
+        if (!$suscripcionActiva) {
+            return [
+                'ok' => false,
+                'message' => 'El arrendador no tiene una suscripción activa para publicar propiedades.',
+            ];
+        }
+
+        $limite = (int) ($suscripcionActiva->max_propiedades_suscripcion ?? 0);
+
+        if ($limite <= 0) {
+            $nombrePlan = $suscripcionActiva->nombre_plan
+                ?? ($suscripcionActiva->plan_suscripcion ? ucfirst($suscripcionActiva->plan_suscripcion) : 'actual');
+
+            return [
+                'ok' => false,
+                'message' => 'El plan ' . $nombrePlan . ' no permite publicar propiedades.',
+            ];
+        }
+
+        $queryPublicadas = DB::table('tbl_propiedad')
+            ->where('id_arrendador_fk', $idArrendador)
+            ->where('estado_propiedad', 'publicada');
+
+        if (!empty($idPropiedadExcluir)) {
+            $queryPublicadas->where('id_propiedad', '!=', $idPropiedadExcluir);
+        }
+
+        $totalPublicadas = (int) $queryPublicadas->count();
+
+        if ($totalPublicadas >= $limite) {
+            $nombrePlan = $suscripcionActiva->nombre_plan
+                ?? ($suscripcionActiva->plan_suscripcion ? ucfirst($suscripcionActiva->plan_suscripcion) : 'actual');
+
+            return [
+                'ok' => false,
+                'message' => 'El arrendador alcanzó el límite del plan ' . $nombrePlan . ': ' . $limite . ' propiedades publicadas.',
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'message' => 'OK',
+        ];
     }
 
     private function esUrlPdfExpirada(string $urlPdf): bool

@@ -30,81 +30,8 @@ function mostrarToast(texto) {
   }, 1800);
 }
 
-/* =========================================================
-   SECCIÓN 2: ACTUALIZACIÓN DE UI (DOM)
-   Modifica la fila de la tabla tras firmar un contrato.
-   ========================================================= */
-
-function actualizarFilaContrato(idContrato, estado) {
-  var nodoEstado = document.getElementById('estado-' + idContrato);
-  var nodoFirmaArrendador = document.getElementById('firma-arrendador-' + idContrato);
-  var nodoAcciones = document.querySelector('[data-acciones="' + idContrato + '"]');
-
-  if (nodoEstado) {
-    nodoEstado.textContent = estado.charAt(0).toUpperCase() + estado.slice(1);
-    nodoEstado.className = 'estado estado-' + estado;
-  }
-
-  if (nodoFirmaArrendador) {
-    nodoFirmaArrendador.innerHTML = 'Firmado';
-  }
-
-  if (nodoAcciones) {
-    var enlacePdf = nodoAcciones.querySelector('.btn-ver');
-    if (enlacePdf) {
-      nodoAcciones.innerHTML = '<span class="muted">Sin acciones</span>';
-      nodoAcciones.appendChild(enlacePdf);
-      return;
-    }
-
-    nodoAcciones.innerHTML = '<span class="muted">Sin acciones</span>';
-  }
-}
-
-/* =========================================================
-   SECCIÓN 3: FIRMA DE CONTRATO (API)
-   Envía la petición para firmar y actualiza el resultado.
-   ========================================================= */
-
-function firmarContratoArrendador(idContrato, arrendadorId) {
-  var ruta = '/arrendador/contratos/' + idContrato + '/firmar-arrendador';
-
-  fetch(ruta, {
-    method: 'POST',
-    headers: {
-      'X-CSRF-TOKEN': obtenerTokenCsrf(),
-      'X-Requested-With': 'XMLHttpRequest',
-      'Accept': 'application/json'
-    },
-    body: new URLSearchParams({ arrendador_id: arrendadorId }),
-    credentials: 'same-origin'
-  })
-    .then(function (respuesta) {
-      return respuesta.json().then(function (datosRespuesta) {
-        return { ok: respuesta.ok, datosRespuesta: datosRespuesta };
-      });
-    })
-    .then(function (resultado) {
-      if (!resultado.ok || !resultado.datosRespuesta.success) {
-        throw new Error(resultado.datosRespuesta.message || 'No se pudo firmar el contrato.');
-      }
-
-      actualizarFilaContrato(idContrato, resultado.datosRespuesta.estado || 'pendiente');
-      mostrarToast(resultado.datosRespuesta.message || 'Contrato firmado.');
-    })
-    .catch(function (error) {
-      mostrarToast(error.message || 'Error al firmar el contrato.');
-    });
-}
-
-document.querySelectorAll('[data-firmar-arrendador]').forEach(function (boton) {
-  boton.addEventListener('click', function () {
-    firmarContratoArrendador(
-      boton.getAttribute('data-firmar-arrendador'),
-      boton.getAttribute('data-arrendador')
-    );
-  });
-});
+// Eliminada la funcionalidad de firma del arrendador (botón y petición).
+// Las acciones ahora se limitan a subir PDF y mostrar/enlazar el contrato si existe.
 
 /* =========================================================
    SECCIÓN 4: SUBIR PDF (FILE PICKER)
@@ -156,12 +83,14 @@ document.querySelectorAll('input[name="pdf_contrato"]').forEach(function (input)
       var contenedor = formulario.closest('.acciones');
       if (contenedor) {
         var enlaceExistente = contenedor.querySelector('.btn-ver');
-        if (!enlaceExistente && resultado.datosRespuesta.url_pdf) {
+        if (!enlaceExistente) {
           var enlace = document.createElement('a');
           enlace.className = 'btn-ver';
-          enlace.href = resultado.datosRespuesta.url_pdf;
-          enlace.target = '_blank';
-          enlace.textContent = 'Ver PDF';
+          // Construimos la ruta de descarga a partir del action del formulario
+          // Ej: /arrendador/contratos/{id}/subir-pdf -> /arrendador/contratos/{id}/descargar-pdf
+          var downloadHref = formulario.action.replace('/subir-pdf', '/descargar-pdf');
+          enlace.href = downloadHref;
+          enlace.textContent = 'Ver Contrato';
           contenedor.appendChild(enlace);
         }
       }

@@ -128,6 +128,66 @@ class ArrendadorDemoSeeder extends Seeder
                 'actualizado_solicitud_alquiler' => Carbon::now(),
             ]
         );
+
+        // Incidencia de demo 1: presupuesto aprobado, pendiente de pago por el inquilino
+        // Garantiza que GastoSeeder siempre encuentre una incidencia real para vincular
+        $idCategoriaOtro = DB::table('tbl_categoria')->where('nombre_categoria', 'Otro')->value('id_categoria');
+
+        $incidencia1Existe = DB::table('tbl_incidencia')
+            ->where('id_propiedad_fk', $propiedad1Id)
+            ->where('titulo_incidencia', 'Ventana rota del salón')
+            ->exists();
+
+        if (!$incidencia1Existe) {
+            DB::table('tbl_incidencia')->insert([
+                'id_propiedad_fk'                => $propiedad1Id,
+                'id_reporta_fk'                  => $lauraId,
+                'id_asignado_fk'                 => $carlosId,
+                'id_categoria_fk'                => $idCategoriaOtro,
+                'titulo_incidencia'              => 'Ventana rota del salón',
+                'descripcion_incidencia'         => 'El cristal de la ventana del salón tiene una grieta que provoca corriente de aire.',
+                'prioridad_incidencia'           => 'alta',
+                'estado_incidencia'              => 'esperando_pago',
+                'esperando_de_incidencia'        => null,
+                'presupuesto_importe_incidencia' => 364.00,
+                'detalle_presupuesto_incidencia' => 'Sustitución de cristal y sellado de marco. Materiales y mano de obra incluidos.',
+                'responsable_pago_incidencia'    => 'inquilino',
+                'pagado_presupuesto_incidencia'  => false,
+                'pagado_incidencia'              => null,
+                'creado_incidencia'              => Carbon::now()->subDays(10),
+                'actualizado_incidencia'         => Carbon::now(),
+            ]);
+        }
+
+        // Incidencia de demo 2: ya solucionada y pagada por el arrendador
+        $idCategoriaCalefaccion = DB::table('tbl_categoria')->where('nombre_categoria', 'Calefacción')->value('id_categoria');
+
+        $incidencia2Existe = DB::table('tbl_incidencia')
+            ->where('id_propiedad_fk', $propiedad1Id)
+            ->where('titulo_incidencia', 'Avería caldera')
+            ->exists();
+
+        if (!$incidencia2Existe) {
+            DB::table('tbl_incidencia')->insert([
+                'id_propiedad_fk'                => $propiedad1Id,
+                'id_reporta_fk'                  => $lauraId,
+                'id_asignado_fk'                 => $carlosId,
+                'id_categoria_fk'                => $idCategoriaCalefaccion,
+                'titulo_incidencia'              => 'Avería caldera',
+                'descripcion_incidencia'         => 'La caldera dejó de funcionar en pleno invierno. Sin agua caliente.',
+                'prioridad_incidencia'           => 'urgente',
+                'estado_incidencia'              => 'solucionada',
+                'esperando_de_incidencia'        => null,
+                'presupuesto_importe_incidencia' => 520.00,
+                'detalle_presupuesto_incidencia' => 'Sustitución de quemador y purgado del sistema. Incluye revisión anual.',
+                'responsable_pago_incidencia'    => 'arrendador',
+                'pagado_presupuesto_incidencia'  => true,
+                'pagado_incidencia'              => Carbon::now()->subDays(5),
+                'resuelto_incidencia'            => Carbon::now()->subDays(3),
+                'creado_incidencia'              => Carbon::now()->subDays(20),
+                'actualizado_incidencia'         => Carbon::now()->subDays(3),
+            ]);
+        }
     }
 
     private function upsertUsuario(string $nombre, string $email, string $telefono, string $iban = null): int

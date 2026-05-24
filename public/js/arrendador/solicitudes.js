@@ -33,34 +33,34 @@ function mostrarToast(texto) {
 function crearModal(titulo, contenido) {
   var modal = document.createElement('div');
   modal.className = 'modal-overlay';
-  
+
   var contenedor = document.createElement('div');
   contenedor.className = 'modal-contenedor';
-  
+
   var encabezado = document.createElement('div');
   encabezado.className = 'modal-encabezado';
-  
+
   var h2 = document.createElement('h2');
   h2.textContent = titulo;
   encabezado.appendChild(h2);
-  
+
   var botonCerrar = document.createElement('button');
   botonCerrar.className = 'modal-cerrar';
   botonCerrar.textContent = '✕';
   botonCerrar.onclick = function () { modal.remove(); };
   encabezado.appendChild(botonCerrar);
-  
+
   var cuerpo = document.createElement('div');
   cuerpo.className = 'modal-cuerpo';
   cuerpo.innerHTML = contenido;
-  
+
   contenedor.appendChild(encabezado);
   contenedor.appendChild(cuerpo);
   modal.appendChild(contenedor);
   modal.onclick = function (e) {
     if (e.target === modal) modal.remove();
   };
-  
+
   return { modal: modal, cuerpo: cuerpo, contenedor: contenedor };
 }
 
@@ -80,20 +80,18 @@ function actualizarFila(id, estado) {
 
   if (accionesNodo) {
     if (estado === 'activo') {
-      accionesNodo.innerHTML = 
+      accionesNodo.innerHTML =
         '<button class="btn-ver" data-ver="' + id + '">Ver</button>';
     } else if (estado === 'pendiente') {
-      accionesNodo.innerHTML = 
+      accionesNodo.innerHTML =
         '<button class="btn-ver" data-ver="' + id + '">Ver</button>' +
         '<button class="btn-editar" data-editar="' + id + '">Editar</button>' +
-        '<button class="btn-aprobar" data-aprobar="' + id + '">Aceptar</button>' +
-        '<button class="btn-rechazar" data-rechazar="' + id + '">Rechazar</button>';
-    } else if (estado === 'rechazado') {
-      accionesNodo.innerHTML = 
-        '<button class="btn-ver" data-ver="' + id + '">Ver</button>' +
-        '<button class="btn-aprobar" data-aprobar="' + id + '">Aceptar</button>';
+        '<button class="btn-icono btn-aprobar-sol" data-id="' + id + '" title="Aprobar"><i class="bi bi-check-circle"></i></button>' +
+        '<button class="btn-icono btn-rechazar-sol" data-id="' + id + '" title="Rechazar"><i class="bi bi-x-circle"></i></button>';
     } else {
-      accionesNodo.innerHTML = '<button class="btn-ver" data-ver="' + id + '">Ver</button>';
+      accionesNodo.innerHTML =
+        '<button class="btn-ver" data-ver="' + id + '">Ver</button>' +
+        '<button class="btn-editar" data-editar="' + id + '">Editar</button>';
     }
     accionesNodo.setAttribute('data-estado', estado);
     agregarEventosAcciones();
@@ -125,7 +123,7 @@ function verSolicitud(id, arrendadorId) {
       }
 
       var datos = resultado.datosRespuesta.data;
-      var contenido = 
+      var contenido =
         '<div class="detalles-solicitud">' +
         '  <p><strong>Propiedad:</strong> ' + datos.titulo_propiedad + '</p>' +
         '  <p><strong>Dirección:</strong> ' + datos.direccion_propiedad + '</p>' +
@@ -170,7 +168,7 @@ function editarSolicitud(id, arrendadorId) {
       }
 
       var datos = resultado.datosRespuesta.data;
-      var contenido = 
+      var contenido =
         '<form id="formulario-editar-' + id + '" class="formulario-editar">' +
         '  <div class="campo-formulario">' +
         '    <label>Propiedad:</label>' +
@@ -187,28 +185,28 @@ function editarSolicitud(id, arrendadorId) {
         '</form>';
 
       var miModal = crearModal('Editar Solicitud', contenido);
-      
+
       var pieModal = document.createElement('div');
       pieModal.className = 'modal-pie';
-      
+
       var botonGuardar = document.createElement('button');
       botonGuardar.className = 'btn-guardar';
       botonGuardar.textContent = 'Guardar Cambios';
       botonGuardar.onclick = function () {
         guardarEdicion(id, arrendadorId, miModal.modal);
       };
-      
+
       var botonCancelar = document.createElement('button');
       botonCancelar.className = 'btn-cancelar';
       botonCancelar.textContent = 'Cancelar';
       botonCancelar.onclick = function () {
         miModal.modal.remove();
       };
-      
+
       pieModal.appendChild(botonGuardar);
       pieModal.appendChild(botonCancelar);
       miModal.contenedor.appendChild(pieModal);
-      
+
       document.body.appendChild(miModal.modal);
     })
     .catch(function (error) {

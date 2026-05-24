@@ -87,7 +87,34 @@ class SolicitudAlquilerController extends Controller
             );
         }
 
-        return redirect()->route('miembro.detalle_propiedad', ['id' => $id])
-            ->with('success', 'Solicitud enviada correctamente.');
+        $tieneRolInquilino = DB::table('tbl_rol_usuario')
+            ->where('id_usuario_fk', $usuario->id_usuario)
+            ->join('tbl_rol', 'tbl_rol.id_rol', '=', 'tbl_rol_usuario.id_rol_fk')
+            ->where('tbl_rol.slug_rol', 'inquilino')
+            ->exists();
+        // $debeCerrarSesion = false;
+
+        if (!$tieneRolInquilino) {
+            $rolInquilino = DB::table('tbl_rol')->where('slug_rol', 'inquilino')->first();
+            if ($rolInquilino) {
+                DB::table('tbl_rol_usuario')->insert([
+                    'id_usuario_fk' => $usuario->id_usuario,
+                    'id_rol_fk' => $rolInquilino->id_rol,
+                    'asignado_rol_usuario' => Carbon::now(),
+                ]);
+                // $debeCerrarSesion = true;
+            }
+        }
+
+        // if ($debeCerrarSesion) {
+        //     Auth::logout();
+        //     $request->session()->invalidate();
+        //     $request->session()->regenerateToken();
+
+        //     return redirect('/login');
+        // }
+
+        return redirect()->back()->with('success', 'Solicitud de alquiler enviada correctamente.');
+        // return redirect('/inquilino/gestionar-propiedades');
     }
 }

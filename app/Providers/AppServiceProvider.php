@@ -52,12 +52,11 @@ class AppServiceProvider extends ServiceProvider
                     }
                 }
 
-                $suscripcionActiva = $usuario->suscripciones()
-                    ->where('estado_suscripcion', 'activa')
-                    ->latest('id_suscripcion')
-                    ->first();
-
-                $mostrarAnuncios = !$suscripcionActiva || $suscripcionActiva->precio_pagado_suscripcion <= 0;
+                // Coge la suscripción más reciente del usuario
+                $suscripcion = $usuario->suscripciones()->latest('id_suscripcion')->first();
+                
+                // Si el plan es Gratuito muestra anuncios
+                $mostrarAnuncios = $suscripcion?->plan_suscripcion === 'Gratuito';
 
                 $view->with([
                     'nombreUsuario' => $nombre,

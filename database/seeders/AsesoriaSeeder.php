@@ -263,12 +263,13 @@ class AsesoriaSeeder extends Seeder
                 'estado' => true,
             ]);
 
-            foreach ($dataCat['articulos'] as $dataArt) {
+            foreach ($dataCat['articulos'] as $i => $dataArt) {
                 ArticuloAsesoria::create([
                     'id_categoria_fk' => $categoria->id,
                     'titulo' => $dataArt['titulo'],
                     'contenido' => $dataArt['contenido'],
                     'slug' => Str::slug($dataArt['titulo']),
+                    'orden' => $i + 1,
                     'estado' => true,
                     'destacado' => $dataArt['destacado'] ?? false,
                     'orden_faq' => $dataArt['orden_faq'] ?? null,

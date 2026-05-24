@@ -7,7 +7,6 @@ use App\Models\Usuario;
 use App\Models\Suscripcion;
 use App\Models\Plan;
 use App\Models\Pago;
-use App\Models\Usuario;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,14 +26,10 @@ class MiembroSuscripcionController extends Controller
     {
         /** @var Usuario $usuario */
         $usuario = Auth::user();
-<<<<<<< HEAD
-        $usuarioModelo = Usuario::find($usuario->id_usuario);
-        
-        // Buscamos la suscripción pendiente o activa más reciente
-=======
 
-        // Buscamos la suscripción pendiente más reciente
->>>>>>> server
+        $usuarioModelo = Usuario::find($usuario->id_usuario);
+
+        // Buscamos la suscripción pendiente o activa más reciente
         $suscripcion = Suscripcion::where('id_usuario_fk', $usuario->id_usuario)
             ->whereIn('estado_suscripcion', ['pendiente_pago', 'activa'])
             ->latest('id_suscripcion')

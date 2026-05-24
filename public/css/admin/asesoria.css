@@ -443,6 +443,29 @@ th .info-tooltip::after {
     opacity: 1;
 }
 
+/* ── Botón Destacado (estrella) ── */
+.btn-destacado {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    color: #D1D5DB;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+.btn-destacado.activo {
+    color: #F59E0B;
+}
+.btn-destacado:hover {
+    transform: scale(1.2);
+    color: #F59E0B;
+}
+
 /* ── Botón Nueva Categoría ── */
 .btn-nuevo-recibo {
     border: 1px solid #a7f3d0;

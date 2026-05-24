@@ -139,6 +139,7 @@ body {
 }
 
 #filtro-estado,
+#filtro-categoria,
 #filtro-paginacion {
     padding: 8px 12px;
     border: 1px solid #D1D5DB;

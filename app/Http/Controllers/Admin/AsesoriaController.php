@@ -192,7 +192,8 @@ class AsesoriaController extends Controller
         } elseif ($sort === 'categoria') {
             $query->leftJoin('tbl_asesoria_categoria', 'tbl_asesoria_articulo.id_categoria_fk', '=', 'tbl_asesoria_categoria.id')
                   ->select('tbl_asesoria_articulo.*', 'tbl_asesoria_categoria.nombre as categoria_nombre')
-                  ->orderBy('tbl_asesoria_categoria.nombre', $direction === 'desc' ? 'desc' : 'asc');
+                  ->orderBy('tbl_asesoria_categoria.nombre', $direction === 'desc' ? 'desc' : 'asc')
+                  ->orderBy('tbl_asesoria_articulo.orden', 'asc');
         } else {
             $query->orderBy('orden');
         }

@@ -221,12 +221,13 @@ function actualizarTablaArticulos(data) {
 
         var categoriaNombre = art.categoria ? escHtml(art.categoria.nombre) : '-';
         var contenidoPreview = truncate(stripHtml(art.contenido || ''), 80);
+        var contenidoCompleto = escHtml(stripHtml(art.contenido || ''));
 
         html += '<tr data-id="' + art.id + '" data-activo="' + activo + '" class="' + inactivaClass + '">'
             + '<td data-label="CATEGORÍA">' + categoriaNombre + '</td>'
             + '<td data-label="ORDEN">' + art.orden + '</td>'
             + '<td data-label="TÍTULO">' + escHtml(art.titulo) + '</td>'
-            + '<td data-label="CONTENIDO" style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#6B7280;font-size:13px;">' + escHtml(contenidoPreview) + '</td>'
+            + '<td data-label="CONTENIDO" title="' + contenidoCompleto + '" style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#6B7280;font-size:13px;">' + escHtml(contenidoPreview) + '</td>'
             + '<td data-label="ESTADO"><span class="badge-estado badge-' + estadoClass + '">' + estadoLabel + '</span></td>'
             + '<td data-label="DESTACADO"><button class="btn-destacado ' + destacadoClass + '" data-id="' + art.id + '" title="' + (art.destacado ? 'Quitar destacado' : 'Marcar como destacado') + '"><i class="bi ' + destacadoIcono + '"></i></button></td>'
             + '<td data-label="ACCIONES"><div class="acciones-tabla">'

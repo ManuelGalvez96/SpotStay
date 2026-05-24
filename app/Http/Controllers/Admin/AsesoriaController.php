@@ -183,10 +183,10 @@ class AsesoriaController extends Controller
             $query->where('id_categoria_fk', (int)$categoriaId);
         }
 
-        $sort = $request->input('sort', 'orden');
+        $sort = $request->input('sort', 'categoria');
         $direction = $request->input('direction', 'asc');
 
-        $allowedSorts = ['orden', 'titulo', 'slug', 'estado', 'destacado'];
+        $allowedSorts = ['titulo', 'slug', 'estado', 'destacado'];
         if (in_array($sort, $allowedSorts)) {
             $query->orderBy($sort, $direction === 'desc' ? 'desc' : 'asc');
         } elseif ($sort === 'categoria') {

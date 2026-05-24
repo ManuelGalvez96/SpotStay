@@ -1,6 +1,6 @@
 var csrfToken = document.querySelector('meta[name=csrf-token]').content;
 var paginaActual = 1;
-var sortCol = 'orden';
+var sortCol = 'categoria';
 var sortDir = 'asc';
 
 function poblarSelectOrdenArticulo(maxOrden) {
@@ -325,13 +325,19 @@ function asignarEventosFiltrosArticulos() {
         if (categoria) categoria.value = '';
         if (perPage) perPage.value = '10';
         paginaActual = 1;
-        sortCol = 'orden';
+        sortCol = 'categoria';
         sortDir = 'asc';
         document.querySelectorAll('.sortable').forEach(function (th) {
             th.classList.remove('active');
             var arrow = th.querySelector('.sort-arrow');
             if (arrow) arrow.textContent = '';
         });
+        var th = document.querySelector('th[data-sort="categoria"]');
+        if (th) {
+            th.classList.add('active');
+            var arrow = th.querySelector('.sort-arrow');
+            if (arrow) arrow.textContent = '\u25B2';
+        }
         filtrarArticulos();
     });
 }

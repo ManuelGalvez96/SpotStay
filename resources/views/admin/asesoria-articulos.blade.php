@@ -65,11 +65,11 @@
             <thead>
                 <tr>
                     <th data-sort="categoria" class="sortable">Categoría <span class="sort-arrow"></span></th>
-                    <th data-sort="orden" class="sortable">Orden <span class="sort-arrow"></span></th>
+                    <th>Orden <span class="info-tooltip" data-tooltip="El orden que tienen los artículos dentro de sus categorías">i</span></th>
                     <th data-sort="titulo" class="sortable">Título <span class="sort-arrow"></span></th>
                     <th>Contenido</th>
                     <th data-sort="estado" class="sortable">Estado <span class="sort-arrow"></span></th>
-                    <th data-sort="destacado" class="sortable">Destacado <span class="sort-arrow"></span></th>
+                    <th data-sort="destacado" class="sortable">Destacado <span class="info-tooltip" data-tooltip="Los artículos destacados aparecen en Preguntas frecuentes">i</span> <span class="sort-arrow"></span></th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -158,7 +158,7 @@
         asignarEventosFiltrosArticulos();
         actualizarOrdenPorCategoria();
         asignarEventosPaginacionArticulos();
-        var th = document.querySelector('th[data-sort="orden"]');
+        var th = document.querySelector('th[data-sort="categoria"]');
         if (th) {
             th.classList.add('active');
             var arrow = th.querySelector('.sort-arrow');

@@ -101,7 +101,7 @@
             <div class="gestor-config-grid">
                 <aside class="gestor-left-panel">
                     <h3>Asignar gestor</h3>
-                    <p class="gestor-panel-help">Selecciona quién administrará esta propiedad.</p>
+                    <p class="gestor-panel-help">Selecciona quién administrará esta propiedad. Se solicitará su código antes de asignarlo.</p>
 
                     <div class="gestor-selector-wrap">
                         <span class="gestor-selector-label">Gestor seleccionado</span>

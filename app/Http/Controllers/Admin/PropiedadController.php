@@ -455,7 +455,7 @@ class PropiedadController extends Controller
     {
         $propiedad = DB::table('tbl_propiedad')
             ->where('id_propiedad', $id)
-            ->select('id_propiedad', 'estado_propiedad')
+            ->select('id_propiedad', 'id_arrendador_fk', 'estado_propiedad')
             ->first();
 
         if (!$propiedad) {
@@ -476,6 +476,18 @@ class PropiedadController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Solo se pueden publicar propiedades en estado borrador.'
+            ], 422);
+        }
+
+        $publicadasDelArrendador = DB::table('tbl_propiedad')
+            ->where('id_arrendador_fk', $propiedad->id_arrendador_fk)
+            ->where('estado_propiedad', 'publicada')
+            ->count();
+
+        if ($publicadasDelArrendador >= 10) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El arrendador ya tiene el máximo de 10 propiedades publicadas.'
             ], 422);
         }
 

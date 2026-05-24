@@ -124,6 +124,8 @@ function cargarFiltrosInicio() {
                         var ciudad = escaparHtml(propiedad.ciudad_propiedad ? propiedad.ciudad_propiedad : '');
                         var direccion = escaparHtml(propiedad.direccion_propiedad ? propiedad.direccion_propiedad : '');
                         var precio = formatearPrecio(propiedad.precio_propiedad);
+                        var rutaFoto = propiedad.ruta_foto ? escaparHtml(propiedad.ruta_foto) : '';
+                        var imagenHtml = rutaFoto !== '' ? "<img src='/img/" + rutaFoto + "' alt='Foto' style='width:100%;height:100%;object-fit:cover;'>" : '';
                         var ubicacion = '';
 
                         if (ciudad !== '' && direccion !== '') {
@@ -138,6 +140,7 @@ function cargarFiltrosInicio() {
                             "<a class='link-propiedad' href='/miembro/propiedad/" + id + "'>" +
                             "<article class='tarjeta-propiedad'>" +
                             "<div class='imagen-propiedad'>" +
+                            imagenHtml +
                             "<span class='etiqueta-precio-tarjeta'>" + precio + "</span>" +
                             "</div>" +
                             "<div class='contenido-propiedad'>" +

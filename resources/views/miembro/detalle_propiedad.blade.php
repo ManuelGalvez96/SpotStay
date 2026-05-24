@@ -155,6 +155,9 @@
                 <p class="detalle-mapa-vacio">No hay coordenadas disponibles para esta propiedad.</p>
             @endif
         </section>
+        @if ($mostrarAnuncios)
+            @include('miembro.partials.anuncio')
+        @endif
 
         <section class="detalle-seccion detalle-similares">
             <span>Carrousel de propiedades similares</span>

@@ -13,6 +13,10 @@
             <span class="mapa-previsualizacion-overlay">Abrir mapa completo</span>
         </a>
     </section>
+    
+    @if ($mostrarAnuncios)
+        @include('miembro.partials.anuncio')
+    @endif
 
     <section class="seccion-listado">
         <div class="contenedor-listado">
@@ -152,7 +156,21 @@
                                 <div class="contenido-propiedad">
                                     <h3 class="titulo-propiedad">{{ $propiedad->titulo_propiedad }}</h3>
                                     <p class="ubicacion-propiedad">{{ $propiedad->ciudad_propiedad }} · {{ $propiedad->direccion_propiedad }}</p>
-                                    <p class="precio-propiedad">{{ number_format($propiedad->precio_propiedad, 0, ',', '.') }} € / mes</p>
+                                    <br>
+                                    <div class="detalle-propiedad-card">
+                                        <span class="detalle-item-propiedad">
+                                            <i class="bi bi-rulers"></i>
+                                            {{ $propiedad->metros_cuadrados_propiedad ?? '---' }} m²
+                                        </span>
+                                        <span class="detalle-item-propiedad">
+                                            <i class="bi bi-door-open"></i>
+                                            {{ $propiedad->habitaciones_propiedad ?? '---' }} hab.
+                                        </span>
+                                        <span class="detalle-item-propiedad">
+                                            <i class="bi bi-droplet"></i>
+                                            {{ $propiedad->banos_propiedad ?? '---' }} baños
+                                        </span>
+                                    </div>
                                 </div>
                             </article>
                         </a>

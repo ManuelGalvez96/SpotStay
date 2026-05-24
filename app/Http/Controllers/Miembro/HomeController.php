@@ -33,6 +33,7 @@ class HomeController extends Controller
                 'metros_cuadrados_propiedad',
                 'habitaciones_propiedad',
                 'banos_propiedad',
+                DB::raw('(SELECT ruta_foto FROM tbl_fotos WHERE id_propiedad_fk = tbl_propiedad.id_propiedad ORDER BY es_principal_foto DESC, orden ASC, id_foto ASC LIMIT 1) as ruta_foto'),
                 'estado_propiedad'
             )
             ->where('estado_propiedad', 'publicada');

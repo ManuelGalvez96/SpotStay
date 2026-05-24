@@ -149,6 +149,9 @@
                         <a class="link-propiedad" href="{{ route('miembro.detalle_propiedad', ['id' => $propiedad->id_propiedad]) }}">
                             <article class="tarjeta-propiedad">
                                 <div class="imagen-propiedad">
+                                    @if (!empty($propiedad->ruta_foto))
+                                        <img src="{{ asset('img/' . $propiedad->ruta_foto) }}" alt="Foto" style="width:100%;height:100%;object-fit:cover;">
+                                    @endif
                                     <span class="etiqueta-precio-tarjeta">
                                         {{ number_format($propiedad->precio_propiedad, 0, ',', '.') }} €
                                     </span>

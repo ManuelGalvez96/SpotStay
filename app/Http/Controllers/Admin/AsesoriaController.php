@@ -160,10 +160,9 @@ class AsesoriaController extends Controller
 
     public function articulos()
     {
-        $nextOrden = (ArticuloAsesoria::max('orden') ?? 0) + 1;
         $categorias = CategoriaArticulo::orderBy('nombre')->get(['id', 'nombre']);
 
-        return view('admin.asesoria-articulos', compact('nextOrden', 'categorias'));
+        return view('admin.asesoria-articulos', compact('categorias'));
     }
 
     public function filtrarArticulos(Request $request)
@@ -216,13 +215,11 @@ class AsesoriaController extends Controller
             'titulo'          => 'required|string|max:255',
             'slug'            => 'required|string|max:255|unique:tbl_asesoria_articulo,slug',
             'contenido'       => 'required|string',
-            'orden'           => 'required|integer|min:1',
             'destacado'       => 'sometimes|boolean',
         ]);
 
-        ArticuloAsesoria::where('orden', '>=', $validated['orden'])
-            ->where('id_categoria_fk', $validated['id_categoria_fk'])
-            ->increment('orden');
+        $maxOrden = ArticuloAsesoria::where('id_categoria_fk', $validated['id_categoria_fk'])->max('orden') ?? 0;
+        $validated['orden'] = $maxOrden + 1;
 
         $articulo = ArticuloAsesoria::create([
             'id_categoria_fk' => $validated['id_categoria_fk'],

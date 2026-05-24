@@ -34,8 +34,6 @@ function abrirModalNuevoArticulo() {
     var form = modal.querySelector('form');
     if (form) {
         form.reset();
-        var sel = form.querySelector('select[name="orden"]');
-        if (sel && sel.options.length) sel.value = sel.options[sel.options.length - 1].value;
     }
     var errorDiv = modal.querySelector('.mensaje-error-js');
     if (errorDiv) { errorDiv.style.display = 'none'; errorDiv.textContent = ''; }
@@ -333,15 +331,12 @@ document.querySelectorAll('form[data-ajax-form-articulo="true"]').forEach(functi
         var titulo = form.querySelector('input[name="titulo"]');
         var slug = form.querySelector('input[name="slug"]');
         var categoria = form.querySelector('select[name="id_categoria_fk"]');
-        var orden = form.querySelector('select[name="orden"]');
         var contenido = form.querySelector('textarea[name="contenido"]');
-        var destacado = form.querySelector('input[name="destacado"]');
 
         var errors = [];
         if (!titulo || !titulo.value.trim()) errors.push('El título es obligatorio.');
         if (!slug || !slug.value.trim()) errors.push('El enlace es obligatorio.');
         if (!categoria || !categoria.value) errors.push('Selecciona una categoría.');
-        if (!orden || !orden.value) errors.push('Selecciona un orden.');
         if (!contenido || !contenido.value.trim()) errors.push('El contenido es obligatorio.');
 
         var editId = form.getAttribute('data-edit-id');

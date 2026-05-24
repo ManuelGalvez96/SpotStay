@@ -119,10 +119,6 @@
                                     @endforeach
                                 </select>
                             </label>
-                            <label>
-                                <span>Orden</span>
-                                <select name="orden" required></select>
-                            </label>
                         </div>
                     </div>
                     <div class="form-section">
@@ -156,7 +152,6 @@
 <script>
     var filtrarUrl = "{{ route('admin.asesoria.articulos.filtrar') }}";
     document.addEventListener('DOMContentLoaded', function () {
-        poblarSelectOrdenArticulo({{ $nextOrden }});
         asignarEventosFiltrosArticulos();
         asignarEventosPaginacionArticulos();
         var th = document.querySelector('th[data-sort="orden"]');

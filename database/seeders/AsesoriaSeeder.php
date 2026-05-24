@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\CategoriaArticulo;
 use App\Models\ArticuloAsesoria;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class AsesoriaSeeder extends Seeder
@@ -13,6 +14,9 @@ class AsesoriaSeeder extends Seeder
     {
         CategoriaArticulo::query()->delete();
         ArticuloAsesoria::query()->delete();
+
+        DB::statement('ALTER TABLE tbl_asesoria_categoria AUTO_INCREMENT = 1');
+        DB::statement('ALTER TABLE tbl_asesoria_articulo AUTO_INCREMENT = 1');
 
         $categorias = [
             [

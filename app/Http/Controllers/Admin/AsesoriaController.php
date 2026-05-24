@@ -170,17 +170,17 @@ class AsesoriaController extends Controller
         $query = ArticuloAsesoria::with('categoria:id,nombre');
 
         if ($request->filled('q')) {
-            $query->where('titulo', 'like', '%' . $request->q . '%');
+            $query->where('tbl_asesoria_articulo.titulo', 'like', '%' . $request->q . '%');
         }
 
         $estado = $request->input('estado');
         if ($estado !== null && $estado !== '') {
-            $query->where('estado', (int)$estado);
+            $query->where('tbl_asesoria_articulo.estado', (int)$estado);
         }
 
         $categoriaId = $request->input('categoria');
         if ($categoriaId !== null && $categoriaId !== '') {
-            $query->where('id_categoria_fk', (int)$categoriaId);
+            $query->where('tbl_asesoria_articulo.id_categoria_fk', (int)$categoriaId);
         }
 
         $sort = $request->input('sort', 'categoria');
@@ -188,7 +188,7 @@ class AsesoriaController extends Controller
 
         $allowedSorts = ['titulo', 'slug', 'estado', 'destacado'];
         if (in_array($sort, $allowedSorts)) {
-            $query->orderBy($sort, $direction === 'desc' ? 'desc' : 'asc');
+            $query->orderBy('tbl_asesoria_articulo.' . $sort, $direction === 'desc' ? 'desc' : 'asc');
         } elseif ($sort === 'categoria') {
             $query->leftJoin('tbl_asesoria_categoria', 'tbl_asesoria_articulo.id_categoria_fk', '=', 'tbl_asesoria_categoria.id')
                   ->select('tbl_asesoria_articulo.*', 'tbl_asesoria_categoria.nombre as categoria_nombre')

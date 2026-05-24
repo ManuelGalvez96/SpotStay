@@ -591,10 +591,15 @@ function toggleDestacadoArticulo(btn, id) {
                 btn.title = 'Marcar como destacado';
             }
 
-            var tr = btn.closest('tr');
-            if (tr) {
-                var ordenFaqTd = tr.querySelector('td[data-label="ORDEN DESTACADO"]');
-                if (ordenFaqTd) ordenFaqTd.textContent = data.orden_faq != null ? data.orden_faq : '-';
+            if (data.affected) {
+                for (var j = 0; j < data.affected.length; j++) {
+                    var aff = data.affected[j];
+                    var row = document.querySelector('#tabla-articulos-admin tbody tr[data-id="' + aff.id + '"]');
+                    if (row) {
+                        var td = row.querySelector('td[data-label="ORDEN DESTACADO"]');
+                        if (td) td.textContent = aff.orden_faq != null ? aff.orden_faq : '-';
+                    }
+                }
             }
         } else {
             swalError('Error', data.message || 'No se pudo cambiar el destacado del artículo.');

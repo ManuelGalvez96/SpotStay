@@ -265,13 +265,13 @@ class AsesoriaController extends Controller
     public function toggleDestacadoArticulo($id)
     {
         $articulo = ArticuloAsesoria::findOrFail($id);
+        $oldOrdenFaq = $articulo->orden_faq;
 
         if (!$articulo->destacado) {
             $maxOrdenFaq = ArticuloAsesoria::max('orden_faq') ?? 0;
             $articulo->orden_faq = $maxOrdenFaq + 1;
             $articulo->destacado = true;
         } else {
-            $oldOrdenFaq = $articulo->orden_faq;
             $articulo->orden_faq = null;
             $articulo->destacado = false;
             if ($oldOrdenFaq !== null) {
@@ -282,10 +282,21 @@ class AsesoriaController extends Controller
 
         $articulo->save();
 
+        $affected[] = ['id' => $articulo->id, 'orden_faq' => $articulo->orden_faq];
+        if (!$articulo->destacado && $oldOrdenFaq !== null) {
+            $shifted = ArticuloAsesoria::whereNotNull('orden_faq')
+                ->where('orden_faq', '>=', $oldOrdenFaq)
+                ->get(['id', 'orden_faq']);
+            foreach ($shifted as $s) {
+                $affected[] = ['id' => $s->id, 'orden_faq' => $s->orden_faq];
+            }
+        }
+
         return response()->json([
             'success'    => true,
             'destacado'  => $articulo->destacado,
             'orden_faq'  => $articulo->orden_faq,
+            'affected'   => $affected,
             'message'    => $articulo->destacado ? 'Artículo marcado como destacado.' : 'Artículo desmarcado como destacado.',
         ]);
     }

@@ -56,7 +56,7 @@ class AppServiceProvider extends ServiceProvider
                 $suscripcion = $usuario->suscripciones()->latest('id_suscripcion')->first();
                 
                 // Si el plan es Gratuito muestra anuncios
-                $mostrarAnuncios = $suscripcion?->plan_suscripcion === 'Gratuito';
+                $mostrarAnuncios = $suscripcion?->plan_suscripcion === 'Gratuito' || $suscripcion?->plan_suscripcion === "Miembro Estándar";
 
                 $view->with([
                     'nombreUsuario' => $nombre,

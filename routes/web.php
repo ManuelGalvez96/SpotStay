@@ -39,7 +39,7 @@ use App\Http\Controllers\Gestor\PropiedadController as GestorPropiedadController
 use App\Http\Controllers\Arrendador\ConfiguracionCobrosController;
 use App\Http\Controllers\Gestor\MensajeController as GestorMensajeController;
 use App\Http\Controllers\Gestor\PerfilController as GestorPerfilController;
-use App\Http\Controllers\Gestor\ActividadController as GestorActividadController;
+use App\Http\Controllers\Gestor\NotificacionController as GestorNotificacionController;
 use App\Http\Controllers\AsesoriaController;
 use App\Http\Controllers\Miembro\PerfilController as MiembroPerfilController;
 
@@ -191,10 +191,9 @@ Route::middleware(['role:admin'])->group(function () {
 // Rutas Gestor
 Route::middleware(['role:gestor'])->group(function () {
     Route::get('/gestor/dashboard', [GestorDashboardController::class, 'index'])->name('gestor.dashboard');
-    Route::get('/gestor/actividad', [GestorActividadController::class, 'index'])->name('gestor.actividad');
 
-    Route::post('/gestor/notificaciones/{id}/marcar-leida', [GestorActividadController::class, 'marcarLeida'])->name('gestor.notificaciones.marcar-leida');
-    Route::post('/gestor/notificaciones/{id}/eliminar', [GestorActividadController::class, 'eliminar'])->name('gestor.notificaciones.eliminar');
+    Route::post('/gestor/notificaciones/{id}/marcar-leida', [GestorNotificacionController::class, 'marcarLeida'])->name('gestor.notificaciones.marcar-leida');
+    Route::post('/gestor/notificaciones/{id}/eliminar', [GestorNotificacionController::class, 'eliminar'])->name('gestor.notificaciones.eliminar');
     Route::get('/gestor/incidencias', [GestorIncidenciaController::class, 'index'])->name('gestor.incidencias');
     Route::get('/gestor/incidencias/{id}', [GestorIncidenciaController::class, 'show'])->name('gestor.incidencias.show');
     Route::get('/gestor/propiedades', [GestorPropiedadController::class, 'index'])->name('gestor.propiedades');
@@ -230,8 +229,8 @@ Route::middleware(['role:gestor'])->group(function () {
 
 // Rutas abiertas a usuarios autenticados para acciones sobre notificaciones
 Route::middleware(['auth'])->group(function () {
-    Route::post('/notificaciones/{id}/marcar-leida', [GestorActividadController::class, 'marcarLeida'])->name('notificaciones.marcar-leida');
-    Route::post('/notificaciones/{id}/eliminar', [GestorActividadController::class, 'eliminar'])->name('notificaciones.eliminar');
+    Route::post('/notificaciones/{id}/marcar-leida', [GestorNotificacionController::class, 'marcarLeida'])->name('notificaciones.marcar-leida');
+    Route::post('/notificaciones/{id}/eliminar', [GestorNotificacionController::class, 'eliminar'])->name('notificaciones.eliminar');
 });
 
 // Rutas Arrendador

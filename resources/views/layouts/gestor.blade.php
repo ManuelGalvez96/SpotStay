@@ -40,9 +40,6 @@
             <button class="btn-nav-icon {{ request()->is('gestor/mensajes*') ? 'activo' : '' }}" data-ruta="/gestor/mensajes" title="Mensajes">
                 <i class="bi bi-chat-dots"></i>
             </button>
-            <button class="btn-nav-icon {{ request()->is('gestor/actividad*') ? 'activo' : '' }}" data-ruta="/gestor/actividad" title="Actividad">
-                <i class="bi bi-activity"></i>
-            </button>
             <button class="btn-nav-icon {{ request()->is('gestor/asesoria*') ? 'activo' : '' }}" data-ruta="/gestor/asesoria" title="Asesoría Legal">
                 <i class="bi bi-bank2"></i>
             </button>
@@ -62,7 +59,6 @@
                             <span class="campana-dropdown-titulo">Notificaciones</span>
                             <p class="campana-dropdown-subtitulo">Últimos avisos del sistema</p>
                         </div>
-                        <a href="{{ route('gestor.actividad') }}" class="campana-dropdown-ver-todo">Ver todo</a>
                     </div>
 
                     <div class="campana-dropdown-lista">
@@ -70,7 +66,7 @@
                             @php
                                 $icono = $notificacion->icono_notificacion ?? 'bell';
                                 $color = $notificacion->color_notificacion ?? '#035498';
-                                $url = !empty($notificacion->url_notificacion) ? $notificacion->url_notificacion : route('gestor.actividad');
+                                $url = !empty($notificacion->url_notificacion) ? $notificacion->url_notificacion : '#';
 
                                 if (is_string($url) && preg_match('#^/miembro/chat/(\d+)$#', $url, $coincidencias)) {
                                     $url = route('gestor.mensajes.index', ['activa' => (int) $coincidencias[1]]);

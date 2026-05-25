@@ -326,43 +326,6 @@
         </div>
     </div>
 
-    <div class="card-admin card-con-franja">
-        <div class="card-franja"></div>
-        <div class="card-header-admin card-header-gradient">
-            <span>Actividad reciente</span>
-            <div class="card-header-right">
-                @if($notificaciones->count() > 0)
-                    <span class="badge-contador">{{ $notificaciones->count() }}</span>
-                @endif
-                <a href="{{ route('gestor.actividad') }}" class="link-ver-todos">Ver todo →</a>
-            </div>
-        </div>
-
-        <div class="timeline">
-            <div class="timeline-linea"></div>
-            @forelse($notificaciones as $notificacion)
-                @php
-                    $icono = $notificacion->icono_notificacion ?? 'circle-fill';
-                    $color = $notificacion->color_notificacion ?? '#035498';
-                    $url = $notificacion->url_notificacion ?? '#';
-                @endphp
-                <a href="{{ $url }}" class="timeline-link">
-                    <div class="timeline-item">
-                        <div class="timeline-punto" style="background:{{ $color }};">
-                            <i class="bi bi-{{ $icono }}"></i>
-                        </div>
-                        <div class="timeline-contenido">
-                            <p class="timeline-texto">{{ $notificacion->titulo_notificacion ?? 'Actualización' }}</p>
-                            <span class="timeline-desc">{{ $notificacion->mensaje_notificacion ?? '' }}</span>
-                            <span class="timeline-hora">{{ \Carbon\Carbon::parse($notificacion->creado_notificacion)->diffForHumans() }}</span>
-                        </div>
-                    </div>
-                </a>
-            @empty
-                <p class="tarjeta-vacia">No hay actividad reciente.</p>
-            @endforelse
-        </div>
-    </div>
 </div>
 @section('scripts')
 <script>

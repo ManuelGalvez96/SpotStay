@@ -499,6 +499,30 @@ function cerrarModalPropiedad() {
 }
 
 function abrirModalFormulario(arrendadorId, datosPropiedad) {
+  function normalizarTipoPropiedad(tipoOriginal) {
+    if (!tipoOriginal || typeof tipoOriginal !== 'string') {
+      return '';
+    }
+
+    var tipoNormalizado = tipoOriginal
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+    var mapaTipos = {
+      piso: 'piso',
+      apartamento: 'piso',
+      atico: 'piso',
+      casa: 'casa',
+      estudio: 'estudio',
+      loft: 'estudio',
+      habitacion: 'habitacion'
+    };
+
+    return mapaTipos[tipoNormalizado] || tipoNormalizado;
+  }
+
   var modal = document.getElementById('modal-formulario');
   
   if (!modal) {
@@ -561,13 +585,18 @@ function abrirModalFormulario(arrendadorId, datosPropiedad) {
       document.getElementById('btn-submit-formulario').textContent = 'Guardar cambios';
       document.getElementById('form-id-propiedad').value = datosPropiedad.id_propiedad || '';
       document.getElementById('form-titulo').value = datosPropiedad.titulo_propiedad || '';
-      document.getElementById('form-tipo').value = datosPropiedad.tipo_propiedad || '';
+      document.getElementById('form-tipo').value = normalizarTipoPropiedad(datosPropiedad.tipo_propiedad);
       document.getElementById('form-calle').value = datosPropiedad.calle_propiedad || '';
       document.getElementById('form-numero').value = datosPropiedad.numero_propiedad || '';
       document.getElementById('form-piso').value = datosPropiedad.piso_propiedad || '';
       document.getElementById('form-puerta').value = datosPropiedad.puerta_propiedad || '';
       document.getElementById('form-codigo-postal').value = datosPropiedad.codigo_postal_propiedad || '';
       document.getElementById('form-ciudad').value = datosPropiedad.ciudad_propiedad || '';
+      document.getElementById('latitud_propiedad').value = datosPropiedad.latitud_propiedad || '';
+      document.getElementById('longitud_propiedad').value = datosPropiedad.longitud_propiedad || '';
+      if (document.getElementById('direccion_propiedad')) {
+        document.getElementById('direccion_propiedad').value = datosPropiedad.direccion_propiedad || '';
+      }
       document.getElementById('form-habitaciones').value = datosPropiedad.habitaciones_propiedad || '';
       document.getElementById('form-banos').value = datosPropiedad.banos_propiedad || '';
       document.getElementById('form-metros').value = datosPropiedad.metros_cuadrados_propiedad || '';

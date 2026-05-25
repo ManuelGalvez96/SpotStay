@@ -93,6 +93,9 @@ window.onload = function () {
         return;
     }
 
+    // Guardamos una copia del onsubmit que propiedades.js ya configuró (el envío por Fetch)
+    var onsubmitAnterior = form.onsubmit;
+
     // Valida que se haya seleccionado una ubicación en el mapa antes de permitir enviar el formulario
     form.onsubmit = function (evento) {
         var tieneLat = inputLatitud && inputLatitud.value.trim() !== '';
@@ -101,7 +104,13 @@ window.onload = function () {
 
         if (!tieneLat || !tieneLng || !tieneDireccion) {
             evento.preventDefault();
-            alert('Debes seleccionar una ubicacion en el mapa para completar direccion, latitud y longitud.');
+            alert('Debes seleccionar una ubicación en el mapa para completar dirección, latitud y longitud.');
+            return;
+        }
+
+        // Si la validación del mapa fue exitosa y existía una lógica de Fetch previa, la ejecutamos
+        if (onsubmitAnterior) {
+            onsubmitAnterior.call(form, evento);
         }
     };
 };

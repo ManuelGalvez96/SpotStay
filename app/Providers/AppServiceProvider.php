@@ -16,7 +16,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        if (($docRoot = $_SERVER['DOCUMENT_ROOT'] ?? null) && realpath($docRoot) !== realpath($this->app->publicPath())) {
+        if (basename(base_path()) === 'laravel') {
+            /** @var \Illuminate\Foundation\Application $application */
+            $application = $this->app;
+            $application->usePublicPath(dirname(base_path()));
+        } elseif (($docRoot = $_SERVER['DOCUMENT_ROOT'] ?? null) && realpath($docRoot) !== realpath($this->app->publicPath())) {
             /** @var \Illuminate\Foundation\Application $application */
             $application = $this->app;
             $application->usePublicPath($docRoot);

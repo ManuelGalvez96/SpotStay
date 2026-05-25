@@ -30,6 +30,10 @@ class HomeController extends Controller
                 DB::raw("TRIM(CONCAT_WS(', ', TRIM(CONCAT_WS(' ', calle_propiedad, numero_propiedad)), NULLIF(CONCAT('Piso ', NULLIF(piso_propiedad, '')), 'Piso '), NULLIF(CONCAT('Puerta ', NULLIF(puerta_propiedad, '')), 'Puerta '))) as direccion_propiedad"),
                 'ciudad_propiedad',
                 'precio_propiedad',
+                'metros_cuadrados_propiedad',
+                'habitaciones_propiedad',
+                'banos_propiedad',
+                DB::raw('(SELECT ruta_foto FROM tbl_fotos WHERE id_propiedad_fk = tbl_propiedad.id_propiedad ORDER BY es_principal_foto DESC, orden ASC, id_foto ASC LIMIT 1) as ruta_foto'),
                 'estado_propiedad'
             )
             ->where('estado_propiedad', 'publicada');

@@ -84,6 +84,9 @@
                 <p>
                     {{ $propiedad->descripcion_propiedad ?? 'Sin descripcion disponible.' }}
                 </p>
+                @if ($mostrarAnuncios)
+                    @include('miembro.partials.anuncio')
+                @endif
             </div>
             <div class="detalle-contacto">
                 <h2>Detalles de contacto</h2>
@@ -130,6 +133,11 @@
                     </div>
                     <button class="boton-aplicar boton-contacto" type="submit">Enviar solicitud <i class="bi bi-house"></i></button>
                 </form>
+
+                @if ($mostrarAnuncios)
+                    @include('miembro.partials.anuncio')
+                @endif
+                
             </div>
         </section>
 
@@ -147,6 +155,9 @@
                 <p class="detalle-mapa-vacio">No hay coordenadas disponibles para esta propiedad.</p>
             @endif
         </section>
+        @if ($mostrarAnuncios)
+            @include('miembro.partials.anuncio')
+        @endif
 
         <section class="detalle-seccion detalle-similares">
             <span>Carrousel de propiedades similares</span>

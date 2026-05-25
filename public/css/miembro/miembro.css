@@ -734,7 +734,7 @@ body.pagina-mapa.filtros-ocultos .contenedor-mapa {
 }
 
 .imagen-propiedad {
-	height: 140px;
+	height: 250px;
 	background: #cfd9e6;
 	position: relative;
 }
@@ -752,10 +752,31 @@ body.pagina-mapa.filtros-ocultos .contenedor-mapa {
 }
 
 .contenido-propiedad {
-	padding: 16px;
+	padding: 12px;
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 4px;
+}
+
+.detalle-propiedad-card {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px 6px;
+	font-size: 12px;
+	color: var(--texto-suave);
+}
+
+.detalle-item-propiedad {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-weight: 600;
+	line-height: 1;
+}
+
+.detalle-item-propiedad i {
+	font-size: 17px;
+	color: var(--primario);
 }
 
 .titulo-propiedad {
@@ -1098,13 +1119,20 @@ body.pagina-mapa.filtros-ocultos .contenedor-mapa {
 	}
 
 	.panel-filtros-miembro {
-		flex-direction: row;
-		flex-wrap: wrap;
+		flex-direction: column;
 	}
 
 	.buscador-filtros,
 	.filtros-miembro {
-		flex: 1 1 260px;
+		flex: 1 1 100%;
+	}
+
+	.fila-campos {
+		grid-template-columns: 1fr;
+	}
+
+	.filtros-propiedad-grid {
+		grid-template-columns: 1fr;
 	}
 }
 
@@ -2097,4 +2125,87 @@ body.pagina-miembro.pagina-mensajes .mensajes-panel .estado-vacio {
 .boton-whatsapp-enviar i {
 	font-size: 18px;
 	transform: translate(1px, -1px);
+}
+
+.anuncio-contenedor {
+	margin: 1rem 0;
+	text-align: center;
+	position: relative;
+}
+
+.anuncio-etiqueta {
+	display: block;
+	font-size: 10px;
+	color: #999;
+	margin-bottom: 4px;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+}
+
+.anuncio-enlace {
+	display: flex;
+	align-items: flex-end;
+	justify-content: center;
+	width: 100%;
+	min-height: 220px;
+	border-radius: 12px;
+	background-size: cover;
+	background-position: center;
+	text-decoration: none;
+	position: relative;
+	overflow: hidden;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.anuncio-enlace:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 12px 24px -12px rgba(0,0,0,0.35);
+}
+
+.anuncio-overlay {
+	position: absolute;
+	inset: 0;
+	background: rgba(0,0,0,0.45);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-end;
+	padding: 20px 16px 18px;
+	gap: 4px;
+	color: #fff;
+}
+
+.anuncio-icono {
+	font-size: 26px;
+	margin-bottom: 2px;
+	filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.anuncio-titulo {
+	font-size: 17px;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.anuncio-descripcion {
+	font-size: 12px;
+	opacity: 0.92;
+	text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.anuncio_boton {
+	margin-top: 8px;
+	padding: 8px 20px;
+	border-radius: 999px;
+	background: #fff;
+	color: var(--primario);
+	font-size: 13px;
+	font-weight: 600;
+	transition: transform 0.2s ease;
+	text-shadow: none;
+}
+
+.anuncio-enlace:hover .anuncio_boton {
+	transform: scale(1.06);
 }

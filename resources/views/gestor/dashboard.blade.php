@@ -11,6 +11,11 @@
     <div class="hero-content">
         <h1>Panel de gestor</h1>
         <p>Seguimiento operativo de incidencias y propiedades asignadas</p>
+        @if(!empty($esArrendador))
+            <div class="hero-actions">
+                <a href="{{ route('arrendador.dashboard') }}" class="btn btn-outline btn-sm">Volver al Panel de Arrendador</a>
+            </div>
+        @endif
     </div>
     <div class="hero-deco hero-deco-1"></div>
     <div class="hero-deco hero-deco-2"></div>

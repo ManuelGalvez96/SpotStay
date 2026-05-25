@@ -62,9 +62,11 @@ class EnsureArrendadorIsActive
                         'actualizado_suscripcion' => \Carbon\Carbon::now()
                     ]);
 
-                    $user->update([
-                        'stripe_status' => 'pending_payment'
-                    ]);
+                    DB::table('tbl_usuario')
+                        ->where('id_usuario', $user->id_usuario)
+                        ->update([
+                            'stripe_status' => 'pending_payment'
+                        ]);
                 } else {
                     // Si es una suscripción caducada de 0€ (Miembro Estándar gratis), se renueva automáticamente y no bloquea
                     if ((float)$ultimaSuscripcionActiva->precio_pagado_suscripcion <= 0) {
@@ -81,9 +83,11 @@ class EnsureArrendadorIsActive
                             'actualizado_suscripcion' => \Carbon\Carbon::now(),
                         ]);
 
-                        $user->update([
-                            'stripe_status' => 'active'
-                        ]);
+                        DB::table('tbl_usuario')
+                            ->where('id_usuario', $user->id_usuario)
+                            ->update([
+                                'stripe_status' => 'active'
+                            ]);
                     } else {
                         // Suscripción de pago vencida, crear pendiente de pago del mismo plan para forzar pasarela
                         \App\Models\Suscripcion::create([
@@ -99,14 +103,14 @@ class EnsureArrendadorIsActive
                             'actualizado_suscripcion' => \Carbon\Carbon::now(),
                         ]);
 
-                        $user->update([
-                            'stripe_status' => 'expired'
-                        ]);
+                        DB::table('tbl_usuario')
+                            ->where('id_usuario', $user->id_usuario)
+                            ->update([
+                                'stripe_status' => 'expired'
+                            ]);
                     }
                 }
             });
-
-            $user->refresh();
 
             // Recargar suscripción activa tras transicionar
             $suscripcionCaducada = false;
@@ -117,7 +121,11 @@ class EnsureArrendadorIsActive
                 ->exists();
         }
 
-        $esArrendador = $user->roles()->where('slug_rol', 'arrendador')->exists();
+        $esArrendador = DB::table('tbl_rol_usuario as ru')
+            ->join('tbl_rol as r', 'r.id_rol', '=', 'ru.id_rol_fk')
+            ->where('ru.id_usuario_fk', $user->id_usuario)
+            ->where('r.slug_rol', 'arrendador')
+            ->exists();
 
         // 2. Estas restricciones solo aplican al rol de 'arrendador'
         if ($esArrendador) {

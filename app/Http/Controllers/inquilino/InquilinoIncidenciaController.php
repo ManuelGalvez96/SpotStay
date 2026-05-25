@@ -30,15 +30,21 @@ class InquilinoIncidenciaController extends Controller
             $propiedad = DB::table('tbl_propiedad')->where('id_propiedad', $id)->first();
             $idAsignado = ($propiedad->id_gestor_fk ?? 0) > 0 ? $propiedad->id_gestor_fk : ($propiedad->id_arrendador_fk ?? null);
 
-            $mapaCategorias = [
-                'fontaneria' => 'Fontanería',
-                'electricidad' => 'Electricidad',
-                'limpieza' => 'Limpieza',
-                'climatizacion' => 'Climatización',
-                'otros' => 'Otros'
-            ];
-            $nombreCat = $mapaCategorias[$request->categoria] ?? 'Otros';
-            $idCategoria = DB::table('tbl_categoria')->where('nombre_categoria', $nombreCat)->value('id_categoria') ?? 1;
+            $idCategoria = 1;
+            $categoriaInput = $request->categoria;
+            if (is_numeric($categoriaInput)) {
+                $idCategoria = DB::table('tbl_categoria')->where('id_categoria', $categoriaInput)->value('id_categoria') ?? 1;
+            } else {
+                $mapaCategorias = [
+                    'fontaneria' => 'Fontanería',
+                    'electricidad' => 'Electricidad',
+                    'limpieza' => 'Limpieza',
+                    'climatizacion' => 'Climatización',
+                    'otros' => 'Otros'
+                ];
+                $nombreCat = $mapaCategorias[$categoriaInput] ?? 'Otros';
+                $idCategoria = DB::table('tbl_categoria')->where('nombre_categoria', $nombreCat)->value('id_categoria') ?? 1;
+            }
 
             $idIncidencia = DB::table('tbl_incidencia')->insertGetId([
                 'id_propiedad_fk' => $id,

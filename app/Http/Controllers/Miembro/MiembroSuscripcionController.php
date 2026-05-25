@@ -26,18 +26,10 @@ class MiembroSuscripcionController extends Controller
     {
         /** @var Usuario $usuario */
         $usuario = Auth::user();
-<<<<<<< HEAD
-        $usuarioModelo = Usuario::find($usuario->id_usuario);
-        
-        // Buscamos la suscripción pendiente o activa más reciente
-
-        // Buscamos la suscripción pendiente más reciente
-=======
 
         $usuarioModelo = Usuario::find($usuario->id_usuario);
 
         // Buscamos la suscripción pendiente o activa más reciente
->>>>>>> 4cd8f0f0a42ed266651ea635ab791fd659c43e13
         $suscripcion = Suscripcion::where('id_usuario_fk', $usuario->id_usuario)
             ->whereIn('estado_suscripcion', ['pendiente_pago', 'activa', 'cancelada'])
             ->latest('id_suscripcion')
@@ -402,7 +394,7 @@ class MiembroSuscripcionController extends Controller
         $usuario = Auth::user();
         
         // Solo para miembros/inquilinos (no arrendadores)
-        if ($usuario->roles()->where('slug_rol', 'arrendador')->exists()) {
+        if ($this->esArrendador($usuario)) {
             return back()->with('error', 'Los arrendadores no pueden acceder a un plan gratuito.');
         }
 
@@ -434,6 +426,19 @@ class MiembroSuscripcionController extends Controller
         ]);
 
         return redirect($this->redirigirDashboard())->with('success', 'Has vuelto al plan base gratuito con éxito.');
+    }
+
+    private function esArrendador($usuario): bool
+    {
+        if (!$usuario || empty($usuario->id_usuario)) {
+            return false;
+        }
+
+        return DB::table('tbl_rol_usuario as ru')
+            ->join('tbl_rol as r', 'r.id_rol', '=', 'ru.id_rol_fk')
+            ->where('ru.id_usuario_fk', $usuario->id_usuario)
+            ->where('r.slug_rol', 'arrendador')
+            ->exists();
     }
 
     /**

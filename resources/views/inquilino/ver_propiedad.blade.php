@@ -288,11 +288,9 @@
                                 <label for="categoria-incidencia" class="form-label">Categoría</label>
                                 <select class="form-select" id="categoria-incidencia" name="categoria">
                                     <option value="" selected disabled>Selecciona una categoría</option>
-                                    <option value="fontaneria">Fontanería</option>
-                                    <option value="electricidad">Electricidad</option>
-                                    <option value="limpieza">Limpieza</option>
-                                    <option value="climatizacion">Climatización</option>
-                                    <option value="otros">Otros</option>
+                                    @foreach($categorias as $cat)
+                                        <option value="{{ $cat->id_categoria }}">{{ $cat->nombre_categoria }}</option>
+                                    @endforeach
                                 </select>
                                 <span id="error-categoria" class="text-danger small"></span>
                             </div>

@@ -24,9 +24,6 @@
     <a href="{{ route('admin.asesoria.articulos') }}" class="asesoria-admin-tab">
         <i class="bi bi-file-text"></i> Artículos
     </a>
-    <a href="#" class="asesoria-admin-tab">
-        <i class="bi bi-question-circle"></i> Preguntas frecuentes
-    </a>
 </div>
 
 <div class="card-admin">

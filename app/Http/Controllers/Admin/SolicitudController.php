@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Plan;
 use App\Models\SolicitudArrendador;
 use App\Models\SolicitudGestor;
+use App\Models\Suscripcion;
 use App\Services\CodigoGestorService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -122,6 +124,34 @@ class SolicitudController extends Controller
                     ]);
 
                 $this->asegurarRolUsuario((int) $solicitud->id_usuario_fk, 'arrendador');
+
+                // Crear suscripcion pendiente de pago si se selecciono un plan
+                if (!empty($solicitud->id_plan_fk)) {
+                    $plan = Plan::find($solicitud->id_plan_fk);
+                    if ($plan) {
+                        Suscripcion::create([
+                            'id_usuario_fk' => $solicitud->id_usuario_fk,
+                            'plan_suscripcion' => $plan->slug_plan,
+                            'id_plan_fk' => $plan->id_plan,
+                            'precio_pagado_suscripcion' => $plan->precio_plan,
+                            'max_propiedades_suscripcion' => $plan->max_propiedades_plan,
+                            'inicio_suscripcion' => Carbon::now()->toDateString(),
+                            'fin_suscripcion' => null,
+                            'estado_suscripcion' => 'pendiente_pago',
+                            'creado_suscripcion' => Carbon::now(),
+                            'actualizado_suscripcion' => Carbon::now(),
+                        ]);
+                    }
+                }
+
+                // Resetear stripe_status para forzar pago al iniciar sesion
+                DB::table('tbl_usuario')
+                    ->where('id_usuario', $solicitud->id_usuario_fk)
+                    ->update([
+                        'stripe_status' => null,
+                        'actualizado_usuario' => Carbon::now(),
+                    ]);
+
                 $this->limpiarSesionesUsuario((int) $solicitud->id_usuario_fk);
             }
 

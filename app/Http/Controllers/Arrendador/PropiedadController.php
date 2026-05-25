@@ -88,7 +88,6 @@ class PropiedadController extends Controller
             'id_gestor_fk' => $arrendadorId,
             'titulo_propiedad' => $datos['titulo_propiedad'],
             'tipo_propiedad' => $datos['tipo_propiedad'],
-            'estado_propiedad' => 'borrador',
             'calle_propiedad' => $datos['calle_propiedad'],
             'numero_propiedad' => $datos['numero_propiedad'],
             'piso_propiedad' => $datos['piso_propiedad'] ?? null,
@@ -142,10 +141,12 @@ class PropiedadController extends Controller
                     ->update($datosPropiedad);
             } else {
                 $datosPropiedad['creado_propiedad'] = Carbon::now();
+                $datosPropiedad['estado_propiedad'] = 'borrador';
                 $propiedadId = (int) DB::table('tbl_propiedad')->insertGetId($datosPropiedad);
             }
 
             $imagenesSubidas = $request->file('imagenes_propiedad', []);
+            \Log::info('Imagenes recibidas: ', ['imagenes' => $request->allFiles()]);
             if (!empty($imagenesSubidas)) {
                 $totalActual = (int) DB::table('tbl_fotos')
                     ->where('id_propiedad_fk', $propiedadId)

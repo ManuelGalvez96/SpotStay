@@ -158,7 +158,7 @@ function iniciarValidacionFormularioPropiedad() {
     };
   });
 
-  formulario.onsubmit = function (evento) {
+  formulario._validarCampos = function () {
     var formularioValido = true;
 
     camposObligatorios.forEach(function (campo) {
@@ -169,15 +169,7 @@ function iniciarValidacionFormularioPropiedad() {
     });
 
     actualizarEstadoBoton();
-
-    if (!formularioValido) {
-      evento.preventDefault();
-
-      mostrarMensaje('Completa los campos obligatorios antes de guardar la propiedad.', true);
-      return false;
-    }
-
-    return true;
+    return formularioValido;
   };
 
   window.actualizarEstadoValidacionFormularioPropiedad = actualizarEstadoBoton;
@@ -255,8 +247,8 @@ function enviarFormularioConFetch(formulario) {
   formulario.onsubmit = function (evento) {
     evento.preventDefault();
 
-    if (!actualizarEstadoBoton()) {
-      mostrarMensaje('Completa los campos obligatorios antes de guardar.', true);
+    if (formulario._validarCampos && !formulario._validarCampos()) {
+      mostrarMensaje('Completa los campos obligatorios antes de guardar la propiedad.', true);
       return;
     }
 
@@ -271,6 +263,7 @@ function enviarFormularioConFetch(formulario) {
     var datosFormulario = new FormData(formulario);
 
     // Caso especial: formulario de propiedades con archivos acumulados
+    datosFormulario.delete('imagenes_propiedad[]');
     if (formulario._archivosAcumulados && formulario._archivosAcumulados.length > 0) {
       formulario._archivosAcumulados.forEach(function(obj) {
         datosFormulario.append('imagenes_propiedad[]', obj.archivo);
@@ -554,7 +547,7 @@ function abrirModalFormulario(arrendadorId, datosPropiedad) {
     
     // Limpiar archivos acumulados
     if (formulario._archivosAcumulados) {
-      formulario._archivosAcumulados = [];
+      formulario._archivosAcumulados.length = 0;
     }
     
     // Ocultar vista previa de imágenes

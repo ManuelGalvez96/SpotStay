@@ -15,9 +15,8 @@ class DetallePropiedadController extends Controller
 
     public function index($id)
     {
-        // Busca la propiedad utilizando el modelo Eloquent para habilitar accessors y relaciones
         $propiedad = \App\Models\Propiedad::with(['arrendador', 'fotos' => function($q) {
-            $q->limit(5);
+            $q->orderBy('es_principal_foto', 'desc')->limit(5);
         }])->find($id);
 
         if (!$propiedad) {
@@ -40,6 +39,7 @@ class DetallePropiedadController extends Controller
         $fotos = DB::table('tbl_fotos')
             ->select('ruta_foto')
             ->where('id_propiedad_fk', $id)
+            ->orderBy('es_principal_foto', 'desc')
             ->get();
         return response()->json($fotos);
     }

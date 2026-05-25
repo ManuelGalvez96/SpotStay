@@ -45,5 +45,9 @@ return [
         'template_id' => env('PDFMONKEY_TEMPLATE_ID'),
         'template_id_suscripciones' => env('PDFMONKEY_TEMPLATE_ID_SUSCRIPCIONES'),
     ],
+
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+    ],
 ];
 

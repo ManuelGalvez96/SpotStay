@@ -53,6 +53,11 @@
         </div>
     </div>
 </div>
+@include('asesoria.partials.chatbot-widget', [
+    'chatbotIniciarUrl' => route($routePrefix . '.asesoria.chatbot.iniciar'),
+    'chatbotMensajeUrl' => route($routePrefix . '.asesoria.chatbot.mensaje'),
+    'chatbotHistorialUrl' => route($routePrefix . '.asesoria.chatbot.historial'),
+])
 @endsection
 
 @section('scripts')

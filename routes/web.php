@@ -41,6 +41,7 @@ use App\Http\Controllers\Gestor\MensajeController as GestorMensajeController;
 use App\Http\Controllers\Gestor\PerfilController as GestorPerfilController;
 use App\Http\Controllers\Gestor\NotificacionController as GestorNotificacionController;
 use App\Http\Controllers\AsesoriaController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\Miembro\PerfilController as MiembroPerfilController;
 
 // Rutas Públicas
@@ -225,6 +226,10 @@ Route::middleware(['role:gestor'])->group(function () {
     Route::get('/gestor/asesoria', [AsesoriaController::class, 'index'])->name('gestor.asesoria');
     Route::get('/gestor/asesoria/buscar', [AsesoriaController::class, 'buscar'])->name('gestor.asesoria.buscar');
     Route::get('/gestor/asesoria/{slug}', [AsesoriaController::class, 'categoria'])->name('gestor.asesoria.categoria');
+
+    Route::post('/gestor/asesoria/chatbot/iniciar', [ChatbotController::class, 'iniciarSesion'])->name('gestor.asesoria.chatbot.iniciar');
+    Route::post('/gestor/asesoria/chatbot/mensaje', [ChatbotController::class, 'enviarMensaje'])->name('gestor.asesoria.chatbot.mensaje');
+    Route::get('/gestor/asesoria/chatbot/historial', [ChatbotController::class, 'historial'])->name('gestor.asesoria.chatbot.historial');
 });
 
 // Rutas abiertas a usuarios autenticados para acciones sobre notificaciones
@@ -239,6 +244,10 @@ Route::middleware(['role:arrendador', 'arrendador.activo'])->group(function () {
     Route::get('/arrendador/asesoria', [AsesoriaController::class, 'index'])->name('arrendador.asesoria');
     Route::get('/arrendador/asesoria/buscar', [AsesoriaController::class, 'buscar'])->name('arrendador.asesoria.buscar');
     Route::get('/arrendador/asesoria/{slug}', [AsesoriaController::class, 'categoria'])->name('arrendador.asesoria.categoria');
+
+    Route::post('/arrendador/asesoria/chatbot/iniciar', [ChatbotController::class, 'iniciarSesion'])->name('arrendador.asesoria.chatbot.iniciar');
+    Route::post('/arrendador/asesoria/chatbot/mensaje', [ChatbotController::class, 'enviarMensaje'])->name('arrendador.asesoria.chatbot.mensaje');
+    Route::get('/arrendador/asesoria/chatbot/historial', [ChatbotController::class, 'historial'])->name('arrendador.asesoria.chatbot.historial');
 
     Route::get('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'inicio'])->name('arrendador.propiedades');
     Route::post('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'guardar'])->name('arrendador.propiedades.store');
@@ -292,9 +301,18 @@ Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->g
     Route::get('/miembro/asesoria', [AsesoriaController::class, 'index'])->name('miembro.asesoria');
     Route::get('/miembro/asesoria/buscar', [AsesoriaController::class, 'buscar'])->name('miembro.asesoria.buscar');
     Route::get('/miembro/asesoria/{slug}', [AsesoriaController::class, 'categoria'])->name('miembro.asesoria.categoria');
+
+    Route::post('/miembro/asesoria/chatbot/iniciar', [ChatbotController::class, 'iniciarSesion'])->name('miembro.asesoria.chatbot.iniciar');
+    Route::post('/miembro/asesoria/chatbot/mensaje', [ChatbotController::class, 'enviarMensaje'])->name('miembro.asesoria.chatbot.mensaje');
+    Route::get('/miembro/asesoria/chatbot/historial', [ChatbotController::class, 'historial'])->name('miembro.asesoria.chatbot.historial');
+
     Route::get('/inquilino/asesoria', [AsesoriaController::class, 'index'])->name('inquilino.asesoria');
     Route::get('/inquilino/asesoria/buscar', [AsesoriaController::class, 'buscar'])->name('inquilino.asesoria.buscar');
     Route::get('/inquilino/asesoria/{slug}', [AsesoriaController::class, 'categoria'])->name('inquilino.asesoria.categoria');
+
+    Route::post('/inquilino/asesoria/chatbot/iniciar', [ChatbotController::class, 'iniciarSesion'])->name('inquilino.asesoria.chatbot.iniciar');
+    Route::post('/inquilino/asesoria/chatbot/mensaje', [ChatbotController::class, 'enviarMensaje'])->name('inquilino.asesoria.chatbot.mensaje');
+    Route::get('/inquilino/asesoria/chatbot/historial', [ChatbotController::class, 'historial'])->name('inquilino.asesoria.chatbot.historial');
 
     Route::get('/inquilino/gestionar-propiedades', [InquilinoController::class, 'gestionarPropiedades'])->name('gestionar_propiedades');
 });

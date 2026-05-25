@@ -12,8 +12,54 @@
 .incidencia-shell {
     display: grid;
     gap: 16px;
+    padding: 0 40px 40px;
 }
 
+/* ── Hero overrides ── */
+.hero-volver-link {
+    display: inline-block;
+    color: rgba(255,255,255,0.7) !important;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.hero-volver-link:hover {
+    color: #fff !important;
+}
+
+.hero-kicker {
+    color: rgba(255,255,255,0.6) !important;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    margin: 0;
+}
+
+.hero-titulo {
+    color: #fff !important;
+    margin: 6px 0 4px !important;
+}
+
+.hero-sub {
+    color: rgba(255,255,255,0.7) !important;
+    font-size: 14px;
+    margin: 0 0 10px !important;
+}
+
+.hero-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.hero-badges .badge {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+/* ── Volver link original (posiblemente obsoleto) ── */
 .volver-link {
     display: inline-block;
     color: var(--inc-blue);

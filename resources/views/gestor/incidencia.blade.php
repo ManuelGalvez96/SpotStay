@@ -2,13 +2,31 @@
 @section('titulo', 'Incidencia #' . $incidencia->id_incidencia . ' - Gestor SpotStay')
 
 @section('css')
+<link rel="stylesheet" href="{{ asset('css/admin/dashboard.css') }}">
 <link rel="stylesheet" href="{{ asset('css/gestor/incidencia.css') }}">
 @endsection
 
 @section('content')
-<div class="incidencia-shell">
-    <a href="{{ route('gestor.dashboard') }}" class="volver-link">← Volver al dashboard</a>
+<div class="hero-admin">
+    <div class="hero-content">
+        <a href="{{ route('gestor.dashboard') }}" class="volver-link hero-volver-link">← Volver al dashboard</a>
+        <p class="kicker hero-kicker">INCIDENCIA #{{ $incidencia->id_incidencia }}</p>
+        <h1 class="hero-titulo">{{ $incidencia->titulo_incidencia }}</h1>
+        <p class="hero-sub">{{ $incidencia->direccion_propiedad }}, {{ $incidencia->ciudad_propiedad }} · Reporta: {{ $incidencia->nombre_reporta }}</p>
+        <div class="hero-badges">
+            <span class="badge estado {{ str_replace('_', '-', $incidencia->estado_incidencia) }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span>
+            <span class="badge prioridad prioridad-{{ strtolower($incidencia->prioridad_incidencia) === 'urgente' ? 'alta' : strtolower($incidencia->prioridad_incidencia) }}">{{ ucfirst(strtolower($incidencia->prioridad_incidencia) === 'urgente' ? 'alta' : strtolower($incidencia->prioridad_incidencia)) }}</span>
+            @if($incidencia->esperando_de_incidencia)
+                <span class="badge espera">Esperando {{ $incidencia->esperando_de_incidencia }}</span>
+            @endif
+        </div>
+    </div>
+    <div class="hero-deco hero-deco-1"></div>
+    <div class="hero-deco hero-deco-2"></div>
+    <div class="hero-deco hero-deco-3"></div>
+</div>
 
+<div class="incidencia-shell">
     @if(session('ok'))
         <div class="alerta ok" data-flash-success="{{ session('ok') }}"></div>
     @endif
@@ -27,21 +45,6 @@
             </ul>
         </div>
     @endif
-
-    <section class="incidencia-head card-gestor">
-        <div>
-            <p class="kicker">INCIDENCIA #{{ $incidencia->id_incidencia }}</p>
-            <h1>{{ $incidencia->titulo_incidencia }}</h1>
-            <p class="meta-linea">{{ $incidencia->direccion_propiedad }}, {{ $incidencia->ciudad_propiedad }} · Reporta: {{ $incidencia->nombre_reporta }}</p>
-        </div>
-        <div class="estado-box">
-            <span class="badge estado {{ str_replace('_', '-', $incidencia->estado_incidencia) }}">{{ ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia)) }}</span>
-            <span class="badge prioridad prioridad-{{ strtolower($incidencia->prioridad_incidencia) === 'urgente' ? 'alta' : strtolower($incidencia->prioridad_incidencia) }}">{{ ucfirst(strtolower($incidencia->prioridad_incidencia) === 'urgente' ? 'alta' : strtolower($incidencia->prioridad_incidencia)) }}</span>
-            @if($incidencia->esperando_de_incidencia)
-                <span class="badge espera">Esperando {{ $incidencia->esperando_de_incidencia }}</span>
-            @endif
-        </div>
-    </section>
 
     <section class="incidencia-grid">
         <div class="col-main">

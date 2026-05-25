@@ -1,10 +1,14 @@
+html {
+    scroll-behavior: smooth;
+}
+
 .hero-admin {
     background: linear-gradient(135deg, #035498, #00A3E0);
     padding: 36px 40px;
     border-radius: 0 0 20px 20px;
     position: relative;
     overflow: hidden;
-    margin: 0 0 24px 0;
+    margin: 0 0 12px 0;
 }
 .hero-content { position: relative; z-index: 2; }
 .hero-admin h1 {
@@ -17,19 +21,55 @@
     color: rgba(255, 255, 255, 0.7); font-size: 14px; margin-top: 4px; margin-bottom: 0;
 }
 
+.asesoria-back-wrap {
+    position: relative;
+    height: 0;
+    z-index: 5;
+}
+
 .asesoria-back-link {
+    position: absolute;
+    top: 0;
+    left: 40px;
+    white-space: nowrap;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    color: rgba(255, 255, 255, 0.7);
+    gap: 8px;
+    text-decoration: none;
+    color: #475569;
     font-size: 13px;
     font-weight: 500;
-    text-decoration: none;
-    margin-bottom: 8px;
-    transition: color 0.15s;
 }
 .asesoria-back-link:hover {
-    color: #fff;
+    color: #1e293b;
+}
+
+.asesoria-back-icono {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #ecfdf5;
+    border: 1.5px solid #a7f3d0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+.asesoria-back-link:hover .asesoria-back-icono {
+    background: #d1fae5;
+    border-color: #059669;
+    transform: scale(1.05);
+}
+.asesoria-back-icono i {
+    font-size: 16px;
+    color: #065f46;
+}
+
+/* Override flex gap when asesoria is inside contenido-miembro (miembro/arrendador) */
+.pagina-asesoria .contenido-miembro {
+    display: block;
+    gap: 0;
 }
 
 .asesoria-grid {
@@ -38,6 +78,7 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
     max-width: 1000px;
+    width: 100%;
     margin: 0 auto;
 }
 
@@ -131,6 +172,29 @@
     display: none;
 }
 
+.asesoria-card-faq {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+}
+
+.asesoria-card-faq:hover {
+    border-color: #10b981;
+    box-shadow: 0 2px 12px rgba(16, 185, 129, 0.15);
+}
+
+.asesoria-card-faq .asesoria-card-icono {
+    background: #d1fae5;
+}
+
+.asesoria-card-faq .asesoria-card-icono i {
+    color: #065f46;
+}
+
+.asesoria-card-faq .asesoria-card-count {
+    color: #059669;
+    font-weight: 500;
+}
+
 .asesoria-categoria-titulo {
     grid-column: 1 / -1;
     font-size: 20px;
@@ -151,9 +215,77 @@
 .asesoria-grid .card-admin {
     grid-column: 1 / -1;
     border-radius: 14px;
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    overflow: hidden;
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+}
+
+.asesoria-grid .card-con-franja {
+    position: relative;
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+}
+
+.asesoria-grid .card-con-franja .card-franja {
+    height: 3px;
+    background: linear-gradient(90deg, #035498, #1AA068);
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
 }
 
 .asesoria-grid .accordion {
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+    --bs-accordion-bg: #fff;
+    --bs-accordion-border-color: #E5E7EB;
+    --bs-accordion-active-bg: #F9FAFB;
+    --bs-accordion-active-color: #035498;
+    --bs-accordion-btn-focus-box-shadow: none;
+    --bs-accordion-btn-padding-y: 14px;
+    --bs-accordion-btn-padding-x: 20px;
+    --bs-accordion-body-padding-y: 16px;
+    --bs-accordion-body-padding-x: 20px;
+}
+
+.asesoria-grid .accordion-item {
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+}
+
+.asesoria-grid .accordion-header {
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+}
+
+.asesoria-grid .accordion-button {
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
+}
+
+.asesoria-grid .card-con-franja {
+    position: relative;
+}
+
+.asesoria-grid .card-con-franja .card-franja {
+    height: 3px;
+    width: 100%;
+    background: linear-gradient(90deg, #035498, #1AA068);
+}
+
+.asesoria-grid .accordion {
+    width: 100%;
     --bs-accordion-bg: #fff;
     --bs-accordion-border-color: #E5E7EB;
     --bs-accordion-active-bg: #F9FAFB;

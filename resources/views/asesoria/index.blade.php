@@ -25,6 +25,16 @@
         <input type="text" class="asesoria-buscador-input" placeholder="Buscar artículos…" data-search-endpoint="{{ route($routePrefix . '.asesoria.buscar') }}">
         <div class="asesoria-sugerencias"></div>
     </div>
+    <a href="#asesoria-faq" class="asesoria-card asesoria-card-faq">
+        <div class="asesoria-card-icono">
+            <i class="bi bi-question-circle"></i>
+        </div>
+        <div class="asesoria-card-contenido">
+            <h3>Preguntas frecuentes</h3>
+            <span class="asesoria-card-count">Ver más</span>
+        </div>
+        <i class="bi bi-chevron-right asesoria-card-flecha"></i>
+    </a>
     @foreach($categorias as $categoria)
         <a href="{{ route($routePrefix . '.asesoria.categoria', $categoria->slug) }}" class="asesoria-card">
             <div class="asesoria-card-icono">
@@ -40,7 +50,7 @@
 </div>
 
 @if($faqs->isNotEmpty())
-<div class="asesoria-faq">
+<div class="asesoria-faq" id="asesoria-faq">
     <h2><i class="bi bi-question-circle"></i> Preguntas frecuentes</h2>
     <div class="card-admin card-con-franja">
         <div class="card-franja"></div>

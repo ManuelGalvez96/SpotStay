@@ -21,7 +21,7 @@
             @if($tienePagos)
             <li><a href="{{ route('inquilino.historial_pagos') }}" class="enlace-nav {{ request()->routeIs('inquilino.historial_pagos') ? 'activo' : '' }}"><i class="bi bi-receipt"></i> Mis Gastos</a></li>
             @endif
-            <li><a href="{{ route('miembro.asesoria') }}" class="enlace-nav {{ request()->is('*/asesoria*') ? 'activo' : '' }}"><i class="bi bi-journal-text"></i> Asesoría Legal</a></li>
+            <li><a href="{{ route('miembro.asesoria') }}" class="enlace-nav {{ request()->is('*/asesoria*') ? 'activo' : '' }}"><i class="bi bi-bank2"></i> Asesoría Legal</a></li>
 
             @if ($esArrendador)
             <li><a href="{{ route('arrendador.dashboard') }}" class="enlace-nav {{ request()->is('arrendador*') ? 'activo' : '' }}"><i class="bi bi-person-workspace"></i> Panel Arrendador</a></li>

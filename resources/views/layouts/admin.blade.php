@@ -46,6 +46,9 @@
             <button class="btn-nav-icon {{ request()->is('admin/incidencias*') ? 'activo' : '' }}" data-ruta="/admin/incidencias" title="Incidencias">
                 <i class="bi bi-exclamation-triangle"></i>
             </button>
+            <button class="btn-nav-icon {{ request()->is('admin/asesoria*') ? 'activo' : '' }}" data-ruta="/admin/asesoria" title="Asesoría Legal">
+                <i class="bi bi-bank2"></i>
+            </button>
             <button class="btn-nav-icon {{ request()->is('admin/planes*') ? 'activo' : '' }}" data-ruta="/admin/planes" title="Planes">
                 <i class="bi bi-card-list"></i>
             </button>
@@ -128,6 +131,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script src="{{ asset('js/admin/layout.js') }}"></script>
+    <script src="{{ asset('js/shared/swal-oso.js') }}"></script>
     
     @yield('scripts')
 </body>

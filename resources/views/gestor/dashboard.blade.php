@@ -248,44 +248,56 @@
             @endif
         </div>
 
-        <!-- Vista desktop: grid cards -->
-        <div class="propiedades-grid-desktop lista-solicitudes-desktop">
-            @forelse($propiedadesAsignadas as $propiedad)
-                @php
-                    $tieneAlquiler = !is_null($propiedad->fecha_inicio_alquiler);
-                @endphp
-                <a href="{{ route('gestor.propiedades.show', ['id' => $propiedad->id_propiedad]) }}" class="propiedad-card">
-                    <div class="propiedad-card-header">
-                        <span class="propiedad-card-titulo">{{ $propiedad->titulo_propiedad }}</span>
-                        @if($tieneAlquiler)
-                            <span class="badge-estado badge-activo">Alquilado</span>
-                        @else
-                            <span class="badge-estado badge-rechazado">Sin alquiler</span>
-                        @endif
-                    </div>
-                    <p class="propiedad-card-dir">{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }}</p>
-                    @if($tieneAlquiler && $propiedad->nombre_inquilino)
-                        <p class="incidencia-card-dir" style="margin-top:4px;color:#374151;">Inquilino: {{ $propiedad->nombre_inquilino }}</p>
-                    @endif
-                    <div class="propiedad-card-divider"></div>
-                    <div class="propiedad-card-footer">
-                        <div class="propiedad-card-meta">
-                            @if($propiedad->incidencias_activas > 0)
-                                <span>{{ $propiedad->incidencias_activas }} incidencias</span>
-                            @endif
-                            @if($propiedad->pagos_pendientes > 0)
-                                <span>{{ $propiedad->pagos_pendientes }} pagos pend.</span>
-                            @endif
-                            @if($propiedad->pagos_atrasados > 0)
-                                <span style="color:#991B1B;">{{ $propiedad->pagos_atrasados }} atrasados</span>
-                            @endif
-                        </div>
-                        <span class="btn-revisar">Ver →</span>
-                    </div>
-                </a>
-            @empty
-                <p class="tarjeta-vacia">No hay propiedades asignadas.</p>
-            @endforelse
+        <!-- Vista desktop: tabla -->
+        <div class="propiedades-grid-desktop">
+            <table class="propiedades-table">
+                <thead>
+                    <tr>
+                        <th>Propiedad</th>
+                        <th>Dirección</th>
+                        <th>Estado</th>
+                        <th>Detalles</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($propiedadesAsignadas as $propiedad)
+                        @php
+                            $tieneAlquiler = !is_null($propiedad->fecha_inicio_alquiler);
+                        @endphp
+                        <tr class="propiedad-table-row {{ $tieneAlquiler ? '' : 'fila-inactiva' }}">
+                            <td class="td-titulo">{{ $propiedad->titulo_propiedad }}</td>
+                            <td class="td-dir">{{ $propiedad->direccion_propiedad }}, {{ $propiedad->ciudad_propiedad }}</td>
+                            <td>
+                                @if($tieneAlquiler)
+                                    <span class="badge-estado badge-activo">Alquilado</span>
+                                @else
+                                    <span class="badge-estado badge-rechazado">Sin alquiler</span>
+                                @endif
+                            </td>
+                            <td class="td-detalles">
+                                @if($tieneAlquiler && $propiedad->nombre_inquilino)
+                                    <span>👤 {{ $propiedad->nombre_inquilino }}</span>
+                                @endif
+                                @if($propiedad->incidencias_activas > 0)
+                                    <span>⚠️ {{ $propiedad->incidencias_activas }} incidencias</span>
+                                @endif
+                                @if($propiedad->pagos_pendientes > 0)
+                                    <span>💰 {{ $propiedad->pagos_pendientes }} pend.</span>
+                                @endif
+                                @if($propiedad->pagos_atrasados > 0)
+                                    <span class="td-atrasados">🔴 {{ $propiedad->pagos_atrasados }} atrasados</span>
+                                @endif
+                            </td>
+                            <td>
+                                <a href="{{ route('gestor.propiedades.show', ['id' => $propiedad->id_propiedad]) }}" class="btn-revisar">Ver →</a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="5" class="tarjeta-vacia" style="text-align:center;padding:24px;">No hay propiedades asignadas.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
 
         <!-- Vista mobile: cards -->

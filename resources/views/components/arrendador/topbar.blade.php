@@ -29,8 +29,12 @@
 
     <div class="topbar-der">
         <div class="admin-container" id="adminContainer">
-            <div class="avatar-admin">{{ strtoupper(substr(trim($avatarInicial ?? 'A'), 0, 1)) }}</div>
-            <span class="admin-nombre">Arrendador</span>
+            @if ($tieneFoto)
+                <img class="avatar-admin" src="{{ $fotoUsuario }}" alt="Foto de perfil">
+            @else
+                <div class="avatar-admin">{{ $inicialUsuario }}</div>
+            @endif
+            <span class="admin-nombre">{{ $nombreUsuario ?? 'Arrendador' }}</span>
             <i class="bi bi-chevron-down chevron-admin"></i>
 
             <div class="admin-dropdown" id="adminDropdown">

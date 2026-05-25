@@ -38,7 +38,11 @@
                     data-conversacion-id="{{ $conversacion->id_conversacion }}"
                     data-propiedad-titulo="{{ $conversacion->propiedad->titulo_propiedad ?? 'Sin propiedad' }}"
                 >
-                    <div class="conv-avatar" style="background:{{ $esArrendador ? '#035498' : '#0b6e4f' }}">{{ $iniciales }}</div>
+                    @if ($otro && $otro->avatar_url)
+                        <img class="conv-avatar-img" src="{{ $otro->avatar_url }}" alt="">
+                    @else
+                        <div class="conv-avatar" style="background:{{ $esArrendador ? '#035498' : '#0b6e4f' }}">{{ $iniciales }}</div>
+                    @endif
                     <div class="conv-info">
                         <div class="conv-nombre">
                             {{ $otro->nombre_usuario ?? 'Usuario' }}

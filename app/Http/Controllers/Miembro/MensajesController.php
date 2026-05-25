@@ -245,13 +245,17 @@ class MensajesController extends Controller
             abort(403);
         }
 
-        $mensajes = Mensaje::where('id_conversacion_fk', $conversacion->id_conversacion)
+        $mensajes = Mensaje::with('remitente')
+            ->where('id_conversacion_fk', $conversacion->id_conversacion)
             ->orderBy('creado_mensaje', 'asc')
             ->get()
             ->map(function ($mensaje) use ($usuarioId) {
+                $remitente = $mensaje->remitente;
+                $avatarUrl = $remitente ? $remitente->avatar_url : null;
                 return [
                     'id_mensaje' => $mensaje->id_mensaje,
                     'cuerpo_mensaje' => $mensaje->cuerpo_mensaje,
+                    'avatar_url' => $avatarUrl,
                     'fecha' => optional($mensaje->creado_mensaje)->format('d/m/Y H:i'),
                     'es_mio' => (int) $mensaje->id_remitente_fk === (int) $usuarioId,
                 ];

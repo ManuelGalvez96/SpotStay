@@ -50,7 +50,7 @@ var validarPassword = function(password) {
 /* ── FUNCIONES DE SWEET ALERTS CON OSO ── */
 
 /* SVG del oso idéntico al login con cartel dinámico */
-var crearOsoExito = function() {
+var crearOsoExitoUsuario = function() {
     return `
     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 120px; height: 120px;">
         <!-- Oso igual que login -->
@@ -76,7 +76,7 @@ var crearOsoExito = function() {
 };
 
 /* SVG del oso con cartel de error */
-var crearOsoError = function() {
+var crearOsoErrorUsuario = function() {
     return `
     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 120px; height: 120px;">
         <!-- Oso igual que login -->
@@ -160,19 +160,26 @@ var mostrarAlertaValidacion = function(mensaje) {
 var modalPerfil = null;
 var modalFormUsuario = null;
 
-/* ── window.onload ── */
-window.onload = function() {
-    csrfToken = document.querySelector('meta[name=csrf-token]').content;
+/* ── DOMContentLoaded ── */
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        csrfToken = document.querySelector('meta[name=csrf-token]').content;
+    } catch(e) {
+        csrfToken = '';
+    }
     
-    /* Inicializar instancias de Bootstrap Modal */
-    modalPerfil = new bootstrap.Modal(document.getElementById('modalPerfil'));
-    modalFormUsuario = new bootstrap.Modal(document.getElementById('modalFormUsuario'));
+    try {
+        modalPerfil = new bootstrap.Modal(document.getElementById('modalPerfil'));
+        modalFormUsuario = new bootstrap.Modal(document.getElementById('modalFormUsuario'));
+    } catch(e) {
+        console.warn('Error al inicializar modales Bootstrap:', e);
+    }
     
     asignarEventosFiltros();
     asignarEventosTabla();
     asignarEventosModal();
     asignarEventosPaginacion();
-};
+});
 
 /* ================================================
    FUNCIÓN: asignarEventosFiltros

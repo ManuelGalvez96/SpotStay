@@ -108,7 +108,24 @@
                 <div class="tabla-row {{ $inactiva }}" data-id="{{ $sus->id_suscripcion }}">
                     <div data-label="ARRENDADOR">
                         <div class="usuario-celda">
-                            <div class="avatar-tabla" style="background:{{ $color }}">{{ $iniciales }}</div>
+                             @php
+                                 $avatarSus = $sus->avatar_usuario ?? null;
+                                 $avatarUrlSus = '';
+                                 if ($avatarSus) {
+                                     if (str_starts_with($avatarSus, 'http')) {
+                                         $avatarUrlSus = $avatarSus;
+                                     } elseif (str_starts_with($avatarSus, 'img/')) {
+                                         $avatarUrlSus = asset($avatarSus);
+                                     } else {
+                                         $avatarUrlSus = asset('storage/' . ltrim($avatarSus, '/'));
+                                     }
+                                 }
+                             @endphp
+                             @if ($avatarUrlSus)
+                                 <img class="avatar-tabla" src="{{ $avatarUrlSus }}" alt="">
+                             @else
+                                 <div class="avatar-tabla" style="background:{{ $color }}">{{ $iniciales }}</div>
+                             @endif
                             <div>
                                 <p class="usuario-nombre">{{ $sus->nombre_usuario }}</p>
                                 <p class="usuario-email">{{ $sus->email_usuario }}</p>
@@ -302,7 +319,24 @@
                     $textoExpira = $diasRestantes === null ? 'Sin fecha de expiración' : ($diasRestantes < 0 ? 'Expiró hace ' . abs($diasRestantes) . ' días' : 'Expira en ' . $diasRestantes . ' días');
                 @endphp
                 <div class="expira-item">
-                    <div class="avatar-tabla avatar-tabla-sm" style="background:{{ $colorP }}">{{ $inicialesP }}</div>
+                    @php
+                        $avatarProx = $prox->avatar_usuario ?? null;
+                        $avatarUrlProx = '';
+                        if ($avatarProx) {
+                            if (str_starts_with($avatarProx, 'http')) {
+                                $avatarUrlProx = $avatarProx;
+                            } elseif (str_starts_with($avatarProx, 'img/')) {
+                                $avatarUrlProx = asset($avatarProx);
+                            } else {
+                                $avatarUrlProx = asset('storage/' . ltrim($avatarProx, '/'));
+                            }
+                        }
+                    @endphp
+                    @if ($avatarUrlProx)
+                        <img class="avatar-tabla avatar-tabla-sm" src="{{ $avatarUrlProx }}" alt="">
+                    @else
+                        <div class="avatar-tabla avatar-tabla-sm" style="background:{{ $colorP }}">{{ $inicialesP }}</div>
+                    @endif
                     <div class="expira-info">
                         <span class="expira-nombre">{{ $prox->nombre_usuario }}</span>
                         <span class="badge-plan badge-plan-{{ $prox->plan_suscripcion }}">{{ ucfirst($prox->plan_suscripcion) }}</span>

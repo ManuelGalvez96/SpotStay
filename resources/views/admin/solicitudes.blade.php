@@ -152,7 +152,24 @@
                             <tr class="fila-solicitud" data-id="{{ $solicitud->id_solicitud }}" data-tipo="{{ $solicitud->tipo_solicitud }}">
                                 <td data-label="SOLICITANTE">
                                     <div class="usuario-celda">
-                                        <div class="avatar-tabla" style="background:{{ $color }}">{{ $iniciales }}</div>
+                                        @php
+                                            $avatarSolicitud = $solicitud->avatar_usuario ?? null;
+                                            $avatarUrlSol = '';
+                                            if ($avatarSolicitud) {
+                                                if (str_starts_with($avatarSolicitud, 'http')) {
+                                                    $avatarUrlSol = $avatarSolicitud;
+                                                } elseif (str_starts_with($avatarSolicitud, 'img/')) {
+                                                    $avatarUrlSol = asset($avatarSolicitud);
+                                                } else {
+                                                    $avatarUrlSol = asset('storage/' . ltrim($avatarSolicitud, '/'));
+                                                }
+                                            }
+                                        @endphp
+                                        @if ($avatarUrlSol)
+                                            <img class="avatar-tabla" src="{{ $avatarUrlSol }}" alt="">
+                                        @else
+                                            <div class="avatar-tabla" style="background:{{ $color }}">{{ $iniciales }}</div>
+                                        @endif
                                         <div class="usuario-info-tabla">
                                             <span class="usuario-nombre-tabla">{{ $solicitud->nombre_usuario }}</span>
                                             <span class="usuario-email-tabla">{{ $solicitud->email_usuario }}</span>

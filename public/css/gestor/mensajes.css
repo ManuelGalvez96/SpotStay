@@ -190,6 +190,18 @@
   overflow-y: auto;
 }
 
+img.conv-avatar-img {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.conv-avatar-wrap {
+  flex-shrink: 0;
+}
+
 .burbuja {
   max-width: 78%;
   border: 1px solid #dce5ec;
@@ -197,6 +209,9 @@
   padding: 10px 12px;
   margin-bottom: 10px;
   background: #fff;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
 }
 
 .burbuja.gestor {
@@ -212,7 +227,12 @@
   color: #0f1b2d;
 }
 
-.burbuja div {
+.burbuja-contenido {
+  flex: 1;
+  min-width: 0;
+}
+
+.burbuja-contenido div {
   font-size: 14px;
   line-height: 1.4;
   word-break: break-word;
@@ -223,6 +243,51 @@
   margin-top: 6px;
   color: #667085;
   font-size: 11px;
+}
+
+img.burbuja-avatar {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.burbuja-avatar-texto {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 50%;
+  background: #035498;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+img.hilo-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+}
+
+.hilo-avatar-texto {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #035498;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 28px;
+  text-align: center;
+  vertical-align: middle;
 }
 
 .formulario-mensaje {

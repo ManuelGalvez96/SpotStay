@@ -1520,7 +1520,9 @@ body.pagina-miembro.pagina-mensajes {
 }
 
 .mensajes-item {
-	display: block;
+	display: flex;
+	gap: 10px;
+	align-items: center;
 	text-decoration: none;
 	padding: 12px;
 	border: 1px solid var(--borde);
@@ -1528,6 +1530,11 @@ body.pagina-miembro.pagina-mensajes {
 	background: #ffffff;
 	margin-bottom: 10px;
 	color: var(--texto);
+}
+
+.mensajes-item .conv-info {
+	flex: 1;
+	min-width: 0;
 }
 
 .mensajes-item.activo {
@@ -1590,12 +1597,37 @@ body.pagina-miembro.pagina-mensajes {
 	gap: 10px;
 }
 
+.conv-avatar-wrap {
+	flex-shrink: 0;
+}
+
+img.conv-avatar-img {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.conv-avatar {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	display: grid;
+	place-items: center;
+	font-weight: 700;
+	font-size: 12px;
+	color: #fff;
+}
+
 .mensajes-burbuja {
 	max-width: 76%;
 	padding: 10px 12px;
 	border-radius: var(--radio);
 	border: 1px solid var(--borde);
 	background: #ffffff;
+	display: flex;
+	gap: 10px;
+	align-items: flex-start;
 }
 
 .mensajes-burbuja.mio {
@@ -1606,6 +1638,11 @@ body.pagina-miembro.pagina-mensajes {
 
 .mensajes-burbuja.otro {
 	align-self: flex-start;
+}
+
+.burbuja-contenido {
+	flex: 1;
+	min-width: 0;
 }
 
 .mensajes-burbuja-texto {
@@ -1619,6 +1656,14 @@ body.pagina-miembro.pagina-mensajes {
 	display: inline-block;
 	font-size: 11px;
 	color: var(--texto-suave);
+}
+
+img.burbuja-avatar {
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	object-fit: cover;
+	flex-shrink: 0;
 }
 
 .mensajes-formulario {

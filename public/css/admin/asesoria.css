@@ -416,6 +416,18 @@ th .info-tooltip::after {
     top: calc(100% + 8px);
 }
 
+/* ── Quitar borde rojo a btn-eliminar en tablas de asesoría ── */
+body.admin .acciones-tabla .btn-eliminar {
+    border: none !important;
+    background: transparent !important;
+    color: #9CA3AF !important;
+}
+
+body.admin .acciones-tabla .btn-eliminar:hover {
+    background: #EEF4FF !important;
+    color: #035498 !important;
+}
+
 /* ── Tooltip botón eliminar deshabilitado ── */
 .btn-eliminar--disabled {
     opacity: 0.35;

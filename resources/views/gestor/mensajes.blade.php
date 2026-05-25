@@ -2,6 +2,7 @@
 @section('titulo', 'Mensajes - Gestor SpotStay')
 
 @section('css')
+<link rel="stylesheet" href="{{ asset('css/admin/dashboard.css') }}">
 <link rel="stylesheet" href="{{ asset('css/gestor/mensajes.css') }}">
 @endsection
 

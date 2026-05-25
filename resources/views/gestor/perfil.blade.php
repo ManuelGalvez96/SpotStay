@@ -34,7 +34,7 @@
             <div class="perfil-avatar-section">
                 <div class="perfil-avatar-preview">
                     @if($gestor->avatar_usuario)
-                        <img src="{{ asset('storage/' . $gestor->avatar_usuario) }}" alt="Avatar">
+                        <img src="{{ $gestor->avatar_url }}" alt="Avatar">
                     @else
                         <div class="perfil-avatar-placeholder">{{ strtoupper(substr($gestor->nombre_usuario, 0, 1)) }}</div>
                     @endif

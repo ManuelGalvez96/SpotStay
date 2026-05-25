@@ -118,6 +118,11 @@ function cargarConversacion(idConversacion, propiedadTitulo) {
         formulario.hidden = false;
       }
 
+      var chatActual = document.getElementById('chatActualMobile');
+      if (chatActual) {
+        chatActual.textContent = nombre;
+      }
+
       renderizarMensajes(conversacion.mensajes);
       marcarConversacionActiva(conversacion.id_conversacion);
       iniciarPolling();
@@ -241,3 +246,31 @@ if (filtro) {
     });
   });
 }
+
+/* ── Mobile overlay toggle ── */
+function abrirConversacionesMobile() {
+  document.body.classList.add('conversaciones-abiertas');
+}
+
+function cerrarConversacionesMobile() {
+  document.body.classList.remove('conversaciones-abiertas');
+}
+
+var btnAbrir = document.getElementById('botonAbrirConversaciones');
+var btnCerrar = document.getElementById('botonCerrarConversaciones');
+
+if (btnAbrir) {
+  btnAbrir.addEventListener('click', abrirConversacionesMobile);
+}
+if (btnCerrar) {
+  btnCerrar.addEventListener('click', cerrarConversacionesMobile);
+}
+
+// Cerrar overlay al seleccionar una conversacion en mobile
+document.querySelectorAll('.item-conversacion').forEach(function (boton) {
+  boton.addEventListener('click', function () {
+    if (document.body.classList.contains('conversaciones-abiertas')) {
+      cerrarConversacionesMobile();
+    }
+  });
+});

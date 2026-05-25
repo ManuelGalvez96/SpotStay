@@ -284,12 +284,14 @@ Route::middleware(['auth', 'role:miembro,inquilino,arrendador'])->group(function
     Route::get('/miembro/suscripcion', [App\Http\Controllers\Miembro\MiembroSuscripcionController::class, 'index'])->name('miembro.suscripcion.index');
     Route::post('/miembro/suscripcion/checkout', [App\Http\Controllers\Miembro\MiembroSuscripcionController::class, 'checkout'])->name('miembro.suscripcion.checkout');
     Route::get('/miembro/suscripcion/success', [App\Http\Controllers\Miembro\MiembroSuscripcionController::class, 'success'])->name('miembro.suscripcion.success');
+    Route::post('/miembro/suscripcion/downgrade', [App\Http\Controllers\Miembro\MiembroSuscripcionController::class, 'downgrade'])->name('miembro.suscripcion.downgrade');
     Route::get('/miembro/perfil/{id}', [MiembroPerfilController::class, 'show'])->whereNumber('id')->name('miembro.perfil.show');
     Route::get('/miembro/configuracion', [MiembroPerfilController::class, 'configuracion'])->name('miembro.configuracion');
     Route::put('/miembro/configuracion', [MiembroPerfilController::class, 'actualizar'])->name('miembro.configuracion.actualizar');
     Route::put('/miembro/configuracion/plan', [MiembroPerfilController::class, 'actualizarPlan'])->name('miembro.configuracion.plan');
     Route::post('/miembro/configuracion/cancelar-suscripcion', [MiembroPerfilController::class, 'cancelarSuscripcion'])->name('miembro.configuracion.cancelar-suscripcion');
     Route::post('/miembro/configuracion/reactivar-suscripcion', [MiembroPerfilController::class, 'reactivarSuscripcion'])->name('miembro.configuracion.reactivar-suscripcion');
+    Route::post('/miembro/configuracion/cancelar-cambio-programado', [MiembroPerfilController::class, 'cancelarCambioProgramado'])->name('miembro.configuracion.cancelar-cambio-programado');
 
     Route::get('/arrendador/configurar-stripe', [ConfiguracionCobrosController::class, 'index'])->name('arrendador.stripe.configurar');
     Route::post('/arrendador/guardar-iban', [ConfiguracionCobrosController::class, 'store'])->name('arrendador.guardar-iban');

@@ -32,9 +32,82 @@ class MiembroSuscripcionController extends Controller
 
         // Buscamos la suscripción pendiente más reciente
         $suscripcion = Suscripcion::where('id_usuario_fk', $usuario->id_usuario)
-            ->whereIn('estado_suscripcion', ['pendiente_pago', 'activa'])
+            ->whereIn('estado_suscripcion', ['pendiente_pago', 'activa', 'cancelada'])
             ->latest('id_suscripcion')
             ->first();
+
+        // Si la suscripción está activa/cancelada pero la fecha de fin ya pasó, la marcamos como caducada y generamos la nueva
+        if ($suscripcion && in_array($suscripcion->estado_suscripcion, ['activa', 'cancelada']) && $suscripcion->fin_suscripcion && Carbon::parse($suscripcion->fin_suscripcion)->isPast()) {
+            DB::beginTransaction();
+            try {
+                $suscripcion->update([
+                    'estado_suscripcion' => 'caducada',
+                    'actualizado_suscripcion' => now()
+                ]);
+                
+                // Comprobar si hay una programada (downgrade diferido)
+                $programada = Suscripcion::where('id_usuario_fk', $usuario->id_usuario)
+                    ->where('estado_suscripcion', 'programada')
+                    ->latest('id_suscripcion')
+                    ->first();
+                    
+                if ($programada) {
+                    $programada->update([
+                        'estado_suscripcion' => 'pendiente_pago',
+                        'inicio_suscripcion' => now(),
+                        'fin_suscripcion' => now()->copy()->addMonth(),
+                        'actualizado_suscripcion' => now()
+                    ]);
+                    $suscripcion = $programada;
+                    
+                    if ($usuarioModelo) {
+                        $usuarioModelo->update(['stripe_status' => 'pending_payment']);
+                    }
+                } else {
+                    if ((float)$suscripcion->precio_pagado_suscripcion <= 0) {
+                        // Plan gratuito se autorrenueva (solo para miembros)
+                        $suscripcion = Suscripcion::create([
+                            'id_usuario_fk' => $suscripcion->id_usuario_fk,
+                            'id_plan_fk' => $suscripcion->id_plan_fk,
+                            'plan_suscripcion' => $suscripcion->plan_suscripcion,
+                            'max_propiedades_suscripcion' => $suscripcion->max_propiedades_suscripcion,
+                            'precio_pagado_suscripcion' => 0.00,
+                            'estado_suscripcion' => 'activa',
+                            'inicio_suscripcion' => now(),
+                            'fin_suscripcion' => now()->copy()->addMonth(),
+                            'creado_suscripcion' => now(),
+                            'actualizado_suscripcion' => now(),
+                        ]);
+                        
+                        if ($usuarioModelo) {
+                            $usuarioModelo->update(['stripe_status' => 'active']);
+                        }
+                    } else {
+                        // Suscripción de pago, crear una nueva en pendiente de pago
+                        $suscripcion = Suscripcion::create([
+                            'id_usuario_fk' => $suscripcion->id_usuario_fk,
+                            'id_plan_fk' => $suscripcion->id_plan_fk,
+                            'plan_suscripcion' => $suscripcion->plan_suscripcion,
+                            'max_propiedades_suscripcion' => $suscripcion->max_propiedades_suscripcion,
+                            'precio_pagado_suscripcion' => $suscripcion->precio_pagado_suscripcion,
+                            'estado_suscripcion' => 'pendiente_pago',
+                            'inicio_suscripcion' => now(),
+                            'fin_suscripcion' => now()->copy()->addMonth(),
+                            'creado_suscripcion' => now(),
+                            'actualizado_suscripcion' => now(),
+                        ]);
+                        
+                        if ($usuarioModelo) {
+                            $usuarioModelo->update(['stripe_status' => 'expired']);
+                        }
+                    }
+                }
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error("Error procesando expiración en index(): " . $e->getMessage());
+            }
+        }
 
         if (!$suscripcion) {
             if ($usuarioModelo && $usuarioModelo->stripe_status !== 'active') {
@@ -47,19 +120,21 @@ class MiembroSuscripcionController extends Controller
                 ->with('info', 'No se encontró una suscripción asociada. Se ha permitido el acceso al panel.');
         }
 
-        // Si la suscripción ya está activa, sincronizamos el estado del usuario y vamos al dashboard
-        if ($suscripcion->estado_suscripcion === 'activa') {
-            if ($usuarioModelo && $usuarioModelo->stripe_status !== 'active') {
-                $usuarioModelo->update([
-                    'stripe_status' => 'active',
-                ]);
+        // Si la suscripción ya está activa o cancelada (dentro de plazo), sincronizamos y vamos al dashboard
+        if (in_array($suscripcion->estado_suscripcion, ['activa', 'cancelada'])) {
+            if ($suscripcion->estado_suscripcion === 'activa') {
+                if ($usuarioModelo && $usuarioModelo->stripe_status !== 'active') {
+                    $usuarioModelo->update([
+                        'stripe_status' => 'active',
+                    ]);
+                }
             }
 
             return redirect($this->redirigirDashboard());
         }
 
         // Si Stripe ya está activo, también vamos al dashboard aunque la suscripción siga en pendiente
-        if ($usuario->stripe_status === 'active') {
+        if ($usuarioModelo && $usuarioModelo->stripe_status === 'active') {
             return redirect($this->redirigirDashboard());
         }
 
@@ -310,6 +385,48 @@ class MiembroSuscripcionController extends Controller
         } catch (\Exception $e) {
             Log::error("Error Generando Factura de Suscripción: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Permite a un miembro o inquilino cancelar su renovación y volver al plan gratuito.
+     */
+    public function downgrade(Request $request)
+    {
+        $usuario = Auth::user();
+        
+        // Solo para miembros/inquilinos (no arrendadores)
+        if ($usuario->roles()->where('slug_rol', 'arrendador')->exists()) {
+            return back()->with('error', 'Los arrendadores no pueden acceder a un plan gratuito.');
+        }
+
+        $suscripcion = Suscripcion::where('id_usuario_fk', $usuario->id_usuario)
+            ->where('estado_suscripcion', 'pendiente_pago')
+            ->latest('id_suscripcion')
+            ->first();
+
+        if (!$suscripcion) {
+            return redirect($this->redirigirDashboard())->with('info', 'No se encontró una suscripción pendiente que cancelar.');
+        }
+
+        // Buscar el plan gratuito (Miembro Estándar)
+        $planGratis = Plan::where('slug_plan', 'miembro-estandar')->first();
+        if (!$planGratis) {
+            return back()->with('error', 'No se ha encontrado el plan gratuito en el sistema.');
+        }
+
+        // Actualizar la suscripción pendiente para que sea la gratuita y activarla
+        $suscripcion->update([
+            'plan_suscripcion' => $planGratis->nombre_plan,
+            'id_plan_fk' => $planGratis->id_plan,
+            'max_propiedades_suscripcion' => $planGratis->max_propiedades_plan,
+            'precio_pagado_suscripcion' => $planGratis->precio_plan,
+            'estado_suscripcion' => 'activa',
+            'inicio_suscripcion' => Carbon::now(),
+            'fin_suscripcion' => Carbon::now()->addMonth(),
+            'actualizado_suscripcion' => now()
+        ]);
+
+        return redirect($this->redirigirDashboard())->with('success', 'Has vuelto al plan base gratuito con éxito.');
     }
 
     /**

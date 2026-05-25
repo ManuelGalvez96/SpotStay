@@ -93,6 +93,11 @@ class AppServiceProvider extends ServiceProvider
                     }
                 }
 
+                // Coge la suscripción más reciente del usuario
+                $suscripcion = $usuario->suscripciones()->latest('id_suscripcion')->first();
+                
+                // Si el plan es Gratuito muestra anuncios
+                $mostrarAnuncios = $suscripcion?->plan_suscripcion === 'Gratuito' || $suscripcion?->plan_suscripcion === "Miembro Estándar";
                 $esGestorUsuario = $usuario->roles()->where('slug_rol', 'gestor')->exists()
                     || DB::table('tbl_propiedad')
                         ->where('id_gestor_fk', $usuario->id_usuario)
@@ -110,6 +115,7 @@ class AppServiceProvider extends ServiceProvider
                     'notificacionesGestorSinLeer' => $notificacionesGestorSinLeer,
                     'notificacionesUsuario' => $notificacionesUsuario,
                     'notificacionesUsuarioSinLeer' => $notificacionesUsuarioSinLeer,
+                    'mostrarAnuncios' => $mostrarAnuncios,
                     'esGestor' => $esGestorUsuario,
                 ]);
             } else {
@@ -125,6 +131,7 @@ class AppServiceProvider extends ServiceProvider
                     'notificacionesGestorSinLeer' => 0,
                     'notificacionesUsuario' => collect(),
                     'notificacionesUsuarioSinLeer' => 0,
+                    'mostrarAnuncios' => true,
                 ]);
             }
         });

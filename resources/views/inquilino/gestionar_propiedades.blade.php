@@ -70,6 +70,6 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/inquilino/filtros_gestion.js') }}"></script>
-    <script src="{{ asset('js/inquilino/inquilino.js') }}"></script>
+    <script src="{{ asset('js/inquilino/comun.js') }}"></script>
+    <script src="{{ asset('js/inquilino/vista_gestionar_propiedades.js') }}"></script>
 @endsection

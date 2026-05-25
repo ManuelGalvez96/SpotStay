@@ -73,16 +73,12 @@ class AuthController extends Controller
 
             if ($esArrendador && $solicitud) {
                 if ($solicitud->estado_solicitud_arrendador === 'pendiente') {
-                    return back()->withErrors([
-                        'email' => 'La solicitud se ha enviado correctamente, espere a la respuesta.',
-                    ])->onlyInput('email');
+                    session()->flash('success', 'Tu solicitud de arrendador está pendiente de revisión. Te avisaremos cuando haya novedades.');
                 }
 
                 if ($solicitud->estado_solicitud_arrendador === 'rechazada') {
                     $motivo = $solicitud->notas_solicitud_arrendador ? ": " . $solicitud->notas_solicitud_arrendador : ".";
-                    return back()->withErrors([
-                        'email' => 'Tu solicitud de arrendador ha sido rechazada y el motivo es:' . $motivo,
-                    ])->onlyInput('email');
+                    session()->flash('error', 'Tu solicitud de arrendador ha sido rechazada. Motivo' . $motivo);
                 }
             }
 

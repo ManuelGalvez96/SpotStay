@@ -163,8 +163,7 @@
                         @endif
 
                         <a href="{{ route('inquilino.historial_pagos', ['propiedad_id' => $alquiler->id_propiedad]) }}"
-                            class="btn-accion btn-pago mt-3"
-                            style="text-decoration: none; display: flex; justify-content: center; align-items: center;">
+                            class="btn-accion btn-pago mt-3 btn-pago-custom">
                             <i class="bi bi-arrow-right-circle me-2"></i> Gestionar mis Gastos
                         </a>
                     </div>
@@ -350,6 +349,6 @@
 
 @section('scripts')
     <script src="{{ asset('js/inquilino/validacion_incidencia.js') }}"></script>
-    <script src="{{ asset('js/inquilino/incidencias.js') }}"></script>
-    <script src="{{ asset('js/inquilino/inquilino.js') }}"></script>
+    <script src="{{ asset('js/inquilino/comun.js') }}"></script>
+    <script src="{{ asset('js/inquilino/vista_ver_propiedad.js') }}"></script>
 @endsection

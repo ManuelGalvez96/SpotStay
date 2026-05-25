@@ -1,13 +1,6 @@
 /**
- * Lógica de filtrado dinámico para la gestión de propiedades (Inquilino/Propietario)
- * Cumple con los estándares de SpotStay: sin addEventListener y con asignación directa.
+ * Lógica exclusiva para la vista gestionar_propiedades
  */
-
-const anteriorOnloadFiltrosGestion = window.onload;
-window.onload = () => {
-    if (anteriorOnloadFiltrosGestion) anteriorOnloadFiltrosGestion();
-    iniciarFiltrosGestion();
-};
 
 function iniciarFiltrosGestion() {
     const entradaNombre = document.getElementById('busqueda-nombre');
@@ -57,18 +50,11 @@ function iniciarFiltrosGestion() {
         };
     });
 
-    // 4. Cerrar selector al hacer clic fuera (Asignación directa al body/document)
-    const cerrarAlClicarFuera = (e) => {
+    // 4. Cerrar selector al hacer clic fuera
+    document.onclick = (e) => {
         if (!selectorPersonalizado.contains(e.target)) {
             selectorPersonalizado.classList.remove('active');
         }
-    };
-    
-    // Guardamos el onclick previo del documento si existe
-    const anteriorOnClickDocumento = document.onclick;
-    document.onclick = (e) => {
-        if (anteriorOnClickDocumento) anteriorOnClickDocumento(e);
-        cerrarAlClicarFuera(e);
     };
 
     /**
@@ -82,8 +68,7 @@ function iniciarFiltrosGestion() {
         if (busqueda) parametros.append('q', busqueda);
         if (ciudad) parametros.append('ciudad', ciudad);
 
-        const urlBase = window.location.pathname;
-        const urlFinal = `${urlBase}?${parametros.toString()}`;
+        const urlFinal = `${window.location.pathname}?${parametros.toString()}`;
 
         // Efecto visual de carga
         contenedorGrilla.style.opacity = '0.6';
@@ -102,9 +87,9 @@ function iniciarFiltrosGestion() {
             contenedorGrilla.innerHTML = html;
             contenedorGrilla.style.opacity = '1';
             
-            // Re-ejecutar el temporizador para los nuevos elementos (si existe)
-            if (typeof window.iniciarTemporizadorAlquileres === 'function') {
-                window.iniciarTemporizadorAlquileres();
+            // Re-ejecutar el temporizador para los nuevos elementos (si existe en comun.js)
+            if (typeof iniciarTemporizadorAlquileres === 'function') {
+                iniciarTemporizadorAlquileres();
             }
         })
         .catch(error => {
@@ -113,3 +98,6 @@ function iniciarFiltrosGestion() {
         });
     }
 }
+
+// Inicialización directa
+iniciarFiltrosGestion();

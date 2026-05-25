@@ -3,11 +3,6 @@
  * Sigue la plantilla estándar del proyecto SpotStay.
  */
 
-const anteriorOnloadValidacion = window.onload;
-window.onload = () => {
-    if (anteriorOnloadValidacion) anteriorOnloadValidacion();
-    iniciarValidacionIncidencia();
-};
 
 function iniciarValidacionIncidencia() {
     // Referencias a mensajes de error e inputs con IDs en español
@@ -84,3 +79,6 @@ function iniciarValidacionIncidencia() {
         comprobarBoton();
     }
 }
+
+// Inicialización directa
+iniciarValidacionIncidencia();

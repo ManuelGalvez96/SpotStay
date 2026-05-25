@@ -290,6 +290,8 @@ var abrirModal = function(id) {
             document.getElementById('dataCiudad').textContent = propiedad.ciudad_propiedad;
             document.getElementById('dataCP').textContent = propiedad.codigo_postal_propiedad;
             document.getElementById('dataDireccion').textContent = propiedad.direccion_propiedad;
+            document.getElementById('dataLatitud').textContent = (propiedad.latitud_propiedad !== null && propiedad.latitud_propiedad !== undefined && propiedad.latitud_propiedad !== '') ? propiedad.latitud_propiedad : '-';
+            document.getElementById('dataLongitud').textContent = (propiedad.longitud_propiedad !== null && propiedad.longitud_propiedad !== undefined && propiedad.longitud_propiedad !== '') ? propiedad.longitud_propiedad : '-';
 
             // Datos adicionales (si no existen, mostrar "N/A")
             document.getElementById('dataTipo').textContent = propiedad.tipo_propiedad || '-';

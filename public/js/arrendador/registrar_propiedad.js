@@ -36,6 +36,10 @@ window.onload = function () {
         draggable: true,
     }).addTo(mapa);
 
+    // Exponer referencias globales para que otras partes puedan invalidar/centrar el mapa
+    window.mapaRegistro = mapa;
+    window.marcadorRegistro = marcador;
+
     function actualizarInputs(lat, lng, direccion) {
         if (inputLatitud) {
             inputLatitud.value = lat.toFixed(7);

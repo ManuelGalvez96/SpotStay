@@ -600,6 +600,31 @@ function abrirModalFormulario(arrendadorId, datosPropiedad) {
     document.getElementById('modal-formulario-titulo').textContent = 'Nueva propiedad';
   }
   modal.hidden = false;
+
+  // Si el mapa ya está inicializado, invalidamos su tamaño y lo centramos
+  if (window.mapaRegistro && typeof window.mapaRegistro.invalidateSize === 'function') {
+    setTimeout(function () {
+      try {
+        window.mapaRegistro.invalidateSize();
+        if (window.marcadorRegistro && window.document.getElementById('latitud_propiedad') && window.document.getElementById('longitud_propiedad')) {
+          var lat = parseFloat(document.getElementById('latitud_propiedad').value) || null;
+          var lng = parseFloat(document.getElementById('longitud_propiedad').value) || null;
+          if (lat && lng) {
+            window.mapaRegistro.setView([lat, lng], 17);
+            window.marcadorRegistro.setLatLng([lat, lng]);
+          } else {
+            // recentrar en la vista actual del marcador
+            var pos = window.marcadorRegistro.getLatLng();
+            if (pos) {
+              window.mapaRegistro.setView([pos.lat, pos.lng], window.mapaRegistro.getZoom());
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Error al invalidar/centrar mapa:', e);
+      }
+    }, 250);
+  }
 }
 
 function cerrarModalFormulario() {

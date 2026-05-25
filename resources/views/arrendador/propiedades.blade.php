@@ -7,6 +7,7 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/arrendador/propiedades.css') }}" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 @endsection
 
 @section('content')
@@ -174,7 +175,7 @@
             <button class="modal-close" type="button" onclick="cerrarModalFormulario()">✕</button>
         </div>
         <div class="modal-body">
-            <form method="POST" action="{{ route('arrendador.propiedades.store') }}" class="property-form" data-ajax-form="true" enctype="multipart/form-data">
+            <form id="form-registrar-propiedad" method="POST" action="{{ route('arrendador.propiedades.store') }}" class="property-form" data-ajax-form="true" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="id_propiedad" id="form-id-propiedad" value="" />
                 <input type="hidden" name="arrendador_id" id="form-arrendador-id" value="{{ $arrendadorId }}" />
@@ -229,6 +230,25 @@
                             <label class="full-width">
                                 <span>Ciudad</span>
                                 <input type="text" name="ciudad_propiedad" id="form-ciudad" value="" required>
+                            </label>
+                            <label class="full-width">
+                                <span>Seleccionar en mapa</span>
+                                <div id="mapa-registro" class="mapa-registro-propiedad" style="height:300px;margin-top:8px;border:1px solid #ddd;border-radius:6px"></div>
+                            </label>
+
+                            <label class="full-width">
+                                <span>Latitud</span>
+                                <input type="number" step="0.0000001" name="latitud_propiedad" id="latitud_propiedad" value="" readonly required>
+                            </label>
+
+                            <label class="full-width">
+                                <span>Longitud</span>
+                                <input type="number" step="0.0000001" name="longitud_propiedad" id="longitud_propiedad" value="" readonly required>
+                            </label>
+
+                            <label class="full-width">
+                                <span>Dirección (autocompletada)</span>
+                                <input type="text" name="direccion_propiedad" id="direccion_propiedad" value="" readonly required>
                             </label>
                         </div>
                     </div>
@@ -333,6 +353,8 @@
 @endsection
 
 @section('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{ asset('js/arrendador/registrar_propiedad.js') }}"></script>
 <script src="{{ asset('js/arrendador/propiedades.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {

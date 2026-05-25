@@ -33,7 +33,6 @@
     <div class="panel list-panel">
         <div class="panel-header">
             <h2>Mis propiedades</h2>
-            <a class="link-secondary" href="{{ route('arrendador.dashboard', ['arrendador_id' => $arrendadorId]) }}">Volver al dashboard</a>
         </div>
 
         <table class="properties-table">
@@ -101,7 +100,7 @@
             <div class="gestor-config-grid">
                 <aside class="gestor-left-panel">
                     <h3>Asignar gestor</h3>
-                    <p class="gestor-panel-help">Selecciona quién administrará esta propiedad.</p>
+                    <p class="gestor-panel-help">Selecciona quién administrará esta propiedad. Se solicitará su código antes de asignarlo.</p>
 
                     <div class="gestor-selector-wrap">
                         <span class="gestor-selector-label">Gestor seleccionado</span>

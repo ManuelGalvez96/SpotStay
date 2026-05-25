@@ -65,31 +65,25 @@ class AuthController extends Controller
                 ])->onlyInput('email');
             }
 
-            // 5. Bloqueo de acceso si tiene solicitud de Arrendador pendiente
-            $solicitud = \App\Models\SolicitudArrendador::where('id_usuario_fk', $usuario->id_usuario)->first();
+            // 5. Bloqueo de acceso si es arrendador y tiene solicitud pendiente/rechazada
+            $esArrendador = $usuario->roles()->where('slug_rol', 'arrendador')->exists();
+            $solicitud = $esArrendador
+                ? \App\Models\SolicitudArrendador::where('id_usuario_fk', $usuario->id_usuario)->first()
+                : null;
 
-            if ($solicitud) {
+            if ($esArrendador && $solicitud) {
                 if ($solicitud->estado_solicitud_arrendador === 'pendiente') {
-                    return back()->withErrors([
-                        'email' => 'La solicitud se ha enviado correctamente, espere a la respuesta.',
-                    ])->onlyInput('email');
+                    session()->flash('success', 'Tu solicitud de arrendador está pendiente de revisión. Te avisaremos cuando haya novedades.');
                 }
 
                 if ($solicitud->estado_solicitud_arrendador === 'rechazada') {
                     $motivo = $solicitud->notas_solicitud_arrendador ? ": " . $solicitud->notas_solicitud_arrendador : ".";
-                    return back()->withErrors([
-                        'email' => 'Tu solicitud de arrendador ha sido rechazada y el motivo es:' . $motivo,
-                    ])->onlyInput('email');
+                    session()->flash('error', 'Tu solicitud de arrendador ha sido rechazada. Motivo' . $motivo);
                 }
             }
 
             // 6. Intentar el login (ya sabemos que las credenciales son correctas)
             Auth::login($usuario);
-            $request->session()->regenerate();
-
-            /** @var Usuario $user */
-            $user = Auth::user();
-
             $request->session()->regenerate();
 
             /** @var Usuario $user */
@@ -105,6 +99,16 @@ class AuthController extends Controller
             }
 
             if ($user->roles()->whereIn('slug_rol', ['arrendador', 'miembro', 'inquilino'])->exists()) {
+                // Si tiene una suscripción pendiente de pago, redirigimos a la página de pago
+                $suscripcionPendiente = \App\Models\Suscripcion::where('id_usuario_fk', $user->id_usuario)
+                    ->where('estado_suscripcion', 'pendiente_pago')
+                    ->latest('id_suscripcion')
+                    ->first();
+
+                if ($suscripcionPendiente) {
+                    return redirect()->intended(route('miembro.suscripcion.index'));
+                }
+
                 return redirect()->intended('/miembro/inicio');
             }
 
@@ -164,6 +168,10 @@ class AuthController extends Controller
             'fecha_nacimiento.required_if' => 'La fecha de nacimiento es obligatoria.',
         ]);
 
+        // Normalizar DNI/NIF: convertir letra a mayúscula y eliminar espacios
+        $dniInput = $request->dni ? strtoupper(trim($request->dni)) : null;
+        $nifInput = $request->nif ? strtoupper(trim($request->nif)) : null;
+
         // 1.5 Validación de Seguridad: Arrendadores no pueden elegir planes gratuitos
         $plan = Plan::find($request->plan_id);
         if ($request->rol === 'arrendador' && $plan->precio_plan <= 0) {
@@ -176,7 +184,7 @@ class AuthController extends Controller
             'email_usuario' => $request->email,
             'telefono_usuario' => $request->telefono,
             'contrasena_usuario' => Hash::make($request->password),
-            'dni_usuario' => ($request->tipo_arrendador === 'empresa') ? $request->nif : $request->dni,
+            'dni_usuario' => ($request->tipo_arrendador === 'empresa') ? $nifInput : $dniInput,
             'fecha_nacimiento_usuario' => $request->fecha_nacimiento,
             'tipo_arrendador_usuario' => $request->tipo_arrendador,
             'activo_usuario' => true,
@@ -199,7 +207,7 @@ class AuthController extends Controller
                 'telefono_solicitud' => $usuario->telefono_usuario,
                 'fecha_nacimiento_solicitud' => $request->fecha_nacimiento,
                 'tipo_documento_solicitud' => $request->tipo_documento,
-                'numero_documento_solicitud' => ($request->tipo_arrendador === 'empresa') ? $request->nif : $request->dni,
+                'numero_documento_solicitud' => ($request->tipo_arrendador === 'empresa') ? $nifInput : $dniInput,
                 'tipo_arrendador_solicitud' => $request->tipo_arrendador,
                 'estado_solicitud_arrendador' => 'pendiente',
                 'creado_solicitud_arrendador' => Carbon::now(),

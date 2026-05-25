@@ -1,0 +1,126 @@
+/* ── Estilos extraídos de la vista historial_pagos.blade.php ── */
+.bg-light-blue-min-vh-100 {
+    background-color: #f8fafc;
+    min-height: 100vh;
+}
+
+.glass-header {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+
+.title-pagos {
+    font-weight: 800;
+    color: #1e293b;
+    letter-spacing: -0.5px;
+}
+
+.badge-transacciones {
+    background: #00c4cc15;
+    border-radius: 12px;
+    border: 1px solid #00c4cc30;
+}
+
+.text-transacciones {
+    color: #00c4cc;
+    font-weight: 700;
+}
+
+.filtros-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    border: 1px solid #edf2f7;
+}
+
+.form-control-custom,
+.form-select-custom {
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    padding: 10px;
+}
+
+.btn-filtrar-custom {
+    background: #00c4cc;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: 700;
+}
+
+.btn-reset-custom {
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.tabla-card {
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.bg-f8fafc {
+    background: #f8fafc;
+}
+
+.text-334155 {
+    color: #334155;
+}
+
+.icon-alquiler {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.icon-gasto {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.icon-incidencia {
+    background: #fecaca;
+    color: #b91c1c;
+}
+
+.font-075rem {
+    font-size: 0.75rem;
+}
+
+.border-e2e8f0 {
+    border: 1px solid #e2e8f0;
+}
+
+.text-importe {
+    color: #1e293b;
+    font-size: 1.1rem;
+}
+
+.btn-pdf {
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.fw-500 {
+    font-weight: 500;
+}
+
+.empty-state-img {
+    height: 150px;
+    opacity: 0.5;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f1f5f9;
+    transition: all 0.2s ease;
+}
+.btn-primary:hover {
+    background: #00adb5 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 196, 204, 0.3);
+}
+.form-control:focus, .form-select:focus {
+    border-color: #00c4cc;
+    box-shadow: 0 0 0 3px rgba(0, 196, 204, 0.1);
+}

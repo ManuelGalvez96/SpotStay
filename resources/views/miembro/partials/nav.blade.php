@@ -1,15 +1,15 @@
 <nav class="navegacion-horizontal">
     <div class="contenedor-nav">
         <ul class="lista-nav">
-            @php($rutaFormularioGestor = \Illuminate\Support\Facades\Route::has('miembro.gestor.formulario') ? route('miembro.gestor.formulario') : null)
+            {{-- @php($rutaFormularioGestor = \Illuminate\Support\Facades\Route::has('miembro.gestor.formulario') ? route('miembro.gestor.formulario') : null) --}}
             <li><a href="/miembro/inicio" class="enlace-nav {{ request()->is('miembro/inicio') ? 'activo' : '' }}"><i class="bi bi-house-door"></i> Inicio</a></li>
 
             @if (!$esArrendador)
             <li><a href="{{ route('miembro.arrendador.formulario') }}" class="enlace-nav {{ request()->routeIs('miembro.arrendador.formulario') ? 'activo' : '' }}"><i class="bi bi-plus-circle"></i> Conviertete en Arrendador</a></li>
             @endif
             
-            @if (!$esGestor && $rutaFormularioGestor)
-            <li><a href="{{ $rutaFormularioGestor }}" class="enlace-nav {{ request()->routeIs('miembro.gestor.formulario') ? 'activo' : '' }}"><i class="bi bi-plus-circle"></i> Conviertete en Gestor</a></li>
+            @if (!$esGestor)
+            <li><a href="{{ route('miembro.gestor.formulario') }}" class="enlace-nav {{ request()->routeIs('miembro.gestor.formulario') ? 'activo' : '' }}"><i class="bi bi-plus-circle"></i> Conviertete en Gestor</a></li>
             @endif
 
             <li><a href="{{ route('miembro.mensajes.index') }}" class="enlace-nav {{ request()->is('miembro/chat*') ? 'activo' : '' }}"><i class="bi bi-chat-dots"></i> Mensajes</a></li>
@@ -39,7 +39,7 @@
                 <li><a href="{{ route('arrendador.inquilinos') }}" class="enlace-sub-nav {{ request()->is('arrendador/inquilinos*') ? 'activo' : '' }}"><i class="bi bi-people"></i> Inquilinos</a></li>
                 <li><a href="{{ route('arrendador.contratos') }}" class="enlace-sub-nav {{ request()->is('arrendador/contratos*') ? 'activo' : '' }}"><i class="bi bi-file-text"></i> Contratos</a></li>
                 <li><a href="{{ route('arrendador.incidencias') }}" class="enlace-sub-nav {{ request()->is('arrendador/incidencias*') ? 'activo' : '' }}"><i class="bi bi-exclamation-triangle"></i> Incidencias</a></li>
-                <li><a href="{{ route('arrendador.gestor') }}" class="enlace-sub-nav {{ request()->is('arrendador/gestor*') ? 'activo' : '' }}"><i class="bi bi-person-gear"></i> Gestores</a></li>
+                {{-- <li><a href="{{ route('arrendador.gestor') }}" class="enlace-sub-nav {{ request()->is('arrendador/gestor*') ? 'activo' : '' }}"><i class="bi bi-person-gear"></i> Gestores</a></li> --}}
                 <li><a href="{{ route('arrendador.precios-gastos') }}" class="enlace-sub-nav {{ request()->is('arrendador/precios-gastos*') ? 'activo' : '' }}"><i class="bi bi-cash-coin"></i> Precios/Gastos</a></li>
             </ul>
         </div>

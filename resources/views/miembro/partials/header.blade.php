@@ -5,11 +5,52 @@
         </div>
 
         <div class="acciones-miembro">
-            <button class="boton-icono" type="button" aria-label="Notificaciones">
-                <i class="bi bi-bell" aria-hidden="true"></i>
-            </button>
+            <div class="campana-wrapper">
+                <button class="campana-container" type="button" id="campanaContainer" aria-label="Ver notificaciones" aria-expanded="false">
+                    <i class="bi bi-bell icon-campana" id="iconCampana" aria-hidden="true"></i>
+                    @if(($notificacionesUsuarioSinLeer ?? 0) > 0)
+                        <span class="badge-campana" id="badgeCampana">{{ $notificacionesUsuarioSinLeer }}</span>
+                    @endif
+                </button>
+
+                <div class="campana-dropdown" id="campanaDropdown" aria-label="Notificaciones recientes">
+                    <div class="campana-dropdown-header">
+                        <div>
+                            <span class="campana-dropdown-titulo">Notificaciones</span>
+                            <p class="campana-dropdown-subtitulo">Últimos avisos del sistema</p>
+                        </div>
+                    </div>
+
+                    <div class="campana-dropdown-lista">
+                        @forelse($notificacionesUsuario as $notificacion)
+                            @php
+                                $icono = $notificacion->icono_notificacion ?? 'bell';
+                                $color = $notificacion->color_notificacion ?? '#035498';
+                            @endphp
+                            <div class="campana-item-wrap">
+                                <div class="campana-item {{ $notificacion->leida_notificacion ? '' : 'no-leida' }}" data-notif-id="{{ $notificacion->id_notificacion }}">
+                                    <span class="campana-item-icono" style="background: {{ $color }};">
+                                        <i class="bi bi-{{ $icono }}"></i>
+                                    </span>
+                                    <span class="campana-item-cuerpo">
+                                        <span class="campana-item-titulo">{{ $notificacion->titulo_notificacion ?? 'Actualización' }}</span>
+                                        <span class="campana-item-mensaje">{{ \Illuminate\Support\Str::limit($notificacion->mensaje_notificacion ?? '', 80) }}</span>
+                                        <span class="campana-item-tiempo">{{ \Carbon\Carbon::parse($notificacion->creado_notificacion)->diffForHumans() }}</span>
+                                    </span>
+                                </div>
+                                <button type="button" class="campana-item-borrar" data-notif-id="{{ $notificacion->id_notificacion }}" title="Borrar" aria-label="Borrar notificación">
+                                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        @empty
+                            <div class="campana-vacia">No hay notificaciones recientes.</div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
             <div class="perfil-miembro" id="boton-perfil">
                 <span class="nombre-miembro">{{ $nombreUsuario }}</span>
+                
                 @if ($tieneFoto)
                 <img class="foto-perfil" src="{{ $fotoUsuario }}" alt="Foto de perfil" />
                 @else

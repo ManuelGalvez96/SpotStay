@@ -495,6 +495,11 @@ class IncidenciaController extends Controller
             (new ActividadService())->incidenciaCambioEstado($idGestor, $id, $propTitulo, $estado);
         }
 
+        $idReporta = (int) ($incidencia->id_reporta_fk ?? 0);
+        if ($idReporta > 0 && $propTitulo) {
+            (new ActividadService())->incidenciaCambioEstado($idReporta, $id, $propTitulo, $estado);
+        }
+
         return redirect()->back()->with('ok', 'Incidencia actualizada correctamente.');
     }
 

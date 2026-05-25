@@ -1532,3 +1532,8 @@
         flex: 0.3;
     }
 }
+
+/* ── Estilos extraídos de vistas ── */
+.d-none {
+    display: none !important;
+}

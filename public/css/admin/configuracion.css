@@ -552,3 +552,6 @@ body {
         padding-right: 14px;
     }
 }
+
+/* ── Estilos extraídos de la vista ── */
+.d-none { display: none !important; }

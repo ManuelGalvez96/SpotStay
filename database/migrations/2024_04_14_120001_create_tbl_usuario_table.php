@@ -22,6 +22,7 @@ return new class extends Migration {
             $table->string('telefono_usuario', 20)->nullable();
             $table->string('avatar_usuario')->nullable();
             $table->string('dni_usuario', 20)->nullable();
+            $table->string('cif_usuario', 20)->nullable();
             $table->date('fecha_nacimiento_usuario')->nullable();
             $table->string('iban_usuario', 34)->nullable();
             $table->string('direccion_fiscal_usuario', 255)->nullable();

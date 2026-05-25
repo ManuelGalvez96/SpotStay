@@ -35,6 +35,7 @@ class Usuario extends Authenticatable
         'contrasena_usuario',
         'telefono_usuario',
         'dni_usuario',
+        'cif_usuario',
         'fecha_nacimiento_usuario',
         'iban_usuario',
         'direccion_fiscal_usuario',

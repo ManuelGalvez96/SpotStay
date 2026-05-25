@@ -6,12 +6,7 @@
 @endsection
 
 @section('content')
-<style>
-    #content {
-        background: #F3F4F6;
-        padding: 30px !important;
-    }
-</style>
+
 
 <div class="hero">
     <h1>Gestión de suscripciones</h1>
@@ -293,7 +288,7 @@
             <div class="card-franja-roja-el"></div>
             <div class="card-header-admin">
                 <span>Próximas a expirar</span>
-                <span class="badge-contador" style="background:#EF4444">{{ $proximasExpirar->count() }}</span>
+                <span class="badge-contador badge-contador-rojo">{{ $proximasExpirar->count() }}</span>
             </div>
 
             @forelse($proximasExpirar as $prox)
@@ -431,7 +426,7 @@
                 <input type="date" id="editFinSus" class="edit-input">
             </div>
         </div>
-        <div style="margin-top:12px">
+        <div class="mt-12px">
             <label class="edit-label">Notas del admin</label>
             <textarea id="editNotasSus" class="edit-textarea" placeholder="Añade notas sobre esta suscripción..."></textarea>
         </div>
@@ -474,7 +469,7 @@
             <div class="plan-editor-grid">
                 <div>
                     <label class="edit-label">Precio mensual (€)</label>
-                    <input type="number" id="planGratuitoPrecio" class="edit-input" value="0" step="0.01" min="0" readonly style="background:#F9FAFB;color:#9CA3AF">
+                    <input type="number" id="planGratuitoPrecio" class="edit-input input-readonly" value="0" step="0.01" min="0" readonly>
                 </div>
                 <div>
                     <label class="edit-label">Propiedades máximas</label>
@@ -550,7 +545,7 @@
     </div>
 
     <div class="modal-footer-sus">
-        <button id="btnCancelarPlanes" class="btn-cancelar-gris">Cancelar</button>
+        <button id="btnCancelarPlanes" class="btn-cancelar-gris" data-bs-dismiss="modal">Cancelar</button>
         <button id="btnGuardarPlanes" class="btn-guardar-accion">
             <i class="bi bi-check"></i>
             <span>Guardar planes</span>

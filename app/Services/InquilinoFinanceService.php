@@ -146,7 +146,7 @@ class InquilinoFinanceService
     /**
      * Obtiene un resumen completo de todos los gastos pendientes del inquilino.
      */
-    public function obtenerResumenCompletoGastos(int $userId, ?int $idPropiedad = null): array
+    public function obtenerResumenCompletoGastos(int $userId, ?int $idPropiedad = null, ?string $tipoGasto = null, ?string $nombreGasto = null): array
     {
         $queryAlquileres = Alquiler::where('id_inquilino_fk', $userId)->where('estado_alquiler', 'activo');
         
@@ -169,58 +169,33 @@ class InquilinoFinanceService
                 ->count());
 
             // 1. Cuotas de Alquiler (Solo mes actual o anteriores)
-            $cuotas = AlquilerCuota::where('id_alquiler_fk', $alquiler->id_alquiler)
-                ->whereIn('estado', ['pendiente', 'atrasado'])
-                ->whereDate('mes_cuota', '<=', $ahora)
-                ->get();
-
-            foreach ($cuotas as $cuota) {
-                $importeIndividual = (float)$cuota->importe_base;
-                if ($numInquilinos > 1) {
-                    $importeIndividual /= $numInquilinos;
-                }
-                $item = [
-                    'id' => $cuota->id_alquiler_cuota,
-                    'id_propiedad' => $alquiler->id_propiedad_fk,
-                    'tipo' => 'alquiler',
-                    'concepto' => 'Alquiler ' . Carbon::parse($cuota->mes_cuota)->translatedFormat('F Y'),
-                    'descripcion' => 'Mensualidad correspondiente al mes de ' . Carbon::parse($cuota->mes_cuota)->translatedFormat('F'),
-                    'fecha_vencimiento' => $cuota->fecha_vencimiento,
-                    'importe' => $importeIndividual,
-                    'estado' => $cuota->estado,
-                    'icono' => 'bi-house-door',
-                    'color' => 'blue'
-                ];
-                $pendientes->push($item);
-                $totalDeuda += $item['importe'];
-                if ($item['estado'] === 'atrasado') $totalAtrasado += $item['importe'];
-            }
-
-            // 2. Gastos/Suministros (Solo mes actual o anteriores)
-            if (Schema::hasTable('tbl_gasto_cuota_detalle')) {
-                $gastos = DB::table('tbl_gasto_cuota_detalle')
-                    ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
-                    ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
-                    ->where('tbl_gasto_cuota_detalle.id_alquiler_fk', $alquiler->id_alquiler)
-                    ->where('tbl_gasto_cuota_detalle.id_pagador_fk', $userId)
-                    ->where('tbl_gasto.categoria_gasto', '!=', 'reparacion')
-                    ->whereIn('tbl_gasto_cuota_detalle.estado_detalle', ['pendiente', 'atrasado'])
-                    ->whereDate('tbl_gasto_cuota.mes_cuota', '<=', $ahora)
-                    ->select('tbl_gasto_cuota_detalle.*', 'tbl_gasto.concepto_gasto', 'tbl_gasto.categoria_gasto', 'tbl_gasto_cuota.vencimiento_cuota')
+            if (empty($tipoGasto) || strtolower($tipoGasto) === 'alquiler') {
+                $cuotas = AlquilerCuota::where('id_alquiler_fk', $alquiler->id_alquiler)
+                    ->whereIn('estado', ['pendiente', 'atrasado'])
+                    ->whereDate('mes_cuota', '<=', $ahora)
                     ->get();
 
-                foreach ($gastos as $gasto) {
+                foreach ($cuotas as $cuota) {
+                    $concepto = 'Alquiler ' . Carbon::parse($cuota->mes_cuota)->translatedFormat('F Y');
+                    if (!empty($nombreGasto) && stripos($concepto, $nombreGasto) === false) {
+                        continue;
+                    }
+
+                    $importeIndividual = (float)$cuota->importe_base;
+                    if ($numInquilinos > 1) {
+                        $importeIndividual /= $numInquilinos;
+                    }
                     $item = [
-                        'id' => $gasto->id_gasto_cuota_detalle,
+                        'id' => $cuota->id_alquiler_cuota,
                         'id_propiedad' => $alquiler->id_propiedad_fk,
-                        'tipo' => 'gasto',
-                        'concepto' => $gasto->concepto_gasto ?? 'Gasto de Suministro',
-                        'descripcion' => 'Recibo de ' . ($gasto->categoria_gasto ?? 'suministro'),
-                        'fecha_vencimiento' => $gasto->vencimiento_cuota,
-                        'importe' => (float)$gasto->importe_detalle,
-                        'estado' => $gasto->estado_detalle,
-                        'icono' => 'bi-lightning-charge',
-                        'color' => 'yellow'
+                        'tipo' => 'alquiler',
+                        'concepto' => $concepto,
+                        'descripcion' => 'Mensualidad correspondiente al mes de ' . Carbon::parse($cuota->mes_cuota)->translatedFormat('F'),
+                        'fecha_vencimiento' => $cuota->fecha_vencimiento,
+                        'importe' => $importeIndividual,
+                        'estado' => $cuota->estado,
+                        'icono' => 'bi-house-door',
+                        'color' => 'blue'
                     ];
                     $pendientes->push($item);
                     $totalDeuda += $item['importe'];
@@ -228,33 +203,113 @@ class InquilinoFinanceService
                 }
             }
 
-            // 3. Reparaciones pendientes creadas desde incidencias
-            $reparaciones = DB::table('tbl_gasto_cuota_detalle')
-                ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
-                ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
-                ->where('tbl_gasto_cuota_detalle.id_alquiler_fk', $alquiler->id_alquiler)
-                ->where('tbl_gasto_cuota_detalle.id_pagador_fk', $userId)
-                ->where('tbl_gasto.categoria_gasto', 'reparacion')
-                ->whereIn('tbl_gasto_cuota_detalle.estado_detalle', ['pendiente', 'atrasado'])
-                ->whereDate('tbl_gasto_cuota.mes_cuota', '<=', $ahora)
-                ->get();
+            // 2. Gastos/Suministros (Solo mes actual o anteriores)
+            if (empty($tipoGasto) || !in_array(strtolower($tipoGasto), ['alquiler', 'reparacion'])) {
+                if (Schema::hasTable('tbl_gasto_cuota_detalle')) {
+                    $queryGastos = DB::table('tbl_gasto_cuota_detalle')
+                        ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
+                        ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+                        ->where('tbl_gasto_cuota_detalle.id_alquiler_fk', $alquiler->id_alquiler)
+                        ->where('tbl_gasto_cuota_detalle.id_pagador_fk', $userId)
+                        ->where('tbl_gasto.categoria_gasto', '!=', 'reparacion')
+                        ->whereIn('tbl_gasto_cuota_detalle.estado_detalle', ['pendiente', 'atrasado'])
+                        ->whereDate('tbl_gasto_cuota.mes_cuota', '<=', $ahora)
+                        ->select('tbl_gasto_cuota_detalle.*', 'tbl_gasto.concepto_gasto', 'tbl_gasto.categoria_gasto', 'tbl_gasto_cuota.vencimiento_cuota');
 
-            foreach ($reparaciones as $reparacion) {
-                $item = [
-                    'id' => $reparacion->id_gasto_cuota_detalle,
-                    'id_propiedad' => $alquiler->id_propiedad_fk,
-                    'tipo' => 'gasto',
-                    'concepto' => $reparacion->concepto_gasto ?? 'Reparación pendiente',
-                    'descripcion' => 'Cargo por reparación pendiente.',
-                    'fecha_vencimiento' => $reparacion->vencimiento_cuota,
-                    'importe' => (float)$reparacion->importe_detalle,
-                    'estado' => $reparacion->estado_detalle,
-                    'icono' => 'bi-tools',
-                    'color' => 'purple',
-                ];
-                $pendientes->push($item);
-                $totalDeuda += $item['importe'];
-                if ($item['estado'] === 'atrasado') $totalAtrasado += $item['importe'];
+                    if (!empty($tipoGasto) && strtolower($tipoGasto) !== 'alquiler') {
+                        $queryGastos->where('tbl_gasto.categoria_gasto', $tipoGasto);
+                    }
+
+                    if (!empty($nombreGasto)) {
+                        $queryGastos->where('tbl_gasto.concepto_gasto', 'like', '%' . $nombreGasto . '%');
+                    }
+
+                    $gastos = $queryGastos->get();
+
+                    foreach ($gastos as $gasto) {
+                        $item = [
+                            'id' => $gasto->id_gasto_cuota_detalle,
+                            'id_propiedad' => $alquiler->id_propiedad_fk,
+                            'tipo' => 'gasto',
+                            'concepto' => $gasto->concepto_gasto ?? 'Gasto de Suministro',
+                            'descripcion' => 'Recibo de ' . ($gasto->categoria_gasto ?? 'suministro'),
+                            'fecha_vencimiento' => $gasto->vencimiento_cuota,
+                            'importe' => (float)$gasto->importe_detalle,
+                            'estado' => $gasto->estado_detalle,
+                            'icono' => 'bi-lightning-charge',
+                            'color' => 'yellow'
+                        ];
+                        $pendientes->push($item);
+                        $totalDeuda += $item['importe'];
+                        if ($item['estado'] === 'atrasado') $totalAtrasado += $item['importe'];
+                    }
+                }
+            }
+
+            // 3. Reparaciones pendientes creadas desde incidencias
+            if (empty($tipoGasto) || strtolower($tipoGasto) === 'reparacion') {
+                $queryReparaciones = DB::table('tbl_gasto_cuota_detalle')
+                    ->join('tbl_gasto_cuota', 'tbl_gasto_cuota.id_gasto_cuota', '=', 'tbl_gasto_cuota_detalle.id_gasto_cuota_fk')
+                    ->join('tbl_gasto', 'tbl_gasto.id_gasto', '=', 'tbl_gasto_cuota.id_gasto_fk')
+                    ->where('tbl_gasto_cuota_detalle.id_alquiler_fk', $alquiler->id_alquiler)
+                    ->where('tbl_gasto_cuota_detalle.id_pagador_fk', $userId)
+                    ->where('tbl_gasto.categoria_gasto', 'reparacion')
+                    ->whereIn('tbl_gasto_cuota_detalle.estado_detalle', ['pendiente', 'atrasado'])
+                    ->whereDate('tbl_gasto_cuota.mes_cuota', '<=', $ahora);
+                
+                if (!empty($nombreGasto)) {
+                    $queryReparaciones->where('tbl_gasto.concepto_gasto', 'like', '%' . $nombreGasto . '%');
+                }
+
+                $reparaciones = $queryReparaciones->get();
+
+                foreach ($reparaciones as $reparacion) {
+                    $item = [
+                        'id' => $reparacion->id_gasto_cuota_detalle,
+                        'id_propiedad' => $alquiler->id_propiedad_fk,
+                        'tipo' => 'gasto',
+                        'concepto' => $reparacion->concepto_gasto ?? 'Reparación pendiente',
+                        'descripcion' => 'Cargo por reparación pendiente.',
+                        'fecha_vencimiento' => $reparacion->vencimiento_cuota,
+                        'importe' => (float)$reparacion->importe_detalle,
+                        'estado' => $reparacion->estado_detalle,
+                        'icono' => 'bi-tools',
+                        'color' => 'purple',
+                    ];
+                    $pendientes->push($item);
+                    $totalDeuda += $item['importe'];
+                    if ($item['estado'] === 'atrasado') $totalAtrasado += $item['importe'];
+                }
+            }
+
+            // 4. Incidencias esperando pago directo
+            if (empty($tipoGasto) || strtolower($tipoGasto) === 'reparacion' || strtolower($tipoGasto) === 'incidencia') {
+                $queryIncidencias = DB::table('tbl_incidencia')
+                    ->where('id_propiedad_fk', $alquiler->id_propiedad_fk)
+                    ->where('estado_incidencia', 'esperando_pago');
+                
+                if (!empty($nombreGasto)) {
+                    $queryIncidencias->where('titulo_incidencia', 'like', '%' . $nombreGasto . '%');
+                }
+
+                $incidencias = $queryIncidencias->get();
+
+                foreach ($incidencias as $incidencia) {
+                    $item = [
+                        'id' => $incidencia->id_incidencia,
+                        'id_propiedad' => $alquiler->id_propiedad_fk,
+                        'tipo' => 'incidencia',
+                        'concepto' => 'Reparación: ' . $incidencia->titulo_incidencia,
+                        'descripcion' => 'Presupuesto de reparación pendiente de pago.',
+                        'fecha_vencimiento' => Carbon::parse($incidencia->actualizado_incidencia ?? now())->toDateString(),
+                        'importe' => (float)($incidencia->presupuesto_importe_incidencia ?? 0),
+                        'estado' => 'pendiente',
+                        'icono' => 'bi-tools',
+                        'color' => 'purple',
+                    ];
+                    $pendientes->push($item);
+                    $totalDeuda += $item['importe'];
+                }
             }
         }
 

@@ -19,17 +19,17 @@
 </div>
 
 <div class="kpi-grid-pequeno">
-    <div class="kpi-mini">
-        <div class="kpi-mini-icono kpi-mini-rojo">
+    <div class="kpi-mini kpi-mini-abierta">
+        <div class="kpi-mini-icono kpi-mini-azul">
             <i class="bi bi-exclamation-triangle"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-rojo" id="kpiAbiertasIncidencias">{{ $totalAbiertas }}</span>
+            <span class="kpi-mini-numero kpi-mini-numero-azul" id="kpiAbiertasIncidencias">{{ $totalAbiertas }}</span>
             <span class="kpi-mini-label">Abiertas</span>
         </div>
     </div>
 
-    <div class="kpi-mini">
+    <div class="kpi-mini kpi-mini-esperando-decision">
         <div class="kpi-mini-icono kpi-mini-naranja">
             <i class="bi bi-hourglass"></i>
         </div>
@@ -39,7 +39,7 @@
         </div>
     </div>
 
-    <div class="kpi-mini">
+    <div class="kpi-mini kpi-mini-esperando-pago">
         <div class="kpi-mini-icono kpi-mini-amarillo">
             <i class="bi bi-cash-coin"></i>
         </div>
@@ -49,7 +49,7 @@
         </div>
     </div>
 
-    <div class="kpi-mini">
+    <div class="kpi-mini kpi-mini-solucionada">
         <div class="kpi-mini-icono kpi-mini-verde">
             <i class="bi bi-check-circle"></i>
         </div>
@@ -126,20 +126,14 @@
 
     <div class="kanban-col kanban-col-abierta">
         <div class="kanban-col-header">
-            <span class="kanban-punto kanban-punto-rojo"></span>
+            <span class="kanban-punto kanban-punto-azul"></span>
             <span>Abierta</span>
-            <span class="badge-kanban badge-kanban-rojo">{{ count($abiertas ?? []) }}</span>
+            <span class="badge-kanban badge-kanban-azul">{{ count($abiertas ?? []) }}</span>
         </div>
         <div class="kanban-col-body">
             @forelse($abiertas ?? [] as $inc)
                 @php
-                    $bordeColor = match($inc->prioridad_incidencia) {
-                        'urgente' => '#EF4444',
-                        'alta'    => '#D97706',
-                        'media'   => '#6B7280',
-                        'baja'    => '#1AA068',
-                        default   => '#6B7280'
-                    };
+                    $bordeColor = '#1E40AF';
                     $partesInc = explode(' ', $inc->nombre_inquilino ?? '');
                     $inicialesInc = strtoupper(substr($partesInc[0] ?? '', 0, 1)) . strtoupper(substr($partesInc[1] ?? '', 0, 1));
                     $iconoCat = match($inc->nombre_categoria) {
@@ -152,7 +146,7 @@
                         default        => 'bi-wrench'
                     };
                 @endphp
-                <div class="tarjeta-inc" data-id="{{ $inc->id_incidencia }}" style="border-left: 3px solid {{ $bordeColor }}">
+                <div class="tarjeta-inc" data-id="{{ $inc->id_incidencia }}" data-estado="abierta" style="border-left: 3px solid {{ $bordeColor }}">
                     <div class="tarjeta-inc-top">
                         <span class="badge-prioridad badge-prioridad-{{ $inc->prioridad_incidencia }}">{{ ucfirst($inc->prioridad_incidencia) }}</span>
                         <span class="tarjeta-tiempo">{{ \Carbon\Carbon::parse($inc->creado_incidencia)->diffForHumans() }}</span>
@@ -186,13 +180,7 @@
         <div class="kanban-col-body">
             @forelse($esperandoDecision ?? [] as $inc)
                 @php
-                    $bordeColor = match($inc->prioridad_incidencia) {
-                        'urgente' => '#EF4444',
-                        'alta'    => '#D97706',
-                        'media'   => '#6B7280',
-                        'baja'    => '#1AA068',
-                        default   => '#6B7280'
-                    };
+                    $bordeColor = '#C2410C';
                     $partesInc = explode(' ', $inc->nombre_inquilino ?? '');
                     $inicialesInc = strtoupper(substr($partesInc[0] ?? '', 0, 1)) . strtoupper(substr($partesInc[1] ?? '', 0, 1));
                     $iconoCat = match($inc->nombre_categoria) {
@@ -205,7 +193,7 @@
                         default        => 'bi-wrench'
                     };
                 @endphp
-                <div class="tarjeta-inc" data-id="{{ $inc->id_incidencia }}" style="border-left: 3px solid {{ $bordeColor }}">
+                <div class="tarjeta-inc" data-id="{{ $inc->id_incidencia }}" data-estado="esperando_decision" style="border-left: 3px solid {{ $bordeColor }}">
                     <div class="tarjeta-inc-top">
                         <span class="badge-prioridad badge-prioridad-{{ $inc->prioridad_incidencia }}">{{ ucfirst($inc->prioridad_incidencia) }}</span>
                         <span class="tarjeta-tiempo">{{ \Carbon\Carbon::parse($inc->creado_incidencia)->diffForHumans() }}</span>
@@ -246,13 +234,7 @@
         <div class="kanban-col-body">
             @forelse($esperandoPago ?? [] as $inc)
                 @php
-                    $bordeColor = match($inc->prioridad_incidencia) {
-                        'urgente' => '#EF4444',
-                        'alta'    => '#D97706',
-                        'media'   => '#6B7280',
-                        'baja'    => '#1AA068',
-                        default   => '#6B7280'
-                    };
+                    $bordeColor = '#6D21D9';
                     $partesInc = explode(' ', $inc->nombre_inquilino ?? '');
                     $inicialesInc = strtoupper(substr($partesInc[0] ?? '', 0, 1)) . strtoupper(substr($partesInc[1] ?? '', 0, 1));
                     $iconoCat = match($inc->nombre_categoria) {
@@ -265,7 +247,7 @@
                         default        => 'bi-wrench'
                     };
                 @endphp
-                <div class="tarjeta-inc" data-id="{{ $inc->id_incidencia }}" style="border-left: 3px solid {{ $bordeColor }}">
+                <div class="tarjeta-inc" data-id="{{ $inc->id_incidencia }}" data-estado="esperando_pago" style="border-left: 3px solid {{ $bordeColor }}">
                     <div class="tarjeta-inc-top">
                         <span class="badge-prioridad badge-prioridad-{{ $inc->prioridad_incidencia }}">{{ ucfirst($inc->prioridad_incidencia) }}</span>
                         <span class="tarjeta-tiempo">{{ \Carbon\Carbon::parse($inc->creado_incidencia)->diffForHumans() }}</span>
@@ -298,7 +280,7 @@
         </div>
         <div class="kanban-col-body">
             @forelse($solucionadas ?? [] as $inc)
-                <div class="tarjeta-inc tarjeta-inc-solucionada" data-id="{{ $inc->id_incidencia }}" style="position:relative">
+                <div class="tarjeta-inc tarjeta-inc-solucionada" data-id="{{ $inc->id_incidencia }}" data-estado="solucionada" style="position:relative; border-left: 3px solid #0F766E">
                     <i class="bi bi-check-circle-fill check-solucionada"></i>
                     <p class="tarjeta-titulo">{{ $inc->titulo_incidencia }}</p>
                     <div class="tarjeta-inc-bottom">
@@ -315,19 +297,19 @@
     <div class="kanban-col kanban-col-resuelta">
         <div class="kanban-col-header">
             <span class="kanban-punto kanban-punto-gris"></span>
-            <span>Resuelta</span>
+            <span>Cerradas</span>
             <span class="badge-kanban badge-kanban-gris">{{ count($resueltas ?? []) }}</span>
         </div>
         <div class="kanban-col-body">
             @forelse($resueltas ?? [] as $inc)
-                <div class="tarjeta-inc tarjeta-inc-resuelta" data-id="{{ $inc->id_incidencia }}" style="position:relative">
+                <div class="tarjeta-inc tarjeta-inc-resuelta" data-id="{{ $inc->id_incidencia }}" data-estado="resuelta" style="position:relative; border-left: 3px solid #475569">
                     <i class="bi bi-lock-fill lock-resuelta"></i>
                     <p class="tarjeta-titulo tarjeta-titulo-resuelta">{{ $inc->titulo_incidencia }}</p>
                     <p class="tarjeta-propiedad">{{ \Illuminate\Support\Str::limit($inc->direccion_propiedad ?? '', 20) }}</p>
-                    <p class="tarjeta-tiempo">Resuelta · {{ \Carbon\Carbon::parse($inc->creado_incidencia)->diffForHumans() }}</p>
+                    <p class="tarjeta-tiempo">Cerrada · {{ \Carbon\Carbon::parse($inc->creado_incidencia)->diffForHumans() }}</p>
                 </div>
             @empty
-                <p class="kanban-vacio">Sin incidencias resueltas</p>
+                <p class="kanban-vacio">Sin incidencias cerradas</p>
             @endforelse
         </div>
     </div>
@@ -335,7 +317,7 @@
 </div>
 
 <!-- Vista de Lista -->
-<div class="card-admin" id="vistaLista" style="display: none;">
+<div class="card-admin d-none" id="vistaLista">
     <div class="tabla-header d-flex flex-wrap justify-content-between align-items-center gap-3">
         <div class="tabla-header-info">
             <span class="tabla-header-titulo">Incidencias</span>
@@ -367,7 +349,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="d-flex align-items-center gap-3" style="flex: 1;">
+                <div class="d-flex align-items-center gap-3 flex-1">
                     <h5 class="modal-title mb-0">Detalle de incidencia</h5>
                     <span id="modalBadgePrioridad" class="badge"></span>
                     <span id="modalBadgeCategoria" class="badge bg-secondary"></span>
@@ -422,7 +404,7 @@
             </div>
 
             <div class="modal-footer">
-                <div style="flex:1; text-align:left;">
+                <div class="flex-1 text-left">
                     <select id="modalContactarDestino" class="form-select form-select-sm mb-2">
                         <option value="inquilino">Contactar inquilino</option>
                         <option value="arrendador">Contactar arrendador</option>
@@ -430,7 +412,7 @@
                     </select>
                     <textarea id="modalMensajeContacto" class="form-control form-control-sm" rows="2" placeholder="Mensaje opcional (puede personalizarse)">Hola, te contactamos respecto a la incidencia reportada. Por favor, revisa la incidencia y responde.</textarea>
                 </div>
-                <button type="button" class="btn btn-outline-secondary" id="btnContactarInquilino">
+                <button type="button" class="btn-contactar-inc-modal" id="btnContactarInquilino">
                     <i class="bi bi-chat"></i> Enviar correo
                 </button>
             </div>
@@ -498,7 +480,7 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="btnCancelarNueva" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-cancelar-gris" id="btnCancelarNueva" data-bs-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-primary" id="btnGuardarNueva">
                     <i class="bi bi-plus"></i> Crear incidencia
                 </button>
@@ -521,8 +503,8 @@
                 <form id="formCrearCategoria">
                     <div class="mb-3">
                         <label for="nombreCategoria" class="form-label">Nombre de la categoría</label>
-                        <input type="text" class="form-control" id="nombreCategoria" name="nombre_categoria" placeholder="Ej: Fontanería" required maxlength="100">
-                        <small class="text-danger" id="errorNombreCategoria"></small>
+                        <input type="text" class="form-control" id="nombreCategoria" name="nombre_categoria" placeholder="Ej: Fontanería" maxlength="100">
+                        <small class="error-mensaje" id="errorNombreCategoria"></small>
                     </div>
                     <div class="mb-3">
                         <label for="descripcionCategoria" class="form-label">Descripción (opcional)</label>
@@ -532,7 +514,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-cancelar-gris" data-bs-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-primary" id="btnGuardarCategoria">
                     <i class="bi bi-check"></i> Crear Categoría
                 </button>

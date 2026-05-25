@@ -79,8 +79,8 @@
 
             <!-- BOTÓN CTA -->
             <div style="text-align: center; margin-bottom: 30px;">
-                <a href="{{ env('APP_URL') }}/admin/incidencias" style="display: inline-block; background-color: #1AA068; color: white; padding: 14px 32px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 15px; transition: background-color 0.3s ease;">
-                    Ver incidencia en SpotStay
+                <a href="{{ $urlLogin }}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background-color: #1AA068; color: white; padding: 14px 32px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 15px; transition: background-color 0.3s ease;">
+                    Ir al login de SpotStay
                 </a>
             </div>
 

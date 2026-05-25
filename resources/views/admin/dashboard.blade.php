@@ -11,7 +11,7 @@
 <div class="hero-admin">
     <div class="hero-content">
         <h1>Buenos días, {{ auth()->user()->nombre_usuario ?? 'Admin' }} 👋</h1>
-        <p>Miércoles, 14 de abril de 2025</p>
+        <p>{{ \Illuminate\Support\Str::ucfirst(\Carbon\Carbon::now()->locale('es')->translatedFormat('l, j \d\e F \d\e Y')) }}</p>
     </div>
     <div class="hero-deco hero-deco-1"></div>
     <div class="hero-deco hero-deco-2"></div>
@@ -73,11 +73,11 @@
         <div class="card-header-admin card-header-gradient">
             <span>Incidencias inactivas</span>
             <div class="card-header-actions">
-                <div class="input-busqueda" style="min-width:220px;">
+                <div class="input-busqueda min-w-220">
                     <i class="bi bi-search"></i>
                     <input type="text" id="buscadorIncidencias" placeholder="Buscar incidencia...">
                 </div>
-                <select id="filtroEstadoIncidencias" class="select-filtro" style="margin-left:8px;">
+                <select id="filtroEstadoIncidencias" class="select-filtro ml-8px">
                     <option value="all" selected>Todos los estados</option>
                     <option value="abierta">Abierta</option>
                     <option value="esperando_decision">Esperando decisión</option>
@@ -154,7 +154,7 @@
             <span>Solicitudes nuevas</span>
             <div class="card-header-acciones">
                 <input type="text" id="buscadorSolicitudes" placeholder="Buscar por nombre..." class="buscador-input">
-                <select id="filtroTipoSolicitudes" class="select-filtro" style="margin-left:8px; min-width: 150px;">
+                <select id="filtroTipoSolicitudes" class="select-filtro ml-8px min-w-150">
                     <option value="all">Todos los tipos</option>
                     <option value="arrendador">Arrendador</option>
                     <option value="gestor">Gestor</option>
@@ -381,7 +381,7 @@
             </div>
             
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn-cancelar-gris" data-bs-dismiss="modal">Cerrar</button>
                 <button type="button" class="btn btn-danger" id="btnRechazarSolicitudDash">Rechazar</button>
                 <button type="button" class="btn btn-primary" id="btnAprobarSolicitudDash">Aprobar</button>
             </div>
@@ -425,7 +425,7 @@
                     <p class="modal-data-dash" id="modalGestorIncidencia">—</p>
                 </div>
 
-                <div class="modal-seccion-dash" id="modalEncargadoPagoSeccion" style="display: none;">
+                <div class="modal-seccion-dash d-none" id="modalEncargadoPagoSeccion">
                     <label class="modal-label-dash">Encargado de pago</label>
                     <p class="modal-data-dash" id="modalEncargadoPagoIncidencia">—</p>
                 </div>
@@ -435,31 +435,34 @@
                 <!-- Campo destinatario -->
                 <div class="modal-seccion-dash">
                     <label for="modalDestinoContacto" class="modal-label-dash">Enviar a:</label>
-                    <select id="modalDestinoContacto" class="form-select" required>
+                    <select id="modalDestinoContacto" class="form-select">
                         <option value="">— Selecciona destinatario —</option>
                         <option value="inquilino">Inquilino</option>
                         <option value="arrendador">Arrendador</option>
                         <option value="gestor">Gestor asignado</option>
                     </select>
+                    <small class="error-mensaje" id="errorDestinoContacto"></small>
                 </div>
 
                 <!-- Campo asunto -->
                 <div class="modal-seccion-dash">
                     <label for="modalAsuntoContacto" class="modal-label-dash">Asunto:</label>
-                    <input type="text" id="modalAsuntoContacto" class="form-control" value="Incidencia inactiva — Requiere atención" required>
+                    <input type="text" id="modalAsuntoContacto" class="form-control" value="Incidencia inactiva — Requiere atención">
+                    <small class="error-mensaje" id="errorAsuntoContacto"></small>
                 </div>
 
                 <!-- Campo mensaje -->
                 <div class="modal-seccion-dash">
                     <label for="modalMensajeContacto" class="modal-label-dash">Mensaje:</label>
-                    <textarea id="modalMensajeContacto" class="form-control" rows="5" placeholder="Escribe tu mensaje..." required></textarea>
+                    <textarea id="modalMensajeContacto" class="form-control" rows="5" placeholder="Escribe tu mensaje..."></textarea>
+                    <small class="error-mensaje" id="errorMensajeContacto"></small>
                 </div>
 
                 <p class="modal-incidencia-nota-dash">Se enviará un correo con los detalles de la incidencia.</p>
             </div>
             
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-cancelar-gris" data-bs-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-primary" id="btnEnviarContactoIncidencia">
                     <i class="bi bi-send"></i> Enviar correo
                 </button>

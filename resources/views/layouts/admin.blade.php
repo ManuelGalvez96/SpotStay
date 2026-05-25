@@ -18,7 +18,7 @@
     
     @yield('css')
 </head>
-<body>
+<body class="admin">
     <!-- TOPBAR -->
     <div class="topbar">
         <!-- Zona izquierda -->
@@ -55,25 +55,26 @@
             {{-- <button class="btn-nav-icon {{ request()->is('admin/suscripciones*') ? 'activo' : '' }}" data-ruta="/admin/suscripciones" title="Suscripciones">
                 <i class="bi bi-credit-card"></i>
             </button> --}}
-            <button class="btn-nav-icon {{ request()->is('admin/configuracion*') ? 'activo' : '' }}" data-ruta="/admin/configuracion" title="Configuración">
-                <i class="bi bi-gear"></i>
+            <button class="btn-nav-icon {{ request()->is('admin/configuracion*') ? 'activo' : '' }}" data-ruta="/admin/configuracion" title="Notificaciones">
+                <i class="bi bi-bell"></i>
             </button>
         </div>
         
         <!-- Zona derecha -->
         <div class="topbar-der">
-            <div class="admin-container" id="adminContainer">
-                <div class="avatar-admin">A</div>
-                <span class="admin-nombre">Admin</span>
-                <i class="bi bi-chevron-down chevron-admin"></i>
-                
-                <!-- DROPDOWN MENU -->
-                <div class="admin-dropdown" id="adminDropdown">
-                    <button class="dropdown-item">Perfil</button>
-                    <button class="dropdown-item">Configuración</button>
-                    <button class="dropdown-item dropdown-item-logout" id="btnLogout">Cerrar sesión</button>
+                <div class="perfil-miembro admin-container" id="adminContainer">
+                    <div class="avatar-admin">A</div>
+                    <span class="admin-nombre">Admin</span>
+                    <i class="bi bi-chevron-down chevron-admin"></i>
+
+                    <!-- DROPDOWN MENU (estilo miembro) -->
+                    <div class="submenu-perfil admin-dropdown" id="adminDropdown">
+                        <a href="#" class="item-submenu cerrar-sesion dropdown-item-logout" id="btnLogout">
+                            <i class="bi bi-box-arrow-right" style="color: #EF4444"></i>
+                            Cerrar sesión
+                        </a>
+                    </div>
                 </div>
-            </div>
         </div>
     </div>
     

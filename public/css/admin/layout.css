@@ -97,6 +97,22 @@ body {
 .campana-container {
     position: relative;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: none;
+    background: transparent;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 8px;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.campana-container:hover {
+    background: #F1F5F9;
+    transform: translateY(-1px);
 }
 
 .icon-campana {
@@ -118,6 +134,387 @@ body {
     text-align: center;
 }
 
+.campana-wrapper {
+    position: relative;
+}
+
+.campana-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 380px;
+    max-width: calc(100vw - 32px);
+    background: #ffffff;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+    overflow: hidden;
+    display: none;
+    z-index: 10000;
+}
+
+.campana-dropdown.visible {
+    display: block;
+}
+
+.campana-dropdown-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 18px 14px;
+    border-bottom: 1px solid #E5E7EB;
+    background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
+}
+
+.campana-dropdown-titulo {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.campana-dropdown-subtitulo {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: #6B7280;
+}
+
+.campana-dropdown-ver-todo {
+    font-size: 12px;
+    font-weight: 600;
+    color: #035498;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.campana-dropdown-ver-todo:hover {
+    text-decoration: underline;
+}
+
+.campana-dropdown-lista {
+    max-height: 420px;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+/* Mejoras estéticas: separación clara entre items y botón borrar más discreto */
+.campana-item-wrap {
+    display: block;
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.campana-item {
+    display: block;
+    padding: 14px 48px 14px 12px; /* espacio a la derecha para el botón */
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(2,6,23,0.04);
+}
+
+.campana-item + .campana-item {
+    margin-top: 6px;
+}
+
+.campana-item-borrar {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #FFFFFF;
+    border: 1px solid rgba(16,24,40,0.06);
+    color: #6B7280;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.12s ease, transform 0.12s ease, background 0.12s ease;
+}
+
+.campana-item-borrar i {
+    font-size: 14px;
+}
+
+/* =========================================================
+   ADMIN - Botones semánticos
+   Forzar colores coherentes para acciones en admin solamente
+   ========================================================= */
+
+/* Botones primarios (guardar, crear, enviar) */
+body.admin .btn-primario,
+body.admin .btn-primary,
+body.admin .btn-guardar-plan,
+body.admin .btn-guardar-sus,
+body.admin .btn-guardar-accion,
+body.admin .btn-guardar,
+body.admin .btn-cancelar-gris,
+body.admin button[type="submit"].btn-primario,
+body.admin a.btn-primario {
+    background: #035498 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+body.admin .btn-primario:hover,
+body.admin .btn-primary:hover,
+body.admin .btn-guardar-plan:hover,
+body.admin .btn-guardar-sus:hover,
+body.admin .btn-guardar-accion:hover,
+body.admin .btn-cancelar-gris:hover {
+    background: #024080 !important;
+}
+
+/* Botones peligrosos (eliminar, rechazar, cancelar, desactivar) */
+body.admin .btn-danger,
+body.admin .btn-rechazar,
+body.admin .btn-eliminar,
+body.admin .btn-desactivar,
+body.admin .btn-cancelar,
+body.admin .btn-cancelar-accion,
+body.admin .btn-accion.btn-eliminar,
+body.admin .btn-rechazar-sol,
+body.admin .btn-rechazar-alq,
+body.admin button[id^="btnRechazar"],
+body.admin button[id^="btnEliminar"],
+body.admin button[aria-label*="Eliminar"] {
+    background: transparent !important;
+    border: 1px solid #EF4444 !important;
+    color: #EF4444 !important;
+}
+
+body.admin .btn-danger:hover,
+body.admin .btn-rechazar:hover,
+body.admin .btn-eliminar:hover,
+body.admin .btn-desactivar:hover,
+body.admin .btn-cancelar:hover,
+body.admin .btn-cancelar-accion:hover,
+body.admin .btn-accion.btn-eliminar:hover,
+body.admin .btn-rechazar-sol:hover,
+body.admin .btn-rechazar-alq:hover,
+body.admin button[id^="btnRechazar"]:hover,
+body.admin button[id^="btnEliminar"]:hover,
+body.admin button[aria-label*="Eliminar"]:hover {
+    background: #FEE2E2 !important;
+    color: #DC2626 !important;
+    border-color: #DC2626 !important;
+}
+
+/* Excepciones: mantener botones secundarios grises cuando se use la clase específica */
+body.admin .btn-cancelar-gris {
+    background: #F3F4F6 !important;
+    border: 1px solid #D1D5DB !important;
+    color: #4B5563 !important;
+}
+
+body.admin .btn-cancelar-gris:hover {
+    background: #E5E7EB !important;
+    border-color: #9CA3AF !important;
+    color: #111827 !important;
+}
+
+/* Botones dentro de modales (forzar apariencia en admin) */
+body.admin .modal .modal-footer button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 48px !important;
+    padding: 12px 24px !important;
+    border-radius: 10px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+}
+
+body.admin .modal .modal-footer .btn-primary,
+body.admin .modal .modal-footer button.btn-primary,
+body.admin .modal .btn-primary {
+    background: #035498 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+body.admin .modal .modal-footer .btn-primary:hover,
+body.admin .modal .btn-primary:hover {
+    background: #024080 !important;
+}
+
+body.admin .modal .modal-footer .btn-danger,
+body.admin .modal .btn-danger {
+    background: #EF4444 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+body.admin .modal .modal-footer .btn-danger:hover,
+body.admin .modal .btn-danger:hover {
+    background: #DC2626 !important;
+}
+
+/* Asegurar contraste en botones de aceptar/cancelar dentro de modales */
+body.admin .modal .modal-footer .btn-secondary,
+body.admin .modal .modal-footer .btn-cancelar-accion,
+body.admin .modal .modal-footer .btn-cancelar-gris {
+    background: #F3F4F6 !important;
+    border: 1px solid #D1D5DB !important;
+    color: #4B5563 !important;
+}
+
+body.admin .modal .modal-footer .btn-cancelar-gris:hover,
+body.admin .modal .modal-footer .btn-cancelar-accion:hover,
+body.admin .modal .modal-footer .btn-secondary:hover {
+    background: #E5E7EB !important;
+    border-color: #9CA3AF !important;
+    color: #111827 !important;
+}
+
+
+.campana-item-wrap:hover .campana-item-borrar {
+    opacity: 1;
+    transform: translateY(-50%) translateY(-2px);
+    background: #F8FAFC;
+    color: #111827;
+}
+.campana-item-borrar:hover {
+    background: #F8FAFC;
+    color: #111827;
+    transform: translateY(-50%) translateY(-2px);
+}
+
+.error-mensaje {
+    color: #ff4d4d;
+    font-size: 0.75rem;
+    margin-top: 4px;
+    margin-left: 12px;
+    display: block;
+    text-align: left;
+}
+
+.btn-login-desabilitado {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    filter: grayscale(1);
+}
+
+/* Ajustes scrollbar más suave */
+.campana-dropdown-lista::-webkit-scrollbar {
+    width: 8px;
+}
+.campana-dropdown-lista::-webkit-scrollbar-thumb {
+    background: rgba(16,24,40,0.08);
+    border-radius: 8px;
+}
+
+@media (max-width: 480px) {
+    .campana-dropdown { width: calc(100vw - 24px); }
+}
+
+.campana-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #111827;
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.campana-item:hover {
+    background: #F8FAFC;
+    transform: translateY(-1px);
+}
+
+.campana-item.no-leida {
+    background: #EFF6FF;
+}
+
+.campana-item-icono {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 36px;
+}
+
+.campana-item-icono i {
+    font-size: 16px;
+}
+
+.campana-item-cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.campana-item-titulo {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.campana-item-mensaje {
+    font-size: 12px;
+    color: #4B5563;
+    line-height: 1.35;
+}
+
+.campana-item-tiempo {
+    font-size: 11px;
+    color: #9CA3AF;
+}
+
+.campana-vacia {
+    padding: 18px 14px;
+    text-align: center;
+    color: #6B7280;
+    font-size: 13px;
+}
+
+/* Wrapper that contains the item and the small delete button */
+.campana-item-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.campana-item-borrar {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 1px solid #E5E7EB;
+    background: #FFFFFF;
+    color: #6B7280;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+    transition: background 0.12s ease, color 0.12s ease, transform 0.08s ease;
+}
+
+.campana-item-borrar:hover {
+    background: #F8FAFC;
+    color: #111827;
+    transform: translateY(-1px);
+}
+
+.campana-item-wrap .campana-item {
+    flex: 1 1 auto;
+}
+
 /* =========================================================
    SECCIÓN 2: DROPDOWN DE ADMIN
    Menú desplegable del perfil de administrador.
@@ -136,7 +533,8 @@ body {
 }
 
 .admin-container:hover {
-    opacity: 0.8;
+    /* sin transparencia al pasar el ratón (mantener blanco consistente con otros roles) */
+    opacity: 1;
 }
 
 .avatar-admin {
@@ -170,14 +568,16 @@ body {
 
 /* DROPDOWN MENU */
 .admin-dropdown {
-    position: fixed;
-    top: 56px;
-    right: 24px;
-    background: white;
-    border: 1px solid #E5E7EB;
+    /* estilo copia del submenu-perfil (miembro) */
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 220px;
+    background: #ffffff;
     border-radius: 10px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    min-width: 200px;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    padding: 8px;
     display: none;
     z-index: 9999;
 }
@@ -186,39 +586,65 @@ body {
     display: block;
 }
 
-.dropdown-item {
-    padding: 12px 16px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 13px;
+.dropdown-item,
+.admin-dropdown .item-submenu {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
     color: #374151;
-    width: 100%;
-    text-align: left;
     text-decoration: none;
-    display: block;
-    transition: background 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: background 0.15s ease, color 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
 }
 
 .dropdown-item:first-child {
     border-radius: 10px 10px 0 0;
 }
 
-.dropdown-item:last-child {
-    border-radius: 0 0 10px 10px;
+.dropdown-item:hover,
+.admin-dropdown .item-submenu:hover {
+    background: #F5F8FC;
+    color: #035498;
 }
 
-.dropdown-item:hover {
-    background: #F3F4F6;
+/* Forzar que la opción Cerrar sesión permanezca roja al pasar el ratón, manteniendo la sombra */
+.admin-dropdown .item-submenu.cerrar-sesion:hover,
+.admin-dropdown .dropdown-item-logout:hover,
+.admin-dropdown .item-submenu.cerrar-sesion:focus,
+.admin-dropdown .dropdown-item-logout:focus {
+    background: #ffffff !important;
+    color: #EF4444 !important;
+    box-shadow: 0 6px 18px rgba(14,30,40,0.08) !important;
+    transform: translateY(-2px) !important;
 }
 
-.dropdown-item-logout {
-    color: #EF4444;
-    border-top: 1px solid #F3F4F6;
+/* Forzar color rojo por defecto en Cerrar sesión */
+.admin-dropdown .item-submenu.cerrar-sesion,
+.admin-dropdown .dropdown-item-logout {
+    color: #EF4444 !important;
 }
 
-.dropdown-item-logout:hover {
-    background: #FEE2E2;
+.admin-dropdown .item-submenu.cerrar-sesion i,
+.admin-dropdown .dropdown-item-logout i {
+    color: #EF4444 !important;
+}
+
+.dropdown-item-logout:hover,
+.dropdown-item-logout:focus {
+    background: #ffffff !important; /* mantener fondo blanco */
+    color: #EF4444 !important; /* conservar rojo, no cambiar a azul */
+    box-shadow: 0 6px 18px rgba(14,30,40,0.08);
+    transform: translateY(-2px);
+}
+
+.dropdown-item-logout:active {
+    background: #ffffff !important;
+    color: #EF4444 !important;
+    box-shadow: 0 4px 10px rgba(14,30,40,0.06);
+    transform: translateY(0);
 }
 
 /* =========================================================

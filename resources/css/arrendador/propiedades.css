@@ -945,6 +945,19 @@ body {
   background: #f8faff;
 }
 
+.form-subsection .campo-invalido {
+  border-color: var(--error) !important;
+  background: #fff5f5;
+}
+
+.form-subsection .campo-error {
+  margin-top: 4px;
+  color: var(--error);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
 .form-subsection textarea {
   resize: vertical;
   min-height: 100px;

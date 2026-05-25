@@ -77,25 +77,25 @@ var asignarEventosFiltros = function() {
         return;
     }
 
-    selectEstado.addEventListener('change', function(e) {
+    selectEstado.onchange = function(e) {
         console.log('Cambio en estado:', this.value);
         filtrarPropiedades(1);
-    });
+    };
 
-    selectCiudad.addEventListener('change', function(e) {
+    selectCiudad.onchange = function(e) {
         console.log('Cambio en ciudad:', this.value);
         filtrarPropiedades(1);
-    });
+    };
 
-    selectPrecio.addEventListener('change', function(e) {
+    selectPrecio.onchange = function(e) {
         console.log('Cambio en precio:', this.value);
         filtrarPropiedades(1);
-    });
+    };
 
-    buscadorPropiedades.addEventListener('input', function(e) {
+    buscadorPropiedades.oninput = function(e) {
         console.log('Cambio en búsqueda:', this.value);
         filtrarPropiedades(1);
-    });
+    };
 };
 
 /* ── Filtrar propiedades ── */

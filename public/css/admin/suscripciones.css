@@ -1,4 +1,4 @@
-﻿/* ============================================
+/* ============================================
    SUSCRIPCIONES CSS - SpotStay Admin Dashboard
    Estilos para vista de suscripciones
    ============================================ */
@@ -1431,4 +1431,23 @@
 
 #modalPlanes.visible {
     display: block !important;
+}
+
+/* ── Estilos extraídos de la vista ── */
+#content {
+    background: #F3F4F6;
+    padding: 30px !important;
+}
+
+.badge-contador-rojo {
+    background: #EF4444 !important;
+}
+
+.mt-12px {
+    margin-top: 12px;
+}
+
+.input-readonly {
+    background: #F9FAFB !important;
+    color: #9CA3AF !important;
 }

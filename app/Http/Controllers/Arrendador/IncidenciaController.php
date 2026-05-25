@@ -60,7 +60,7 @@ class IncidenciaController extends Controller
             });
         }
 
-        if (in_array($estado, ['abierta', 'en_proceso', 'esperando_decision', 'esperando_pago', 'resuelta', 'cerrada'], true)) {
+        if (in_array($estado, ['abierta', 'en_proceso', 'esperando_decision', 'esperando_pago', 'solucionada', 'resuelta', 'cerrada'], true)) {
             $query->where('i.estado_incidencia', $estado);
         }
 
@@ -104,6 +104,12 @@ class IncidenciaController extends Controller
             ->whereIn('i.estado_incidencia', ['resuelta', 'cerrada'])
             ->count();
 
+        $solucionadas = DB::table('tbl_incidencia as i')
+            ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'i.id_propiedad_fk')
+            ->where('p.id_arrendador_fk', $arrendadorId)
+            ->where('i.estado_incidencia', 'solucionada')
+            ->count();
+
         return view('arrendador.incidencias', [
             'arrendador' => $arrendador,
             'arrendadorId' => $arrendadorId,
@@ -117,6 +123,7 @@ class IncidenciaController extends Controller
             'totalIncidencias' => $totalIncidencias,
             'esperandoDecision' => $esperandoDecision,
             'esperandoPago' => $esperandoPago,
+            'solucionadas' => $solucionadas,
             'resueltas' => $resueltas,
         ]);
     }
@@ -166,6 +173,8 @@ class IncidenciaController extends Controller
             $accionActual = 'esperando_decision';
         } elseif ($incidencia->estado_incidencia === 'esperando_pago') {
             $accionActual = 'esperando_pago';
+        } elseif ($incidencia->estado_incidencia === 'solucionada') {
+            $accionActual = 'solucionada';
         } elseif ($incidencia->estado_incidencia === 'resuelta') {
             $accionActual = 'resuelta';
         } elseif ($incidencia->estado_incidencia === 'cerrada') {
@@ -340,7 +349,7 @@ class IncidenciaController extends Controller
                 ->update([
                     'pagado_presupuesto_incidencia' => true,
                     'pagado_incidencia' => $ahora,
-                    'estado_incidencia' => 'resuelta',
+                    'estado_incidencia' => 'solucionada',
                     'actualizado_incidencia' => $ahora,
                 ]);
 
@@ -348,8 +357,8 @@ class IncidenciaController extends Controller
             DB::table('tbl_historial_incidencia')->insert([
                 'id_incidencia_fk' => $id,
                 'id_usuario_fk' => $arrendadorId,
-                'comentario_historial' => 'El arrendador ha pagado el presupuesto de la incidencia.',
-                'cambio_estado_historial' => 'resuelta',
+                'comentario_historial' => 'El arrendador ha pagado el presupuesto de la incidencia. Queda solucionada a la espera de revisión.',
+                'cambio_estado_historial' => 'solucionada',
                 'creado_historial' => $ahora,
                 'actualizado_historial' => $ahora,
             ]);

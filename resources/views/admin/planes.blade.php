@@ -87,11 +87,13 @@
                     <div class="campo-plan">
                         <label for="crear_nombre_plan">Nombre</label>
                         <input type="text" id="crear_nombre_plan" name="nombre_plan" value="{{ old('nombre_plan') }}" maxlength="50" placeholder="Ej. Premium">
+                        <small class="error-mensaje" id="errorNombrePlan"></small>
                     </div>
 
                     <div class="campo-plan">
                         <label for="crear_slug_plan">Slug</label>
                         <input type="text" id="crear_slug_plan" name="slug_plan" value="{{ old('slug_plan') }}" maxlength="30" placeholder="ej. premium">
+                        <small class="error-mensaje" id="errorSlugPlan"></small>
                     </div>
 
                     <div class="campo-plan">
@@ -102,16 +104,19 @@
                             <option value="inquilino" {{ old('rol_destino') === 'inquilino' ? 'selected' : '' }}>Inquilino</option>
                             <option value="gestor" {{ old('rol_destino') === 'gestor' ? 'selected' : '' }}>Gestor</option>
                         </select>
+                        <small class="error-mensaje" id="errorRolPlan"></small>
                     </div>
 
                     <div class="campo-plan">
                         <label for="crear_precio_plan">Precio</label>
                         <input type="number" step="0.01" min="0" id="crear_precio_plan" name="precio_plan" value="{{ old('precio_plan') }}" placeholder="0.00">
+                        <small class="error-mensaje" id="errorPrecioPlan"></small>
                     </div>
 
                     <div class="campo-plan">
                         <label for="crear_max_propiedades_plan">Máx. propiedades</label>
                         <input type="number" min="0" max="255" id="crear_max_propiedades_plan" name="max_propiedades_plan" value="{{ old('max_propiedades_plan', 1) }}">
+                        <small class="error-mensaje" id="errorMaxPropiedadesPlan"></small>
                     </div>
 
                     <div class="campo-plan campo-plan-ancho">
@@ -231,7 +236,7 @@
                                 </div>
                             </div>
                             <div class="plan-form-footer">
-                                <div style="display:flex;gap:0.5rem;align-items:center;">
+                                <div class="plan-actions">
                                     <button type="submit" class="btn-guardar-plan">Guardar cambios</button>
                                     <button type="button" class="btn-guardar-plan btn-eliminar-plan" data-plan-id="{{ $plan->id_plan }}" aria-label="Eliminar plan">Eliminar</button>
                                 </div>
@@ -239,7 +244,7 @@
                         </form>
 
                         {{-- Formulario de eliminación oculto (se envía desde el botón anterior) --}}
-                        <form id="form-eliminar-{{ $plan->id_plan }}" action="{{ route('admin.planes.eliminar', $plan->id_plan) }}" method="POST" style="display:none;">
+                        <form id="form-eliminar-{{ $plan->id_plan }}" action="{{ route('admin.planes.eliminar', $plan->id_plan) }}" method="POST" class="d-none">
                             @csrf
                         </form>
                     </article>
@@ -249,7 +254,7 @@
     </div>
 </div>
 <div id="planes-messages"
-    style="display:none"
+    class="d-none"
     data-success="{{ session('mensaje_exito_plan') ? e(session('mensaje_exito_plan')) : '' }}"
     data-error="{{ session('mensaje_error_plan') ? e(session('mensaje_error_plan')) : ($errors->any() ? e($errors->first()) : '') }}">
 </div>

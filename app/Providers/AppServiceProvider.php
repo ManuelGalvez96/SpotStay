@@ -35,6 +35,47 @@ class AppServiceProvider extends ServiceProvider
 
                 $this->sincronizarSuscripcionVencida($usuario);
 
+                $esGestor = $usuario->roles()->where('slug_rol', 'gestor')->exists();
+                $notificacionesGestor = collect();
+                $notificacionesGestorSinLeer = 0;
+
+                // Notificaciones generales para cualquier usuario (miembro, arrendador, inquilino, gestor)
+                $notificacionesUsuario = collect();
+                $notificacionesUsuarioSinLeer = 0;
+
+                $notificacionesQueryBase = DB::table('tbl_notificacion')
+                    ->where('id_usuario_fk', $usuario->id_usuario);
+
+                $notificacionesUsuarioSinLeer = (clone $notificacionesQueryBase)
+                    ->where('leida_notificacion', false)
+                    ->count();
+
+                // Mostrar únicamente notificaciones sin leer en el dropdown
+                $notificacionesUsuario = (clone $notificacionesQueryBase)
+                    ->where('leida_notificacion', false)
+                    ->select(
+                        'id_notificacion',
+                        'tipo_notificacion',
+                        'titulo_notificacion',
+                        'mensaje_notificacion',
+                        'url_notificacion',
+                        'icono_notificacion',
+                        'color_notificacion',
+                        'leida_notificacion',
+                        'creado_notificacion',
+                        'tipo_entidad_notificacion',
+                        'id_entidad_notificacion'
+                    )
+                    ->orderBy('creado_notificacion', 'desc')
+                    ->limit(6)
+                    ->get();
+
+                if ($esGestor) {
+                    // keep existing gestor-specific variables for backward compatibility
+                    $notificacionesGestor = $notificacionesUsuario;
+                    $notificacionesGestorSinLeer = $notificacionesUsuarioSinLeer;
+                }
+
                 $nombre = $usuario->nombre_usuario ?? $usuario->name ?? $usuario->email_usuario ?? '';
                 $tieneFoto = !empty($usuario->avatar_usuario) || !empty($usuario->foto_usuario);
                 $foto = $usuario->avatar_usuario ?? $usuario->foto_usuario ?? '';
@@ -52,6 +93,16 @@ class AppServiceProvider extends ServiceProvider
                     }
                 }
 
+                // Coge la suscripción más reciente del usuario
+                $suscripcion = $usuario->suscripciones()->latest('id_suscripcion')->first();
+                
+                // Si el plan es Gratuito muestra anuncios
+                $mostrarAnuncios = $suscripcion?->plan_suscripcion === 'Gratuito' || $suscripcion?->plan_suscripcion === "Miembro Estándar";
+                $esGestorUsuario = $usuario->roles()->where('slug_rol', 'gestor')->exists()
+                    || DB::table('tbl_propiedad')
+                        ->where('id_gestor_fk', $usuario->id_usuario)
+                        ->exists();
+
                 $view->with([
                     'nombreUsuario' => $nombre,
                     'tieneFoto' => $tieneFoto,
@@ -60,7 +111,12 @@ class AppServiceProvider extends ServiceProvider
                     'esInquilino' => $usuario->alquileres()->where('estado_alquiler', 'activo')->exists(),
                     'tienePagos' => $usuario->alquileres()->where('estado_alquiler', 'activo')->exists() || \Illuminate\Support\Facades\DB::table('tbl_pago')->where('id_pagador_fk', $usuario->id_usuario)->exists(),
                     'esArrendador' => $usuario->roles()->where('slug_rol', 'arrendador')->exists(),
-                    'esGestor' => $usuario->roles()->where('slug_rol', 'gestor')->exists(),
+                    'notificacionesGestor' => $notificacionesGestor,
+                    'notificacionesGestorSinLeer' => $notificacionesGestorSinLeer,
+                    'notificacionesUsuario' => $notificacionesUsuario,
+                    'notificacionesUsuarioSinLeer' => $notificacionesUsuarioSinLeer,
+                    'mostrarAnuncios' => $mostrarAnuncios,
+                    'esGestor' => $esGestorUsuario,
                 ]);
             } else {
                 $view->with([
@@ -71,6 +127,11 @@ class AppServiceProvider extends ServiceProvider
                     'esInquilino' => false,
                     'esArrendador' => false,
                     'esGestor' => false,
+                    'notificacionesGestor' => collect(),
+                    'notificacionesGestorSinLeer' => 0,
+                    'notificacionesUsuario' => collect(),
+                    'notificacionesUsuarioSinLeer' => 0,
+                    'mostrarAnuncios' => true,
                 ]);
             }
         });

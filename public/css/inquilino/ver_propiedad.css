@@ -815,3 +815,11 @@
 		padding: 12px;
 	}
 }
+
+/* --- CLASES EXTRAÍDAS DE VER_PROPIEDAD --- */
+.btn-pago-custom {
+    text-decoration: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

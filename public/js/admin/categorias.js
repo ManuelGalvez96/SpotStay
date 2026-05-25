@@ -10,6 +10,17 @@ function iniciarCrearCategoria() {
 
     if (!btnGuardarCategoria) return;
 
+    inputNombreCategoria.onblur = function () {
+        var nombreCategoria = inputNombreCategoria.value.trim();
+        errorNombreCategoria.textContent = nombreCategoria ? ' ' : 'El nombre de la categoría es obligatorio.';
+    };
+
+    inputNombreCategoria.oninput = function () {
+        if (inputNombreCategoria.value.trim()) {
+            errorNombreCategoria.textContent = ' ';
+        }
+    };
+
     btnGuardarCategoria.onclick = function() {
         const nombreCategoria = inputNombreCategoria.value.trim();
         const descripcionCategoria = inputDescripcionCategoria.value.trim();
@@ -20,7 +31,7 @@ function iniciarCrearCategoria() {
             return;
         }
 
-        errorNombreCategoria.textContent = '';
+        errorNombreCategoria.textContent = ' ';
         btnGuardarCategoria.disabled = true;
         btnGuardarCategoria.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creando...';
 
@@ -43,7 +54,7 @@ function iniciarCrearCategoria() {
                 
                 // Resetear formulario
                 formCrearCategoria.reset();
-                errorNombreCategoria.textContent = '';
+                errorNombreCategoria.textContent = ' ';
 
                 // Agregar la nueva categoría al select
                 if (selectCategoria && data.data) {
@@ -77,18 +88,14 @@ function iniciarCrearCategoria() {
         });
     };
 
-    // Limpiar errores cuando se abre el modal
-    if (modalCrearCategoria && modalCrearCategoria.addEventListener) {
-        modalCrearCategoria.addEventListener('show.bs.modal', function() {
+    var btnAbrirCategoria = document.getElementById('btnCrearCategoria');
+    if (btnAbrirCategoria) {
+        btnAbrirCategoria.onclick = function() {
             formCrearCategoria.reset();
-            errorNombreCategoria.textContent = '';
-        });
+            errorNombreCategoria.textContent = ' ';
+        };
     }
 }
 
-// Inicializar cuando el DOM esté listo
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', iniciarCrearCategoria);
-} else {
-    iniciarCrearCategoria();
-}
+// Inicializar directamente; el script se carga al final del body
+iniciarCrearCategoria();

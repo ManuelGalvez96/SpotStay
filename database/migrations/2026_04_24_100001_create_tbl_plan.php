@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_plan')->autoIncrement()->primary();
             $table->string('nombre_plan', 50);
             $table->string('slug_plan', 30)->unique();
-            $table->enum('rol_destino', ['miembro', 'arrendador'])->default('arrendador');
+            $table->enum('rol_destino', ['miembro', 'arrendador', 'inquilino', 'gestor'])->default('arrendador');
             $table->decimal('precio_plan', 8, 2)->default(0.00);
             $table->unsignedTinyInteger('max_propiedades_plan')->default(1);
             $table->text('descripcion_plan')->nullable();

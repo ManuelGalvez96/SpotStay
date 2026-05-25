@@ -65,10 +65,10 @@
                                     <button class="btn-ver" data-ver="{{ $solicitud->id_solicitud_alquiler }}">Ver</button>
                                     <button class="btn-editar" data-editar="{{ $solicitud->id_solicitud_alquiler }}">Editar</button>
                                     @if ($estado === 'pendiente')
-                                        <button class="btn-icono btn-aprobar-sol" data-id="{{ $solicitud->id_solicitud_alquiler }}" title="Aprobar">
+                                        <button type="button" class="btn-icono btn-aprobar-sol" data-id="{{ $solicitud->id_solicitud_alquiler }}" title="Aprobar">
                                             <i class="bi bi-check-circle"></i>
                                         </button>
-                                        <button class="btn-icono btn-rechazar-sol" data-id="{{ $solicitud->id_solicitud_alquiler }}" title="Rechazar">
+                                        <button type="button" class="btn-icono btn-rechazar-sol" data-id="{{ $solicitud->id_solicitud_alquiler }}" title="Rechazar">
                                             <i class="bi bi-x-circle"></i>
                                         </button>
                                     @endif

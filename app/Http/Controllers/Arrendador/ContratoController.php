@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 use App\Services\ActividadService;
 use App\Services\PdfMonkeyService;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ContratoSubido;
 
 class ContratoController extends Controller
 {
@@ -55,9 +57,9 @@ class ContratoController extends Controller
         // Añadimos una marca por cada contrato indicando si el PDF está disponible
         // físicamente en el servidor. Esto evita mostrar el enlace "Ver Contrato"
         // cuando la BD contiene una ruta pero el archivo no existe.
-        $contratos->getCollection()->transform(function ($item) {
+        $contratos->getCollection()->transform(function ($item) use ($request) {
             $item->pdf_disponible = false;
-            if (!empty($item->url_pdf_contrato) && $this->esUrlPdfLocalExistente($item->url_pdf_contrato)) {
+            if (!empty($item->url_pdf_contrato) && $this->esUrlPdfLocalExistente($item->url_pdf_contrato, $request)) {
                 $item->pdf_disponible = true;
             }
             return $item;
@@ -127,76 +129,22 @@ class ContratoController extends Controller
             ], 404);
         }
 
-        // 2. VERIFICACIÓN DE CACHE: ¿Tenemos ya una URL guardada?
-        if (!empty($contrato->url_pdf_contrato)) {
-            // Verificamos si la URL apunta a un fichero local accesible.
-            if ($this->esUrlPdfLocalExistente($contrato->url_pdf_contrato)) {
-                // Si es una URL absoluta que apunta al mismo host, extraemos la ruta
-                if (preg_match('#^https?://#i', $contrato->url_pdf_contrato)) {
-                    $componentes = parse_url($contrato->url_pdf_contrato);
-                    $hostRemoto = $componentes['host'] ?? null;
-                    $requestHost = request()->getHost();
+        // 2. VERIFICACIÓN LOCAL: solo abrimos el PDF que está guardado en el servidor.
+        $rutaLocalPdf = $this->obtenerRutaLocalPdfContrato($contrato->url_pdf_contrato, $request);
 
-                    if ($hostRemoto && $hostRemoto === $requestHost) {
-                        $ruta = ltrim($componentes['path'] ?? '', '/\\');
-                        $rutaCompleta = public_path($ruta);
-                        if (File::exists($rutaCompleta)) {
-                            return response()->download($rutaCompleta, basename($rutaCompleta));
-                        }
-                    }
-                } else {
-                    // Ruta relativa (ej: storage/contratos/xxx.pdf o contratos/xxx.pdf)
-                    $rutaRelativa = ltrim($contrato->url_pdf_contrato, '/\\');
-                    $rutaCompleta = public_path($rutaRelativa);
-                    if (File::exists($rutaCompleta)) {
-                        return response()->download($rutaCompleta, basename($rutaCompleta));
-                    }
-                }
-
-                // Si no hemos podido forzar la descarga local por alguna razón,
-                // continuamos con la redirección normal a la URL normalizada.
-                return redirect()->away($this->normalizarUrlPdf($contrato->url_pdf_contrato));
-            }
-
-            // Si llegamos aquí, la URL existe pero está rota o caducada.
-            Log::warning("PDF guardado pero no disponible, se regenerará", [
-                'contrato_id' => $id,
-                'url_pdf_contrato' => $contrato->url_pdf_contrato,
-            ]);
+        if ($rutaLocalPdf && File::exists($rutaLocalPdf)) {
+            return response()->file($rutaLocalPdf);
         }
 
-        // 3. GENERACIÓN: Si no hay URL o está caducada, creamos el PDF de nuevo.
-        Log::info("Generando PDF on-demand para alquiler: {$contrato->id_alquiler}");
-        
-        $urlPdf = $this->generarPDFOnDemand($contrato->id_alquiler);
-        
-        if (!$urlPdf) {
-            Log::error("Fallo al generar PDF on-demand para alquiler: {$contrato->id_alquiler}");
-            return response()->json([
-                'success' => false,
-                'message' => 'No se pudo generar el PDF del contrato. Por favor, contacta con soporte.',
-            ], 500);
-        }
+        Log::warning('PDF de contrato no disponible en el servidor', [
+            'contrato_id' => $id,
+            'url_pdf_contrato' => $contrato->url_pdf_contrato,
+        ]);
 
-        // 4. ACTUALIZACIÓN: Guardamos la nueva URL en la base de datos para no tener que generarlo la próxima vez.
-        $datosActualizar = [];
-        if ($columnas['url_pdf']) {
-            $datosActualizar[$columnas['url_pdf']] = $urlPdf;
-        }
-        if ($columnas['actualizado']) {
-            $datosActualizar[$columnas['actualizado']] = Carbon::now();
-        }
-
-        if (!empty($datosActualizar)) {
-            DB::table('tbl_contrato')
-                ->where('id_contrato', $id)
-                ->update($datosActualizar);
-            
-            Log::info("PDF guardado para contrato: {$id}");
-        }
-
-        // 5. REDIRECCIÓN FINAL: Enviamos al usuario al PDF recién generado.
-        return redirect()->away($urlPdf);
+        return response()->json([
+            'success' => false,
+            'message' => 'El contrato no está disponible en el servidor.',
+        ], 404);
     }
 
     /**
@@ -235,18 +183,25 @@ class ContratoController extends Controller
 
         $archivo = $request->file('pdf_contrato');
         $nombre = now()->format('Ymd_His') . '_contrato_' . $id . '.pdf';
-        $ruta = $archivo->storeAs('contratos', $nombre, 'public');
+        $directorioContratos = public_path('contratos');
 
-        if (!$ruta) {
+        if (!File::exists($directorioContratos)) {
+            File::makeDirectory($directorioContratos, 0755, true);
+        }
+
+        try {
+            $archivo->move($directorioContratos, $nombre);
+        } catch (
+            \Exception $e
+        ) {
             return response()->json([
                 'success' => false,
                 'message' => 'No se pudo guardar el archivo.',
             ], 500);
         }
 
-        // Guarda la ruta relativa estandarizada a public/: "storage/contratos/archivo.pdf"
-        // Usamos basename para evitar dobles prefijos si $ruta ya incluye 'contratos/'.
-        $rutaRelativa = 'storage/contratos/' . basename($ruta);
+        // Guarda la ruta pública real del fichero en public/contratos.
+        $rutaRelativa = '/contratos/' . $nombre;
 
         // Actualizar la BD
         $datosActualizar = [];
@@ -264,7 +219,29 @@ class ContratoController extends Controller
         }
 
         // Devolver la URL completa para que el JS pueda montar el enlace "Ver PDF"
-        $urlCompleta = $request->getSchemeAndHttpHost() . $request->getBasePath() . '/' . $rutaRelativa;
+        $urlCompleta = $request->getSchemeAndHttpHost() . $request->getBasePath() . $rutaRelativa;
+
+        // Intentamos notificar al inquilino asociado a este contrato
+        try {
+            $infoAlquiler = DB::table('tbl_contrato as c')
+                ->join('tbl_alquiler as a', 'a.id_alquiler', '=', 'c.id_alquiler_fk')
+                ->join('tbl_usuario as inquilino', 'inquilino.id_usuario', '=', 'a.id_inquilino_fk')
+                ->where('c.id_contrato', $id)
+                ->select('a.id_alquiler', 'inquilino.email_usuario', 'inquilino.nombre_usuario as nombre_inquilino')
+                ->first();
+
+            if ($infoAlquiler && !empty($infoAlquiler->email_usuario)) {
+                Mail::to($infoAlquiler->email_usuario)->send(new ContratoSubido(
+                    $infoAlquiler->id_alquiler,
+                    $infoAlquiler->nombre_inquilino,
+                    $urlCompleta
+                ));
+            }
+        } catch (\Exception $e) {
+            Log::error('Error enviando notificación de contrato al inquilino: ' . $e->getMessage(), [
+                'contrato_id' => $id,
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -273,51 +250,81 @@ class ContratoController extends Controller
         ]);
     }
 
-    private function esUrlPdfLocalExistente(string $urlPdf): bool
+    private function esUrlPdfLocalExistente(string $urlPdf, Request $request): bool
     {
-        // Si es una URL absoluta, comprobamos si apunta al mismo host.
+        return $this->obtenerRutaLocalPdfContrato($urlPdf, $request) !== null;
+    }
+
+    private function obtenerRutaLocalPdfContrato(?string $urlPdf, Request $request): ?string
+    {
+        if (empty($urlPdf)) {
+            return null;
+        }
+
+        $urlPdfNormalizada = ltrim($urlPdf, '/\\');
+
         if (preg_match('#^https?://#i', $urlPdf)) {
             $componentes = parse_url($urlPdf);
             $hostRemoto = $componentes['host'] ?? null;
+            $requestHost = $request->getHost();
 
-            // Si la URL absoluta apunta al mismo host que la petición actual,
-            // tratamos la ruta como local y comprobamos la existencia en public/.
-            $requestHost = request()->getHost();
-            if ($hostRemoto && $hostRemoto === $requestHost) {
-                $ruta = ltrim($componentes['path'] ?? '', '/\\');
-                return File::exists(public_path($ruta));
+            if (!$hostRemoto || $hostRemoto !== $requestHost) {
+                return null;
             }
 
-            // Si es remota y no es el mismo host, verificamos vigencia remota.
-            return $this->esUrlRemotaVigente($urlPdf);
+            $ruta = ltrim($componentes['path'] ?? '', '/\\');
+
+            return $ruta !== '' ? public_path($ruta) : null;
         }
 
-        $rutaRelativa = ltrim($urlPdf, '/\\');
+        if (str_starts_with($urlPdfNormalizada, 'storage/')) {
+            $rutaStorage = substr($urlPdfNormalizada, strlen('storage/'));
 
-        // Comprobar varias ubicaciones posibles donde puede residir el PDF:
+            $candidates = [
+                public_path($urlPdfNormalizada),
+                storage_path('app/public/' . $rutaStorage),
+            ];
+
+            foreach ($candidates as $candidato) {
+                if (File::exists($candidato)) {
+                    return $candidato;
+                }
+            }
+
+            return null;
+        }
+
+        $rutaRelativa = $urlPdfNormalizada;
+
         $candidates = [
             public_path($rutaRelativa),
             public_path('storage/' . $rutaRelativa),
             storage_path('app/public/' . $rutaRelativa),
         ];
 
-        foreach ($candidates as $p) {
-            if (File::exists($p)) {
-                return true;
+        foreach ($candidates as $candidato) {
+            if (File::exists($candidato)) {
+                return $candidato;
             }
         }
 
-        return false;
+        return null;
     }
 
     private function esUrlRemotaVigente(string $urlPdf): bool
     {
         $componentes = parse_url($urlPdf);
-        if (!$componentes || empty($componentes['query'])) {
+        // Asegurarnos de que 'query' es una cadena válida antes de usar parse_str
+        $query = '';
+        if (is_array($componentes) && array_key_exists('query', $componentes)) {
+            $query = $componentes['query'];
+        }
+
+        if (empty($query) || !is_string($query)) {
             return true;
         }
 
-        parse_str($componentes['query'], $parametros);
+        parse_str((string) $query, $parametros);
         $ahora = Carbon::now('UTC')->timestamp;
         $margenSeguridad = 30;
 
@@ -339,14 +346,13 @@ class ContratoController extends Controller
         return true;
     }
 
-    private function normalizarUrlPdf(string $urlPdf): string
+    private function normalizarUrlPdf(string $urlPdf, Request $request): string
     {
         // Si es una URL absoluta, y apunta a este host, reescribimos añadiendo
         // el basePath actual (útil en instalaciones en subcarpetas).
         if (preg_match('#^https?://#i', $urlPdf)) {
             $componentes = parse_url($urlPdf);
             $hostRemoto = $componentes['host'] ?? null;
-            $request = request();
             $hostLocal = $request->getHost();
 
             if ($hostRemoto && $hostRemoto === $hostLocal) {
@@ -359,7 +365,6 @@ class ContratoController extends Controller
         }
 
         // Usa el request real para respetar subdirectorios (WAMP, etc.)
-        $request = request();
         return $request->getSchemeAndHttpHost() . $request->getBasePath() . '/' . ltrim($urlPdf, '/\\');
     }
 

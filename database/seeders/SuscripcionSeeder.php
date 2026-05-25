@@ -11,56 +11,64 @@ class SuscripcionSeeder extends Seeder
 {
     public function run(): void
     {
-        $suscripciones = [
-            ['plan' => 'Básico'],
-            ['plan' => 'Básico'],
-            ['plan' => 'Pro'],
-            ['plan' => 'Pro'],
-            ['plan' => 'Pro'],
-            ['plan' => 'Profesional'],
-            ['plan' => 'Profesional'],
-            ['plan' => 'Básico'],
-            ['plan' => 'Básico'],
-            ['plan' => 'Pro'],
-            ['plan' => 'Pro'],
-            ['plan' => 'Profesional'],
-            ['plan' => 'Profesional'],
-            ['plan' => 'Básico'],
-            ['plan' => 'Pro'],
-            ['plan' => 'Profesional'],
-            ['plan' => 'Básico'],
-            ['plan' => 'Pro'],
-            ['plan' => 'Profesional'],
-            ['plan' => 'Básico'],
-        ];
+        // 1. Obtener los planes reales de la base de datos
+        $planBasicoArrendador = Plan::where('slug_plan', 'basico-arrendador')->first();
+        $planProArrendador = Plan::where('slug_plan', 'pro-arrendador')->first();
+        
+        $planMiembroEstandar = Plan::where('slug_plan', 'miembro-estandar')->first();
+        $planMiembroPremium = Plan::where('slug_plan', 'miembro-premium')->first();
 
-        $arrendadores = Usuario::whereHas('roles', function ($query) {
-            $query->where('slug_rol', 'arrendador');
-        })->limit(20)->pluck('id_usuario')->toArray();
+        // 2. Asignar suscripciones a Arrendadores
+        if ($planBasicoArrendador && $planProArrendador) {
+            $arrendadores = Usuario::whereHas('roles', function ($query) {
+                $query->where('slug_rol', 'arrendador');
+            })->get();
 
-        foreach ($suscripciones as $index => $data) {
-            if (isset($arrendadores[$index])) {
-                $nombrePlan = $data['plan'] === 'Profesional' ? 'Pro' : $data['plan'];
-                $plan = Plan::where('nombre_plan', $nombrePlan)->first();
+            foreach ($arrendadores as $index => $arrendador) {
+                // Alternar entre Pro y Básico
+                $plan = ($index % 2 === 0) ? $planProArrendador : $planBasicoArrendador;
                 
-                if ($plan) {
-                    $slugPlan = mb_strtolower((string) $plan->slug_plan);
+                Suscripcion::firstOrCreate(
+                    ['id_usuario_fk' => $arrendador->id_usuario],
+                    [
+                        'plan_suscripcion' => mb_strtolower((string) $plan->slug_plan),
+                        'id_plan_fk' => $plan->id_plan,
+                        'max_propiedades_suscripcion' => (int) $plan->max_propiedades_plan,
+                        'precio_pagado_suscripcion' => $plan->precio_plan,
+                        'inicio_suscripcion' => now()->toDateString(),
+                        'fin_suscripcion' => now()->addMonth()->toDateString(),
+                        'estado_suscripcion' => 'activa',
+                        'creado_suscripcion' => now(),
+                        'actualizado_suscripcion' => now(),
+                    ]
+                );
+            }
+        }
 
-                    Suscripcion::firstOrCreate(
-                        ['id_usuario_fk' => $arrendadores[$index], 'id_plan_fk' => $plan->id_plan],
-                        [
-                            'plan_suscripcion' => $slugPlan,
-                            'id_plan_fk' => $plan->id_plan,
-                            'max_propiedades_suscripcion' => (int) $plan->max_propiedades_plan,
-                            'precio_pagado_suscripcion' => $plan->precio_plan,
-                            'inicio_suscripcion' => now()->toDateString(),
-                            'fin_suscripcion' => now()->addYear()->toDateString(),
-                            'estado_suscripcion' => 'activa',
-                            'creado_suscripcion' => now(),
-                            'actualizado_suscripcion' => now(),
-                        ]
-                    );
-                }
+        // 3. Asignar suscripciones a Miembros e Inquilinos
+        if ($planMiembroEstandar && $planMiembroPremium) {
+            $miembros = Usuario::whereHas('roles', function ($query) {
+                $query->whereIn('slug_rol', ['miembro', 'inquilino']);
+            })->get();
+
+            foreach ($miembros as $index => $miembro) {
+                // Alternar entre Premium y Estándar
+                $plan = ($index % 2 === 0) ? $planMiembroPremium : $planMiembroEstandar;
+                
+                Suscripcion::firstOrCreate(
+                    ['id_usuario_fk' => $miembro->id_usuario],
+                    [
+                        'plan_suscripcion' => mb_strtolower((string) $plan->slug_plan),
+                        'id_plan_fk' => $plan->id_plan,
+                        'max_propiedades_suscripcion' => (int) $plan->max_propiedades_plan,
+                        'precio_pagado_suscripcion' => $plan->precio_plan,
+                        'inicio_suscripcion' => now()->toDateString(),
+                        'fin_suscripcion' => now()->addMonth()->toDateString(),
+                        'estado_suscripcion' => 'activa',
+                        'creado_suscripcion' => now(),
+                        'actualizado_suscripcion' => now(),
+                    ]
+                );
             }
         }
     }

@@ -47,6 +47,142 @@ function extraerMensajeError(datosRespuesta) {
   return 'Error al procesar la solicitud.';
 }
 
+function iniciarValidacionFormularioPropiedad() {
+  var formulario = document.querySelector('form[data-ajax-form="true"]');
+
+  if (!formulario) {
+    return;
+  }
+
+  var botonEnviar = formulario.querySelector('button[type="submit"]');
+  var camposObligatorios = [
+    document.getElementById('form-titulo'),
+    document.getElementById('form-tipo'),
+    document.getElementById('form-estado'),
+    document.getElementById('form-calle'),
+    document.getElementById('form-numero'),
+    document.getElementById('form-codigo-postal'),
+    document.getElementById('form-ciudad'),
+    document.getElementById('form-precio')
+  ].filter(function (campo) {
+    return Boolean(campo);
+  });
+
+  formulario.noValidate = true;
+
+  function obtenerContenedorError(campo) {
+    if (!campo) {
+      return null;
+    }
+
+    var contenedor = campo.nextElementSibling;
+    if (contenedor && contenedor.classList && contenedor.classList.contains('campo-error')) {
+      return contenedor;
+    }
+
+    contenedor = document.createElement('div');
+    contenedor.className = 'campo-error';
+    contenedor.setAttribute('aria-live', 'polite');
+    contenedor.hidden = true;
+    campo.insertAdjacentElement('afterend', contenedor);
+    return contenedor;
+  }
+
+  function esCampoValido(campo) {
+    if (!campo) {
+      return true;
+    }
+
+    var valor = typeof campo.value === 'string' ? campo.value.trim() : '';
+
+    return !(campo.required && valor === '');
+  }
+
+  function pintarErrorCampo(campo) {
+    if (!campo) {
+      return true;
+    }
+
+    var mensajeError = esCampoValido(campo) ? '' : 'Este campo es obligatorio.';
+
+    var contenedorError = obtenerContenedorError(campo);
+
+    if (contenedorError) {
+      contenedorError.textContent = mensajeError;
+      contenedorError.hidden = mensajeError === '';
+    }
+
+    campo.setAttribute('aria-invalid', mensajeError ? 'true' : 'false');
+    campo.classList.toggle('campo-invalido', mensajeError !== '');
+
+    return mensajeError === '';
+  }
+
+  function actualizarEstadoBoton() {
+    var formularioValido = true;
+
+    camposObligatorios.forEach(function (campo) {
+      if (!esCampoValido(campo)) {
+        formularioValido = false;
+      }
+    });
+
+    if (botonEnviar) {
+      botonEnviar.disabled = !formularioValido;
+    }
+
+    return formularioValido;
+  }
+
+  camposObligatorios.forEach(function (campo) {
+    campo.oninput = function () {
+      if (campo.dataset.tocado === 'true') {
+        pintarErrorCampo(campo);
+      }
+
+      actualizarEstadoBoton();
+    };
+
+    campo.onchange = function () {
+      if (campo.dataset.tocado === 'true') {
+        pintarErrorCampo(campo);
+      }
+
+      actualizarEstadoBoton();
+    };
+
+    campo.onblur = function () {
+      campo.dataset.tocado = 'true';
+      pintarErrorCampo(campo);
+      actualizarEstadoBoton();
+    };
+  });
+
+  formulario.onsubmit = function (evento) {
+    var formularioValido = true;
+
+    camposObligatorios.forEach(function (campo) {
+      campo.dataset.tocado = 'true';
+      if (!pintarErrorCampo(campo)) {
+        formularioValido = false;
+      }
+    });
+
+    actualizarEstadoBoton();
+
+    if (!formularioValido) {
+      evento.preventDefault();
+
+      mostrarMensaje('Completa los campos obligatorios antes de guardar la propiedad.', true);
+      return false;
+    }
+
+    return true;
+  };
+
+  window.actualizarEstadoValidacionFormularioPropiedad = actualizarEstadoBoton;
+}
+
 function actualizarFilaPropiedad(datosPropiedad) {
   if (!datosPropiedad || !datosPropiedad.id_propiedad) {
     return;
@@ -118,6 +254,11 @@ function fetchEditData(propiedadId) {
 function enviarFormularioConFetch(formulario) {
   formulario.onsubmit = function (evento) {
     evento.preventDefault();
+
+    if (!actualizarEstadoBoton()) {
+      mostrarMensaje('Completa los campos obligatorios antes de guardar.', true);
+      return;
+    }
 
     var botonEnviar = formulario.querySelector('button[type="submit"]');
     var textoOriginal = botonEnviar ? botonEnviar.textContent : '';
@@ -399,6 +540,17 @@ function abrirModalFormulario(arrendadorId, datosPropiedad) {
     document.getElementById('form-precio').value = '';
     document.getElementById('form-descripcion').value = '';
     document.getElementById('btn-submit-formulario').textContent = 'Crear propiedad';
+    formulario.querySelectorAll('.campo-error').forEach(function (error) {
+      error.textContent = '';
+      error.hidden = true;
+    });
+    formulario.querySelectorAll('.campo-invalido').forEach(function (campoInvalido) {
+      campoInvalido.classList.remove('campo-invalido');
+      campoInvalido.setAttribute('aria-invalid', 'false');
+    });
+    formulario.querySelectorAll('[data-tocado]').forEach(function (campoTocado) {
+      campoTocado.removeAttribute('data-tocado');
+    });
     
     // Limpiar archivos acumulados
     if (formulario._archivosAcumulados) {
@@ -437,6 +589,10 @@ function abrirModalFormulario(arrendadorId, datosPropiedad) {
       document.getElementById('form-adicional').value = datosPropiedad.adicional_propiedad || '';
       document.getElementById('form-precio').value = datosPropiedad.precio_propiedad || '';
       document.getElementById('form-descripcion').value = datosPropiedad.descripcion_propiedad || '';
+    }
+
+    if (typeof window.actualizarEstadoValidacionFormularioPropiedad === 'function') {
+      window.actualizarEstadoValidacionFormularioPropiedad();
     }
   }
 
@@ -544,6 +700,7 @@ function abrirModalGestor(propiedadId) {
       if (btnGuardar) {
         btnGuardar.dataset.propiedadId = propiedadId;
         btnGuardar.dataset.gestorId = data.id_gestor || '';
+        btnGuardar.dataset.codigoGestor = '';
         btnGuardar.disabled = !tieneGestor;
       }
 
@@ -637,7 +794,7 @@ function crearDropdownGestores(gestores, propiedadId) {
     `;
     
     item.addEventListener('click', function() {
-      seleccionarGestor(
+      solicitarCodigoGestor(
         parseInt(this.dataset.gestorId),
         this.dataset.gestorNombre,
         this.dataset.gestorEmail,
@@ -661,7 +818,7 @@ function crearDropdownGestores(gestores, propiedadId) {
 
 // Cerrar dropdown de gestores
 function cerrarDropdownGestores(evento) {
-  if (evento && (evento.target.closest('.gestor-selector-box') || evento.target.closest('.gestor-selector-dropdown'))) {
+  if (evento && (evento.target.closest('.gestor-selector-box') || evento.target.closest('.gestor-dropdown'))) {
     return; // No cerrar si se hace click en el selector o dropdown
   }
   
@@ -672,8 +829,49 @@ function cerrarDropdownGestores(evento) {
   }
 }
 
+function solicitarCodigoGestor(gestorId, nombreGestor, emailGestor, propiedadId) {
+  if (!window.Swal) {
+    var codigoManual = prompt('Introduce el código del gestor para asignarlo:');
+    if (codigoManual === null) {
+      return;
+    }
+
+    codigoManual = codigoManual.trim();
+    if (!codigoManual) {
+      return;
+    }
+
+    seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId, codigoManual);
+    return;
+  }
+
+  Swal.fire({
+    title: 'Código del gestor',
+    text: 'Introduce el código para poder asignar este gestor a la propiedad.',
+    input: 'password',
+    inputPlaceholder: 'Código del gestor',
+    showCancelButton: true,
+    confirmButtonText: 'Validar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#035498',
+    reverseButtons: true,
+    inputValidator: function (valor) {
+      if (!valor || !valor.trim()) {
+        return 'Debes introducir el código del gestor.';
+      }
+      return null;
+    }
+  }).then(function (resultado) {
+    if (!resultado.isConfirmed) {
+      return;
+    }
+
+    seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId, resultado.value.trim());
+  });
+}
+
 // Seleccionar gestor y actualizar modal
-function seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId) {
+function seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId, codigoGestor) {
   // Actualizar display del selector
   const inicialGestor = nombreGestor && nombreGestor.length > 0 
     ? nombreGestor.trim().charAt(0).toUpperCase() 
@@ -687,6 +885,7 @@ function seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId) {
   const btnGuardar = document.getElementById('btnGuardarPermisosGestor');
   if (btnGuardar) {
     btnGuardar.dataset.gestorId = gestorId;
+    btnGuardar.dataset.codigoGestor = codigoGestor || '';
   }
   
   // Habilitar checkboxes de permisos
@@ -705,7 +904,7 @@ function seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId) {
   // Cerrar dropdown
   cerrarDropdownGestores();
   
-  mostrarMensaje('Gestor seleccionado: ' + nombreGestor, false);
+  mostrarMensaje('Gestor seleccionado: ' + nombreGestor + '. Pulsa guardar para confirmar la asignación.', false);
 }
 
 document.addEventListener('click', function (evento) {
@@ -729,6 +928,7 @@ function guardarPermisos() {
     }
     var propiedadId = btn.dataset.propiedadId;
     var gestorId = btn.dataset.gestorId;
+    var codigoGestor = btn.dataset.codigoGestor || '';
 
     if (!propiedadId) {
       if (window.swalError) {
@@ -743,7 +943,8 @@ function guardarPermisos() {
       chat: document.getElementById('permiso-chat').checked,
       editar_propiedad: document.getElementById('permiso-editar').checked,
       gastos: document.getElementById('permiso-gastos').checked,
-      incidencias: document.getElementById('permiso-incidencias').checked
+      incidencias: document.getElementById('permiso-incidencias').checked,
+      codigo_gestor: codigoGestor
     };
     // Incluir gestorId en la carga útil para que el controlador lo reciba
     permisos.gestor_id = gestorId;
@@ -761,6 +962,7 @@ function guardarPermisos() {
     .then(response => response.json())
     .then(data => {
     if (data.success) {
+      btn.dataset.codigoGestor = '';
       cerrarModalGestor();
       cargarTablaPropiedades();
       if (window.swalSuccess) {
@@ -768,6 +970,9 @@ function guardarPermisos() {
         } else {
           mostrarMensaje(data.message || 'Permisos actualizados correctamente.', false);
         }
+    } else if (data.requiere_desasignar) {
+      mostrarMensaje(data.message || 'El código del gestor no es correcto.', true);
+      ejecutarDesasignar(propiedadId);
       } else {
         throw new Error(data.message || 'Error al actualizar permisos.');
       }
@@ -1081,6 +1286,7 @@ function escaparHtml(texto) {
 
 document.querySelectorAll('form[data-ajax-form="true"]').forEach(enviarFormularioConFetch);
 iniciarValidacionImagenes();
+iniciarValidacionFormularioPropiedad();
 cargarTablaPropiedades();
 
 document.onkeydown = function (evento) {

@@ -30,6 +30,46 @@ class ActividadService
         ]);
     }
 
+    public function mensajeNuevo(int $usuarioId, int $conversacionId, string $propiedadTitulo, string $nombreRemitente, string $extracto): void
+    {
+        $rutaMensaje = '/miembro/chat/' . $conversacionId;
+
+        $usuario = Usuario::query()
+            ->with('roles')
+            ->find($usuarioId);
+
+        if ($usuario && $usuario->roles->contains('slug_rol', 'gestor')) {
+            $rutaMensaje = '/gestor/mensajes?activa=' . $conversacionId;
+        }
+
+        $this->crear(
+            $usuarioId,
+            'mensaje_nuevo',
+            "Nuevo mensaje en {$propiedadTitulo}",
+            "{$nombreRemitente}: {$extracto}",
+            $rutaMensaje,
+            'chat-dots',
+            '#7C3AED',
+            'conversacion',
+            $conversacionId
+        );
+    }
+
+    public function avisoImportante(int $usuarioId, string $titulo, string $mensaje, ?string $url = null): void
+    {
+        $this->crear(
+            $usuarioId,
+            'aviso_importante',
+            $titulo,
+            $mensaje,
+            $url,
+            'megaphone',
+            '#035498',
+            'aviso',
+            null
+        );
+    }
+
     public function incidenciaCreada(int $usuarioId, int $incidenciaId, string $propiedadTitulo, string $incidenciaTitulo, string $reportaNombre = 'Un usuario'): void
     {
         $this->crear(
@@ -149,6 +189,7 @@ class ActividadService
             'presupuesto_creado' => ['label' => 'Presupuestos', 'color' => '#D97706', 'icono' => 'cash-coin'],
             'gasto_creado' => ['label' => 'Recibos creados', 'color' => '#0891B2', 'icono' => 'receipt'],
             'mensaje_nuevo' => ['label' => 'Mensajes', 'color' => '#7C3AED', 'icono' => 'chat-dots'],
+            'aviso_importante' => ['label' => 'Avisos importantes', 'color' => '#035498', 'icono' => 'megaphone'],
             'alquiler_pendiente' => ['label' => 'Alquiler pendiente', 'color' => '#035498', 'icono' => 'calendar-event'],
             'propiedad_estado' => ['label' => 'Propiedad cambió de estado', 'color' => '#035498', 'icono' => 'building-gear'],
             'alquiler_creado' => ['label' => 'Nuevo alquiler creado', 'color' => '#059669', 'icono' => 'house-check'],

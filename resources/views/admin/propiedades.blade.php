@@ -148,9 +148,9 @@
                     </div>
                 </td>
                 <td data-label="ARRENDADOR" class="col-mobile-hide">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div class="avatar-tabla" style="background: #B8CCE4; width: 28px; height: 28px;">CG</div>
-                        <span style="font-size: 13px;">Carlos García</span>
+                    <div class="d-flex align-items-center gap-8px">
+                        <div class="avatar-tabla avatar-28" style="background: #B8CCE4;">CG</div>
+                        <span class="font-13">Carlos García</span>
                     </div>
                 </td>
                 <td data-label="ESTADO"><span class="badge-estado badge-alquilada">Alquilada</span></td>
@@ -183,9 +183,9 @@
                     </div>
                 </td>
                 <td>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div class="avatar-tabla" style="background: #A8D5BF; width: 28px; height: 28px;">AT</div>
-                        <span style="font-size: 13px;">Ana Torres</span>
+                    <div class="d-flex align-items-center gap-8px">
+                        <div class="avatar-tabla avatar-28" style="background: #A8D5BF;">AT</div>
+                        <span class="font-13">Ana Torres</span>
                     </div>
                 </td>
                 <td><span class="badge-estado badge-publicada">Publicada</span></td>
@@ -218,9 +218,9 @@
                     </div>
                 </td>
                 <td>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div class="avatar-tabla" style="background: #F9E4A0; width: 28px; height: 28px;">EV</div>
-                        <span style="font-size: 13px;">Elena Vargas</span>
+                    <div class="d-flex align-items-center gap-8px">
+                        <div class="avatar-tabla avatar-28" style="background: #F9E4A0;">EV</div>
+                        <span class="font-13">Elena Vargas</span>
                     </div>
                 </td>
                 <td><span class="badge-estado badge-alquilada">Alquilada</span></td>
@@ -253,9 +253,9 @@
                     </div>
                 </td>
                 <td>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div class="avatar-tabla" style="background: #FFD5CC; width: 28px; height: 28px;">RM</div>
-                        <span style="font-size: 13px;">Roberto Mora</span>
+                    <div class="d-flex align-items-center gap-8px">
+                        <div class="avatar-tabla avatar-28" style="background: #FFD5CC;">RM</div>
+                        <span class="font-13">Roberto Mora</span>
                     </div>
                 </td>
                 <td><span class="badge-estado badge-publicada">Publicada</span></td>
@@ -288,9 +288,9 @@
                     </div>
                 </td>
                 <td>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div class="avatar-tabla" style="background: #D7EAF9; width: 28px; height: 28px;">CG</div>
-                        <span style="font-size: 13px;">Carlos García</span>
+                    <div class="d-flex align-items-center gap-8px">
+                        <div class="avatar-tabla avatar-28" style="background: #D7EAF9;">CG</div>
+                        <span class="font-13">Carlos García</span>
                     </div>
                 </td>
                 <td><span class="badge-estado badge-alquilada">Alquilada</span></td>
@@ -323,9 +323,9 @@
                     </div>
                 </td>
                 <td>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div class="avatar-tabla" style="background: #EDE7F6; width: 28px; height: 28px;">IS</div>
-                        <span style="font-size: 13px;">Isabel Sanz</span>
+                    <div class="d-flex align-items-center gap-8px">
+                        <div class="avatar-tabla avatar-28" style="background: #EDE7F6;">IS</div>
+                        <span class="font-13">Isabel Sanz</span>
                     </div>
                 </td>
                 <td><span class="badge-estado badge-borrador">Borrador</span></td>
@@ -358,9 +358,9 @@
                     </div>
                 </td>
                 <td>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div class="avatar-tabla" style="background: #D5F5E3; width: 28px; height: 28px;">DG</div>
-                        <span style="font-size: 13px;">Diego Guerrero</span>
+                    <div class="d-flex align-items-center gap-8px">
+                        <div class="avatar-tabla avatar-28" style="background: #D5F5E3;">DG</div>
+                        <span class="font-13">Diego Guerrero</span>
                     </div>
                 </td>
                 <td><span class="badge-estado badge-publicada">Publicada</span></td>
@@ -393,9 +393,9 @@
                     </div>
                 </td>
                 <td>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div class="avatar-tabla" style="background: #FAD7D7; width: 28px; height: 28px;">MF</div>
-                        <span style="font-size: 13px;">Miguel Fdez.</span>
+                    <div class="d-flex align-items-center gap-8px">
+                        <div class="avatar-tabla avatar-28" style="background: #FAD7D7;">MF</div>
+                        <span class="font-13">Miguel Fdez.</span>
                     </div>
                 </td>
                 <td><span class="badge-estado badge-inactiva">Inactiva</span></td>
@@ -428,9 +428,9 @@
                     </div>
                 </td>
                 <td>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div class="avatar-tabla" style="background: #CCE5FF; width: 28px; height: 28px;">EV</div>
-                        <span style="font-size: 13px;">Elena Vargas</span>
+                    <div class="d-flex align-items-center gap-8px">
+                        <div class="avatar-tabla avatar-28" style="background: #CCE5FF;">EV</div>
+                        <span class="font-13">Elena Vargas</span>
                     </div>
                 </td>
                 <td><span class="badge-estado badge-alquilada">Alquilada</span></td>
@@ -463,9 +463,9 @@
                     </div>
                 </td>
                 <td>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div class="avatar-tabla" style="background: #FDE8C8; width: 28px; height: 28px;">RM</div>
-                        <span style="font-size: 13px;">Roberto Mora</span>
+                    <div class="d-flex align-items-center gap-8px">
+                        <div class="avatar-tabla avatar-28" style="background: #FDE8C8;">RM</div>
+                        <span class="font-13">Roberto Mora</span>
                     </div>
                 </td>
                 <td><span class="badge-estado badge-publicada">Publicada</span></td>
@@ -519,7 +519,7 @@
         <div class="modal-grid-3">
             <div class="dato-item">
                 <span class="dato-label">Precio</span>
-                <span class="dato-valor" id="dataPrecio" style="color: #035498; font-weight: 700;">$1.200/mes</span>
+                <span class="dato-valor color-primary fw-700" id="dataPrecio">$1.200/mes</span>
             </div>
             <div class="dato-item">
                 <span class="dato-label">Tipo</span>
@@ -590,9 +590,9 @@
         <div class="persona-fila">
             <div class="avatar-tabla" id="avatarArrendador" style="background: #B8CCE4;">CG</div>
             <div>
-                <p id="nombreArrendador" style="font-weight: 600; font-size: 14px; margin: 0;">Carlos García</p>
-                <p id="emailArrendador" style="font-size: 12px; color: #6B7280; margin: 0;">carlos.garcia@email.com</p>
-                <p id="telefonoArrendador" style="font-size: 12px; color: #6B7280; margin: 0;">+34 612 345 678</p>
+                <p id="nombreArrendador" class="fw-600 font-14 m-0">Carlos García</p>
+                <p id="emailArrendador" class="font-12 color-gray m-0">carlos.garcia@email.com</p>
+                <p id="telefonoArrendador" class="font-12 color-gray m-0">+34 612 345 678</p>
             </div>
         </div>
         <a id="linkPerfilArrendador" class="link-accion">Ver perfil →</a>
@@ -600,7 +600,7 @@
         <span class="seccion-label mt">GESTOR ASIGNADO</span>
         <div class="persona-fila">
             <div class="avatar-tabla" id="avatarGestor" style="background: #B8CCE4;">CG</div>
-            <p id="nombreGestor" style="font-weight: 600; font-size: 14px; margin: 0;">Carlos García</p>
+            <p id="nombreGestor" class="fw-600 font-14 m-0">Carlos García</p>
             <span class="badge-el-mismo">Él mismo</span>
         </div>
 
@@ -612,20 +612,20 @@
             <div class="inquilino-item">
                 <div class="avatar-tabla" style="background: #A8D5BF;">LM</div>
                 <div>
-                    <p style="font-weight: 600; font-size: 13px; margin: 0;">Laura Martínez</p>
-                    <p style="font-size: 12px; color: #6B7280; margin: 0;">laura@email.com</p>
-                    <p style="font-size: 12px; color: #6B7280; margin: 0;">Desde: enero 2025</p>
+                    <p class="fw-600 font-13 m-0">Laura Martínez</p>
+                    <p class="font-12 color-gray m-0">laura@email.com</p>
+                    <p class="font-12 color-gray m-0">Desde: enero 2025</p>
                 </div>
-                <span class="badge-estado badge-activo" style="margin-left: auto;">Activo</span>
+                <span class="badge-estado badge-activo ml-auto">Activo</span>
             </div>
             <div class="inquilino-item">
                 <div class="avatar-tabla" style="background: #D7EAF9;">PM</div>
                 <div>
-                    <p style="font-weight: 600; font-size: 13px; margin: 0;">Pedro Molina</p>
-                    <p style="font-size: 12px; color: #6B7280; margin: 0;">pedro@email.com</p>
-                    <p style="font-size: 12px; color: #6B7280; margin: 0;">Desde: febrero 2025</p>
+                    <p class="fw-600 font-13 m-0">Pedro Molina</p>
+                    <p class="font-12 color-gray m-0">pedro@email.com</p>
+                    <p class="font-12 color-gray m-0">Desde: febrero 2025</p>
                 </div>
-                <span class="badge-estado badge-activo" style="margin-left: auto;">Activo</span>
+                <span class="badge-estado badge-activo ml-auto">Activo</span>
             </div>
         </div>
 
@@ -635,8 +635,8 @@
         <span class="seccion-label">CONTRATO ACTIVO</span>
         <div class="contrato-card">
             <div>
-                <p style="font-weight: 600; font-size: 13px; margin: 0;">Contrato #2025-0142</p>
-                <p style="font-size: 12px; color: #6B7280; margin: 0;">Firmado 15 ene 2025 · Válido hasta 15 ene 2026</p>
+                <p class="fw-600 font-13 m-0">Contrato #2025-0142</p>
+                <p class="font-12 color-gray m-0">Firmado 15 ene 2025 · Válido hasta 15 ene 2026</p>
             </div>
             <div class="contrato-acciones">
                 <span class="badge-estado badge-activo">Firmado</span>
@@ -651,13 +651,13 @@
         <div class="incidencias-lista">
             <div class="incidencia-item">
                 <span class="punto-verde"></span>
-                <span style="flex: 1;">Fuga en el baño</span>
+                <span class="flex-1">Fuga en el baño</span>
                 <span class="badge-estado badge-activo">Resuelta</span>
                 <span class="tiempo-texto">hace 2 meses</span>
             </div>
             <div class="incidencia-item">
                 <span class="punto-naranja"></span>
-                <span style="flex: 1;">Calefacción no funciona</span>
+                <span class="flex-1">Calefacción no funciona</span>
                 <span class="badge-estado badge-pendiente">En proceso</span>
                 <span class="tiempo-texto">hace 3 días</span>
             </div>
@@ -668,7 +668,7 @@
 
             <div class="modal-footer">
                 <div class="d-flex align-items-center w-100 justify-content-between">
-                    <button id="btnDesactivarPropiedad" class="btn btn-outline-secondary">
+                    <button id="btnDesactivarPropiedad" class="btn-desactivar">
                         Desactivar propiedad
                     </button>
                     <div class="d-flex gap-2">

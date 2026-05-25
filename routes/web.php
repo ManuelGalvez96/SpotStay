@@ -258,6 +258,7 @@ Route::middleware(['role:arrendador', 'arrendador.activo'])->group(function () {
     Route::get('/arrendador/propiedades/{id}/editar-datos', [ArrendadorPropiedadController::class, 'datosEdicion'])->whereNumber('id')->name('arrendador.propiedades.edit-data');
     Route::get('/arrendador/propiedades/{id}', [ArrendadorPropiedadController::class, 'mostrar'])->whereNumber('id')->name('arrendador.propiedades.show');
     Route::get('/arrendador/gestores/disponibles', [ArrendadorGestorController::class, 'obtenerGestoresDisponibles'])->name('arrendador.gestores.disponibles');
+    Route::post('/arrendador/gestores/validar-codigo', [ArrendadorPropiedadController::class, 'validarCodigoGestor'])->name('arrendador.gestores.validar-codigo');
     Route::get('/arrendador/propiedades/{propiedad}/gestor/permisos', [ArrendadorPropiedadController::class, 'getPermisosGestor'])->name('arrendador.permisos.get');
     Route::post('/arrendador/propiedades/{propiedad}/gestor/permisos', [ArrendadorPropiedadController::class, 'updatePermisosGestor'])->name('arrendador.permisos.update');
     Route::post('/arrendador/propiedades/{propiedad}/gestor/desasignar', [ArrendadorPropiedadController::class, 'desasignarGestor'])->name('arrendador.permisos.desasignar');

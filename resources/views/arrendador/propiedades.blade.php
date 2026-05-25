@@ -19,8 +19,11 @@
 <div class="alert alert-error">{{ session('error') }}</div>
 @endif
 
-@if ($limiteAlcanzado)
-    <div class="alert alert-warning" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; background: #fffcf4; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); width: 100%; box-sizing: border-box;">
+
+
+<section class="stats-grid">
+    @if ($limiteAlcanzado)
+    <div class="alert alert-warning" style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 10px; background: #fffcf4; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); box-sizing: border-box;">
         <div>
             <strong style="color: #856404; font-size: 16px;">💳 ¡Límite de Suscripción Alcanzado!</strong>
             <p style="margin: 5px 0 0 0; color: #664d03; line-height: 1.5; font-size: 14px;">
@@ -33,9 +36,7 @@
             </a>
         </div>
     </div>
-@endif
-
-<section class="stats-grid">
+    @endif
     <div class="stat-card"><span>{{ $totales['totalPropiedades'] }}</span><small>Total</small></div>
     <div class="stat-card"><span>{{ $totales['publicadas'] }}</span><small>Publicadas</small></div>
     <div class="stat-card"><span>{{ $totales['alquiladas'] }}</span><small>Alquiladas</small></div>
@@ -124,17 +125,23 @@
             <div class="gestor-config-grid">
                 <aside class="gestor-left-panel">
                     <h3>Asignar gestor</h3>
-                    <p class="gestor-panel-help">Selecciona quién administrará esta propiedad. Se solicitará su código antes de asignarlo.</p>
+                    <p class="gestor-panel-help">Introduce el código del gestor para asignarlo a esta propiedad. El código tiene formato GES-XXXX-XXXX.</p>
 
                     <div class="gestor-selector-wrap">
-                        <span class="gestor-selector-label">Gestor seleccionado</span>
-                        <div class="gestor-selector-box" aria-live="polite">
+                        <span class="gestor-selector-label">Código del gestor</span>
+                        <input type="text" id="codigo-gestor-input" class="codigo-gestor-input" placeholder="GES-XXXX-XXXX" maxlength="12" aria-label="Código del gestor" aria-describedby="codigo-gestor-error">
+                        <span class="codigo-gestor-validacion" id="codigo-gestor-validacion"></span>
+                        <div id="codigo-gestor-error" class="codigo-gestor-error" style="display:none;"></div>
+                    </div>
+
+                    <div class="gestor-info-container" id="gestor-info-container" style="display:none;margin-top:12px;padding:12px;background:#F5F5F5;border-radius:8px;">
+                        <span class="gestor-selector-label">Gestor identificado</span>
+                        <div class="gestor-info-display">
                             <div class="gestor-avatar" id="gestor_avatar_inicial">-</div>
                             <div class="gestor-selector-info">
-                                <span class="gestor-selector-name" id="nombre_gestor">Sin gestor asignado</span>
-                                <span class="gestor-selector-email" id="email_gestor">Sin email disponible</span>
+                                <span class="gestor-selector-name" id="nombre_gestor">—</span>
+                                <span class="gestor-selector-email" id="email_gestor">—</span>
                             </div>
-                            <i class="bi bi-chevron-down"></i>
                         </div>
                     </div>
 

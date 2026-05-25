@@ -852,3 +852,16 @@ body.admin .acciones-tabla .btn-eliminar:hover {
     margin-left: 4px;
     font-size: 13px;
 }
+
+@media (max-width: 768px) {
+    .asesoria-admin-submenu {
+        padding: 0 12px;
+    }
+    .asesoria-admin-tab {
+        flex: 1;
+        justify-content: center;
+        text-align: center;
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+}

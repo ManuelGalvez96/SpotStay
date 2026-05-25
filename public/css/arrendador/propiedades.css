@@ -93,6 +93,7 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
 .propiedad-context-chip { display: inline-flex; align-items: center; border: 1px solid #cfd7e3; border-radius: 999px; background: #fff; color: #334155; padding: 6px 10px; font-size: 13px; font-weight: 600; }
 .gestor-config-grid { display: grid; grid-template-columns: minmax(280px, 320px) 1fr; gap: 20px; padding-bottom: 14px; }
 .gestor-left-panel, .gestor-right-panel { border: 1px solid var(--borde); border-radius: 14px; padding: 18px; background: #fff; }
+.gestor-left-panel { display: flex; flex-direction: column; }
 .gestor-left-panel h3, .gestor-right-panel h3 { margin: 0; font-size: 22px; }
 .gestor-panel-help { margin: 8px 0 16px; color: #6b7280; font-size: 15px; line-height: 1.45; }
 .gestor-selector-wrap { margin-bottom: 18px; position: relative; }
@@ -119,6 +120,59 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
 .btn-gestor-profile:disabled { opacity: .55; cursor: not-allowed; }
 .btn-desasignar-gestor { width: 100%; background: #fff; color: #b42318; border-color: #fecdca; }
 .btn-desasignar-gestor:hover { background: #fff1f0; }
+#gestor-section-asignar,
+#gestor-section-actual,
+.gestor-section-bottom {
+    margin-top: auto;
+}
+.gestor-actual-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    background: #fff;
+    margin-bottom: 12px;
+}
+.gestor-input-row {
+    display: flex;
+    gap: 8px;
+}
+.gestor-input-row .codigo-gestor-input {
+    flex: 1;
+}
+.btn-validar-codigo {
+    padding: 8px 16px;
+    background: #035498;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.btn-validar-codigo:hover {
+    background: #024080;
+}
+.gestor-actual-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.gestor-actual-nombre {
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
+}
+.gestor-actual-email {
+    font-size: 12px;
+    color: #6B7280;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 .permissions-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .permission-card { display: flex; align-items: flex-start; gap: 12px; border: 1px solid #d8dde5; border-radius: 12px; padding: 12px; background: #fff; min-height: 90px; cursor: pointer; }
 .permission-card:hover { border-color: #b9c3d1; }

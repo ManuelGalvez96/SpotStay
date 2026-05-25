@@ -74,8 +74,35 @@
     padding: 16px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
     flex-shrink: 0;
+}
+
+.spoty-chatbot-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.spoty-chatbot-btn-cerrar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+
+.spoty-chatbot-btn-cerrar:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .spoty-chatbot-header h3 {
@@ -105,16 +132,34 @@
     height: 30px;
 }
 
+.spoty-chatbot-avatar-usuario {
+    background: rgba(255, 255, 255, 0.8);
+    object-fit: cover;
+}
+
+.spoty-chatbot-avatar-inicial {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #035498;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
 .spoty-chatbot-mensajes {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
     padding: 16px;
     display: flex;
     flex-direction: column;
     gap: 12px;
     background: #f0f4f9;
-    min-height: 280px;
-    max-height: 340px;
 }
 
 .spoty-chatbot-mensaje {
@@ -270,6 +315,18 @@
         width: 100%;
         max-height: 100%;
         border-radius: 0;
+        display: none;
+        flex-direction: column;
+    }
+
+    .spoty-chatbot.abierto .spoty-chatbot-panel {
+        display: flex;
+    }
+
+    .spoty-chatbot-mensajes {
+        flex: 1;
+        min-height: 0;
+        max-height: none;
     }
 
     .spoty-chatbot-toggle {

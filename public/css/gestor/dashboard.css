@@ -112,6 +112,10 @@
     display: none;
 }
 
+.propiedades-grid-desktop {
+    display: block;
+}
+
 .propiedades-lista-mobile {
     display: none;
 }
@@ -340,6 +344,10 @@
     .incidencias-lista-mobile {
         display: block;
         padding: 0 12px 12px;
+    }
+
+    .propiedades-grid-desktop {
+        display: none;
     }
 
     .propiedades-lista-mobile {

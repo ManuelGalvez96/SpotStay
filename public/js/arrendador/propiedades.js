@@ -47,6 +47,97 @@ function extraerMensajeError(datosRespuesta) {
   return 'Error al procesar la solicitud.';
 }
 
+function iniciarValidacionFormularioPropiedad() {
+  var formulario = document.querySelector('form[data-ajax-form="true"]');
+
+  if (!formulario) {
+    return;
+  }
+
+  var botonEnviar = formulario.querySelector('button[type="submit"]');
+  var camposObligatorios = [
+    document.getElementById('form-titulo'),
+    document.getElementById('form-tipo'),
+    document.getElementById('form-estado'),
+    document.getElementById('form-calle'),
+    document.getElementById('form-numero'),
+    document.getElementById('form-codigo-postal'),
+    document.getElementById('form-ciudad'),
+    document.getElementById('form-precio')
+  ].filter(function (campo) {
+    return Boolean(campo);
+  });
+
+  function validarCampo(campo) {
+    if (!campo) {
+      return true;
+    }
+
+    var valor = typeof campo.value === 'string' ? campo.value.trim() : '';
+
+    if (campo.required && valor === '') {
+      campo.setCustomValidity('Este campo es obligatorio.');
+    } else {
+      campo.setCustomValidity('');
+    }
+
+    return campo.checkValidity();
+  }
+
+  function actualizarEstadoBoton() {
+    var formularioValido = formulario.checkValidity();
+
+    camposObligatorios.forEach(function (campo) {
+      validarCampo(campo);
+    });
+
+    if (botonEnviar) {
+      botonEnviar.disabled = !formularioValido;
+    }
+
+    return formularioValido;
+  }
+
+  camposObligatorios.forEach(function (campo) {
+    campo.oninput = function () {
+      validarCampo(campo);
+      actualizarEstadoBoton();
+    };
+
+    campo.onchange = function () {
+      validarCampo(campo);
+      actualizarEstadoBoton();
+    };
+
+    campo.onblur = function () {
+      validarCampo(campo);
+      actualizarEstadoBoton();
+
+      if (!campo.checkValidity() && typeof campo.reportValidity === 'function') {
+        campo.reportValidity();
+      }
+    };
+  });
+
+  formulario.onsubmit = function (evento) {
+    if (!actualizarEstadoBoton()) {
+      evento.preventDefault();
+
+      if (typeof formulario.reportValidity === 'function') {
+        formulario.reportValidity();
+      }
+
+      mostrarMensaje('Completa los campos obligatorios antes de guardar la propiedad.', true);
+      return false;
+    }
+
+    return true;
+  };
+
+  actualizarEstadoBoton();
+  window.actualizarEstadoValidacionFormularioPropiedad = actualizarEstadoBoton;
+}
+
 function actualizarFilaPropiedad(datosPropiedad) {
   if (!datosPropiedad || !datosPropiedad.id_propiedad) {
     return;
@@ -118,6 +209,15 @@ function fetchEditData(propiedadId) {
 function enviarFormularioConFetch(formulario) {
   formulario.onsubmit = function (evento) {
     evento.preventDefault();
+
+    if (typeof formulario.checkValidity === 'function' && !formulario.checkValidity()) {
+      if (typeof formulario.reportValidity === 'function') {
+        formulario.reportValidity();
+      }
+
+      mostrarMensaje('Completa los campos obligatorios antes de guardar.', true);
+      return;
+    }
 
     var botonEnviar = formulario.querySelector('button[type="submit"]');
     var textoOriginal = botonEnviar ? botonEnviar.textContent : '';
@@ -437,6 +537,10 @@ function abrirModalFormulario(arrendadorId, datosPropiedad) {
       document.getElementById('form-adicional').value = datosPropiedad.adicional_propiedad || '';
       document.getElementById('form-precio').value = datosPropiedad.precio_propiedad || '';
       document.getElementById('form-descripcion').value = datosPropiedad.descripcion_propiedad || '';
+    }
+
+    if (typeof window.actualizarEstadoValidacionFormularioPropiedad === 'function') {
+      window.actualizarEstadoValidacionFormularioPropiedad();
     }
   }
 
@@ -1130,6 +1234,7 @@ function escaparHtml(texto) {
 
 document.querySelectorAll('form[data-ajax-form="true"]').forEach(enviarFormularioConFetch);
 iniciarValidacionImagenes();
+iniciarValidacionFormularioPropiedad();
 cargarTablaPropiedades();
 
 document.onkeydown = function (evento) {

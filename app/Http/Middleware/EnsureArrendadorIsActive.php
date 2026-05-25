@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,9 +20,10 @@ class EnsureArrendadorIsActive
     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::user();
+        $usuarioId = (int) ($user->id_usuario ?? $user->id ?? 0);
 
         // 1. Si no está logueado, al login
-        if (!$user) {
+        if (!$user || $usuarioId <= 0) {
             return redirect()->route('login');
         }
 
@@ -36,8 +38,6 @@ class EnsureArrendadorIsActive
             ->first();
 
         $suscripcionCaducada = $ultimaSuscripcionActiva && $ultimaSuscripcionActiva->fin_suscripcion && \Carbon\Carbon::parse($ultimaSuscripcionActiva->fin_suscripcion)->isPast();
-
-        $esArrendador = $user->roles()->where('slug_rol', 'arrendador')->exists();
 
         if ($suscripcionCaducada) {
             \Illuminate\Support\Facades\DB::transaction(function() use ($ultimaSuscripcionActiva, $user) {
@@ -109,10 +109,6 @@ class EnsureArrendadorIsActive
             $user->refresh();
 
             // Recargar suscripción activa tras transicionar
-            $ultimaSuscripcionActiva = \App\Models\Suscripcion::where('id_usuario_fk', $user->id_usuario)
-                ->whereIn('estado_suscripcion', ['activa', 'cancelada'])
-                ->latest('id_suscripcion')
-                ->first();
             $suscripcionCaducada = false;
 
             // Recargar estado de pendiente de pago
@@ -121,24 +117,34 @@ class EnsureArrendadorIsActive
                 ->exists();
         }
 
-        // Si es arrendador, la cuenta DEBE estar activa en stripe. Si es otro rol, solo bloquea si caducó o tiene pago pendiente
-        if (($esArrendador && $user->stripe_status !== 'active') || $tienePendientePago || $suscripcionCaducada) {
-            if (!$request->is('miembro/suscripcion*')) {
-                $mensaje = ($tienePendientePago || $suscripcionCaducada)
-                    ? 'Tienes un pago de suscripción pendiente. Por favor, completa tu suscripción para continuar.' 
-                    : 'Para acceder a esta sección, primero debes activar tu suscripción mensual.';
-                return redirect()->route('miembro.suscripcion.index')
-                    ->with('info', $mensaje);
-            }
-        }
+        $esArrendador = $user->roles()->where('slug_rol', 'arrendador')->exists();
 
-        // 3. Verificar Cuenta de Cobros / IBAN (Solo para Arrendadores)
-        if ($esArrendador && !$user->stripe_account_id) {
-            if (!$request->is('arrendador/configurar-stripe*') && 
-                !$request->is('miembro/suscripcion*') && 
-                !$request->is('arrendador/guardar-iban*')) {
-                return redirect()->route('arrendador.stripe.configurar')
-                    ->with('info', '¡Suscripción activa! Ahora configura tus datos bancarios para recibir pagos.');
+        // 2. Estas restricciones solo aplican al rol de 'arrendador'
+        if ($esArrendador) {
+            // Si es arrendador, la cuenta DEBE estar activa en stripe. Si es otro rol, solo bloquea si caducó o tiene pago pendiente
+            if ($user->stripe_status !== 'active' || $tienePendientePago || $suscripcionCaducada) {
+                if (!$request->is('miembro/suscripcion*')) {
+                    $mensaje = ($tienePendientePago || $suscripcionCaducada)
+                        ? 'Tienes un pago de suscripción pendiente. Por favor, completa tu suscripción para continuar.' 
+                        : 'Para acceder a esta sección, primero debes activar tu suscripción mensual.';
+                    return redirect()->route('miembro.suscripcion.index')
+                        ->with('info', $mensaje);
+                }
+            }
+
+            // 3. Verificar Cuenta de Cobros / IBAN (Solo para Arrendadores)
+            if (!$user->stripe_account_id) {
+                if (!$request->is('arrendador/configurar-stripe*') && 
+                    !$request->is('miembro/suscripcion*') && 
+                    !$request->is('arrendador/guardar-iban*')) {
+                    return redirect()->route('arrendador.stripe.configurar')
+                        ->with('info', '¡Suscripción activa! Ahora configura tus datos bancarios para recibir pagos.');
+                }
+            }
+        } elseif ($tienePendientePago || $suscripcionCaducada) {
+            if (!$request->is('miembro/suscripcion*')) {
+                return redirect()->route('miembro.suscripcion.index')
+                    ->with('info', 'Tienes un pago de suscripción pendiente. Por favor, completa tu suscripción para continuar.');
             }
         }
 

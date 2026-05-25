@@ -98,6 +98,10 @@ class AppServiceProvider extends ServiceProvider
                 
                 // Si el plan es Gratuito muestra anuncios
                 $mostrarAnuncios = $suscripcion?->plan_suscripcion === 'Gratuito' || $suscripcion?->plan_suscripcion === "Miembro Estándar";
+                $esGestorUsuario = $usuario->roles()->where('slug_rol', 'gestor')->exists()
+                    || DB::table('tbl_propiedad')
+                        ->where('id_gestor_fk', $usuario->id_usuario)
+                        ->exists();
 
                 $view->with([
                     'nombreUsuario' => $nombre,
@@ -111,10 +115,8 @@ class AppServiceProvider extends ServiceProvider
                     'notificacionesGestorSinLeer' => $notificacionesGestorSinLeer,
                     'notificacionesUsuario' => $notificacionesUsuario,
                     'notificacionesUsuarioSinLeer' => $notificacionesUsuarioSinLeer,
-                    'esGestor' => $usuario->roles()->where('slug_rol', 'gestor')->exists() || \Illuminate\Support\Facades\DB::table('tbl_propiedad')
-                            ->where('id_gestor_fk', $usuario->id_usuario)
-                            ->exists(),
                     'mostrarAnuncios' => $mostrarAnuncios,
+                    'esGestor' => $esGestorUsuario,
                 ]);
             } else {
                 $view->with([

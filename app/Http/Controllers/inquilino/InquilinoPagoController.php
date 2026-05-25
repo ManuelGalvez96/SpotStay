@@ -307,8 +307,19 @@ class InquilinoPagoController extends Controller
 
                 foreach ($idsIncidencia as $idInc) {
                     $incidencia = DB::table('tbl_incidencia')->where('id_incidencia', $idInc)->first();
+                    
                     DB::table('tbl_incidencia')->where('id_incidencia', $idInc)->update(['estado_workflow' => 'pagado']);
                     $this->notificarPagoConfirmado((int) $meta->id_alquiler, 'Pago reparación #' . $idInc, (float) ($incidencia ? ($incidencia->presupuesto_importe_incidencia ?? 0) : 0));
+                    
+                    DB::table('tbl_incidencia')->where('id_incidencia', $idInc)->update([
+                        'estado_incidencia' => 'solucionada',
+                        'pagado_presupuesto_incidencia' => true,
+                        'pagado_incidencia' => $ahora,
+                        'actualizado_incidencia' => $ahora,
+                    ]);
+                    
+                    $tituloReparacion = $incidencia ? $incidencia->titulo_incidencia : '#' . $idInc;
+                    
                     Pago::create([
                         'id_pagador_fk' => $meta->id_usuario,
                         'id_alquiler_fk' => $meta->id_alquiler,
@@ -409,6 +420,15 @@ class InquilinoPagoController extends Controller
                     'fecha_confirmacion_pago' => $ahora,
                 ]);
                 $this->notificarPagoConfirmado((int) $meta->id_alquiler, 'Pago reparación #' . $meta->id_referencia, (float) ($session->amount_total / 100));
+
+                DB::table('tbl_historial_incidencia')->insert([
+                    'id_incidencia_fk' => $meta->id_referencia,
+                    'id_usuario_fk' => $meta->id_usuario,
+                    'comentario_historial' => 'La incidencia ha sido pagada y queda solucionada a la espera de revisión por el inquilino.',
+                    'cambio_estado_historial' => 'solucionada',
+                    'creado_historial' => $ahora,
+                    'actualizado_historial' => $ahora,
+                ]);
                 $this->generarFacturaPDF($pago->id_pago);
             }
 

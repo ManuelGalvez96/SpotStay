@@ -25,10 +25,6 @@
                 Puedes ver o descargar el contrato desde el enlace que aparece abajo. Guarda el documento si lo necesitas para futuras consultas.
             </div>
 
-            <div style="text-align: center; margin-bottom: 24px;">
-                <a href="{{ $urlPdf }}" target="_blank" style="display: inline-block; background-color: #1AA068; color: white; padding: 12px 28px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 15px;">Ver / Descargar contrato (PDF)</a>
-            </div>
-
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
 
             <div style="font-size: 12px; color: #6b7280; text-align: center;">

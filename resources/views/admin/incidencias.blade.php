@@ -297,7 +297,7 @@
     <div class="kanban-col kanban-col-resuelta">
         <div class="kanban-col-header">
             <span class="kanban-punto kanban-punto-gris"></span>
-            <span>Resuelta</span>
+            <span>Cerradas</span>
             <span class="badge-kanban badge-kanban-gris">{{ count($resueltas ?? []) }}</span>
         </div>
         <div class="kanban-col-body">
@@ -306,10 +306,10 @@
                     <i class="bi bi-lock-fill lock-resuelta"></i>
                     <p class="tarjeta-titulo tarjeta-titulo-resuelta">{{ $inc->titulo_incidencia }}</p>
                     <p class="tarjeta-propiedad">{{ \Illuminate\Support\Str::limit($inc->direccion_propiedad ?? '', 20) }}</p>
-                    <p class="tarjeta-tiempo">Resuelta · {{ \Carbon\Carbon::parse($inc->creado_incidencia)->diffForHumans() }}</p>
+                    <p class="tarjeta-tiempo">Cerrada · {{ \Carbon\Carbon::parse($inc->creado_incidencia)->diffForHumans() }}</p>
                 </div>
             @empty
-                <p class="kanban-vacio">Sin incidencias resueltas</p>
+                <p class="kanban-vacio">Sin incidencias cerradas</p>
             @endforelse
         </div>
     </div>

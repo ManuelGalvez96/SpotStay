@@ -183,13 +183,13 @@
                                 </td>
                                 <td data-label="ACCIONES">
                                     <div class="acciones-tabla">
-                                        <button type="button" class="btn-icono btn-ver-sol" data-id="{{ $solicitud->id_solicitud }}" data-tipo="{{ $solicitud->tipo_solicitud }}" title="Ver detalles" onclick="abrirModal(this.getAttribute('data-id'), this.getAttribute('data-tipo'))">
+                                        <button type="button" class="btn-icono btn-ver-sol" data-id="{{ $solicitud->id_solicitud }}" data-tipo="{{ $solicitud->tipo_solicitud }}" title="Ver detalles">
                                             <i class="bi bi-eye"></i>
                                         </button>
-                                        <button type="button" class="btn-icono btn-aprobar-sol" data-id="{{ $solicitud->id_solicitud }}" data-tipo="{{ $solicitud->tipo_solicitud }}" title="Aprobar" onclick="abrirModal(this.getAttribute('data-id'), this.getAttribute('data-tipo'))">
+                                        <button type="button" class="btn-icono btn-aprobar-sol" data-id="{{ $solicitud->id_solicitud }}" data-tipo="{{ $solicitud->tipo_solicitud }}" title="Aprobar">
                                             <i class="bi bi-check-circle"></i>
                                         </button>
-                                        <button type="button" class="btn-icono btn-rechazar-sol" data-id="{{ $solicitud->id_solicitud }}" data-tipo="{{ $solicitud->tipo_solicitud }}" title="Rechazar" onclick="abrirModal(this.getAttribute('data-id'), this.getAttribute('data-tipo'))">
+                                        <button type="button" class="btn-icono btn-rechazar-sol" data-id="{{ $solicitud->id_solicitud }}" data-tipo="{{ $solicitud->tipo_solicitud }}" title="Rechazar">
                                             <i class="bi bi-x-circle"></i>
                                         </button>
                                     </div>

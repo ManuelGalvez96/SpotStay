@@ -8,7 +8,7 @@
             <li><a href="{{ route('miembro.arrendador.formulario') }}" class="enlace-nav {{ request()->routeIs('miembro.arrendador.formulario') ? 'activo' : '' }}"><i class="bi bi-plus-circle"></i> Conviertete en Arrendador</a></li>
             @endif
             
-            @if (!$esGestor && !$esArrendador && !$esInquilino)
+            @if (!$esGestor)
             <li><a href="{{ route('miembro.gestor.formulario') }}" class="enlace-nav {{ request()->routeIs('miembro.gestor.formulario') ? 'activo' : '' }}"><i class="bi bi-plus-circle"></i> Conviertete en Gestor</a></li>
             @endif
 

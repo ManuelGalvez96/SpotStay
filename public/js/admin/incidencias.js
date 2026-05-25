@@ -205,10 +205,26 @@ var asignarEventosVista = function() {
     var kanban = document.getElementById('kanbanBoard');
     var tabla = document.getElementById('vistaLista');
 
+    if (kanban) {
+        kanban.classList.remove('d-none');
+        kanban.style.display = 'grid';
+    }
+
+    if (tabla) {
+        tabla.classList.add('d-none');
+        tabla.style.display = 'none';
+    }
+
     if (btnKanban) {
         btnKanban.onclick = function() {
-            if (kanban) { kanban.style.display = 'grid'; }
-            if (tabla) { tabla.style.display = 'none'; }
+            if (kanban) {
+                kanban.classList.remove('d-none');
+                kanban.style.display = 'grid';
+            }
+            if (tabla) {
+                tabla.classList.add('d-none');
+                tabla.style.display = 'none';
+            }
             if (btnKanban) { btnKanban.classList.add('activo'); }
             if (btnLista) { btnLista.classList.remove('activo'); }
         };
@@ -216,8 +232,14 @@ var asignarEventosVista = function() {
 
     if (btnLista) {
         btnLista.onclick = function() {
-            if (kanban) { kanban.style.display = 'none'; }
-            if (tabla) { tabla.style.display = 'block'; }
+            if (kanban) {
+                kanban.classList.add('d-none');
+                kanban.style.display = 'none';
+            }
+            if (tabla) {
+                tabla.classList.remove('d-none');
+                tabla.style.display = 'block';
+            }
             if (btnLista) { btnLista.classList.add('activo'); }
             if (btnKanban) { btnKanban.classList.remove('activo'); }
         };

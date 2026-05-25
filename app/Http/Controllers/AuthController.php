@@ -65,10 +65,13 @@ class AuthController extends Controller
                 ])->onlyInput('email');
             }
 
-            // 5. Notificación si tiene solicitud de Arrendador pendiente o rechazada
-            $solicitud = \App\Models\SolicitudArrendador::where('id_usuario_fk', $usuario->id_usuario)->first();
+            // 5. Bloqueo de acceso si es arrendador y tiene solicitud pendiente/rechazada
+            $esArrendador = $usuario->roles()->where('slug_rol', 'arrendador')->exists();
+            $solicitud = $esArrendador
+                ? \App\Models\SolicitudArrendador::where('id_usuario_fk', $usuario->id_usuario)->first()
+                : null;
 
-            if ($solicitud) {
+            if ($esArrendador && $solicitud) {
                 if ($solicitud->estado_solicitud_arrendador === 'pendiente') {
                     session()->flash('success', 'Tu solicitud de arrendador está pendiente de revisión. Te avisaremos cuando haya novedades.');
                 }
@@ -81,11 +84,6 @@ class AuthController extends Controller
 
             // 6. Intentar el login (ya sabemos que las credenciales son correctas)
             Auth::login($usuario);
-            $request->session()->regenerate();
-
-            /** @var Usuario $user */
-            $user = Auth::user();
-
             $request->session()->regenerate();
 
             /** @var Usuario $user */

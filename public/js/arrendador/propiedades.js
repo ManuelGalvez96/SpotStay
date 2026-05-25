@@ -1060,7 +1060,7 @@ function construirContenidoModal(datos) {
   var textoEstado = propiedad.estado_propiedad.charAt(0).toUpperCase() + propiedad.estado_propiedad.slice(1);
 
   if (fotos.length > 0) {
-    htmlFotos = '<img src="/storage/' + fotos[0].ruta_foto + '" alt="' + propiedad.titulo_propiedad + '" style="width: 100%; height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;" />';
+    htmlFotos = '<img src="/img/' + fotos[0].ruta_foto + '" alt="' + propiedad.titulo_propiedad + '" style="width: 100%; height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;" />';
   } else {
     htmlFotos = '<div style="width: 100%; height: 300px; background: #e0e0e0; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; color: #999;">Sin imágenes</div>';
   }
@@ -1068,7 +1068,7 @@ function construirContenidoModal(datos) {
   if (fotos.length > 1) {
     htmlMiniaturas = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 8px; margin-bottom: 20px;">';
     fotos.forEach(function (foto) {
-      htmlMiniaturas += '<img src="/storage/' + foto.ruta_foto + '" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer;" onclick="cambiarFotoModal(this.src)" />';
+      htmlMiniaturas += '<img src="/img/' + foto.ruta_foto + '" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer;" onclick="cambiarFotoModal(this.src)" />';
     });
     htmlMiniaturas += '</div>';
   }

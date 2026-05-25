@@ -13,11 +13,17 @@
     <div class="hero-content">
         <h1>Asesoría Legal</h1>
         <p>Preguntas frecuentes sobre alquiler, vivienda y normativa</p>
-        <a href="{{ route($routePrefix . '.asesoria') }}" class="asesoria-back-link"><i class="bi bi-arrow-left"></i> Todas las categorías</a>
-    </div>
+</div>
     <div class="hero-deco hero-deco-1"></div>
     <div class="hero-deco hero-deco-2"></div>
     <div class="hero-deco hero-deco-3"></div>
+</div>
+
+<div class="asesoria-back-wrap">
+    <a href="{{ route($routePrefix . '.asesoria') }}" class="asesoria-back-link">
+        <span class="asesoria-back-icono"><i class="bi bi-arrow-left"></i></span>
+        Todas las categorías
+    </a>
 </div>
 
 <div class="asesoria-grid">

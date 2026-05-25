@@ -130,6 +130,27 @@ Route::middleware(['role:admin'])->group(function () {
     Route::put('/admin/categorias/{id}', [CategoriaController::class, 'editar']);
     Route::delete('/admin/categorias/{id}', [CategoriaController::class, 'eliminar']);
 
+    // Asesoría Legal
+    Route::get('/admin/asesoria', [\App\Http\Controllers\Admin\AsesoriaController::class, 'index'])->name('admin.asesoria');
+    Route::get('/admin/asesoria/filtrar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'filtrar'])->name('admin.asesoria.filtrar');
+    Route::post('/admin/asesoria/categoria/crear', [\App\Http\Controllers\Admin\AsesoriaController::class, 'store'])->name('admin.asesoria.categoria.crear');
+    Route::post('/admin/asesoria/categoria/{id}/toggle-estado', [\App\Http\Controllers\Admin\AsesoriaController::class, 'toggleEstado'])->name('admin.asesoria.categoria.toggle');
+    Route::get('/admin/asesoria/categoria/{id}/editar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'edit'])->name('admin.asesoria.categoria.edit');
+    Route::post('/admin/asesoria/categoria/{id}/actualizar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'update'])->name('admin.asesoria.categoria.update');
+    Route::delete('/admin/asesoria/categoria/{id}/eliminar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'destroy'])->name('admin.asesoria.categoria.destroy');
+
+    // Asesoría Legal — Artículos
+    Route::get('/admin/asesoria/articulos', [\App\Http\Controllers\Admin\AsesoriaController::class, 'articulos'])->name('admin.asesoria.articulos');
+    Route::get('/admin/asesoria/articulos/filtrar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'filtrarArticulos'])->name('admin.asesoria.articulos.filtrar');
+    Route::post('/admin/asesoria/articulos/crear', [\App\Http\Controllers\Admin\AsesoriaController::class, 'storeArticulo'])->name('admin.asesoria.articulos.crear');
+    Route::post('/admin/asesoria/articulos/{articulo}/toggle-estado', [\App\Http\Controllers\Admin\AsesoriaController::class, 'toggleEstadoArticulo'])->name('admin.asesoria.articulos.toggle-estado');
+    Route::post('/admin/asesoria/articulos/{articulo}/toggle-destacado', [\App\Http\Controllers\Admin\AsesoriaController::class, 'toggleDestacadoArticulo'])->name('admin.asesoria.articulos.toggle-destacado');
+    Route::get('/admin/asesoria/articulos/max-orden-faq', [\App\Http\Controllers\Admin\AsesoriaController::class, 'maxOrdenFaq'])->name('admin.asesoria.articulos.max-orden-faq');
+    Route::get('/admin/asesoria/articulos/max-orden/{categoria}', [\App\Http\Controllers\Admin\AsesoriaController::class, 'maxOrdenArticulo'])->name('admin.asesoria.articulos.max-orden');
+    Route::get('/admin/asesoria/articulos/{articulo}/editar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'editArticulo'])->name('admin.asesoria.articulos.editar');
+    Route::post('/admin/asesoria/articulos/{articulo}/actualizar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'updateArticulo'])->name('admin.asesoria.articulos.actualizar');
+    Route::delete('/admin/asesoria/articulos/{articulo}/eliminar', [\App\Http\Controllers\Admin\AsesoriaController::class, 'destroyArticulo'])->name('admin.asesoria.articulos.eliminar');
+
     // Códigos de Gestor
     Route::get('/admin/codigos-gestores', [CodigoGestorController::class, 'index']);
     Route::post('/admin/codigos-gestores/generar', [CodigoGestorController::class, 'generar']);

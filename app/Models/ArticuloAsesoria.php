@@ -14,6 +14,7 @@ class ArticuloAsesoria extends Model
         'titulo',
         'contenido',
         'slug',
+        'orden',
         'estado',
         'destacado',
         'orden_faq',

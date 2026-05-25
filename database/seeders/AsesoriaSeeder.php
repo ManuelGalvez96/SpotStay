@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\CategoriaArticulo;
 use App\Models\ArticuloAsesoria;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class AsesoriaSeeder extends Seeder
@@ -14,10 +15,13 @@ class AsesoriaSeeder extends Seeder
         CategoriaArticulo::query()->delete();
         ArticuloAsesoria::query()->delete();
 
+        DB::statement('ALTER TABLE tbl_asesoria_categoria AUTO_INCREMENT = 1');
+        DB::statement('ALTER TABLE tbl_asesoria_articulo AUTO_INCREMENT = 1');
+
         $categorias = [
             [
                 'nombre' => 'Legal y normativa',
-                'icono' => 'bi bi-shield-check',
+                'icono' => 'bi bi-bank2',
                 'orden' => 1,
                 'articulos' => [
                     [
@@ -208,7 +212,7 @@ class AsesoriaSeeder extends Seeder
             ],
             [
                 'nombre' => 'Seguros y responsabilidad',
-                'icono' => 'bi bi-umbrella',
+                'icono' => 'bi bi-shield-check',
                 'orden' => 8,
                 'articulos' => [
                     [
@@ -263,12 +267,13 @@ class AsesoriaSeeder extends Seeder
                 'estado' => true,
             ]);
 
-            foreach ($dataCat['articulos'] as $dataArt) {
+            foreach ($dataCat['articulos'] as $i => $dataArt) {
                 ArticuloAsesoria::create([
                     'id_categoria_fk' => $categoria->id,
                     'titulo' => $dataArt['titulo'],
                     'contenido' => $dataArt['contenido'],
                     'slug' => Str::slug($dataArt['titulo']),
+                    'orden' => $i + 1,
                     'estado' => true,
                     'destacado' => $dataArt['destacado'] ?? false,
                     'orden_faq' => $dataArt['orden_faq'] ?? null,

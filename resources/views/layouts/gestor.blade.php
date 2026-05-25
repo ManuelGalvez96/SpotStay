@@ -44,7 +44,7 @@
                 <i class="bi bi-activity"></i>
             </button>
             <button class="btn-nav-icon {{ request()->is('gestor/asesoria*') ? 'activo' : '' }}" data-ruta="/gestor/asesoria" title="Asesoría Legal">
-                <i class="bi bi-journal-text"></i>
+                <i class="bi bi-bank2"></i>
             </button>
         </div>
 

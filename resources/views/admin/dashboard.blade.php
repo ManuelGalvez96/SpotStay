@@ -19,7 +19,7 @@
 </div>
 
 <!-- BLOQUE KPI -->
-<div class="kpi-grid">
+<div class="kpi-grid kpi-grid-centered">
     <div class="kpi-card">
         <div class="kpi-header">
             <span class="kpi-label">USUARIOS REGISTRADOS</span>
@@ -40,17 +40,6 @@
         </div>
         <div class="kpi-numero">{{ $propiedadesActivas }}</div>
         <div class="kpi-sub">publicadas actualmente</div>
-    </div>
-    
-    <div class="kpi-card">
-        <div class="kpi-header">
-            <span class="kpi-label">ALQUILERES PENDIENTES</span>
-            <div class="kpi-icon kpi-icon-orange">
-                <i class="bi bi-clock"></i>
-            </div>
-        </div>
-        <div class="kpi-numero kpi-numero-orange">{{ $alquileresPendientes }}</div>
-        <div class="kpi-sub">requieren atención</div>
     </div>
     
     <div class="kpi-card">

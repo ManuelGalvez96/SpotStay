@@ -20,52 +20,6 @@
     <div class="hero-deco hero-deco-3"></div>
 </div>
 
-<!-- KPI RÁPIDOS -->
-<div class="kpi-grid-pequeno">
-    <div class="kpi-mini">
-        <div class="kpi-mini-icono kpi-mini-verde">
-            <i class="bi bi-house-check"></i>
-        </div>
-        <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ $activos }}</span>
-            <span class="kpi-mini-label">Alquileres activos</span>
-        </div>
-    </div>
-
-    <div class="kpi-mini">
-        <div class="kpi-mini-icono kpi-mini-naranja">
-            <i class="bi bi-clock"></i>
-        </div>
-        <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-naranja">{{ $pendientes }}</span>
-            <span class="kpi-mini-label">Pendientes de aprobación</span>
-            @if($pendientes > 0)
-                <span class="badge-atencion">Requiere atención</span>
-            @endif
-        </div>
-    </div>
-
-    <div class="kpi-mini">
-        <div class="kpi-mini-icono kpi-mini-rojo">
-            <i class="bi bi-x-circle"></i>
-        </div>
-        <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ $rechazados }}</span>
-            <span class="kpi-mini-label">Rechazados este mes</span>
-        </div>
-    </div>
-
-    <div class="kpi-mini">
-        <div class="kpi-mini-icono kpi-mini-azul">
-            <i class="bi bi-calendar"></i>
-        </div>
-        <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ $finalizanMes }}</span>
-            <span class="kpi-mini-label">Finalizan este mes</span>
-        </div>
-    </div>
-</div>
-
 <!-- BARRA DE HERRAMIENTAS -->
 <div class="toolbar-admin">
     <div class="toolbar-izquierda">

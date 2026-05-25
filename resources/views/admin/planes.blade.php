@@ -44,6 +44,16 @@
     </div>
 
     <div class="kpi-mini">
+        <div class="kpi-mini-icono kpi-mini-azul">
+            <i class="bi bi-people"></i>
+        </div>
+        <div class="kpi-mini-datos">
+            <span class="kpi-mini-numero">{{ $planes->where('rol_destino', 'miembro')->count() }}</span>
+            <span class="kpi-mini-label">Planes para miembro</span>
+        </div>
+    </div>
+
+    <div class="kpi-mini">
         <div class="kpi-mini-icono kpi-mini-naranja">
             <i class="bi bi-check-circle"></i>
         </div>
@@ -53,15 +63,6 @@
         </div>
     </div>
 
-    <div class="kpi-mini">
-        <div class="kpi-mini-icono kpi-mini-rojo">
-            <i class="bi bi-currency-euro"></i>
-        </div>
-        <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ number_format($planes->avg('precio_plan') ?? 0, 2, ',', '.') }}</span>
-            <span class="kpi-mini-label">Precio medio</span>
-        </div>
-    </div>
 </div>
 
 <div class="card-admin">

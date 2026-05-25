@@ -70,6 +70,7 @@ Route::middleware(['role:admin'])->group(function () {
 
     // Dashboard
     Route::get('/admin/dashboard', [DashboardController::class, 'index']);
+    Route::get('/admin/dashboard/stats', [DashboardController::class, 'stats']);
     Route::get('/admin/dashboard/solicitudes-filtrar', [DashboardController::class, 'filtrarSolicitudesNuevas']);
     Route::get('/admin/dashboard/incidencias-filtrar', [DashboardController::class, 'filtrarIncidenciasInactivas']);
     Route::get('/admin/configuracion', [ConfiguracionController::class, 'index']);

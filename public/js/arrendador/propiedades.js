@@ -737,11 +737,6 @@ function abrirModalGestor(propiedadId) {
       document.getElementById('permiso-gastos').disabled = !tieneGestor;
       document.getElementById('permiso-incidencias').disabled = !tieneGestor;
 
-      var btnVerPerfil = document.getElementById('btnVerPerfilGestor');
-      if (btnVerPerfil) {
-        btnVerPerfil.disabled = !tieneGestor;
-      }
-
       //Guardar IDs para el submit
       var btnGuardar = document.getElementById('btnGuardarPermisosGestor');
       if (btnGuardar) {
@@ -751,10 +746,32 @@ function abrirModalGestor(propiedadId) {
         btnGuardar.disabled = !tieneGestor;
       }
 
+      // Toggle title + description
+      var gestorTitulo = document.getElementById('gestor-titulo');
+      var gestorDescripcion = document.getElementById('gestor-descripcion');
+      if (tieneGestor) {
+        if (gestorTitulo) gestorTitulo.textContent = 'Gestor actual';
+        if (gestorDescripcion) gestorDescripcion.textContent = 'Gestor asignado a esta propiedad.';
+      } else {
+        if (gestorTitulo) gestorTitulo.textContent = 'Asignar gestor';
+        if (gestorDescripcion) gestorDescripcion.textContent = 'Introduce el código del gestor para asignarlo a esta propiedad. El código tiene formato GES-XXXX-XXXX.';
+      }
+
+      // Toggle sections: asignar vs actual
+      var sectionAsignar = document.getElementById('gestor-section-asignar');
+      var sectionActual = document.getElementById('gestor-section-actual');
+      if (sectionAsignar) sectionAsignar.style.display = tieneGestor ? 'none' : '';
+      if (sectionActual) sectionActual.style.display = tieneGestor ? '' : 'none';
+
+      if (tieneGestor) {
+        document.getElementById('gestor-actual-nombre').textContent = nombreGestor;
+        document.getElementById('gestor-actual-email').textContent = emailGestor;
+        document.getElementById('gestor-actual-avatar-inicial').textContent = inicialGestor;
+      }
+
       var btnDesasignar = document.getElementById('btnDesasignarGestor');
       if (btnDesasignar) {
         btnDesasignar.dataset.propiedadId = propiedadId;
-        btnDesasignar.style.display = tieneGestor ? '' : 'none';
       }
 
       // Inicializar selector de gestores
@@ -809,6 +826,13 @@ function inicializarSelectorGestores(propiedadId, gestorIdActual) {
       limpiarValidacionGestor();
     }
   });
+
+  document.getElementById('btn-validar-codigo').addEventListener('click', function() {
+    const codigo = inputCodigo.value.trim();
+    if (codigo) {
+      validarCodigoGestor(codigo, propiedadId);
+    }
+  });
   
   inputCodigo.focus();
 }
@@ -832,19 +856,18 @@ function formatearCodigoGestor(codigo) {
 
 function validarCodigoGestor(codigo, propiedadId) {
   const inputCodigo = document.getElementById('codigo-gestor-input');
-  const divError = document.getElementById('codigo-gestor-error');
   const divValidacion = document.getElementById('codigo-gestor-validacion');
-  
+
   // Validar formato regex
   const regexCodigo = /^GES-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
   if (!regexCodigo.test(codigo)) {
-    mostrarErrorValidacionGestor('Formato inválido. Debe ser GES-XXXX-XXXX', divError, divValidacion);
+    mostrarErrorValidacionGestor('Formato inválido. Debe ser GES-XXXX-XXXX');
     return;
   }
-  
+
   divValidacion.textContent = 'Validando código...';
   divValidacion.style.color = '#035498';
-  
+
   fetch('/arrendador/gestores/validar-codigo', {
     method: 'POST',
     headers: {
@@ -859,24 +882,26 @@ function validarCodigoGestor(codigo, propiedadId) {
       mostrarGestorIdentificado(data.data, codigo, propiedadId);
       divValidacion.textContent = '✓ Código válido';
       divValidacion.style.color = '#059669';
-      divError.style.display = 'none';
     } else {
-      mostrarErrorValidacionGestor(data.message || 'Código no encontrado', divError, divValidacion);
+      mostrarErrorValidacionGestor(data.message || 'Código no encontrado');
     }
   })
   .catch(error => {
     console.error('Error validando código:', error);
-    mostrarErrorValidacionGestor('Error al validar el código', divError, divValidacion);
+    mostrarErrorValidacionGestor('Error al validar el código');
   });
 }
 
-function mostrarErrorValidacionGestor(mensaje, divError, divValidacion) {
-  divValidacion.textContent = '✗ ' + mensaje;
-  divValidacion.style.color = '#DC2626';
+function mostrarErrorValidacionGestor(mensaje) {
   limpiarValidacionGestor();
-  divError.textContent = mensaje;
-  divError.style.display = 'block';
-  document.getElementById('gestor-info-container').style.display = 'none';
+  Swal.fire({
+    iconHtml: crearOsoError(),
+    title: 'Código incorrecto',
+    text: mensaje,
+    customClass: { icon: 'oso-icon' },
+    confirmButtonText: 'Aceptar',
+    confirmButtonColor: '#d9534f'
+  });
 }
 
 function limpiarValidacionGestor() {
@@ -933,12 +958,7 @@ function seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId, cod
   document.getElementById('permiso-editar').disabled = false;
   document.getElementById('permiso-gastos').disabled = false;
   document.getElementById('permiso-incidencias').disabled = false;
-  
-  var btnVerPerfil = document.getElementById('btnVerPerfilGestor');
-  if (btnVerPerfil) {
-    btnVerPerfil.disabled = false;
-  }
-  
+
   btnGuardar.disabled = false;
   // Cerrar dropdown
   cerrarDropdownGestores();

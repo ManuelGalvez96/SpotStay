@@ -1292,6 +1292,11 @@ body.pagina-mapa.filtros-ocultos .contenedor-mapa {
 	.enlace-nav {
 		padding: 14px 16px;
 		font-size: 13px;
+		gap: 0;
+	}
+
+	.nav-texto {
+		display: none;
 	}
 }
 
@@ -2095,6 +2100,10 @@ body.pagina-miembro.pagina-mensajes .mensajes-panel .estado-vacio {
 	.enlace-sub-nav {
 		padding: 6px 10px;
 		font-size: 12px;
+		gap: 0;
+	}
+	.sub-nav-arrendador .nav-texto {
+		display: none;
 	}
 }
 

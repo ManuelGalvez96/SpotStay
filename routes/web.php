@@ -57,6 +57,10 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::get('/admin/usuarios/check-email', [AuthController::class, 'checkEmail']);
 Route::get('/admin/usuarios/check-telefono', [AuthController::class, 'checkTelefono']);
 Route::get('/admin/usuarios/check-dni', [AuthController::class, 'checkDni']);
+Route::get('/contratos/{id}/descargar', [
+    \App\Http\Controllers\Admin\AlquilerController::class,
+    'descargarContrato'
+])->name('contratos.descargar');
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 

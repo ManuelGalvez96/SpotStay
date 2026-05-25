@@ -23,6 +23,8 @@ class ContratoSubido extends Mailable
 
     public function build()
     {
+        $this->urlPdf = route('contratos.descargar', ['id' => $this->idAlquiler]);
+
         return $this->from('spotstayy@gmail.com', 'SpotStay')
                     ->subject('Nuevo contrato disponible')
                     ->view('emails.contrato_subido')

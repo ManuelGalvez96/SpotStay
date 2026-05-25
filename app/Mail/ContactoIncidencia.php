@@ -14,6 +14,7 @@ class ContactoIncidencia extends Mailable
     public $asunto;
     public $mensaje;
     public $destinatarioNombre;
+    public $urlLogin;
 
     public function __construct($incidencia, $asunto, $mensaje, $destinatarioNombre = null)
     {
@@ -25,6 +26,8 @@ class ContactoIncidencia extends Mailable
 
     public function build()
     {
+        $this->urlLogin = route('login');
+
         return $this->from('spotstayy@gmail.com', 'SpotStay')
                     ->subject($this->asunto)
                     ->view('emails.contacto_incidencia')
@@ -32,6 +35,7 @@ class ContactoIncidencia extends Mailable
                         'incidencia' => $this->incidencia,
                         'mensaje' => $this->mensaje,
                         'destinatarioNombre' => $this->destinatarioNombre,
+                        'urlLogin' => $this->urlLogin,
                     ]);
     }
 }

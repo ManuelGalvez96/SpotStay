@@ -78,7 +78,8 @@ class Propiedad extends Model
     // Fotos asociadas a la propiedad
     public function fotos(): HasMany
     {
-        return $this->hasMany(Foto::class, 'id_propiedad_fk', 'id_propiedad');
+        return $this->hasMany(Foto::class, 'id_propiedad_fk', 'id_propiedad')
+            ->orderBy('es_principal_foto', 'desc');
     }
 
     // Incidencias reportadas en esta propiedad

@@ -1279,6 +1279,7 @@ function cargarTablaPropiedades(pagina) {
           '<td><div class="table-actions">' +
             '<button class="action-link" type="button" data-propiedad-id="' + p.id_propiedad + '" onclick="fetchEditData(this.dataset.propiedadId)">Editar</button>' +
             '<button class="action-link" type="button" data-propiedad-id="' + p.id_propiedad + '" data-arrendador-id="' + arrendadorId + '" onclick="abrirModalPropiedad(this.dataset.propiedadId, this.dataset.arrendadorId)">Previsualizar</button>' +
+            (p.estado_propiedad !== 'alquilada' ? '<button class="action-link" type="button" data-propiedad-id="' + p.id_propiedad + '" onclick="confirmarEliminarPropiedad(this.dataset.propiedadId)" style="color: #b42318; margin-left: 8px;">Eliminar</button>' : '') +
           '</div></td>' +
         '</tr>';
       });
@@ -1342,3 +1343,76 @@ document.onkeydown = function (evento) {
     cerrarModalFormulario();
   }
 };
+
+/**
+ * Muestra una confirmación SweetAlert para eliminar una propiedad del arrendador.
+ *
+ * @param {string} propiedadId
+ */
+function confirmarEliminarPropiedad(propiedadId) {
+  if (!window.Swal) {
+    if (confirm('¿Estás seguro de que deseas eliminar esta propiedad de forma permanente? Esta acción no se puede deshacer.')) {
+      ejecutarEliminacionPropiedad(propiedadId);
+    }
+    return;
+  }
+
+  Swal.fire({
+    title: '¿Eliminar propiedad?',
+    text: 'Esta acción eliminará de forma permanente la propiedad y todos sus datos relacionados (fotos, incidencias, gastos, etc.). Esta acción no se puede deshacer.',
+    iconHtml: window.crearOsoPregunta ? window.crearOsoPregunta() : undefined,
+    customClass: { icon: 'oso-icon' },
+    showCancelButton: true,
+    confirmButtonColor: '#b42318',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Eliminar de todos modos',
+    cancelButtonText: 'Cancelar'
+  }).then(function (resultado) {
+    if (resultado.isConfirmed) {
+      ejecutarEliminacionPropiedad(propiedadId);
+    }
+  });
+}
+
+/**
+ * Ejecuta la llamada Fetch DELETE para eliminar la propiedad en el servidor.
+ *
+ * @param {string} propiedadId
+ */
+function ejecutarEliminacionPropiedad(propiedadId) {
+  fetch('/arrendador/propiedades/' + propiedadId, {
+    method: 'DELETE',
+    headers: {
+      'X-CSRF-TOKEN': obtenerTokenCsrf(),
+      'X-Requested-With': 'XMLHttpRequest',
+      'Accept': 'application/json'
+    },
+    credentials: 'same-origin'
+  })
+    .then(function (respuesta) {
+      return respuesta.json().catch(function () { return {}; }).then(function (datos) {
+        return { ok: respuesta.ok, datos: datos };
+      });
+    })
+    .then(function (resultado) {
+      if (!resultado.ok || !resultado.datos.success) {
+        throw new Error(resultado.datos.message || 'No se pudo eliminar la propiedad.');
+      }
+
+      if (window.swalSuccess) {
+        swalSuccess('Propiedad eliminada', resultado.datos.message || 'La propiedad ha sido eliminada con éxito.').then(function () {
+          window.location.reload();
+        });
+      } else {
+        mostrarMensaje(resultado.datos.message || 'La propiedad ha sido eliminada con éxito.', false);
+        window.location.reload();
+      }
+    })
+    .catch(function (error) {
+      if (window.swalError) {
+        swalError('Error al eliminar', error.message || 'No se pudo completar la eliminación.');
+      } else {
+        mostrarMensaje(error.message || 'No se pudo completar la eliminación.', true);
+      }
+    });
+}

@@ -251,6 +251,8 @@ Route::middleware(['role:arrendador', 'arrendador.activo'])->group(function () {
     Route::get('/arrendador/asesoria/chatbot/historial', [ChatbotController::class, 'historial'])->name('arrendador.asesoria.chatbot.historial');
 
     Route::get('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'inicio'])->name('arrendador.propiedades');
+    Route::get('/arrendador/propiedades/{id}', [ArrendadorPropiedadController::class, 'mostrar'])->name('arrendador.propiedades.show');
+    Route::delete('/arrendador/propiedades/{id}', [ArrendadorPropiedadController::class, 'eliminar'])->name('arrendador.propiedades.eliminar');
     Route::post('/arrendador/propiedades', [ArrendadorPropiedadController::class, 'guardar'])->name('arrendador.propiedades.store');
     Route::get('/arrendador/propiedades/datos', [ArrendadorPropiedadController::class, 'datosPropiedades'])->name('arrendador.propiedades.datos');
     Route::get('/arrendador/propiedades/{id}/editar-datos', [ArrendadorPropiedadController::class, 'datosEdicion'])->whereNumber('id')->name('arrendador.propiedades.edit-data');

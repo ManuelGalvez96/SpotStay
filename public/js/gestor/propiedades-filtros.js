@@ -118,6 +118,16 @@
         if (cargarMasBtn) {
             cargarMasBtn.onclick = cargarMas;
         }
+
+        var paginationDesktop = document.querySelector('.paginacion-desktop');
+        if (paginationDesktop) {
+            paginationDesktop.addEventListener('click', function (e) {
+                var link = e.target.closest('a');
+                if (!link) return;
+                e.preventDefault();
+                fetchAndRender(link.href, false);
+            });
+        }
     }
 
     bindEvents();

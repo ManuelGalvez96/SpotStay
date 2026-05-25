@@ -226,8 +226,16 @@
         @endforelse
     </div>
 
+    {{-- Desktop: paginación numerada --}}
     @if($propiedades->lastPage() > 1)
-        <div class="paginacion-admin paginacion-cargar-mas"
+        <div class="paginacion-admin paginacion-desktop">
+            {{ $propiedades->withQueryString()->links('pagination::bootstrap-5') }}
+        </div>
+    @endif
+
+    {{-- Mobile: cargar más --}}
+    @if($propiedades->lastPage() > 1)
+        <div class="paginacion-admin paginacion-cargar-mas paginacion-mobile"
              data-current-page="{{ $propiedades->currentPage() }}"
              data-last-page="{{ $propiedades->lastPage() }}">
             @if($propiedades->hasMorePages())

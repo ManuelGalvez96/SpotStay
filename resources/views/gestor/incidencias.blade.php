@@ -158,8 +158,16 @@
             @endforelse
         </div>
 
+        {{-- Desktop: paginación numerada --}}
         @if($incidencias->lastPage() > 1)
-            <div class="paginacion-admin paginacion-cargar-mas"
+            <div class="paginacion-admin paginacion-desktop">
+                {{ $incidencias->withQueryString()->links('pagination::bootstrap-5') }}
+            </div>
+        @endif
+
+        {{-- Mobile: cargar más --}}
+        @if($incidencias->lastPage() > 1)
+            <div class="paginacion-admin paginacion-cargar-mas paginacion-mobile"
                  data-current-page="{{ $incidencias->currentPage() }}"
                  data-last-page="{{ $incidencias->lastPage() }}">
                 @if($incidencias->hasMorePages())

@@ -72,6 +72,8 @@ class PropiedadController extends Controller
             'puerta_propiedad' => ['nullable', 'string', 'max:20'],
             'ciudad_propiedad' => ['required', 'string', 'max:100'],
             'codigo_postal_propiedad' => ['required', 'string', 'max:10'],
+            'latitud_propiedad' => ['required', 'numeric', 'between:-90,90'],
+            'longitud_propiedad' => ['required', 'numeric', 'between:-180,180'],
             'habitaciones_propiedad' => ['nullable', 'string', 'max:20'],
             'banos_propiedad' => ['nullable', 'integer', 'min:0'],
             'metros_cuadrados_propiedad' => ['nullable', 'integer', 'min:0'],
@@ -101,6 +103,8 @@ class PropiedadController extends Controller
             'puerta_propiedad' => $datos['puerta_propiedad'] ?? null,
             'ciudad_propiedad' => $datos['ciudad_propiedad'],
             'codigo_postal_propiedad' => $datos['codigo_postal_propiedad'],
+            'latitud_propiedad' => $datos['latitud_propiedad'],
+            'longitud_propiedad' => $datos['longitud_propiedad'],
             'habitaciones_propiedad' => $datos['habitaciones_propiedad'] ?? null,
             'banos_propiedad' => $datos['banos_propiedad'] ?? null,
             'metros_cuadrados_propiedad' => $datos['metros_cuadrados_propiedad'] ?? null,
@@ -382,6 +386,7 @@ class PropiedadController extends Controller
                 'p.descripcion_propiedad',
                 DB::raw("p.{$columnaPrecio} as precio_propiedad"),
                 'p.estado_propiedad',
+                'p.habitaciones_propiedad',
                 'p.banos_propiedad',
                 'p.metros_cuadrados_propiedad',
                 'p.ascensor_propiedad',
@@ -971,6 +976,34 @@ class PropiedadController extends Controller
             'totalPublicadas' => $totalPropiedades, // Cambiamos el valor de retorno para que contenga el total
             'mensaje' => 'Has alcanzado el límite de tu plan ' . $nombrePlan . ' (' . $limite . ' propiedades registradas). Inactiva o elimina alguna propiedad existente o mejora tu suscripción.',
         ];
+    }
+
+    /**
+     * Comprueba si un título de propiedad ya existe para el arrendador autenticado.
+     * Acepta un parámetro opcional 'excluir_id' para ignorar la propiedad que se está editando.
+     */
+    public function checkTitulo(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $titulo     = trim((string) $request->query('titulo', ''));
+        $excluirId  = (int) $request->query('excluir_id', 0);
+
+        if ($titulo === '') {
+            return response()->json(['disponible' => true]);
+        }
+
+        // Comprueba si existe alguna propiedad ACTIVA en toda la plataforma con ese nombre
+        $query = DB::table('tbl_propiedad')
+            ->whereIn('estado_propiedad', ['publicada', 'alquilada'])
+            ->whereRaw('LOWER(titulo_propiedad) = ?', [mb_strtolower($titulo)]);
+
+        // En edición, excluimos la propia propiedad
+        if ($excluirId > 0) {
+            $query->where('id_propiedad', '!=', $excluirId);
+        }
+
+        $existe = $query->exists();
+
+        return response()->json(['disponible' => !$existe]);
     }
 
     /**

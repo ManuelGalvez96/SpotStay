@@ -8,6 +8,26 @@
 
 @section('scripts')
     <script src="{{ asset('js/admin/configuracion.js') }}"></script>
+
+    @if (session('mensaje_exito_plan'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                if (window.mostrarAlertaAdminExito) {
+                    window.mostrarAlertaAdminExito('Éxito', @json(session('mensaje_exito_plan')));
+                }
+            });
+        </script>
+    @endif
+
+    @if (session('error') || $errors->any())
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                if (window.mostrarAlertaAdminError) {
+                    window.mostrarAlertaAdminError('Error', @json(session('error') ?: $errors->first()));
+                }
+            });
+        </script>
+    @endif
 @endsection
 
 @section('content')
@@ -31,33 +51,33 @@
             @csrf
 
             <div class="col-md-4">
-                <label class="form-label">Destino</label>
-                <select name="destino" class="form-select">
-                    <option value="todos">Todos los usuarios</option>
-                    <option value="rol">Por rol</option>
-                    <option value="usuario">Usuario concreto</option>
+                <label class="form-label">Rol de destino</label>
+                <select name="destino" class="form-select" id="destinoRolNotificacion">
+                    <option value="" selected>Selecciona un rol</option>
+                    <option value="todos">Todos los roles</option>
+                    @foreach ($rolesDisponibles as $rol)
+                        <option value="{{ $rol->slug_rol }}">{{ $rol->nombre_rol }}</option>
+                    @endforeach
                 </select>
                 <small class="error-mensaje" id="errorDestinoNotificacion"></small>
             </div>
 
-            <div class="col-md-4">
-                <label class="form-label">Rol de destino</label>
-                <select name="rol_destino" class="form-select">
-                    <option value="">Selecciona un rol</option>
-                    <option value="miembro">Miembro</option>
-                    <option value="inquilino">Inquilino</option>
-                    <option value="arrendador">Arrendador</option>
-                    <option value="gestor">Gestor</option>
+            <div class="col-md-4 d-none" id="bloqueAlcanceNotificacion">
+                <label class="form-label">Alcance del envío</label>
+                <select name="alcance_destino" class="form-select" id="alcanceDestinoNotificacion">
+                    <option value="" selected>Selecciona el alcance</option>
+                    <option value="todos">Todos los usuarios de ese rol</option>
+                    <option value="usuario">Usuario concreto</option>
                 </select>
-                <small class="error-mensaje" id="errorRolNotificacion"></small>
+                <small class="error-mensaje" id="errorAlcanceNotificacion"></small>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-4 d-none" id="bloqueUsuarioNotificacion">
                 <label class="form-label">Usuario concreto</label>
-                <select name="usuario_destino" class="form-select">
+                <select name="usuario_destino" class="form-select" id="usuarioDestinoNotificacion">
                     <option value="">Selecciona un usuario</option>
                     @foreach ($usuariosActivos as $usuario)
-                        <option value="{{ $usuario->id_usuario }}">{{ $usuario->nombre_usuario }} — {{ $usuario->email_usuario }}</option>
+                        <option value="{{ $usuario->id_usuario }}" data-roles="{{ $usuario->roles_usuario }}">{{ $usuario->nombre_usuario }} — {{ $usuario->email_usuario }}</option>
                     @endforeach
                 </select>
                 <small class="error-mensaje" id="errorUsuarioNotificacion"></small>

@@ -5,195 +5,266 @@ var inicializarValidacionNotificacionesAdmin = function () {
         return;
     }
 
-    var campos = {
-        destino: form.querySelector('[name="destino"]'),
-        rolDestino: form.querySelector('[name="rol_destino"]'),
-        usuarioDestino: form.querySelector('[name="usuario_destino"]'),
-        titulo: form.querySelector('[name="titulo_notificacion"]'),
-        mensaje: form.querySelector('[name="mensaje_notificacion"]')
-    };
-
+    var destino = document.getElementById('destinoRolNotificacion');
+    var alcance = document.getElementById('alcanceDestinoNotificacion');
+    var usuario = document.getElementById('usuarioDestinoNotificacion');
+    var titulo = form.querySelector('[name="titulo_notificacion"]');
+    var mensaje = form.querySelector('[name="mensaje_notificacion"]');
     var botonEnviar = form.querySelector('button[type="submit"]');
-    var errores = {
-        destino: document.getElementById('errorDestinoNotificacion'),
-        rol: document.getElementById('errorRolNotificacion'),
-        usuario: document.getElementById('errorUsuarioNotificacion'),
-        titulo: document.getElementById('errorTituloNotificacion'),
-        mensaje: document.getElementById('errorMensajeNotificacion')
-    };
 
-    function valorLimpio(elemento) {
-        return elemento && typeof elemento.value === 'string' ? elemento.value.trim() : '';
+    var bloqueAlcance = document.getElementById('bloqueAlcanceNotificacion');
+    var bloqueUsuario = document.getElementById('bloqueUsuarioNotificacion');
+
+    var errorDestino = document.getElementById('errorDestinoNotificacion');
+    var errorAlcance = document.getElementById('errorAlcanceNotificacion');
+    var errorUsuario = document.getElementById('errorUsuarioNotificacion');
+    var errorTitulo = document.getElementById('errorTituloNotificacion');
+    var errorMensaje = document.getElementById('errorMensajeNotificacion');
+
+    var usuariosOriginales = [];
+    var i;
+
+    function limpiarTexto(valor) {
+        return valor ? String(valor).trim() : '';
     }
 
-    function mostrarError(campo, mensaje) {
-        if (errores[campo]) {
-            errores[campo].textContent = mensaje;
+    function ponerError(elemento, texto) {
+        if (elemento) {
+            elemento.textContent = texto;
         }
     }
 
-    function limpiarError(campo) {
-        if (errores[campo]) {
-            errores[campo].textContent = ' ';
+    function quitarError(elemento) {
+        if (elemento) {
+            elemento.textContent = '';
         }
     }
 
-    function validarDestino() {
-        var destino = valorLimpio(campos.destino);
+    function guardarUsuariosOriginales() {
+        if (!usuario) {
+            return;
+        }
 
-        if (!destino) {
+        usuariosOriginales = [];
+
+        for (i = 0; i < usuario.options.length; i++) {
+            usuariosOriginales.push({
+                value: usuario.options[i].value,
+                text: usuario.options[i].textContent,
+                roles: usuario.options[i].getAttribute('data-roles') || ''
+            });
+        }
+    }
+
+    function mostrarCamposSegunDestino() {
+        var valorDestino = limpiarTexto(destino ? destino.value : '');
+        var valorAlcance = limpiarTexto(alcance ? alcance.value : '');
+
+        if (bloqueAlcance) {
+            bloqueAlcance.classList.toggle('d-none', valorDestino === '');
+        }
+
+        if (bloqueUsuario) {
+            bloqueUsuario.classList.toggle('d-none', !(valorDestino && valorAlcance === 'usuario'));
+        }
+
+        if (valorDestino === '') {
+            if (alcance) {
+                alcance.value = '';
+            }
+            if (usuario) {
+                usuario.value = '';
+            }
+        }
+
+        if (valorAlcance !== 'usuario' && usuario) {
+            usuario.value = '';
+        }
+    }
+
+    function rellenarUsuarios() {
+        if (!usuario) {
+            return;
+        }
+
+        var valorDestino = limpiarTexto(destino ? destino.value : '');
+        var valorAlcance = limpiarTexto(alcance ? alcance.value : '');
+
+        usuario.innerHTML = '<option value="">Selecciona un usuario</option>';
+
+        if (!valorDestino || valorAlcance !== 'usuario') {
+            return;
+        }
+
+        for (i = 0; i < usuariosOriginales.length; i++) {
+            if (!usuariosOriginales[i].value) {
+                continue;
+            }
+
+            if (valorDestino === 'todos' || usuariosOriginales[i].roles.indexOf(valorDestino) !== -1) {
+                var opcion = document.createElement('option');
+                opcion.value = usuariosOriginales[i].value;
+                opcion.textContent = usuariosOriginales[i].text;
+                opcion.setAttribute('data-roles', usuariosOriginales[i].roles);
+                usuario.appendChild(opcion);
+            }
+        }
+    }
+
+    function formularioValido() {
+        var valorDestino = limpiarTexto(destino ? destino.value : '');
+        var valorAlcance = limpiarTexto(alcance ? alcance.value : '');
+        var valorUsuario = limpiarTexto(usuario ? usuario.value : '');
+        var valorTitulo = limpiarTexto(titulo ? titulo.value : '');
+        var valorMensaje = limpiarTexto(mensaje ? mensaje.value : '');
+
+        if (!valorDestino || !valorAlcance || !valorTitulo || !valorMensaje) {
             return false;
         }
 
-        if (destino === 'rol' && !valorLimpio(campos.rolDestino)) {
-            return false;
-        }
-
-        if (destino === 'usuario' && !valorLimpio(campos.usuarioDestino)) {
+        if (valorAlcance === 'usuario' && !valorUsuario) {
             return false;
         }
 
         return true;
-    }
-
-    function validarCamposVacios() {
-        var titulo = valorLimpio(campos.titulo);
-        var mensaje = valorLimpio(campos.mensaje);
-
-        return Boolean(valorLimpio(campos.destino) && titulo && mensaje && validarDestino());
     }
 
     function actualizarBoton() {
-        botonEnviar.disabled = !validarCamposVacios();
+        if (botonEnviar) {
+            botonEnviar.disabled = !formularioValido();
+        }
     }
 
-    campos.destino.onblur = function () {
-        var destino = valorLimpio(campos.destino);
-        if (!destino) {
-            mostrarError('destino', 'Selecciona el destino de la notificación.');
-            limpiarError('rol');
-            limpiarError('usuario');
-        } else {
-            limpiarError('destino');
-            if (destino !== 'rol') {
-                limpiarError('rol');
+    if (destino) {
+        destino.onchange = function () {
+            quitarError(errorDestino);
+            mostrarCamposSegunDestino();
+            rellenarUsuarios();
+            actualizarBoton();
+        };
+
+        destino.onblur = function () {
+            if (!limpiarTexto(destino.value)) {
+                ponerError(errorDestino, 'Selecciona el rol de destino.');
+            } else {
+                quitarError(errorDestino);
             }
-            if (destino !== 'usuario') {
-                limpiarError('usuario');
+            mostrarCamposSegunDestino();
+            rellenarUsuarios();
+            actualizarBoton();
+        };
+    }
+
+    if (alcance) {
+        alcance.onchange = function () {
+            quitarError(errorAlcance);
+            mostrarCamposSegunDestino();
+            rellenarUsuarios();
+            actualizarBoton();
+        };
+
+        alcance.onblur = function () {
+            if (limpiarTexto(destino.value) && !limpiarTexto(alcance.value)) {
+                ponerError(errorAlcance, 'Selecciona el alcance del envío.');
+            } else {
+                quitarError(errorAlcance);
             }
-        }
-        actualizarBoton();
-    };
+            mostrarCamposSegunDestino();
+            rellenarUsuarios();
+            actualizarBoton();
+        };
+    }
 
-    campos.destino.onchange = function () {
-        campos.destino.onblur();
-    };
+    if (usuario) {
+        usuario.onchange = function () {
+            quitarError(errorUsuario);
+            actualizarBoton();
+        };
 
-    campos.destino.oninput = function () {
-        if (valorLimpio(campos.destino)) {
-            limpiarError('destino');
-        }
-        actualizarBoton();
-    };
+        usuario.onblur = function () {
+            if (limpiarTexto(alcance.value) === 'usuario' && !limpiarTexto(usuario.value)) {
+                ponerError(errorUsuario, 'Selecciona un usuario concreto.');
+            } else {
+                quitarError(errorUsuario);
+            }
+            actualizarBoton();
+        };
+    }
 
-    campos.rolDestino.onblur = function () {
-        if (valorLimpio(campos.destino) === 'rol' && !valorLimpio(campos.rolDestino)) {
-            mostrarError('rol', 'Selecciona un rol de destino.');
-        } else {
-            limpiarError('rol');
-        }
-        actualizarBoton();
-    };
+    if (titulo) {
+        titulo.oninput = function () {
+            if (limpiarTexto(titulo.value)) {
+                quitarError(errorTitulo);
+            }
+            actualizarBoton();
+        };
 
-    campos.rolDestino.oninput = function () {
-        if (valorLimpio(campos.rolDestino)) {
-            limpiarError('rol');
-        }
-        actualizarBoton();
-    };
+        titulo.onblur = function () {
+            if (!limpiarTexto(titulo.value)) {
+                ponerError(errorTitulo, 'El título no puede estar vacío.');
+            } else {
+                quitarError(errorTitulo);
+            }
+            actualizarBoton();
+        };
+    }
 
-    campos.usuarioDestino.onblur = function () {
-        if (valorLimpio(campos.destino) === 'usuario' && !valorLimpio(campos.usuarioDestino)) {
-            mostrarError('usuario', 'Selecciona un usuario concreto.');
-        } else {
-            limpiarError('usuario');
-        }
-        actualizarBoton();
-    };
+    if (mensaje) {
+        mensaje.oninput = function () {
+            if (limpiarTexto(mensaje.value)) {
+                quitarError(errorMensaje);
+            }
+            actualizarBoton();
+        };
 
-    campos.usuarioDestino.oninput = function () {
-        if (valorLimpio(campos.usuarioDestino)) {
-            limpiarError('usuario');
-        }
-        actualizarBoton();
-    };
-
-    campos.titulo.onblur = function () {
-        if (!valorLimpio(campos.titulo)) {
-            mostrarError('titulo', 'El título no puede estar vacío.');
-        } else {
-            limpiarError('titulo');
-        }
-        actualizarBoton();
-    };
-
-    campos.titulo.oninput = function () {
-        if (valorLimpio(campos.titulo)) {
-            limpiarError('titulo');
-        }
-        actualizarBoton();
-    };
-
-    campos.mensaje.onblur = function () {
-        if (!valorLimpio(campos.mensaje)) {
-            mostrarError('mensaje', 'El mensaje no puede estar vacío.');
-        } else {
-            limpiarError('mensaje');
-        }
-        actualizarBoton();
-    };
-
-    campos.mensaje.oninput = function () {
-        if (valorLimpio(campos.mensaje)) {
-            limpiarError('mensaje');
-        }
-        actualizarBoton();
-    };
+        mensaje.onblur = function () {
+            if (!limpiarTexto(mensaje.value)) {
+                ponerError(errorMensaje, 'El mensaje no puede estar vacío.');
+            } else {
+                quitarError(errorMensaje);
+            }
+            actualizarBoton();
+        };
+    }
 
     form.onsubmit = function (evento) {
-        var valido = validarCamposVacios();
-        if (!valido) {
+        if (!formularioValido()) {
             evento.preventDefault();
 
-            if (!valorLimpio(campos.destino)) {
-                mostrarError('destino', 'Selecciona el destino de la notificación.');
-                return false;
+            if (!limpiarTexto(destino.value)) {
+                ponerError(errorDestino, 'Selecciona el rol de destino.');
             }
 
-            if (valorLimpio(campos.destino) === 'rol' && !valorLimpio(campos.rolDestino)) {
-                mostrarError('rol', 'Selecciona un rol de destino.');
-                return false;
+            if (!limpiarTexto(alcance.value)) {
+                ponerError(errorAlcance, 'Selecciona el alcance del envío.');
             }
 
-            if (valorLimpio(campos.destino) === 'usuario' && !valorLimpio(campos.usuarioDestino)) {
-                mostrarError('usuario', 'Selecciona un usuario concreto.');
-                return false;
+            if (limpiarTexto(alcance.value) === 'usuario' && !limpiarTexto(usuario.value)) {
+                ponerError(errorUsuario, 'Selecciona un usuario concreto.');
             }
 
-            if (!valorLimpio(campos.titulo)) {
-                mostrarError('titulo', 'El título no puede estar vacío.');
-                return false;
+            if (!limpiarTexto(titulo.value)) {
+                ponerError(errorTitulo, 'El título no puede estar vacío.');
             }
 
-            if (!valorLimpio(campos.mensaje)) {
-                mostrarError('mensaje', 'El mensaje no puede estar vacío.');
-                return false;
+            if (!limpiarTexto(mensaje.value)) {
+                ponerError(errorMensaje, 'El mensaje no puede estar vacío.');
             }
+
+            return false;
         }
+
         return true;
     };
 
+    guardarUsuariosOriginales();
+    mostrarCamposSegunDestino();
+    rellenarUsuarios();
     actualizarBoton();
 };
 
-inicializarValidacionNotificacionesAdmin();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', inicializarValidacionNotificacionesAdmin);
+} else {
+    inicializarValidacionNotificacionesAdmin();
+}

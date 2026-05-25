@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Miembro;
 
 use App\Http\Controllers\Controller;
+use App\Models\Plan;
 use App\Models\SolicitudArrendador;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -13,7 +14,11 @@ class SolicitudArrendadorController extends Controller
 {
     public function create()
     {
-        return view('miembro.form_volverse_arrendador');
+        $planes = Plan::where('rol_destino', 'arrendador')
+            ->where('activo_plan', true)
+            ->get();
+
+        return view('miembro.form_volverse_arrendador', compact('planes'));
     }
 
     public function store(Request $request)
@@ -25,6 +30,7 @@ class SolicitudArrendadorController extends Controller
             'es_propietario_solicitud' => ['nullable', 'boolean'],
             'acepta_terminos_solicitud' => ['accepted'],
             'acepta_veracidad_solicitud' => ['accepted'],
+            'id_plan_fk' => ['required', 'integer', 'exists:tbl_plan,id_plan'],
         ]);
 
         $usuario = Auth::user();
@@ -52,6 +58,7 @@ class SolicitudArrendadorController extends Controller
 
         SolicitudArrendador::create([
             'id_usuario_fk' => $usuarioId,
+            'id_plan_fk' => $request->input('id_plan_fk'),
             'telefono_solicitud' => $usuario->telefono_usuario,
             'fecha_nacimiento_solicitud' => $usuario->fecha_nacimiento_usuario,
             'tipo_documento_solicitud' => null,

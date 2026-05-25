@@ -74,6 +74,32 @@
                         </div>
 
                         <div class="grupo-filtro solicitud-columna-completa">
+                            <label class="etiqueta-filtro">Selecciona tu plan de arrendador</label>
+                            <div class="planes-grid" id="planes-container">
+                                @foreach ($planes as $plan)
+                                    <label class="plan-tarjeta {{ old('id_plan_fk') == $plan->id_plan ? 'plan-tarjeta-seleccionada' : '' }}" data-plan-id="{{ $plan->id_plan }}">
+                                        <input type="radio" name="id_plan_fk" value="{{ $plan->id_plan }}" class="plan-radio" {{ old('id_plan_fk') == $plan->id_plan ? 'checked' : '' }}>
+                                        <div class="plan-tarjeta-contenido">
+                                            <div class="plan-tarjeta-header">
+                                                <span class="plan-tarjeta-nombre">{{ $plan->nombre_plan }}</span>
+                                                <span class="plan-tarjeta-precio">{{ number_format($plan->precio_plan, 2) }}€<small>/mes</small></span>
+                                            </div>
+                                            <p class="plan-tarjeta-descripcion">{{ $plan->descripcion_plan }}</p>
+                                            <div class="plan-tarjeta-propiedades">
+                                                <i class="bi bi-house"></i>
+                                                <span>Hasta {{ $plan->max_propiedades_plan }} {{ $plan->max_propiedades_plan == 1 ? 'propiedad' : 'propiedades' }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="plan-tarjeta-check">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                            <small id="error-plan-solicitud" class="solicitud-error"></small>
+                        </div>
+
+                        <div class="grupo-filtro solicitud-columna-completa">
                             <label class="etiqueta-filtro" for="descripcion-solicitud">Descripcion de la solicitud</label>
                             <textarea class="campo-filtro" id="descripcion-solicitud" name="descripcion_solicitud" rows="4">{{ old('descripcion_solicitud') }}</textarea>
                             <small id="error-descripcion-solicitud" class="solicitud-error"></small>

@@ -30,6 +30,7 @@ function iniciarValidacionSolicitudArrendador() {
     const errorDescripcion = document.getElementById("error-descripcion-solicitud");
     const errorAceptaTerminos = document.getElementById("error-acepta-terminos-solicitud");
     const errorAceptaVeracidad = document.getElementById("error-acepta-veracidad-solicitud");
+    const errorPlan = document.getElementById("error-plan-solicitud");
 
     // Inputs
     const entradaTipoArrendador = document.getElementById("tipo-arrendador-solicitud");
@@ -37,6 +38,8 @@ function iniciarValidacionSolicitudArrendador() {
     const entradaDescripcion = document.getElementById("descripcion-solicitud");
     const entradaAceptaTerminos = document.getElementById("acepta-terminos-solicitud");
     const entradaAceptaVeracidad = document.getElementById("acepta-veracidad-solicitud");
+    const entradasPlan = document.querySelectorAll('input[name="id_plan_fk"]');
+    const tarjetasPlan = document.querySelectorAll(".plan-tarjeta");
 
     if (!formulario || !botonEnviar) return;
 
@@ -49,14 +52,16 @@ function iniciarValidacionSolicitudArrendador() {
 		numPropiedades: entradaNumPropiedades,
 		descripcion: entradaDescripcion,
 		aceptaTerminos: entradaAceptaTerminos,
-		aceptaVeracidad: entradaAceptaVeracidad
+		aceptaVeracidad: entradaAceptaVeracidad,
+		idPlan: entradasPlan.length > 0 ? entradasPlan[0] : null
 	};
 	tocados = {
 		tipoArrendador: false,
 		numPropiedades: false,
 		descripcion: false,
 		aceptaTerminos: false,
-		aceptaVeracidad: false
+		aceptaVeracidad: false,
+		idPlan: false
 	};
 
 	// Enganchamos validadores por campo
@@ -65,6 +70,22 @@ function iniciarValidacionSolicitudArrendador() {
 	registrarCampo("descripcion", validarDescripcion);
 	registrarCampo("aceptaTerminos", validarCheckboxObligatorio);
 	registrarCampo("aceptaVeracidad", validarCheckboxObligatorio);
+	registrarCampo("idPlan", validarPlanSeleccionado);
+
+	// Click en tarjetas de plan
+	tarjetasPlan.forEach(function (tarjeta) {
+		tarjeta.onclick = function () {
+			var radio = tarjeta.querySelector('input[name="id_plan_fk"]');
+			if (radio) {
+				radio.checked = true;
+				tarjetasPlan.forEach(function (t) { t.classList.remove("plan-tarjeta-seleccionada"); });
+				tarjeta.classList.add("plan-tarjeta-seleccionada");
+				tocados["idPlan"] = true;
+				validarCampo("idPlan", validarPlanSeleccionado, true);
+				actualizarEstadoBoton(validarFormulario(false));
+			}
+		};
+	});
 
 	// Controla el envio con validacion previa
 	formularioSolicitud.onsubmit = function (evento) {
@@ -222,6 +243,7 @@ function validarFormulario(mostrarErrores) {
 	errores += validarCampo("descripcion", validarDescripcion, mostrarErrores);
 	errores += validarCampo("aceptaTerminos", validarCheckboxObligatorio, mostrarErrores);
 	errores += validarCampo("aceptaVeracidad", validarCheckboxObligatorio, mostrarErrores);
+	errores += validarCampo("idPlan", validarPlanSeleccionado, mostrarErrores);
 	return errores === 0;
 }
 
@@ -345,13 +367,29 @@ function validarCheckboxObligatorio(campo) {
 	return "";
 }
 
+function validarPlanSeleccionado(campo) {
+	var radios = document.querySelectorAll('input[name="id_plan_fk"]');
+	var seleccionado = false;
+	for (var i = 0; i < radios.length; i++) {
+		if (radios[i].checked) {
+			seleccionado = true;
+			break;
+		}
+	}
+	if (!seleccionado) {
+		return "Debes seleccionar un plan.";
+	}
+	return "";
+}
+
 function obtenerIdErrorPorClave(clave) {
 	var mapaErrores = {
 		tipoArrendador: "error-tipo-arrendador-solicitud",
 		numPropiedades: "error-num-propiedades-previstas-solicitud",
 		descripcion: "error-descripcion-solicitud",
 		aceptaTerminos: "error-acepta-terminos-solicitud",
-		aceptaVeracidad: "error-acepta-veracidad-solicitud"
+		aceptaVeracidad: "error-acepta-veracidad-solicitud",
+		idPlan: "error-plan-solicitud"
 	};
 
 	return mapaErrores[clave] || "";

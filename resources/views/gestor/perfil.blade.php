@@ -47,6 +47,10 @@
                     <p class="perfil-avatar-hint">JPEG, PNG, WebP. Máx 2MB</p>
                     @error('avatar_usuario') <span class="error-mensaje">{{ $message }}</span> @enderror
                 </div>
+                <div class="perfil-codigo-gestor">
+                    <span class="codigo-gestor-label">Código de gestor:</span>
+                    <input type="text" class="codigo-gestor-input" value="{{ $codigoGestor ?? '—' }}" readonly>
+                </div>
             </div>
 
             <div class="campo-grupo">

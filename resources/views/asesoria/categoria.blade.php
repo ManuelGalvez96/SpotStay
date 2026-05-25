@@ -26,13 +26,16 @@
     </a>
 </div>
 
+<div class="asesoria-categoria-titulo-wrap">
+    <h2 class="asesoria-categoria-titulo"><i class="bi {{ $categoria->icono }}"></i> {{ $categoria->nombre }}</h2>
+</div>
+
 <div class="asesoria-grid">
     <div class="asesoria-buscador">
         <i class="bi bi-search asesoria-buscador-icono"></i>
         <input type="text" class="asesoria-buscador-input" placeholder="Buscar artículos…" data-search-endpoint="{{ route($routePrefix . '.asesoria.buscar') }}">
         <div class="asesoria-sugerencias"></div>
     </div>
-    <h2 class="asesoria-categoria-titulo"><i class="bi {{ $categoria->icono }}"></i> {{ $categoria->nombre }}</h2>
     <div class="card-admin card-con-franja">
         <div class="card-franja"></div>
         <div class="accordion" id="accordionCat">
@@ -57,6 +60,8 @@
     'chatbotIniciarUrl' => route($routePrefix . '.asesoria.chatbot.iniciar'),
     'chatbotMensajeUrl' => route($routePrefix . '.asesoria.chatbot.mensaje'),
     'chatbotHistorialUrl' => route($routePrefix . '.asesoria.chatbot.historial'),
+    'chatbotUsuarioAvatar' => optional(auth()->user())->avatar_url,
+    'chatbotUsuarioNombre' => optional(auth()->user())->nombre_usuario,
 ])
 @endsection
 

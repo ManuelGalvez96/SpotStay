@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Plan;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,7 @@ class SolicitudArrendador extends Model
 
     protected $fillable = [
         'id_usuario_fk',
+        'id_plan_fk',
         'id_admin_revisa_fk',
         'telefono_solicitud',
         'fecha_nacimiento_solicitud',
@@ -64,5 +66,11 @@ class SolicitudArrendador extends Model
     public function adminRevisa(): BelongsTo
     {
         return $this->belongsTo(Usuario::class, 'id_admin_revisa_fk', 'id_usuario');
+    }
+
+    // Plan seleccionado en la solicitud
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(Plan::class, 'id_plan_fk', 'id_plan');
     }
 }

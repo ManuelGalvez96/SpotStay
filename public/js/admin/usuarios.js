@@ -429,6 +429,20 @@ var abrirModal = function(id) {
         document.getElementById('dataAcceso').textContent = 'N/A';
         document.getElementById('dataAlquileres').textContent = usuario.total_alquileres || '0';
         document.getElementById('dataSuscripcion').textContent = usuario.suscripcion || 'Sin suscripción';
+
+        var bloqueCodigoGestor = document.getElementById('bloqueCodigoGestor');
+        var dataCodigoGestor = document.getElementById('dataCodigoGestor');
+        var esGestor = (usuario.slug_rol || '').toLowerCase() === 'gestor';
+
+        if (bloqueCodigoGestor && dataCodigoGestor) {
+            if (esGestor) {
+                bloqueCodigoGestor.style.display = 'block';
+                dataCodigoGestor.textContent = usuario.codigo_gestor || 'Sin código';
+            } else {
+                bloqueCodigoGestor.style.display = 'none';
+                dataCodigoGestor.textContent = '—';
+            }
+        }
         
         // Rellenar sección de Propiedades del Usuario
         var listaPropiedades = document.getElementById('listaPropiedades');
@@ -870,7 +884,7 @@ function marcarValidoElemento(el) {
     el.classList.remove('is-invalid');
     var mensajeError = el.nextElementSibling;
     if (mensajeError && mensajeError.tagName === 'SMALL') {
-        mensajeError.innerText = '';
+        mensajeError.innerText = ' ';
     }
 }
 
@@ -882,11 +896,11 @@ function limpiarErroresYActualizarEstado() {
             el.classList.remove('is-invalid');
         }
     });
-    if (errorNombreUsuario) errorNombreUsuario.textContent = '';
-    if (errorEmailUsuario) errorEmailUsuario.textContent = '';
-    if (errorTelefonoUsuario) errorTelefonoUsuario.textContent = '';
-    if (errorRolUsuario) errorRolUsuario.textContent = '';
-    if (errorPasswordUsuario) errorPasswordUsuario.textContent = '';
+    if (errorNombreUsuario) errorNombreUsuario.textContent = ' ';
+    if (errorEmailUsuario) errorEmailUsuario.textContent = ' ';
+    if (errorTelefonoUsuario) errorTelefonoUsuario.textContent = ' ';
+    if (errorRolUsuario) errorRolUsuario.textContent = ' ';
+    if (errorPasswordUsuario) errorPasswordUsuario.textContent = ' ';
     // Reset flags conservativamente
     _valNombre = false; _valEmail = false; _valTelefono = true; _valRol = false; _valPassword = false;
     actualizarEstadoFormulario();
@@ -899,7 +913,7 @@ function limpiarValidacionFormulario() {
 function limpiarTextoError(id) {
     var elemento = document.getElementById(id);
     if (elemento) {
-        elemento.textContent = '';
+        elemento.textContent = ' ';
     }
 }
 
@@ -1064,16 +1078,12 @@ function inicializarValidacionFormulario() {
     if (nombre) {
         nombre.oninput = function() {
             var valor = this.value.trim();
-            if (valor === '') {
-                marcarErrorElemento(this, 'El nombre es obligatorio y debe tener mínimo 3 caracteres');
-                _valNombre = false;
-            } else if (valor.length < 3) {
-                marcarErrorElemento(this, 'El nombre es obligatorio y debe tener mínimo 3 caracteres');
-                _valNombre = false;
-            } else {
+            if (valor.length >= 3) {
                 marcarValidoElemento(this);
                 limpiarTextoError('errorNombreUsuario');
                 _valNombre = true;
+            } else {
+                _valNombre = false;
             }
             actualizarEstadoFormulario();
         };
@@ -1090,16 +1100,12 @@ function inicializarValidacionFormulario() {
     if (email) {
         email.oninput = function() {
             var valor = this.value.trim();
-            if (valor === '') {
-                marcarErrorElemento(this, 'El correo electrónico es obligatorio.');
-                _valEmail = false;
-            } else if (!validarEmail(valor)) {
-                marcarErrorElemento(this, 'Introduce un correo válido.');
-                _valEmail = false;
-            } else {
+            if (validarEmail(valor)) {
                 marcarValidoElemento(this);
                 limpiarTextoError('errorEmailUsuario');
                 _valEmail = true;
+            } else {
+                _valEmail = false;
             }
             actualizarEstadoFormulario();
         };
@@ -1114,16 +1120,12 @@ function inicializarValidacionFormulario() {
     if (telefono) {
         telefono.oninput = function() {
             var valor = this.value.trim();
-            if (valor === '') {
-                marcarErrorElemento(this, 'El teléfono es obligatorio.');
-                _valTelefono = false;
-            } else if (!validarTelefono(valor)) {
-                marcarErrorElemento(this, 'Formato: +34 612345678. Debe empezar por +34, llevar un espacio y tener entre 9 y 11 dígitos.');
-                _valTelefono = false;
-            } else {
+            if (validarTelefono(valor)) {
                 marcarValidoElemento(this);
                 limpiarTextoError('errorTelefonoUsuario');
                 _valTelefono = true;
+            } else {
+                _valTelefono = false;
             }
             actualizarEstadoFormulario();
         };
@@ -1139,13 +1141,19 @@ function inicializarValidacionFormulario() {
         rol.oninput = function() {
             var v = this.value;
             _valRol = !!v && v !== '';
-            if (!_valRol) marcarErrorElemento(this, 'Selecciona un rol'); else marcarValidoElemento(this);
+            if (_valRol) {
+                marcarValidoElemento(this);
+                limpiarTextoError('errorRolUsuario');
+            }
             actualizarEstadoFormulario();
         };
         rol.onchange = function() {
             var v = this.value;
             _valRol = !!v && v !== '';
-            if (!_valRol) marcarErrorElemento(this, 'Selecciona un rol'); else marcarValidoElemento(this);
+            if (_valRol) {
+                marcarValidoElemento(this);
+                limpiarTextoError('errorRolUsuario');
+            }
             actualizarEstadoFormulario();
         };
     }
@@ -1158,16 +1166,12 @@ function inicializarValidacionFormulario() {
             if (usuarioId && v === '') {
                 limpiarTextoError('errorPasswordUsuario');
                 _valPassword = true;
-            } else if (v === '') {
-                marcarErrorElemento(this, 'La contraseña es obligatoria.');
-                _valPassword = false;
-            } else if (!validarPassword(v)) {
-                marcarErrorElemento(this, 'La contraseña debe tener al menos 6 caracteres.');
-                _valPassword = false;
-            } else {
+            } else if (validarPassword(v)) {
                 marcarValidoElemento(this);
                 limpiarTextoError('errorPasswordUsuario');
                 _valPassword = true;
+            } else {
+                _valPassword = false;
             }
             actualizarEstadoFormulario();
         };

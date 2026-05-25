@@ -68,6 +68,7 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/dashboard/solicitudes-filtrar', [DashboardController::class, 'filtrarSolicitudesNuevas']);
     Route::get('/admin/dashboard/incidencias-filtrar', [DashboardController::class, 'filtrarIncidenciasInactivas']);
     Route::get('/admin/configuracion', [ConfiguracionController::class, 'index']);
+    Route::post('/admin/configuracion/notificaciones', [ConfiguracionController::class, 'crearNotificacion'])->name('admin.configuracion.notificaciones.crear');
     Route::get('/admin/planes', [ConfiguracionController::class, 'planes'])->name('admin.planes');
     Route::post('/admin/planes/crear', [ConfiguracionController::class, 'crearPlan'])->name('admin.planes.crear');
     Route::post('/admin/planes/{id}/actualizar', [ConfiguracionController::class, 'actualizarPlan'])->name('admin.planes.actualizar');
@@ -166,6 +167,9 @@ Route::middleware(['role:admin'])->group(function () {
 Route::middleware(['role:gestor'])->group(function () {
     Route::get('/gestor/dashboard', [GestorDashboardController::class, 'index'])->name('gestor.dashboard');
     Route::get('/gestor/actividad', [GestorActividadController::class, 'index'])->name('gestor.actividad');
+
+    Route::post('/gestor/notificaciones/{id}/marcar-leida', [GestorActividadController::class, 'marcarLeida'])->name('gestor.notificaciones.marcar-leida');
+    Route::post('/gestor/notificaciones/{id}/eliminar', [GestorActividadController::class, 'eliminar'])->name('gestor.notificaciones.eliminar');
     Route::get('/gestor/incidencias', [GestorIncidenciaController::class, 'index'])->name('gestor.incidencias');
     Route::get('/gestor/incidencias/{id}', [GestorIncidenciaController::class, 'show'])->name('gestor.incidencias.show');
     Route::get('/gestor/propiedades', [GestorPropiedadController::class, 'index'])->name('gestor.propiedades');
@@ -197,6 +201,12 @@ Route::middleware(['role:gestor'])->group(function () {
     Route::get('/gestor/asesoria', [AsesoriaController::class, 'index'])->name('gestor.asesoria');
     Route::get('/gestor/asesoria/buscar', [AsesoriaController::class, 'buscar'])->name('gestor.asesoria.buscar');
     Route::get('/gestor/asesoria/{slug}', [AsesoriaController::class, 'categoria'])->name('gestor.asesoria.categoria');
+});
+
+// Rutas abiertas a usuarios autenticados para acciones sobre notificaciones
+Route::middleware(['auth'])->group(function () {
+    Route::post('/notificaciones/{id}/marcar-leida', [GestorActividadController::class, 'marcarLeida'])->name('notificaciones.marcar-leida');
+    Route::post('/notificaciones/{id}/eliminar', [GestorActividadController::class, 'eliminar'])->name('notificaciones.eliminar');
 });
 
 // Rutas Arrendador
@@ -270,12 +280,14 @@ Route::middleware(['auth', 'role:miembro,inquilino,arrendador'])->group(function
     Route::get('/miembro/suscripcion', [App\Http\Controllers\Miembro\MiembroSuscripcionController::class, 'index'])->name('miembro.suscripcion.index');
     Route::post('/miembro/suscripcion/checkout', [App\Http\Controllers\Miembro\MiembroSuscripcionController::class, 'checkout'])->name('miembro.suscripcion.checkout');
     Route::get('/miembro/suscripcion/success', [App\Http\Controllers\Miembro\MiembroSuscripcionController::class, 'success'])->name('miembro.suscripcion.success');
+    Route::post('/miembro/suscripcion/downgrade', [App\Http\Controllers\Miembro\MiembroSuscripcionController::class, 'downgrade'])->name('miembro.suscripcion.downgrade');
     Route::get('/miembro/perfil/{id}', [MiembroPerfilController::class, 'show'])->whereNumber('id')->name('miembro.perfil.show');
     Route::get('/miembro/configuracion', [MiembroPerfilController::class, 'configuracion'])->name('miembro.configuracion');
     Route::put('/miembro/configuracion', [MiembroPerfilController::class, 'actualizar'])->name('miembro.configuracion.actualizar');
     Route::put('/miembro/configuracion/plan', [MiembroPerfilController::class, 'actualizarPlan'])->name('miembro.configuracion.plan');
     Route::post('/miembro/configuracion/cancelar-suscripcion', [MiembroPerfilController::class, 'cancelarSuscripcion'])->name('miembro.configuracion.cancelar-suscripcion');
     Route::post('/miembro/configuracion/reactivar-suscripcion', [MiembroPerfilController::class, 'reactivarSuscripcion'])->name('miembro.configuracion.reactivar-suscripcion');
+    Route::post('/miembro/configuracion/cancelar-cambio-programado', [MiembroPerfilController::class, 'cancelarCambioProgramado'])->name('miembro.configuracion.cancelar-cambio-programado');
 
     Route::get('/arrendador/configurar-stripe', [ConfiguracionCobrosController::class, 'index'])->name('arrendador.stripe.configurar');
     Route::post('/arrendador/guardar-iban', [ConfiguracionCobrosController::class, 'store'])->name('arrendador.guardar-iban');
@@ -332,6 +344,8 @@ Route::get('/ejecutar-migraciones-seguras', function () {
         return "Error: " . $e->getMessage();
     }
 });
+
+// (dev route removed)
 
 // Limpiar cachés de Laravel (config, route, view, cache)
 Route::get('/limpiar-cache', function () {

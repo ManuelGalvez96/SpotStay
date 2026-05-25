@@ -43,7 +43,7 @@
             </div>
             <div class="col-md-2">
                 <label class="form-label small fw-bold text-uppercase text-muted">Referencia</label>
-                <input type="text" name="referencia" class="form-control" placeholder="TXN..." value="{{ request('referencia') }}" style="border-radius: 10px; border: 1px solid #e2e8f0; padding: 10px;">
+                <input type="text" name="referencia" class="form-control form-control-custom" placeholder="TXN..." value="{{ request('referencia') }}">
             </div>
             <div class="col-md-2 d-flex align-items-end gap-2">
                 <button type="submit" class="btn btn-primary w-100 btn-filtrar-custom">

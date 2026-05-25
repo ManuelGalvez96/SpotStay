@@ -844,6 +844,42 @@ function rellenarModalIncidencia(id) {
     var modalDestino = document.getElementById('modalDestinoContacto');
     var modalAsunto = document.getElementById('modalAsuntoContacto');
     var modalMensaje = document.getElementById('modalMensajeContacto');
+    var errorDestino = document.getElementById('errorDestinoContacto');
+    var errorAsunto = document.getElementById('errorAsuntoContacto');
+    var errorMensaje = document.getElementById('errorMensajeContacto');
+
+    function limpiarError(elemento) {
+        if (elemento) {
+            elemento.textContent = ' ';
+        }
+    }
+
+    function validarDestino() {
+        if (!modalDestino || !modalDestino.value) {
+            if (errorDestino) errorDestino.textContent = 'Selecciona un destinatario.';
+            return false;
+        }
+        limpiarError(errorDestino);
+        return true;
+    }
+
+    function validarAsunto() {
+        if (!modalAsunto || !modalAsunto.value.trim()) {
+            if (errorAsunto) errorAsunto.textContent = 'El asunto no puede estar vacío.';
+            return false;
+        }
+        limpiarError(errorAsunto);
+        return true;
+    }
+
+    function validarMensaje() {
+        if (!modalMensaje || !modalMensaje.value.trim()) {
+            if (errorMensaje) errorMensaje.textContent = 'El mensaje no puede estar vacío.';
+            return false;
+        }
+        limpiarError(errorMensaje);
+        return true;
+    }
 
     if (modalTitulo) modalTitulo.textContent = titulo;
     if (modalPropiedad) modalPropiedad.textContent = propiedad;
@@ -862,6 +898,25 @@ function rellenarModalIncidencia(id) {
     if (modalDestino) modalDestino.value = '';
     if (modalAsunto) modalAsunto.value = 'Incidencia inactiva — Requiere atención';
     if (modalMensaje) modalMensaje.value = '';
+    if (modalDestino) {
+        modalDestino.onblur = validarDestino;
+        modalDestino.onchange = validarDestino;
+        modalDestino.oninput = function () {
+            if (modalDestino.value) limpiarError(errorDestino);
+        };
+    }
+    if (modalAsunto) {
+        modalAsunto.onblur = validarAsunto;
+        modalAsunto.oninput = function () {
+            if (modalAsunto.value.trim()) limpiarError(errorAsunto);
+        };
+    }
+    if (modalMensaje) {
+        modalMensaje.onblur = validarMensaje;
+        modalMensaje.oninput = function () {
+            if (modalMensaje.value.trim()) limpiarError(errorMensaje);
+        };
+    }
 
     // Mostrar modal
     var modal = document.getElementById('modalContactarIncidencia');
@@ -885,34 +940,32 @@ function enviarContactoIncidencia() {
         return;
     }
 
-    var destino = document.getElementById('modalDestinoContacto').value;
-    var asunto = document.getElementById('modalAsuntoContacto').value;
-    var mensaje = document.getElementById('modalMensajeContacto').value;
+    var destinoEl = document.getElementById('modalDestinoContacto');
+    var asuntoEl = document.getElementById('modalAsuntoContacto');
+    var mensajeEl = document.getElementById('modalMensajeContacto');
+    var errorDestino = document.getElementById('errorDestinoContacto');
+    var errorAsunto = document.getElementById('errorAsuntoContacto');
+    var errorMensaje = document.getElementById('errorMensajeContacto');
+    var destino = destinoEl ? destinoEl.value : '';
+    var asunto = asuntoEl ? asuntoEl.value : '';
+    var mensaje = mensajeEl ? mensajeEl.value : '';
+
+    if (errorDestino) errorDestino.textContent = ' ';
+    if (errorAsunto) errorAsunto.textContent = ' ';
+    if (errorMensaje) errorMensaje.textContent = ' ';
 
     if (!destino) {
-        if (window.swalError) {
-            window.swalError('Falta destinatario', 'Por favor, selecciona un destinatario');
-        } else {
-            alert('Por favor, selecciona un destinatario');
-        }
+        if (errorDestino) errorDestino.textContent = 'Selecciona un destinatario.';
         return;
     }
 
     if (!asunto.trim()) {
-        if (window.swalError) {
-            window.swalError('Falta asunto', 'Por favor, escribe un asunto');
-        } else {
-            alert('Por favor, escribe un asunto');
-        }
+        if (errorAsunto) errorAsunto.textContent = 'El asunto no puede estar vacío.';
         return;
     }
 
     if (!mensaje.trim()) {
-        if (window.swalError) {
-            window.swalError('Falta mensaje', 'Por favor, escribe un mensaje');
-        } else {
-            alert('Por favor, escribe un mensaje');
-        }
+        if (errorMensaje) errorMensaje.textContent = 'El mensaje no puede estar vacío.';
         return;
     }
 

@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/miembro/miembro.css') }}?v=8" />
+    <link rel="stylesheet" href="{{ asset('css/admin/layout.css') }}?v=2" />
     @yield('styles')
 </head>
 
@@ -49,6 +50,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     @yield('scripts')
+    <script src="{{ asset('js/admin/layout.js') }}"></script>
     <script src="{{ asset('js/miembro/miembro.js') }}?v=3"></script>
 </body>
 

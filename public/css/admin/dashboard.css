@@ -415,12 +415,12 @@ body {
 
 .badge-esperando-decision {
     background: #FEF3C7;
-    color: #D97706;
+    color: #C2410C;
 }
 
 .badge-esperando-pago {
-    background: #F8D7DA;
-    color: #8B0000;
+    background: #EDE9FE;
+    color: #6D21D9;
 }
 
 .badge-solucionada {

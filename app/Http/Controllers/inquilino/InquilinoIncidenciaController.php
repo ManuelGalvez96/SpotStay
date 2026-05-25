@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\ActividadService;
 use Carbon\Carbon;
 use Stripe\Stripe;
 use Stripe\Checkout\Session as StripeSession;
@@ -29,13 +30,23 @@ class InquilinoIncidenciaController extends Controller
             $propiedad = DB::table('tbl_propiedad')->where('id_propiedad', $id)->first();
             $idAsignado = ($propiedad->id_gestor_fk ?? 0) > 0 ? $propiedad->id_gestor_fk : ($propiedad->id_arrendador_fk ?? null);
 
+            $mapaCategorias = [
+                'fontaneria' => 'Fontanería',
+                'electricidad' => 'Electricidad',
+                'limpieza' => 'Limpieza',
+                'climatizacion' => 'Climatización',
+                'otros' => 'Otros'
+            ];
+            $nombreCat = $mapaCategorias[$request->categoria] ?? 'Otros';
+            $idCategoria = DB::table('tbl_categoria')->where('nombre_categoria', $nombreCat)->value('id_categoria') ?? 1;
+
             $idIncidencia = DB::table('tbl_incidencia')->insertGetId([
                 'id_propiedad_fk' => $id,
                 'id_reporta_fk' => $usuario->id_usuario,
                 'id_asignado_fk' => $idAsignado,
+                'id_categoria_fk' => $idCategoria,
                 'titulo_incidencia' => $request->titulo,
                 'descripcion_incidencia' => $request->descripcion,
-                'categoria_incidencia' => $request->categoria,
                 'prioridad_incidencia' => $request->prioridad,
                 'estado_incidencia' => 'abierta',
                 'creado_incidencia' => Carbon::now(),
@@ -50,6 +61,17 @@ class InquilinoIncidenciaController extends Controller
                 'creado_historial' => Carbon::now(),
                 'actualizado_historial' => Carbon::now()
             ]);
+
+            $tituloPropiedad = DB::table('tbl_propiedad')->where('id_propiedad', $id)->value('titulo_propiedad') ?: 'propiedad';
+            if ($idAsignado) {
+                (new ActividadService())->incidenciaCreada(
+                    (int) $idAsignado,
+                    (int) $idIncidencia,
+                    (string) $tituloPropiedad,
+                    (string) $request->titulo,
+                    (string) ($usuario->nombre_usuario ?? 'Un usuario')
+                );
+            }
 
             DB::commit();
             return $request->ajax() ? response()->json(['success' => true]) : redirect()->back()->with('success', 'Incidencia reportada.');
@@ -85,18 +107,22 @@ class InquilinoIncidenciaController extends Controller
 
     public function getDetalleIncidencia($id)
     {
-        $incidencia = DB::table('tbl_incidencia')->where('id_incidencia', $id)->first();
+        $incidencia = DB::table('tbl_incidencia')
+            ->leftJoin('tbl_categoria', 'tbl_categoria.id_categoria', '=', 'tbl_incidencia.id_categoria_fk')
+            ->where('id_incidencia', $id)
+            ->first();
+            
         if (!$incidencia) return response()->json(['error' => 'No encontrada'], 404);
 
         return response()->json([
             'id' => $incidencia->id_incidencia,
             'titulo' => $incidencia->titulo_incidencia,
             'descripcion' => $incidencia->descripcion_incidencia,
-            'categoria' => ucfirst(str_replace('_', ' ', $incidencia->categoria_incidencia ?? 'N/A')),
+            'categoria' => ucfirst($incidencia->nombre_categoria ?? 'N/A'),
             'prioridad' => ucfirst($incidencia->prioridad_incidencia ?? 'N/A'),
             'estado' => ucfirst(str_replace('_', ' ', $incidencia->estado_incidencia ?? 'N/A')),
             'estado_workflow' => $incidencia->estado_incidencia,
-            'presupuesto' => $incidencia->presupuesto_importe_incidencia,
+            'presupuesto' => $incidencia->presupuesto_incidencia ?? $incidencia->presupuesto_importe_incidencia ?? null,
             'fecha' => Carbon::parse($incidencia->creado_incidencia)->format('d/m/Y H:i')
         ]);
     }
@@ -127,8 +153,8 @@ class InquilinoIncidenciaController extends Controller
         $incidencia = DB::table('tbl_incidencia')->where('id_incidencia', $id)->first();
         if (!$incidencia || $incidencia->id_reporta_fk != Auth::id()) return back()->with('error', 'No permitido.');
 
-        if ($incidencia->estado_incidencia !== 'solucionada') {
-            return back()->with('error', 'Solo puedes marcar como resuelta una incidencia solucionada.');
+        if (!in_array($incidencia->estado_incidencia, ['abierta', 'solucionada'])) {
+            return back()->with('error', 'Solo puedes marcar como resuelta una incidencia que esté abierta o solucionada.');
         }
 
         DB::table('tbl_incidencia')->where('id_incidencia', $id)->update([

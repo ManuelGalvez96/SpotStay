@@ -76,17 +76,20 @@
 
             <div class="campo-full">
                 <label for="titulo">Título</label>
-                <input id="titulo" name="titulo" type="text" value="{{ old('titulo', $modoEdicion ? $propiedadEditando->titulo_propiedad : '') }}" required>
+                <input id="titulo" name="titulo" type="text" value="{{ old('titulo', $modoEdicion ? $propiedadEditando->titulo_propiedad : '') }}">
+                <small class="error-mensaje" id="errorTituloPropiedad"></small>
             </div>
 
             <div>
                 <label for="calle">Calle</label>
-                <input id="calle" name="calle" type="text" value="{{ old('calle', $modoEdicion ? $propiedadEditando->calle_propiedad : '') }}" required>
+                <input id="calle" name="calle" type="text" value="{{ old('calle', $modoEdicion ? $propiedadEditando->calle_propiedad : '') }}">
+                <small class="error-mensaje" id="errorCallePropiedad"></small>
             </div>
 
             <div>
                 <label for="numero">Número</label>
-                <input id="numero" name="numero" type="text" value="{{ old('numero', $modoEdicion ? $propiedadEditando->numero_propiedad : '') }}" required>
+                <input id="numero" name="numero" type="text" value="{{ old('numero', $modoEdicion ? $propiedadEditando->numero_propiedad : '') }}">
+                <small class="error-mensaje" id="errorNumeroPropiedad"></small>
             </div>
 
             <div>
@@ -101,17 +104,20 @@
 
             <div>
                 <label for="ciudad">Ciudad</label>
-                <input id="ciudad" name="ciudad" type="text" value="{{ old('ciudad', $modoEdicion ? $propiedadEditando->ciudad_propiedad : '') }}" required>
+                <input id="ciudad" name="ciudad" type="text" value="{{ old('ciudad', $modoEdicion ? $propiedadEditando->ciudad_propiedad : '') }}">
+                <small class="error-mensaje" id="errorCiudadPropiedad"></small>
             </div>
 
             <div>
                 <label for="codigo_postal">Código postal</label>
-                <input id="codigo_postal" name="codigo_postal" type="text" value="{{ old('codigo_postal', $modoEdicion ? $propiedadEditando->codigo_postal_propiedad : '') }}" required>
+                <input id="codigo_postal" name="codigo_postal" type="text" value="{{ old('codigo_postal', $modoEdicion ? $propiedadEditando->codigo_postal_propiedad : '') }}">
+                <small class="error-mensaje" id="errorCodigoPostalPropiedad"></small>
             </div>
 
             <div>
                 <label for="precio">Precio mensual</label>
-                <input id="precio" name="precio" type="number" min="0" step="0.01" value="{{ old('precio', $modoEdicion ? $propiedadEditando->precio_propiedad : '') }}" required>
+                <input id="precio" name="precio" type="number" min="0" step="0.01" value="{{ old('precio', $modoEdicion ? $propiedadEditando->precio_propiedad : '') }}">
+                <small class="error-mensaje" id="errorPrecioPropiedad"></small>
             </div>
 
             <div>
@@ -155,17 +161,19 @@
 
             <div>
                 <label for="estado">Estado</label>
-                <select id="estado" name="estado" required>
+                <select id="estado" name="estado">
                     <option value="publicada" {{ old('estado', $modoEdicion ? $propiedadEditando->estado_propiedad : 'publicada') === 'publicada' ? 'selected' : '' }}>Publicada</option>
                     <option value="alquilada" {{ old('estado', $modoEdicion ? $propiedadEditando->estado_propiedad : 'publicada') === 'alquilada' ? 'selected' : '' }}>Alquilada</option>
                     <option value="borrador" {{ old('estado', $modoEdicion ? $propiedadEditando->estado_propiedad : 'publicada') === 'borrador' ? 'selected' : '' }}>Borrador</option>
                     <option value="inactiva" {{ old('estado', $modoEdicion ? $propiedadEditando->estado_propiedad : 'publicada') === 'inactiva' ? 'selected' : '' }}>Inactiva</option>
                 </select>
+                <small class="error-mensaje" id="errorEstadoPropiedad"></small>
             </div>
 
             <div class="campo-full">
                 <label for="arrendador_email">Email del arrendador</label>
-                <input id="arrendador_email" name="arrendador_email" type="email" value="{{ old('arrendador_email', $modoEdicion ? $propiedadEditando->email_arrendador : '') }}" required>
+                <input id="arrendador_email" name="arrendador_email" type="email" value="{{ old('arrendador_email', $modoEdicion ? $propiedadEditando->email_arrendador : '') }}">
+                <small class="error-mensaje" id="errorEmailArrendadorPropiedad"></small>
             </div>
 
             <div class="campo-full">

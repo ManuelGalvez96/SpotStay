@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Conversacion;
 use App\Models\ConversacionUsuario;
 use App\Models\Mensaje;
+use App\Services\ActividadService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -149,6 +150,27 @@ class MensajeController extends Controller
         ConversacionUsuario::where('id_conversacion_fk', $conversacion->id_conversacion)
             ->where('id_usuario_fk', $gestorId)
             ->update(['ultima_lectura_conv_usuario' => $ahora]);
+
+        $actividadService = new ActividadService();
+        $propiedadTitulo = $conversacion->id_propiedad_fk
+            ? (string) DB::table('tbl_propiedad')->where('id_propiedad', $conversacion->id_propiedad_fk)->value('titulo_propiedad')
+            : 'tu conversación';
+        $extracto = mb_substr(trim($datos['texto']), 0, 120);
+
+            $gestor = Auth::user();
+        foreach ($conversacion->participantes as $participante) {
+            if ((int) $participante->id_usuario === (int) $gestorId) {
+                continue;
+            }
+
+            $actividadService->mensajeNuevo(
+                (int) $participante->id_usuario,
+                (int) $conversacion->id_conversacion,
+                $propiedadTitulo,
+                $gestor->nombre_usuario ?? 'Un usuario',
+                $extracto
+            );
+        }
 
         $gestor = Auth::user();
 

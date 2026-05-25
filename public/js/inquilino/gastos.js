@@ -1,7 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
-    inicializarGastos();
-    comprobarAlertasSesionGastos();
-});
+
 
 function inicializarGastos() {
     const tabs = document.querySelectorAll('.tab-btn');
@@ -225,7 +222,7 @@ function inicializarGastos() {
         const propiedadId = formData.get('propiedad_id') || '';
         const tipoGasto = filtroTipoGasto ? filtroTipoGasto.value : '';
         const nombreGasto = filtroNombreGasto ? filtroNombreGasto.value : '';
-        
+
         const url = new URL(formFiltroPropiedad.action, window.location.origin);
         if (propiedadId) {
             url.searchParams.set('propiedad_id', propiedadId);
@@ -267,7 +264,7 @@ function inicializarGastos() {
                     if (datos.propiedad_seleccionada) {
                         kpiAccion.classList.remove('d-none', 'oculto');
                         kpiAccion.style.display = '';
-                        
+
                         const textoPagarTodo = document.getElementById('texto-pagar-todo');
                         if (textoPagarTodo) {
                             if (tipoGasto) {
@@ -338,7 +335,7 @@ function pagarTodo() {
     mostrarAlertaConfirmacion(
         tituloModal,
         'Se procesarán todos tus pagos pendientes en una sola transacción segura.' +
-            '<br><br>Importe total: <strong>' + total.toFixed(2).replace('.', ',') + ' €</strong>',
+        '<br><br>Importe total: <strong>' + total.toFixed(2).replace('.', ',') + ' €</strong>',
         'Sí, pagar ahora',
         'Cancelar'
     ).then(resultado => {
@@ -351,23 +348,23 @@ function pagarTodo() {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 propiedad_id: propiedadId || null,
                 tipo_gasto: tipoGasto || null,
                 nombre_gasto: nombreGasto || null
             })
         })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success && data.url) {
-                window.location.href = data.url;
-            } else {
-                mostrarAlertaError('Error', data.message || 'No se pudo iniciar el pago.');
-            }
-        })
-        .catch(err => {
-            mostrarAlertaError('Error de conexión', err.message || 'Ocurrió un error al conectar con el servidor.');
-        });
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.url) {
+                    window.location.href = data.url;
+                } else {
+                    mostrarAlertaError('Error', data.message || 'No se pudo iniciar el pago.');
+                }
+            })
+            .catch(err => {
+                mostrarAlertaError('Error de conexión', err.message || 'Ocurrió un error al conectar con el servidor.');
+            });
     });
 }
 
@@ -401,21 +398,21 @@ function iniciarPago(tipo, id) {
                 'Accept': 'application/json'
             }
         })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success && data.url) {
-                window.location.href = data.url;
-            } else {
-                mostrarAlertaError('Error', data.message || 'No se pudo iniciar el pago.');
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.url) {
+                    window.location.href = data.url;
+                } else {
+                    mostrarAlertaError('Error', data.message || 'No se pudo iniciar el pago.');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            })
+            .catch(err => {
+                mostrarAlertaError('Error de conexión', err.message || 'Ocurrió un error al conectar con el servidor.');
                 btn.innerHTML = originalText;
                 btn.disabled = false;
-            }
-        })
-        .catch(err => {
-            mostrarAlertaError('Error de conexión', err.message || 'Ocurrió un error al conectar con el servidor.');
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        });
+            });
     });
 }
 
@@ -546,3 +543,7 @@ function escapeHtml(texto) {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 }
+
+// Inicialización directa
+inicializarGastos();
+comprobarAlertasSesionGastos();

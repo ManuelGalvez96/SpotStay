@@ -399,3 +399,11 @@
         align-items: flex-start;
     }
 }
+
+/* --- UTILIDADES DE ANCHO EXTRAÍDAS --- */
+.d-none { display: none !important; }
+.mw-100 { max-width: 100% !important; }
+.min-w-300px { min-width: 300px !important; }
+.mw-250px { max-width: 250px !important; }
+.mw-200px { max-width: 200px !important; }
+.mw-150px { max-width: 150px !important; }

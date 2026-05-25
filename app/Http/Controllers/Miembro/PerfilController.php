@@ -162,9 +162,88 @@ class PerfilController extends Controller
             ->firstOrFail();
 
         $suscripcionActual = Suscripcion::where('id_usuario_fk', $usuario->id_usuario)
+            ->where('estado_suscripcion', '!=', 'programada')
             ->latest('id_suscripcion')
             ->first();
 
+        $esArrendador = $rolDestinatario === 'arrendador';
+
+        if ($esArrendador && $suscripcionActual) {
+            $precioActual = (float) $suscripcionActual->precio_pagado_suscripcion;
+            $precioNuevo = (float) $plan->precio_plan;
+            $estadoActual = $suscripcionActual->estado_suscripcion;
+
+            $esUpgrade = ($precioNuevo > $precioActual) || in_array($estadoActual, ['caducada', 'pendiente_pago']);
+
+            if ($esUpgrade) {
+                // --- UPGRADE INMEDIATO ---
+                DB::transaction(function () use ($usuario, $plan, $suscripcionActual) {
+                    if ($suscripcionActual && in_array($suscripcionActual->estado_suscripcion, ['activa', 'cancelada'])) {
+                        $suscripcionActual->update([
+                            'estado_suscripcion' => 'reemplazada',
+                            'actualizado_suscripcion' => Carbon::now()
+                        ]);
+                    }
+
+                    // Eliminar cualquier cambio diferido programado anterior
+                    Suscripcion::where('id_usuario_fk', $usuario->id_usuario)
+                        ->where('estado_suscripcion', 'programada')
+                        ->delete();
+
+                    // Nueva suscripción en pendiente de pago para forzar pasarela
+                    Suscripcion::create([
+                        'id_usuario_fk' => $usuario->id_usuario,
+                        'id_plan_fk' => $plan->id_plan,
+                        'plan_suscripcion' => $plan->nombre_plan,
+                        'max_propiedades_suscripcion' => $plan->max_propiedades_plan,
+                        'precio_pagado_suscripcion' => $plan->precio_plan,
+                        'estado_suscripcion' => 'pendiente_pago',
+                        'inicio_suscripcion' => Carbon::now(),
+                        'fin_suscripcion' => Carbon::now()->copy()->addMonth(),
+                        'creado_suscripcion' => Carbon::now(),
+                        'actualizado_suscripcion' => Carbon::now(),
+                    ]);
+
+                    $usuario->update([
+                        'stripe_status' => 'pending_payment',
+                    ]);
+                });
+
+                return redirect()->route('miembro.suscripcion.index')
+                    ->with('info', 'Has seleccionado una mejora de plan (' . $plan->nombre_plan . '). Completa el pago para activar tus nuevas ventajas.');
+            } else {
+                // --- DOWNGRADE DIFERIDO ---
+                DB::transaction(function () use ($usuario, $plan, $suscripcionActual) {
+                    // Eliminar cualquier cambio diferido programado anterior
+                    Suscripcion::where('id_usuario_fk', $usuario->id_usuario)
+                        ->where('estado_suscripcion', 'programada')
+                        ->delete();
+
+                    $inicioProgramada = $suscripcionActual->fin_suscripcion 
+                        ? Carbon::parse($suscripcionActual->fin_suscripcion) 
+                        : Carbon::now();
+                    $finProgramada = $inicioProgramada->copy()->addMonth();
+
+                    Suscripcion::create([
+                        'id_usuario_fk' => $usuario->id_usuario,
+                        'id_plan_fk' => $plan->id_plan,
+                        'plan_suscripcion' => $plan->nombre_plan,
+                        'max_propiedades_suscripcion' => $plan->max_propiedades_plan,
+                        'precio_pagado_suscripcion' => $plan->precio_plan,
+                        'estado_suscripcion' => 'programada',
+                        'inicio_suscripcion' => $inicioProgramada,
+                        'fin_suscripcion' => $finProgramada,
+                        'creado_suscripcion' => Carbon::now(),
+                        'actualizado_suscripcion' => Carbon::now(),
+                    ]);
+                });
+
+                return redirect()->route('miembro.configuracion')
+                    ->with('success', 'Cambio de plan programado con éxito. Al finalizar tu ciclo actual, pasarás al plan ' . $plan->nombre_plan . '.');
+            }
+        }
+
+        // Lógica por defecto para inquilinos/miembros
         DB::transaction(function () use ($usuario, $plan, $suscripcionActual) {
             $datosSuscripcion = [
                 'id_plan_fk' => $plan->id_plan,
@@ -288,6 +367,19 @@ class PerfilController extends Controller
             ->with('success', 'Tu suscripción ha sido reactivada correctamente.');
     }
 
+    public function cancelarCambioProgramado(Request $request)
+    {
+        /** @var Usuario $usuario */
+        $usuario = Auth::user();
+
+        Suscripcion::where('id_usuario_fk', $usuario->id_usuario)
+            ->where('estado_suscripcion', 'programada')
+            ->delete();
+
+        return redirect()->route('miembro.configuracion')
+            ->with('success', 'El cambio de plan diferido programado ha sido cancelado con éxito. Mantendrás tu plan actual.');
+    }
+
     private function obtenerDatosVista($usuario): array
     {
         $usuario->loadMissing('roles');
@@ -299,6 +391,12 @@ class PerfilController extends Controller
 
         $suscripcionActual = Suscripcion::with('plan')
             ->where('id_usuario_fk', $usuario->id_usuario)
+            ->where('estado_suscripcion', '!=', 'programada')
+            ->latest('id_suscripcion')
+            ->first();
+
+        $suscripcionProgramada = Suscripcion::where('id_usuario_fk', $usuario->id_usuario)
+            ->where('estado_suscripcion', 'programada')
             ->latest('id_suscripcion')
             ->first();
 
@@ -353,7 +451,7 @@ class PerfilController extends Controller
                 ->when($idPlanActual, function ($query) use ($idPlanActual) {
                     $query->where('id_plan', '!=', $idPlanActual);
                 })
-                ->when($precioPlanActual !== null, function ($query) use ($precioPlanActual) {
+                ->when($precioPlanActual !== null && !$esArrendador, function ($query) use ($precioPlanActual) {
                     $query->where('precio_plan', '>=', $precioPlanActual);
                 })
                 ->orderBy('precio_plan')
@@ -368,7 +466,7 @@ class PerfilController extends Controller
             $fotoPerfil = $this->resolverRutaImagen($usuario->foto_usuario);
         }
 
-        return compact('usuario', 'esArrendador', 'suscripcionActual', 'planesDisponibles', 'fotoPerfil', 'rolDestinatario', 'diasRestantesSuscripcion');
+        return compact('usuario', 'esArrendador', 'suscripcionActual', 'suscripcionProgramada', 'planesDisponibles', 'fotoPerfil', 'rolDestinatario', 'diasRestantesSuscripcion');
     }
 
     private function obtenerRolDestinatario(Usuario $usuario): ?string

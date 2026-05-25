@@ -203,6 +203,28 @@
                         <div class="card-body p-4">
                             <h2 class="h4 mb-3">Plan de suscripción</h2>
 
+                            @if (isset($suscripcionProgramada) && $suscripcionProgramada)
+                                <div class="p-3 rounded-3 bg-light border mb-4 text-start">
+                                    <div class="d-flex align-items-start gap-2">
+                                        <div class="text-muted mt-0.5">
+                                            <i class="bi bi-calendar-event-fill" style="font-size: 1.2rem;"></i>
+                                        </div>
+                                        <div class="w-100">
+                                            <div class="fw-semibold text-dark" style="font-size: 0.95rem;">Cambio de plan programado</div>
+                                            <p class="small text-muted mb-3 mt-1" style="line-height: 1.4;">
+                                                Tu plan cambiará a <strong>{{ $suscripcionProgramada->plan_suscripcion }}</strong> ({{ number_format((float) $suscripcionProgramada->precio_pagado_suscripcion, 2) }} €) el día {{ \Carbon\Carbon::parse($suscripcionProgramada->inicio_suscripcion)->format('d/m/Y') }}. Hasta entonces seguirás disfrutando de tu plan actual.
+                                            </p>
+                                            <form method="POST" action="{{ route('miembro.configuracion.cancelar-cambio-programado') }}">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-outline-danger w-100" style="font-size: 0.85rem; border-radius: 6px; padding: 0.35rem;">
+                                                    Cancelar cambio programado
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
                             @if ($suscripcionActual)
                                 <div class="mb-3 p-3 rounded-3 bg-light">
                                     <div class="text-muted small">Plan actual</div>

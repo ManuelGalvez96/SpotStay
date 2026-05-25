@@ -159,6 +159,12 @@
     padding-left: 18px;
 }
 
+.campo-error {
+    color: #c71c1c;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
 .btn-exportar,
 .btn-primario {
     text-decoration: none;

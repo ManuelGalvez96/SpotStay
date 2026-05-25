@@ -1,217 +1,328 @@
-/**
- * Validación y envío de formulario para crear/editar propiedades
- */
+var inicializarFormularioPropiedadAdmin = function () {
+    var form = document.getElementById('formCrearPropiedad');
 
-document.addEventListener('DOMContentLoaded', function() {
-    var form = document.querySelector('form');
-    if (!form) return;
+    if (!form) {
+        return;
+    }
 
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Limpiar errores previos
-        limpiarErrores();
-        
-        // Validar formulario
-        var errores = validarFormulario();
-        
-        if (errores.length > 0) {
-            // Mostrar alerta de validación
-            var mensajeErrores = errores.join('\n');
-            if (window.mostrarAlertaAdminValidacion) {
-                window.mostrarAlertaAdminValidacion(mensajeErrores);
-            } else {
-                alert('Errores de validación:\n' + mensajeErrores);
-            }
+    var campos = {
+        titulo: document.getElementById('titulo'),
+        calle: document.getElementById('calle'),
+        numero: document.getElementById('numero'),
+        ciudad: document.getElementById('ciudad'),
+        codigoPostal: document.getElementById('codigo_postal'),
+        precio: document.getElementById('precio'),
+        metros: document.getElementById('metros'),
+        estado: document.getElementById('estado'),
+        emailArrendador: document.getElementById('arrendador_email')
+    };
+
+    var errores = {
+        titulo: document.getElementById('errorTituloPropiedad'),
+        calle: document.getElementById('errorCallePropiedad'),
+        numero: document.getElementById('errorNumeroPropiedad'),
+        ciudad: document.getElementById('errorCiudadPropiedad'),
+        codigoPostal: document.getElementById('errorCodigoPostalPropiedad'),
+        precio: document.getElementById('errorPrecioPropiedad'),
+        metros: null,
+        estado: document.getElementById('errorEstadoPropiedad'),
+        emailArrendador: document.getElementById('errorEmailArrendadorPropiedad')
+    };
+
+    var botonEnviar = form.querySelector('button[type="submit"]');
+
+    function valorLimpio(elemento) {
+        return elemento && typeof elemento.value === 'string' ? elemento.value.trim() : '';
+    }
+
+    function textoError(elemento, mensaje) {
+        if (elemento) {
+            elemento.textContent = mensaje;
+        }
+    }
+
+    function limpiarError(campo) {
+        textoError(errores[campo], ' ');
+    }
+
+    function limpiarTodosLosErrores() {
+        for (var clave in errores) {
+            limpiarError(clave);
+        }
+    }
+
+    function validarEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function validarTitulo() {
+        var valor = valorLimpio(campos.titulo);
+        if (!valor) {
+            textoError(errores.titulo, 'El título es obligatorio.');
             return false;
         }
-        
-        // Si validación pasa, enviar formulario
-        enviarFormulario(form);
-    });
-});
-
-/**
- * Valida todos los campos del formulario
- * Retorna un array con mensajes de error (vacío si no hay errores)
- */
-function validarFormulario() {
-    var errores = [];
-    
-    // Campos obligatorios
-    var titulo = document.getElementById('titulo');
-    var calle = document.getElementById('calle');
-    var numero = document.getElementById('numero');
-    var ciudad = document.getElementById('ciudad');
-    var codigoPostal = document.getElementById('codigo_postal');
-    var precio = document.getElementById('precio');
-    var arrendadorEmail = document.getElementById('arrendador_email');
-    var estado = document.getElementById('estado');
-    
-    // Validar título
-    if (!titulo || !titulo.value.trim()) {
-        errores.push('• El título es obligatorio.');
-    } else if (titulo.value.trim().length < 3) {
-        errores.push('• El título debe tener al menos 3 caracteres.');
-    }
-    
-    // Validar calle
-    if (!calle || !calle.value.trim()) {
-        errores.push('• La calle es obligatoria.');
-    } else if (calle.value.trim().length < 3) {
-        errores.push('• La calle debe tener al menos 3 caracteres.');
-    }
-    
-    // Validar número
-    if (!numero || !numero.value.trim()) {
-        errores.push('• El número es obligatorio.');
-    }
-    
-    // Validar ciudad
-    if (!ciudad || !ciudad.value.trim()) {
-        errores.push('• La ciudad es obligatoria.');
-    } else if (ciudad.value.trim().length < 2) {
-        errores.push('• La ciudad debe tener al menos 2 caracteres.');
-    }
-    
-    // Validar código postal
-    if (!codigoPostal || !codigoPostal.value.trim()) {
-        errores.push('• El código postal es obligatorio.');
-    } else if (!/^\d{5}$/.test(codigoPostal.value.trim())) {
-        errores.push('• El código postal debe tener 5 dígitos.');
-    }
-    
-    // Validar precio
-    if (!precio || precio.value === '') {
-        errores.push('• El precio es obligatorio.');
-    } else if (isNaN(precio.value) || parseFloat(precio.value) < 0) {
-        errores.push('• El precio debe ser un número mayor o igual a 0.');
-    }
-    
-    // Validar email del arrendador
-    if (!arrendadorEmail || !arrendadorEmail.value.trim()) {
-        errores.push('• El email del arrendador es obligatorio.');
-    } else if (!validarEmail(arrendadorEmail.value)) {
-        errores.push('• El email del arrendador no es válido.');
-    }
-    
-    // Validar estado
-    if (!estado || !estado.value) {
-        errores.push('• El estado de la propiedad es obligatorio.');
-    }
-    
-    // Validar metros si está presente
-    var metros = document.getElementById('metros');
-    if (metros && metros.value && isNaN(metros.value)) {
-        errores.push('• Los metros cuadrados deben ser un número válido.');
-    }
-    
-    return errores;
-}
-
-/**
- * Valida si un email es válido
- */
-function validarEmail(email) {
-    var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-}
-
-/**
- * Envía el formulario vía AJAX
- */
-function enviarFormulario(form) {
-    var formData = new FormData(form);
-    var isEditing = form.action.includes('/editar');
-    var titulo = isEditing ? 'Propiedad actualizada' : 'Propiedad creada';
-    
-    fetch(form.action, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'Accept': 'application/json'
+        if (valor.length < 3) {
+            textoError(errores.titulo, 'El título debe tener al menos 3 caracteres.');
+            return false;
         }
-    })
-    .then(function(response) {
-        // Si la respuesta es 422 (validación), parsear los errores
-        if (response.status === 422) {
-            return response.json().then(function(data) {
-                var erroresServidor = [];
-                if (data.errors) {
-                    for (var campo in data.errors) {
-                        if (data.errors[campo] && data.errors[campo].length > 0) {
-                            erroresServidor.push('• ' + data.errors[campo][0]);
-                        }
-                    }
-                }
-                throw new Error(erroresServidor.length > 0 ? erroresServidor.join('\n') : 'Error de validación.');
-            });
+        limpiarError('titulo');
+        return true;
+    }
+
+    function validarCalle() {
+        var valor = valorLimpio(campos.calle);
+        if (!valor) {
+            textoError(errores.calle, 'La calle es obligatoria.');
+            return false;
         }
-        
-        if (!response.ok) {
-            return response.json().then(function(data) {
-                throw new Error(data.message || 'Error en la solicitud');
-            }).catch(function() {
-                throw new Error('Error en la solicitud');
-            });
+        if (valor.length < 3) {
+            textoError(errores.calle, 'La calle debe tener al menos 3 caracteres.');
+            return false;
         }
-        return response.json();
-    })
-    .then(function(data) {
-        if (data.success) {
-            // Mostrar alerta de éxito
-            if (window.mostrarAlertaAdminExito) {
-                window.mostrarAlertaAdminExito(
-                    titulo,
-                    isEditing 
-                        ? 'Los cambios se guardaron correctamente.' 
-                        : 'La propiedad se creó correctamente.'
-                );
+        limpiarError('calle');
+        return true;
+    }
+
+    function validarNumero() {
+        var valor = valorLimpio(campos.numero);
+        if (!valor) {
+            textoError(errores.numero, 'El número es obligatorio.');
+            return false;
+        }
+        limpiarError('numero');
+        return true;
+    }
+
+    function validarCiudad() {
+        var valor = valorLimpio(campos.ciudad);
+        if (!valor) {
+            textoError(errores.ciudad, 'La ciudad es obligatoria.');
+            return false;
+        }
+        if (valor.length < 2) {
+            textoError(errores.ciudad, 'La ciudad debe tener al menos 2 caracteres.');
+            return false;
+        }
+        limpiarError('ciudad');
+        return true;
+    }
+
+    function validarCodigoPostal() {
+        var valor = valorLimpio(campos.codigoPostal);
+        if (!valor) {
+            textoError(errores.codigoPostal, 'El código postal es obligatorio.');
+            return false;
+        }
+        if (!/^\d{5}$/.test(valor)) {
+            textoError(errores.codigoPostal, 'El código postal debe tener 5 dígitos.');
+            return false;
+        }
+        limpiarError('codigoPostal');
+        return true;
+    }
+
+    function validarPrecio() {
+        var valor = valorLimpio(campos.precio);
+        if (!valor) {
+            textoError(errores.precio, 'El precio es obligatorio.');
+            return false;
+        }
+        if (isNaN(valor) || parseFloat(valor) < 0) {
+            textoError(errores.precio, 'El precio debe ser un número mayor o igual a 0.');
+            return false;
+        }
+        limpiarError('precio');
+        return true;
+    }
+
+    function validarEstado() {
+        var valor = valorLimpio(campos.estado);
+        if (!valor) {
+            textoError(errores.estado, 'El estado de la propiedad es obligatorio.');
+            return false;
+        }
+        limpiarError('estado');
+        return true;
+    }
+
+    function validarEmailArrendador() {
+        var valor = valorLimpio(campos.emailArrendador);
+        if (!valor) {
+            textoError(errores.emailArrendador, 'El email del arrendador es obligatorio.');
+            return false;
+        }
+        if (!validarEmail(valor)) {
+            textoError(errores.emailArrendador, 'El email del arrendador no es válido.');
+            return false;
+        }
+        limpiarError('emailArrendador');
+        return true;
+    }
+
+    function validarMetros() {
+        if (!campos.metros || !valorLimpio(campos.metros)) {
+            return true;
+        }
+        var valor = valorLimpio(campos.metros);
+        if (isNaN(valor)) {
+            textoError(errores.metros, 'Los metros cuadrados deben ser un número válido.');
+            return false;
+        }
+        return true;
+    }
+
+    function validarFormulario() {
+        if (!validarTitulo()) return false;
+        if (!validarCalle()) return false;
+        if (!validarNumero()) return false;
+        if (!validarCiudad()) return false;
+        if (!validarCodigoPostal()) return false;
+        if (!validarPrecio()) return false;
+        if (!validarEmailArrendador()) return false;
+        if (!validarEstado()) return false;
+        if (!validarMetros()) return false;
+        return true;
+    }
+
+    function activarValidacionCampo(campo, validarFn, limpiarSiValido) {
+        if (!campo) {
+            return;
+        }
+
+        campo.onblur = validarFn;
+        campo.oninput = function () {
+            if (limpiarSiValido()) {
+                validarFn();
             }
-            
-            // Redirigir después de 1.5 segundos
-            setTimeout(function() {
-                window.location.href = '/admin/propiedades';
-            }, 1500);
-        } else {
+        };
+    }
+
+    activarValidacionCampo(campos.titulo, validarTitulo, function () { return valorLimpio(campos.titulo).length >= 3; });
+    activarValidacionCampo(campos.calle, validarCalle, function () { return valorLimpio(campos.calle).length >= 3; });
+    activarValidacionCampo(campos.numero, validarNumero, function () { return valorLimpio(campos.numero).length > 0; });
+    activarValidacionCampo(campos.ciudad, validarCiudad, function () { return valorLimpio(campos.ciudad).length >= 2; });
+    activarValidacionCampo(campos.codigoPostal, validarCodigoPostal, function () { return /^\d{5}$/.test(valorLimpio(campos.codigoPostal)); });
+    activarValidacionCampo(campos.precio, validarPrecio, function () { return valorLimpio(campos.precio).length > 0; });
+    activarValidacionCampo(campos.estado, validarEstado, function () { return valorLimpio(campos.estado).length > 0; });
+    activarValidacionCampo(campos.emailArrendador, validarEmailArrendador, function () { return validarEmail(valorLimpio(campos.emailArrendador)); });
+
+    if (campos.metros) {
+        campos.metros.onblur = validarMetros;
+        campos.metros.oninput = function () {
+            if (!valorLimpio(campos.metros) || !isNaN(valorLimpio(campos.metros))) {
+                limpiarError('metros');
+            }
+        };
+    }
+
+    function mostrarErroresServidor(erroresServidor) {
+        var mapaCampos = {
+            titulo: 'titulo',
+            calle: 'calle',
+            numero: 'numero',
+            ciudad: 'ciudad',
+            codigo_postal: 'codigoPostal',
+            precio: 'precio',
+            metros: 'metros',
+            estado: 'estado',
+            arrendador_email: 'emailArrendador'
+        };
+
+        for (var campoServidor in erroresServidor) {
+            if (mapaCampos[campoServidor] && erroresServidor[campoServidor] && erroresServidor[campoServidor].length) {
+                textoError(errores[mapaCampos[campoServidor]], erroresServidor[campoServidor][0]);
+            }
+        }
+    }
+
+    function enviarFormulario() {
+        var formData = new FormData(form);
+        var isEditing = form.action.indexOf('/editar') !== -1;
+        var tituloAlerta = isEditing ? 'Propiedad actualizada' : 'Propiedad creada';
+        var botonOriginal = botonEnviar ? botonEnviar.innerHTML : '';
+
+        if (botonEnviar) {
+            botonEnviar.disabled = true;
+            botonEnviar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Guardando...';
+        }
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(function (response) {
+            if (response.status === 422) {
+                return response.json().then(function (data) {
+                    mostrarErroresServidor(data.errors || {});
+                    throw new Error('Revisa los campos marcados.');
+                });
+            }
+
+            if (!response.ok) {
+                return response.json().then(function (data) {
+                    throw new Error(data.message || 'Error en la solicitud');
+                }).catch(function () {
+                    throw new Error('Error en la solicitud');
+                });
+            }
+
+            return response.json();
+        })
+        .then(function (data) {
+            if (data.success) {
+                if (window.mostrarAlertaAdminExito) {
+                    window.mostrarAlertaAdminExito(
+                        tituloAlerta,
+                        isEditing ? 'Los cambios se guardaron correctamente.' : 'La propiedad se creó correctamente.'
+                    );
+                }
+
+                setTimeout(function () {
+                    window.location.href = '/admin/propiedades';
+                }, 1500);
+                return;
+            }
+
             throw new Error(data.message || 'Error desconocido');
-        }
-    })
-    .catch(function(error) {
-        var mensajeError = error.message || 'Error al procesar el formulario.';
-        
-        // Mostrar alerta de error
-        if (window.mostrarAlertaAdminError) {
-            window.mostrarAlertaAdminError('Error', mensajeError);
-        } else {
-            alert('Error: ' + mensajeError);
-        }
-    });
-}
+        })
+        .catch(function (error) {
+            if (error && error.message === 'Revisa los campos marcados.') {
+                return;
+            }
 
-/**
- * Limpia los mensajes de error previos
- */
-function limpiarErrores() {
-    var errorElements = document.querySelectorAll('.campo-error');
-    errorElements.forEach(function(el) {
-        el.remove();
-    });
-}
+            var mensajeError = error && error.message ? error.message : 'Error al procesar el formulario.';
 
-/**
- * Muestra error en un campo específico
- */
-function mostrarErrorValidacion(campoId, mensaje) {
-    var campo = document.getElementById(campoId);
-    if (!campo) return;
-    
-    var errorDiv = document.createElement('div');
-    errorDiv.className = 'campo-error';
-    errorDiv.style.color = '#c71c1c';
-    errorDiv.style.fontSize = '12px';
-    errorDiv.style.marginTop = '4px';
-    errorDiv.textContent = mensaje;
-    
-    campo.parentNode.appendChild(errorDiv);
-}
+            if (window.mostrarAlertaAdminError) {
+                window.mostrarAlertaAdminError('Error', mensajeError);
+            } else {
+                alert('Error: ' + mensajeError);
+            }
+        })
+        .finally(function () {
+            if (botonEnviar) {
+                botonEnviar.disabled = false;
+                botonEnviar.innerHTML = botonOriginal;
+            }
+        });
+    }
+
+    form.onsubmit = function (evento) {
+        evento.preventDefault();
+
+        limpiarTodosLosErrores();
+
+        if (!validarFormulario()) {
+            return false;
+        }
+
+        enviarFormulario();
+        return false;
+    };
+
+    limpiarTodosLosErrores();
+};
+
+inicializarFormularioPropiedadAdmin();

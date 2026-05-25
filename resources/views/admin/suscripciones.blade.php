@@ -545,7 +545,7 @@
     </div>
 
     <div class="modal-footer-sus">
-        <button id="btnCancelarPlanes" class="btn-cancelar-gris">Cancelar</button>
+        <button id="btnCancelarPlanes" class="btn-cancelar-gris" data-bs-dismiss="modal">Cancelar</button>
         <button id="btnGuardarPlanes" class="btn-guardar-accion">
             <i class="bi bi-check"></i>
             <span>Guardar planes</span>

@@ -49,13 +49,60 @@
         </div>
 
         <div class="topbar-der">
-            <div class="campana-container">
-                <i class="bi bi-bell icon-campana" id="iconCampana"></i>
-                <span class="badge-campana" id="badgeCampana">3</span>
+            <div class="campana-wrapper">
+                <button class="campana-container" type="button" id="campanaContainer" aria-label="Ver notificaciones" aria-expanded="false">
+                    <i class="bi bi-bell icon-campana" id="iconCampana"></i>
+                    @if(($notificacionesGestorSinLeer ?? 0) > 0)
+                        <span class="badge-campana" id="badgeCampana">{{ $notificacionesGestorSinLeer }}</span>
+                    @endif
+                </button>
+                <div class="campana-dropdown" id="campanaDropdown" aria-label="Notificaciones recientes">
+                    <div class="campana-dropdown-header">
+                        <div>
+                            <span class="campana-dropdown-titulo">Notificaciones</span>
+                            <p class="campana-dropdown-subtitulo">Últimos avisos del sistema</p>
+                        </div>
+                        <a href="{{ route('gestor.actividad') }}" class="campana-dropdown-ver-todo">Ver todo</a>
+                    </div>
+
+                    <div class="campana-dropdown-lista">
+                        @forelse($notificacionesGestor as $notificacion)
+                            @php
+                                $icono = $notificacion->icono_notificacion ?? 'bell';
+                                $color = $notificacion->color_notificacion ?? '#035498';
+                                $url = !empty($notificacion->url_notificacion) ? $notificacion->url_notificacion : route('gestor.actividad');
+
+                                if (is_string($url) && preg_match('#^/miembro/chat/(\d+)$#', $url, $coincidencias)) {
+                                    $url = route('gestor.mensajes.index', ['activa' => (int) $coincidencias[1]]);
+                                }
+                            @endphp
+                            <div class="campana-item-wrap">
+                                <div class="campana-item {{ $notificacion->leida_notificacion ? '' : 'no-leida' }}" data-notif-id="{{ $notificacion->id_notificacion }}">
+                                    <span class="campana-item-icono" style="background: {{ $color }};">
+                                        <i class="bi bi-{{ $icono }}"></i>
+                                    </span>
+                                    <span class="campana-item-cuerpo">
+                                        <span class="campana-item-titulo">{{ $notificacion->titulo_notificacion ?? 'Actualización' }}</span>
+                                        <span class="campana-item-mensaje">{{ \Illuminate\Support\Str::limit($notificacion->mensaje_notificacion ?? '', 80) }}</span>
+                                        <span class="campana-item-tiempo">{{ \Carbon\Carbon::parse($notificacion->creado_notificacion)->diffForHumans() }}</span>
+                                    </span>
+                                </div>
+                                <button type="button" class="campana-item-borrar" data-notif-id="{{ $notificacion->id_notificacion }}" title="Borrar" aria-label="Borrar notificación">
+                                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        @empty
+                            <div class="campana-vacia">
+                                No hay notificaciones recientes.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
             </div>
             <div class="admin-container" id="adminContainer">
                 <div class="avatar-admin">G</div>
                 <span class="admin-nombre">Gestor</span>
+                
                 <i class="bi bi-chevron-down chevron-admin"></i>
 
                 <div class="admin-dropdown" id="adminDropdown">

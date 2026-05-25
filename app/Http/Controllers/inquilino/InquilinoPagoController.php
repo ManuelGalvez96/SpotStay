@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Alquiler;
 use App\Models\AlquilerCuota;
 use App\Models\Pago;
+use App\Services\ActividadService;
 use App\Services\InquilinoFinanceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -239,6 +240,7 @@ class InquilinoPagoController extends Controller
                 foreach ($idsAlquiler as $idAlq) {
                     AlquilerCuota::where('id_alquiler_cuota', $idAlq)->update(['estado' => 'pagado', 'pagado_en' => $ahora]);
                     $cuota = AlquilerCuota::find($idAlq);
+                    $this->notificarPagoConfirmado((int) $meta->id_alquiler, 'Cuota alquiler', (float) ($cuota ? $cuota->importe_base : 0));
                     Pago::create([
                         'id_pagador_fk' => $meta->id_usuario,
                         'id_alquiler_fk' => $meta->id_alquiler,
@@ -305,16 +307,8 @@ class InquilinoPagoController extends Controller
 
                 foreach ($idsIncidencia as $idInc) {
                     $incidencia = DB::table('tbl_incidencia')->where('id_incidencia', $idInc)->first();
-                    
-                    DB::table('tbl_incidencia')->where('id_incidencia', $idInc)->update([
-                        'estado_incidencia' => 'solucionada',
-                        'pagado_presupuesto_incidencia' => true,
-                        'pagado_incidencia' => $ahora,
-                        'actualizado_incidencia' => $ahora,
-                    ]);
-                    
-                    $tituloReparacion = $incidencia ? $incidencia->titulo_incidencia : '#' . $idInc;
-                    
+                    DB::table('tbl_incidencia')->where('id_incidencia', $idInc)->update(['estado_workflow' => 'pagado']);
+                    $this->notificarPagoConfirmado((int) $meta->id_alquiler, 'Pago reparación #' . $idInc, (float) ($incidencia ? ($incidencia->presupuesto_importe_incidencia ?? 0) : 0));
                     Pago::create([
                         'id_pagador_fk' => $meta->id_usuario,
                         'id_alquiler_fk' => $meta->id_alquiler,
@@ -345,6 +339,8 @@ class InquilinoPagoController extends Controller
                     'referencia_pago' => $session->payment_intent,
                     'fecha_confirmacion_pago' => $ahora,
                 ]);
+
+                $this->notificarPagoConfirmado((int) $meta->id_alquiler, 'Liquidación total de deuda', (float) ($session->amount_total / 100));
 
                 $this->generarFacturaPDF($pagoMaestro->id_pago, $itemsFactura);
             } elseif ($meta->tipo_pago === 'alquiler') {
@@ -381,10 +377,13 @@ class InquilinoPagoController extends Controller
                     'fecha_confirmacion_pago' => $ahora,
                 ]);
 
+                $this->notificarPagoConfirmado((int) $meta->id_alquiler, (string) $conceptoAlquiler, (float) ($session->amount_total / 100));
+
                 $this->generarFacturaPDF($pago->id_pago);
             } elseif ($meta->tipo_pago === 'gasto') {
                 $pagosGasto = $this->procesarPagoGastos($meta->id_alquiler, $meta->id_usuario, $session, $meta->id_referencia);
                 foreach ($pagosGasto as $idPago) {
+                    $this->notificarPagoConfirmado((int) $meta->id_alquiler, 'Pago de gasto', (float) ($session->amount_total / 100));
                     $this->generarFacturaPDF($idPago);
                 }
             } elseif ($meta->tipo_pago === 'incidencia') {
@@ -409,16 +408,7 @@ class InquilinoPagoController extends Controller
                     'referencia_pago' => $session->payment_intent,
                     'fecha_confirmacion_pago' => $ahora,
                 ]);
-
-                DB::table('tbl_historial_incidencia')->insert([
-                    'id_incidencia_fk' => $meta->id_referencia,
-                    'id_usuario_fk' => $meta->id_usuario,
-                    'comentario_historial' => 'La incidencia ha sido pagada y queda solucionada a la espera de revisión por el inquilino.',
-                    'cambio_estado_historial' => 'solucionada',
-                    'creado_historial' => $ahora,
-                    'actualizado_historial' => $ahora,
-                ]);
-
+                $this->notificarPagoConfirmado((int) $meta->id_alquiler, 'Pago reparación #' . $meta->id_referencia, (float) ($session->amount_total / 100));
                 $this->generarFacturaPDF($pago->id_pago);
             }
 
@@ -611,6 +601,28 @@ class InquilinoPagoController extends Controller
         } catch (\Exception $e) {
             Log::error("Error Generando Factura: " . $e->getMessage());
         }
+    }
+
+    private function notificarPagoConfirmado(int $idAlquiler, string $concepto, float $importe): void
+    {
+        $datos = DB::table('tbl_alquiler as a')
+            ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'a.id_propiedad_fk')
+            ->join('tbl_usuario as arrendador', 'arrendador.id_usuario', '=', 'p.id_arrendador_fk')
+            ->where('a.id_alquiler', $idAlquiler)
+            ->select('arrendador.id_usuario', 'p.titulo_propiedad')
+            ->first();
+
+        if (!$datos) {
+            return;
+        }
+
+        (new ActividadService())->pagoRealizado(
+            (int) $datos->id_usuario,
+            $idAlquiler,
+            (string) ($datos->titulo_propiedad ?? 'Alquiler'),
+            $concepto,
+            $importe
+        );
     }
 
     private function normalizarItemsFactura(array $items, string $conceptoPorDefecto): array

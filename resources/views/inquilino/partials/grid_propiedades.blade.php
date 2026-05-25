@@ -23,9 +23,9 @@
         </div>
 
         @if(($alquiler->total_deuda_individual ?? 0) > 0)
-        <div class="alerta-deuda-individual" style="margin-top: 8px; padding: 8px 12px; border-radius: 8px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.15); font-size: 0.85rem;">
-            <i class="bi bi-wallet2" style="color: #ef4444;"></i>
-            <span style="color: #ef4444; font-weight: 600;">
+        <div class="alerta-deuda-individual alerta-deuda-custom">
+            <i class="bi bi-wallet2 text-red-custom"></i>
+            <span class="text-red-custom fw-600">
                 Tu parte: <strong>{{ number_format($alquiler->total_deuda_individual, 2, ',', '.') }}€</strong>
                 @if(($alquiler->num_companeros ?? 1) > 1)
                     (dividido entre {{ $alquiler->num_companeros }})
@@ -90,16 +90,16 @@
         @endif
 
         @if(count($alquiler->nombres_companeros ?? []) > 0)
-        <div class="compartido-info" style="margin-top: 10px; font-size: 0.85rem; color: var(--primario); background: rgba(0, 196, 204, 0.05); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(0, 196, 204, 0.1);">
+        <div class="compartido-info compartido-info-custom">
             <i class="bi bi-people-fill"></i> Compartido con: <strong>{{ implode(', ', $alquiler->nombres_companeros) }}</strong>
         </div>
         @endif
 
-        <div class="acciones-gestion" style="display: flex; gap: 10px; margin-top: 15px;">
-            <a href="{{ route('inquilino.ver_propiedad', $alquiler->id_propiedad) }}" class="btn-inquilino btn-secundario" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; text-decoration: none;">Ver Detalles</a>
-            <form method="POST" action="{{ route('miembro.mensajes.iniciar', $alquiler->id_propiedad) }}" class="m-0" style="display: contents;">
+        <div class="acciones-gestion acciones-gestion-custom">
+            <a href="{{ route('inquilino.ver_propiedad', $alquiler->id_propiedad) }}" class="btn-inquilino btn-secundario btn-inquilino-custom">Ver Detalles</a>
+            <form method="POST" action="{{ route('miembro.mensajes.iniciar', $alquiler->id_propiedad) }}" class="m-0 d-contents">
                 @csrf
-                <button type="submit" class="btn-inquilino btn-primario" style="flex: 1; background-color: var(--primario); color: white; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; border-radius: var(--radio); height: 44px; font-weight: 600;">
+                <button type="submit" class="btn-inquilino btn-primario btn-primario-custom">
                     <i class="bi bi-chat-dots"></i> Contactar
                 </button>
             </form>

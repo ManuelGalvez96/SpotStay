@@ -596,3 +596,65 @@
         width: 100%;
     }
 }
+
+/* --- CLASES EXTRAÍDAS DE GRID_PROPIEDADES --- */
+.alerta-deuda-custom {
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    font-size: 0.85rem;
+}
+
+.text-red-custom {
+    color: #ef4444;
+}
+
+.fw-600 {
+    font-weight: 600;
+}
+
+.compartido-info-custom {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: var(--primario);
+    background: rgba(0, 196, 204, 0.05);
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 196, 204, 0.1);
+}
+
+.acciones-gestion-custom {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-inquilino-custom {
+    flex: 1;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.d-contents {
+    display: contents;
+}
+
+.btn-primario-custom {
+    flex: 1;
+    background-color: var(--primario);
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    border-radius: var(--radio);
+    height: 44px;
+    font-weight: 600;
+}

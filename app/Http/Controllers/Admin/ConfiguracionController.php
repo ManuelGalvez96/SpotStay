@@ -4,15 +4,70 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
+use App\Services\ActividadService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class ConfiguracionController extends Controller
 {
     public function index()
     {
-        return view('admin.configuracion');
+        $usuariosActivos = DB::table('tbl_usuario')
+            ->where('activo_usuario', true)
+            ->select('id_usuario', 'nombre_usuario', 'email_usuario')
+            ->orderBy('nombre_usuario')
+            ->get();
+
+        return view('admin.configuracion', compact('usuariosActivos'));
+    }
+
+    public function crearNotificacion(Request $request)
+    {
+        $datos = $request->validate([
+            'destino' => ['required', Rule::in(['todos', 'rol', 'usuario'])],
+            'rol_destino' => ['nullable', Rule::in(['miembro', 'inquilino', 'arrendador', 'gestor'])],
+            'usuario_destino' => ['nullable', 'integer', 'exists:tbl_usuario,id_usuario'],
+            'titulo_notificacion' => ['required', 'string', 'max:200'],
+            'mensaje_notificacion' => ['required', 'string', 'max:1000'],
+            'url_notificacion' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $usuariosIds = collect();
+
+        if ($datos['destino'] === 'todos') {
+            $usuariosIds = DB::table('tbl_usuario')->where('activo_usuario', true)->pluck('id_usuario');
+        } elseif ($datos['destino'] === 'rol') {
+            if (empty($datos['rol_destino'])) {
+                return back()->with('error', 'Debes indicar un rol de destino.');
+            }
+
+            $usuariosIds = DB::table('tbl_usuario as u')
+                ->join('tbl_rol_usuario as ru', 'ru.id_usuario_fk', '=', 'u.id_usuario')
+                ->join('tbl_rol as r', 'r.id_rol', '=', 'ru.id_rol_fk')
+                ->where('u.activo_usuario', true)
+                ->where('r.slug_rol', $datos['rol_destino'])
+                ->pluck('u.id_usuario');
+        } elseif ($datos['destino'] === 'usuario') {
+            if (empty($datos['usuario_destino'])) {
+                return back()->with('error', 'Debes elegir un usuario.');
+            }
+
+            $usuariosIds = collect([(int) $datos['usuario_destino']]);
+        }
+
+        $actividadService = new ActividadService();
+        foreach ($usuariosIds->unique() as $usuarioId) {
+            $actividadService->avisoImportante(
+                (int) $usuarioId,
+                $datos['titulo_notificacion'],
+                $datos['mensaje_notificacion'],
+                $datos['url_notificacion'] ?: null
+            );
+        }
+
+        return back()->with('mensaje_exito_plan', 'Notificación importante enviada correctamente.');
     }
 
     public function planes()

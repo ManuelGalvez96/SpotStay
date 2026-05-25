@@ -39,11 +39,16 @@
 
         <div class="payment-card">
             <div class="card-header-gradient">
-                <h2 class="mb-0 fw-bold">Completa tu Registro</h2>
-                @if($suscripcion)
-                    <p class="mb-0 text-white-50 mt-1">Activa tu suscripción {{ $suscripcion->plan_suscripcion }}</p>
+                @if(session('info') && str_contains(session('info'), 'caducado'))
+                    <h2 class="mb-0 fw-bold">Renueva tu Suscripción</h2>
+                    <p class="mb-0 text-white-50 mt-1">Renueva tu plan {{ $suscripcion->plan_suscripcion ?? '' }} para recuperar el acceso</p>
                 @else
-                    <p class="mb-0 text-white-50 mt-1">Aún no tienes una suscripción pendiente</p>
+                    <h2 class="mb-0 fw-bold">Completa tu Registro</h2>
+                    @if($suscripcion)
+                        <p class="mb-0 text-white-50 mt-1">Activa tu suscripción {{ $suscripcion->plan_suscripcion }}</p>
+                    @else
+                        <p class="mb-0 text-white-50 mt-1">Aún no tienes una suscripción pendiente</p>
+                    @endif
                 @endif
             </div>
 
@@ -62,6 +67,16 @@
                                 <i class="bi bi-credit-card-2-front-fill me-2"></i> Pagar con Tarjeta
                             </button>
                         </form>
+                        <div class="mt-3 text-center d-flex flex-column gap-2">
+                            @if(!auth()->user()->roles()->where('slug_rol', 'arrendador')->exists())
+                                <form action="{{ route('miembro.suscripcion.downgrade') }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn btn-link text-danger text-decoration-none p-0 border-0 bg-transparent" style="font-size: 0.9rem;">
+                                        <i class="bi bi-arrow-down-circle"></i> Volver a plan base (gratis)
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
                     </div>
                 @else
                     <div class="px-4 py-3">

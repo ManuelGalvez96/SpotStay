@@ -22,9 +22,18 @@
         @endphp
 
         <a href="{{ route('miembro.mensajes.show', ['id' => $conversacion->id_conversacion]) }}" class="mensajes-item {{ $activa ? 'activo' : '' }}">
-            <p class="mensajes-item-titulo">{{ $otroUsuario->nombre_usuario ?? 'Sin participante' }}</p>
-            <p class="mensajes-item-sub">{{ $conversacion->propiedad->titulo_propiedad ?? 'Sin propiedad' }}</p>
-            <p class="mensajes-item-preview">{{ $ultimo->cuerpo_mensaje ?? 'Sin mensajes' }}</p>
+            <div class="conv-avatar-wrap">
+                @if ($otroUsuario && $otroUsuario->avatar_url)
+                    <img class="conv-avatar-img" src="{{ $otroUsuario->avatar_url }}" alt="">
+                @else
+                    <div class="conv-avatar" style="background:#035498">{{ strtoupper(substr($otroUsuario->nombre_usuario ?? '?', 0, 2)) }}</div>
+                @endif
+            </div>
+            <div class="conv-info">
+                <p class="mensajes-item-titulo">{{ $otroUsuario->nombre_usuario ?? 'Sin participante' }}</p>
+                <p class="mensajes-item-sub">{{ $conversacion->propiedad->titulo_propiedad ?? 'Sin propiedad' }}</p>
+                <p class="mensajes-item-preview">{{ $ultimo->cuerpo_mensaje ?? 'Sin mensajes' }}</p>
+            </div>
         </a>
         @endforeach
         @endif
@@ -69,9 +78,17 @@
                 $esMio = (int) $mensaje->id_remitente_fk === (int) auth()->id();
                 @endphp
 
+                @php
+                    $avatarMsg = $mensaje->remitente ? $mensaje->remitente->avatar_url : null;
+                @endphp
                 <div class="mensajes-burbuja {{ $esMio ? 'mio' : 'otro' }}">
-                    <p class="mensajes-burbuja-texto">{{ $mensaje->cuerpo_mensaje }}</p>
-                    <span class="mensajes-burbuja-fecha">{{ optional($mensaje->creado_mensaje)->format('d/m/Y H:i') }}</span>
+                    @if ($avatarMsg)
+                        <img class="burbuja-avatar" src="{{ $avatarMsg }}" alt="">
+                    @endif
+                    <div class="burbuja-contenido">
+                        <p class="mensajes-burbuja-texto">{{ $mensaje->cuerpo_mensaje }}</p>
+                        <span class="mensajes-burbuja-fecha">{{ optional($mensaje->creado_mensaje)->format('d/m/Y H:i') }}</span>
+                    </div>
                 </div>
                 @empty
                 <div class="estado-vacio">

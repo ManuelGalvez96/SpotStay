@@ -153,11 +153,26 @@
                     $estadoClass = $usuario->activo_usuario ? 'activo' : 'inactivo';
                     $propiedades = $usuario->total_propiedades ?? 0;
                     $propiedadesText = $propiedades > 0 ? $propiedades : '—';
+                    $avatarFoto = $usuario->avatar_usuario;
+                    $avatarUrl = '';
+                    if ($avatarFoto) {
+                        if (str_starts_with($avatarFoto, 'http')) {
+                            $avatarUrl = $avatarFoto;
+                        } elseif (str_starts_with($avatarFoto, 'img/')) {
+                            $avatarUrl = asset($avatarFoto);
+                        } else {
+                            $avatarUrl = asset('storage/' . ltrim($avatarFoto, '/'));
+                        }
+                    }
                 @endphp
                 <tr data-id="{{ $usuario->id_usuario }}" data-activo="{{ $activo }}" {{ $inactivaClass }}>
                     <td data-label="USUARIO">
                         <div class="usuario-celda">
-                            <div class="avatar-tabla" style="background: {{ $colorAvatar }};">{{ $avatarText }}</div>
+                            @if ($avatarUrl)
+                                <img class="avatar-tabla" src="{{ $avatarUrl }}" alt="">
+                            @else
+                                <div class="avatar-tabla" style="background: {{ $colorAvatar }};">{{ $avatarText }}</div>
+                            @endif
                             <div>
                                 <p class="usuario-nombre">{{ $nombre }}</p>
                                 <p class="usuario-email">{{ $usuario->email_usuario }}</p>

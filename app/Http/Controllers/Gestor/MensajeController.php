@@ -90,10 +90,13 @@ class MensajeController extends Controller
             ->orderBy('creado_mensaje', 'asc')
             ->get()
             ->map(function ($m) use ($gestorId) {
+                $remitente = $m->remitente;
+                $avatarUrl = $remitente ? $remitente->avatar_url : null;
                 return [
                     'id_mensaje' => $m->id_mensaje,
                     'id_remitente' => (int) $m->id_remitente_fk,
-                    'nombre_remitente' => $m->remitente->nombre_usuario ?? 'Usuario',
+                    'nombre_remitente' => $remitente->nombre_usuario ?? 'Usuario',
+                    'avatar_url' => $avatarUrl,
                     'cuerpo_mensaje' => $m->cuerpo_mensaje,
                     'creado_mensaje' => optional($m->creado_mensaje)->toDateTimeString(),
                     'es_mio' => (int) $m->id_remitente_fk === $gestorId,
@@ -109,6 +112,7 @@ class MensajeController extends Controller
                     'id_usuario' => $otro->id_usuario,
                     'nombre_usuario' => $otro->nombre_usuario,
                     'email_usuario' => $otro->email_usuario,
+                    'avatar_url' => $otro ? $otro->avatar_url : null,
                     'rol' => $rol,
                 ] : null,
                 'mensajes' => $mensajes,

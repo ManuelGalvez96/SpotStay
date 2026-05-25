@@ -550,6 +550,16 @@ body.admin .modal .modal-footer .btn-secondary:hover {
     justify-content: center;
 }
 
+img.avatar-admin {
+    object-fit: cover;
+    display: block;
+}
+
+img.avatar-tabla {
+    object-fit: cover;
+    display: block;
+}
+
 .admin-nombre {
     font-size: 13px;
     color: #6B7280;

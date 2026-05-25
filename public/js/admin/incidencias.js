@@ -15,7 +15,7 @@ var modalNuevaIncidencia = null;
    SWEET ALERT FUNCTIONS WITH OSO
    ============================================ */
 
-var crearOsoExito = function() {
+var crearOsoExitoIncidencias = function() {
     return `
     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 120px; height: 120px;">
         <!-- Oso igual que login -->
@@ -40,7 +40,7 @@ var crearOsoExito = function() {
     `;
 };
 
-var crearOsoError = function() {
+var crearOsoErrorIncidencias = function() {
     return `
     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 120px; height: 120px;">
         <!-- Oso igual que login -->

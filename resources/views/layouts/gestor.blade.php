@@ -92,8 +92,12 @@
                 </div>
             </div>
             <div class="admin-container" id="adminContainer">
-                <div class="avatar-admin">G</div>
-                <span class="admin-nombre">Gestor</span>
+                @if ($tieneFoto)
+                    <img class="avatar-admin" src="{{ $fotoUsuario }}" alt="Foto de perfil">
+                @else
+                    <div class="avatar-admin">{{ $inicialUsuario }}</div>
+                @endif
+                <span class="admin-nombre">{{ $nombreUsuario ?? 'Gestor' }}</span>
                 
                 <i class="bi bi-chevron-down chevron-admin"></i>
 

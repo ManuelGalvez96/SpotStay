@@ -119,10 +119,10 @@ window.confirmarAdmin = function(titulo, mensaje) {
     });
 };
 
-window.onload = function() {
+document.addEventListener('DOMContentLoaded', function() {
     asignarEventosAdmin();
     asignarEventosNavIconos();
-};
+});
 
 var asignarEventosAdmin = function() {
     var adminContainer = document.getElementById('adminContainer');

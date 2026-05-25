@@ -34,6 +34,16 @@
         escribiendo.classList.remove('visible');
     }
 
+    function convertirMarkdown(texto) {
+        var html = texto
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            .replace(/\n/g, '<br>');
+        return html;
+    }
+
     function agregarMensaje(texto, rol) {
         var div = document.createElement('div');
         div.className = 'spoty-chatbot-mensaje ' + (rol === 'usuario' ? 'spoty-chatbot-mensaje-usuario' : 'spoty-chatbot-mensaje-ia');
@@ -45,7 +55,7 @@
 
         var burbuja = document.createElement('div');
         burbuja.className = 'spoty-chatbot-burbuja';
-        burbuja.textContent = texto;
+        burbuja.innerHTML = convertirMarkdown(texto);
 
         div.appendChild(avatar);
         div.appendChild(burbuja);

@@ -49,83 +49,70 @@ function extraerMensajeError(datosRespuesta) {
 
 function iniciarValidacionFormularioPropiedad() {
   var formulario = document.querySelector('form[data-ajax-form="true"]');
+  if (!formulario) { return; }
 
-  if (!formulario) {
-    return;
-  }
+  var botonEnviar    = formulario.querySelector('button[type="submit"]');
+  var inputTitulo    = document.getElementById('form-titulo');
+  var inputLatitud   = document.getElementById('latitud_propiedad');
+  var inputLongitud  = document.getElementById('longitud_propiedad');
 
-  var botonEnviar = formulario.querySelector('button[type="submit"]');
+  // Estado asíncrono del título
+  var tituloDisponible = true;
+  var timeoutTitulo;
+
+  formulario.noValidate = true;
+
+  // Campos obligatorios simples (sin comprobación asíncrona)
   var camposObligatorios = [
-    document.getElementById('form-titulo'),
     document.getElementById('form-tipo'),
-    document.getElementById('form-estado'),
     document.getElementById('form-calle'),
     document.getElementById('form-numero'),
     document.getElementById('form-codigo-postal'),
     document.getElementById('form-ciudad'),
     document.getElementById('form-precio')
-  ].filter(function (campo) {
-    return Boolean(campo);
-  });
+  ].filter(Boolean);
 
-  formulario.noValidate = true;
+  // ── Helpers ─────────────────────────────────────────────
 
   function obtenerContenedorError(campo) {
-    if (!campo) {
-      return null;
-    }
+    if (!campo) { return null; }
+    var sig = campo.nextElementSibling;
+    if (sig && sig.classList.contains('campo-error')) { return sig; }
+    var div = document.createElement('div');
+    div.className = 'campo-error';
+    div.setAttribute('aria-live', 'polite');
+    div.hidden = true;
+    campo.insertAdjacentElement('afterend', div);
+    return div;
+  }
 
-    var contenedor = campo.nextElementSibling;
-    if (contenedor && contenedor.classList && contenedor.classList.contains('campo-error')) {
-      return contenedor;
+  function mostrarError(campo, mensaje) {
+    var c = obtenerContenedorError(campo);
+    if (c) { c.textContent = mensaje; c.hidden = mensaje === ''; }
+    if (campo) {
+      campo.setAttribute('aria-invalid', mensaje ? 'true' : 'false');
+      campo.classList.toggle('campo-invalido', mensaje !== '');
     }
-
-    contenedor = document.createElement('div');
-    contenedor.className = 'campo-error';
-    contenedor.setAttribute('aria-live', 'polite');
-    contenedor.hidden = true;
-    campo.insertAdjacentElement('afterend', contenedor);
-    return contenedor;
   }
 
   function esCampoValido(campo) {
-    if (!campo) {
-      return true;
-    }
-
-    var valor = typeof campo.value === 'string' ? campo.value.trim() : '';
-
-    return !(campo.required && valor === '');
+    if (!campo) { return true; }
+    return !(campo.required && campo.value.trim() === '');
   }
 
-  function pintarErrorCampo(campo) {
-    if (!campo) {
-      return true;
-    }
-
-    var mensajeError = esCampoValido(campo) ? '' : 'Este campo es obligatorio.';
-
-    var contenedorError = obtenerContenedorError(campo);
-
-    if (contenedorError) {
-      contenedorError.textContent = mensajeError;
-      contenedorError.hidden = mensajeError === '';
-    }
-
-    campo.setAttribute('aria-invalid', mensajeError ? 'true' : 'false');
-    campo.classList.toggle('campo-invalido', mensajeError !== '');
-
-    return mensajeError === '';
+  function tieneCoordenadas() {
+    return inputLatitud  && inputLatitud.value.trim()  !== '' &&
+           inputLongitud && inputLongitud.value.trim() !== '';
   }
+
+  // ── Estado del botón ────────────────────────────────────
 
   function actualizarEstadoBoton() {
-    var formularioValido = true;
+    var camposBasicosOk = camposObligatorios.every(esCampoValido);
+    var tituloOk        = inputTitulo && inputTitulo.value.trim() !== '' && tituloDisponible;
+    var coordenadasOk   = tieneCoordenadas();
 
-    camposObligatorios.forEach(function (campo) {
-      if (!esCampoValido(campo)) {
-        formularioValido = false;
-      }
-    });
+    var formularioValido = camposBasicosOk && tituloOk && coordenadasOk;
 
     if (botonEnviar) {
       botonEnviar.disabled = !formularioValido;
@@ -134,45 +121,110 @@ function iniciarValidacionFormularioPropiedad() {
     return formularioValido;
   }
 
+  // ── Validación del TÍTULO (con debounce + fetch) ────────
+
+  function comprobarTitulo() {
+    var valor = inputTitulo ? inputTitulo.value.trim() : '';
+
+    if (valor === '') {
+      tituloDisponible = false;
+      mostrarError(inputTitulo, 'El título es obligatorio.');
+      actualizarEstadoBoton();
+      return;
+    }
+
+    // Obtener id de la propiedad en edición (si existe)
+    var idPropiedad = document.getElementById('form-id-propiedad');
+    var excluirId   = idPropiedad && idPropiedad.value ? '&excluir_id=' + idPropiedad.value : '';
+
+    fetch('/arrendador/propiedades/check-titulo?titulo=' + encodeURIComponent(valor) + excluirId, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+      credentials: 'same-origin'
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (datos) {
+        if (datos.disponible) {
+          tituloDisponible = true;
+          mostrarError(inputTitulo, '');
+        } else {
+          tituloDisponible = false;
+          mostrarError(inputTitulo, 'Ya existe una propiedad activa con este nombre en la plataforma.');
+        }
+        actualizarEstadoBoton();
+      })
+      .catch(function () {
+        // Si falla la comprobación, permitimos continuar
+        tituloDisponible = true;
+        actualizarEstadoBoton();
+      });
+  }
+
+  if (inputTitulo) {
+    inputTitulo.oninput = function () {
+      clearTimeout(timeoutTitulo);
+      timeoutTitulo = setTimeout(comprobarTitulo, 350);
+    };
+
+    inputTitulo.onblur = function () {
+      clearTimeout(timeoutTitulo);
+      inputTitulo.dataset.tocado = 'true';
+      comprobarTitulo();
+    };
+  }
+
+  // ── Validación de campos simples ─────────────────────────
+
   camposObligatorios.forEach(function (campo) {
     campo.oninput = function () {
       if (campo.dataset.tocado === 'true') {
-        pintarErrorCampo(campo);
+        mostrarError(campo, esCampoValido(campo) ? '' : 'Este campo es obligatorio.');
       }
-
       actualizarEstadoBoton();
     };
 
-    campo.onchange = function () {
-      if (campo.dataset.tocado === 'true') {
-        pintarErrorCampo(campo);
-      }
-
-      actualizarEstadoBoton();
-    };
+    campo.onchange = campo.oninput;
 
     campo.onblur = function () {
       campo.dataset.tocado = 'true';
-      pintarErrorCampo(campo);
+      mostrarError(campo, esCampoValido(campo) ? '' : 'Este campo es obligatorio.');
       actualizarEstadoBoton();
     };
   });
 
+  // ── Validación manual al enviar ─────────────────────────
+
   formulario._validarCampos = function () {
-    var formularioValido = true;
+    var ok = true;
 
     camposObligatorios.forEach(function (campo) {
       campo.dataset.tocado = 'true';
-      if (!pintarErrorCampo(campo)) {
-        formularioValido = false;
-      }
+      var valido = esCampoValido(campo);
+      mostrarError(campo, valido ? '' : 'Este campo es obligatorio.');
+      if (!valido) { ok = false; }
     });
 
+    if (inputTitulo && inputTitulo.value.trim() === '') {
+      mostrarError(inputTitulo, 'El título es obligatorio.');
+      ok = false;
+    }
+
+    if (!tieneCoordenadas()) {
+      mostrarMensaje('Debes seleccionar una ubicación en el mapa.', true);
+      ok = false;
+    }
+
+    if (!tituloDisponible) {
+      ok = false;
+    }
+
     actualizarEstadoBoton();
-    return formularioValido;
+    return ok;
   };
 
   window.actualizarEstadoValidacionFormularioPropiedad = actualizarEstadoBoton;
+
+  // Estado inicial: botón desactivado
+  if (botonEnviar) { botonEnviar.disabled = true; }
 }
 
 function actualizarFilaPropiedad(datosPropiedad) {
@@ -623,29 +675,14 @@ function abrirModalFormulario(arrendadorId, datosPropiedad) {
   }
   modal.hidden = false;
 
-  // Si el mapa ya está inicializado, invalidamos su tamaño y lo centramos
-  if (window.mapaRegistro && typeof window.mapaRegistro.invalidateSize === 'function') {
-    setTimeout(function () {
-      try {
-        window.mapaRegistro.invalidateSize();
-        if (window.marcadorRegistro && window.document.getElementById('latitud_propiedad') && window.document.getElementById('longitud_propiedad')) {
-          var lat = parseFloat(document.getElementById('latitud_propiedad').value) || null;
-          var lng = parseFloat(document.getElementById('longitud_propiedad').value) || null;
-          if (lat && lng) {
-            window.mapaRegistro.setView([lat, lng], 17);
-            window.marcadorRegistro.setLatLng([lat, lng]);
-          } else {
-            // recentrar en la vista actual del marcador
-            var pos = window.marcadorRegistro.getLatLng();
-            if (pos) {
-              window.mapaRegistro.setView([pos.lat, pos.lng], window.mapaRegistro.getZoom());
-            }
-          }
-        }
-      } catch (e) {
-        console.error('Error al invalidar/centrar mapa:', e);
-      }
-    }, 250);
+  // Centrar el mapa en las coordenadas actuales de los inputs
+  if (typeof window.centrarMapaEnCoordenadas === 'function') {
+    window.centrarMapaEnCoordenadas();
+  }
+
+  // Actualizar estado del botón al abrir el modal
+  if (typeof window.actualizarEstadoValidacionFormularioPropiedad === 'function') {
+    window.actualizarEstadoValidacionFormularioPropiedad();
   }
 }
 

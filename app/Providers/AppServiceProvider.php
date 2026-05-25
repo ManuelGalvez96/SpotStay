@@ -106,6 +106,10 @@ class AppServiceProvider extends ServiceProvider
                     'notificacionesGestorSinLeer' => $notificacionesGestorSinLeer,
                     'notificacionesUsuario' => $notificacionesUsuario,
                     'notificacionesUsuarioSinLeer' => $notificacionesUsuarioSinLeer,
+                    'esGestor' => $usuario->roles()->where('slug_rol', 'gestor')->exists()
+                        || \Illuminate\Support\Facades\DB::table('tbl_propiedad')
+                            ->where('id_gestor_fk', $usuario->id_usuario)
+                            ->exists(),
                 ]);
             } else {
                 $view->with([

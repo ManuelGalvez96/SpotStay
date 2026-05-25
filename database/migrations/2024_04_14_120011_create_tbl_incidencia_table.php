@@ -17,9 +17,9 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_asignado_fk')->nullable();
             $table->string('titulo_incidencia', 200);
             $table->text('descripcion_incidencia');
-            $table->string('categoria_incidencia', 50);
-            $table->string('prioridad_incidencia', 20)->default('media');
-            $table->string('estado_incidencia', 30)->default('abierta');
+            $table->unsignedBigInteger('id_categoria_fk')->nullable();
+            $table->enum('prioridad_incidencia', ['baja', 'media', 'alta', 'urgente'])->default('media');
+            $table->enum('estado_incidencia', ['abierta', 'esperando_decision', 'esperando_pago', 'solucionada', 'resuelta'])->default('abierta');
             $table->string('esperando_de_incidencia', 30)->nullable();
             $table->decimal('presupuesto_importe_incidencia', 10, 2)->nullable();
             $table->text('detalle_presupuesto_incidencia')->nullable();
@@ -44,6 +44,9 @@ return new class extends Migration {
                 ->onDelete('restrict');
             $table->foreign('id_asignado_fk')
                 ->references('id_usuario')->on('tbl_usuario')
+                ->onDelete('set null');
+            $table->foreign('id_categoria_fk')
+                ->references('id_categoria')->on('tbl_categoria')
                 ->onDelete('set null');
         });
     }

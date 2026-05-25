@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,14 +20,21 @@ class EnsureArrendadorIsActive
     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::user();
+        $usuarioId = (int) ($user->id_usuario ?? $user->id ?? 0);
 
         // 1. Si no está logueado, al login
-        if (!$user) {
+        if (!$user || $usuarioId <= 0) {
             return redirect()->route('login');
         }
 
+        $esArrendador = DB::table('tbl_rol_usuario as ru')
+            ->join('tbl_rol as r', 'r.id_rol', '=', 'ru.id_rol_fk')
+            ->where('ru.id_usuario_fk', $usuarioId)
+            ->where('r.slug_rol', 'arrendador')
+            ->exists();
+
         // 2. Estas restricciones solo aplican al rol de 'arrendador'
-        if ($user->roles()->where('slug_rol', 'arrendador')->exists()) {
+        if ($esArrendador) {
             
             // PASO 1: Verificar Suscripción Mensual
             if ($user->stripe_status !== 'active') {
@@ -37,7 +45,7 @@ class EnsureArrendadorIsActive
             }
 
             // PASO 2: Verificar Cuenta de Cobros / IBAN (Solo para Arrendadores)
-            if ($user->roles()->where('slug_rol', 'arrendador')->exists() && !$user->stripe_account_id) {
+            if (!$user->stripe_account_id) {
                 if (!$request->is('arrendador/configurar-stripe*') && 
                     !$request->is('miembro/suscripcion*') && 
                     !$request->is('arrendador/guardar-iban*')) {

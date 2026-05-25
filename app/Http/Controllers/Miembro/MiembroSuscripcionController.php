@@ -63,6 +63,9 @@ class MiembroSuscripcionController extends Controller
             return redirect($this->redirigirDashboard());
         }
 
+        // Valor por defecto para la ruta de retorno (puede sobrescribirse si se necesita)
+        $rutaRetorno = url('/miembro/inicio');
+
         return view('miembro.suscripcion', compact('suscripcion', 'rutaRetorno'));
     }
 
@@ -132,6 +135,21 @@ class MiembroSuscripcionController extends Controller
 
         // Recuperar ID de suscripción de los metadatos
         $idSuscripcion = $checkoutSession->metadata->id_suscripcion;
+
+        // Intentar obtener una referencia de pago válida desde la sesión o la suscripción
+        $referenciaPago = $checkoutSession->payment_intent ?? null;
+        if (!$referenciaPago && !empty($checkoutSession->subscription)) {
+            try {
+                $sub = \Stripe\Subscription::retrieve($checkoutSession->subscription, ['expand' => ['latest_invoice.payment_intent']]);
+                if (!empty($sub->latest_invoice->payment_intent->id)) {
+                    $referenciaPago = $sub->latest_invoice->payment_intent->id;
+                } elseif (!empty($sub->latest_invoice->charge)) {
+                    $referenciaPago = $sub->latest_invoice->charge;
+                }
+            } catch (\Exception $e) {
+                Log::warning("No se pudo obtener referencia de Stripe: " . $e->getMessage());
+            }
+        }
         /** @var Usuario $usuario */
         $usuario = Auth::user();
         $usuarioModelo = Usuario::find($usuario->id_usuario);
@@ -170,7 +188,7 @@ class MiembroSuscripcionController extends Controller
                     'concepto_pago' => 'Suscripción Plan: ' . $suscripcion->plan_suscripcion,
                     'importe_pago' => $suscripcion->precio_pagado_suscripcion,
                     'estado_pago' => 'pagado',
-                    'referencia_pago' => $checkoutSession->payment_intent,
+                    'referencia_pago' => $referenciaPago,
                     'fecha_confirmacion_pago' => now(),
                     'creado_pago' => now(),
                     'actualizado_pago' => now(),

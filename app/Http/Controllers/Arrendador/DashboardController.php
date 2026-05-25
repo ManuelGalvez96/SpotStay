@@ -29,12 +29,18 @@ class DashboardController extends Controller
         $incidenciasPendientes = 0;
         $tasaOcupacion = 0;
         $totalPropiedades = 0;
+        $esGestor = false;
 
         if ($arrendadorId !== null) {
             $arrendador = DB::table('tbl_usuario')
                 ->select('id_usuario', 'nombre_usuario')
                 ->where('id_usuario', $arrendadorId)
                 ->first();
+
+            // Determina si el usuario gestiona al menos una propiedad aunque no tenga rol gestor explícito.
+            $esGestor = DB::table('tbl_propiedad')
+                ->where('id_gestor_fk', $arrendadorId)
+                ->exists();
 
             $columnaPrecio = $this->obtenerColumnaPrecioPropiedad();
             $selectDireccionPropiedad = $this->obtenerSelectDireccionPropiedad('p');
@@ -162,6 +168,7 @@ class DashboardController extends Controller
             'incidenciasPendientes' => $incidenciasPendientes,
             'tasaOcupacion' => $tasaOcupacion,
             'totalPropiedades' => $totalPropiedades,
+            'esGestor' => $esGestor,
         ]);
     }
 

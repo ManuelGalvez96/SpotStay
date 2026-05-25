@@ -1848,3 +1848,9 @@
         width: 100%;
     }
 }
+
+/* ── Estilos extraídos de la vista ── */
+.pos-relative { position: relative; }
+.d-none { display: none !important; }
+.flex-1 { flex: 1; }
+.text-left { text-align: left; }

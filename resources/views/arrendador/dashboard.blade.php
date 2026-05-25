@@ -120,21 +120,6 @@
                 </div>
             </div>
 
-            <!-- Card: Gestor Inmobiliario -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">⚙️</div>
-                    <div>
-                        <div class="card-title">Gestor Inmobiliario</div>
-                    </div>
-                </div>
-                <p class="card-description">
-                    Define y gestiona tu gestor inmobiliario para administração de tus propiedades.
-                </p>
-                <div class="card-footer">
-                    <a class="btn btn-outline btn-sm" href="{{ route('arrendador.gestor', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Configurar Gestor</a>
-                </div>
-            </div>
             <!-- Card: Incidencias esperando acción -->
             <div class="card">
                 <div class="card-header">
@@ -150,6 +135,23 @@
                     <a class="btn btn-outline btn-sm" href="{{ route('arrendador.incidencias', ['arrendador_id' => $arrendador->id_usuario ?? null]) }}">Gestionar Incidencias</a>
                 </div>
             </div>
+
+            @if (!empty($esGestor))
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🧭</div>
+                    <div>
+                        <div class="card-title">Panel de Gestor</div>
+                    </div>
+                </div>
+                <p class="card-description">
+                    Accede al panel de gestor para administrar incidencias y tareas operativas.
+                </p>
+                <div class="card-footer">
+                    <a class="btn btn-outline btn-sm" href="{{ route('gestor.dashboard') }}">Ir al Panel Gestor</a>
+                </div>
+            </div>
+            @endif
         </div>
     </main>
 </div>

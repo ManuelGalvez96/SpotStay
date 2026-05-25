@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_propiedad_fk');
             $table->unsignedBigInteger('id_alquiler_fk')->nullable();
             $table->unsignedBigInteger('id_gestor_fk');
+            $table->unsignedBigInteger('id_incidencia_fk')->nullable();
             $table->string('concepto_gasto', 200)->nullable();
             $table->string('categoria_gasto', 50)->nullable();
             $table->decimal('importe_estimado', 10, 2)->nullable();
@@ -41,6 +42,10 @@ return new class extends Migration {
             $table->foreign('id_gestor_fk')
                 ->references('id_usuario')->on('tbl_usuario')
                 ->onDelete('restrict');
+
+            $table->foreign('id_incidencia_fk')
+                ->references('id_incidencia')->on('tbl_incidencia')
+                ->onDelete('set null');
         });
     }
 

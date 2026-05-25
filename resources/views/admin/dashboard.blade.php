@@ -73,11 +73,11 @@
         <div class="card-header-admin card-header-gradient">
             <span>Incidencias inactivas</span>
             <div class="card-header-actions">
-                <div class="input-busqueda" style="min-width:220px;">
+                <div class="input-busqueda min-w-220">
                     <i class="bi bi-search"></i>
                     <input type="text" id="buscadorIncidencias" placeholder="Buscar incidencia...">
                 </div>
-                <select id="filtroEstadoIncidencias" class="select-filtro" style="margin-left:8px;">
+                <select id="filtroEstadoIncidencias" class="select-filtro ml-8px">
                     <option value="all" selected>Todos los estados</option>
                     <option value="abierta">Abierta</option>
                     <option value="esperando_decision">Esperando decisión</option>
@@ -154,7 +154,7 @@
             <span>Solicitudes nuevas</span>
             <div class="card-header-acciones">
                 <input type="text" id="buscadorSolicitudes" placeholder="Buscar por nombre..." class="buscador-input">
-                <select id="filtroTipoSolicitudes" class="select-filtro" style="margin-left:8px; min-width: 150px;">
+                <select id="filtroTipoSolicitudes" class="select-filtro ml-8px min-w-150">
                     <option value="all">Todos los tipos</option>
                     <option value="arrendador">Arrendador</option>
                     <option value="gestor">Gestor</option>
@@ -425,7 +425,7 @@
                     <p class="modal-data-dash" id="modalGestorIncidencia">—</p>
                 </div>
 
-                <div class="modal-seccion-dash" id="modalEncargadoPagoSeccion" style="display: none;">
+                <div class="modal-seccion-dash d-none" id="modalEncargadoPagoSeccion">
                     <label class="modal-label-dash">Encargado de pago</label>
                     <p class="modal-data-dash" id="modalEncargadoPagoIncidencia">—</p>
                 </div>

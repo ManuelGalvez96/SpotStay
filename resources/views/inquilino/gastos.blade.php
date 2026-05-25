@@ -16,8 +16,8 @@
             <p class="descripcion-principal">Gestiona tus mensualidades, suministros e incidencias de forma centralizada.</p>
         </div>
         <div class="filtro-propiedad mt-3 mt-md-0">
-            <form action="{{ route('inquilino.historial_pagos') }}" method="GET" id="form-filtro-propiedad">
-                <select name="propiedad_id" class="form-select select-premium" id="filtro-propiedad-pagos">
+            <form action="{{ route('inquilino.historial_pagos') }}" method="GET" id="form-filtro-propiedad" class="d-flex gap-2 flex-wrap">
+                <select name="propiedad_id" class="form-select select-premium" id="filtro-propiedad-pagos" style="min-width: 300px; max-width: 100%;">
                     <option value="">Todas mis propiedades</option>
                     @foreach($propiedades as $prop)
                         <option value="{{ $prop->id_propiedad }}" {{ $propiedad_seleccionada == $prop->id_propiedad ? 'selected' : '' }}>
@@ -57,7 +57,7 @@
             </div>
             <div class="kpi-pago-info">
                 <span class="label">Acción Rápida</span>
-                <span class="valor">Pagar Todo Ahora</span>
+                <span class="valor" id="texto-pagar-todo">Pagar Todo Ahora</span>
             </div>
         </div>
     </div>
@@ -77,6 +77,25 @@
 
         <!-- CONTENIDO TAB PENDIENTES -->
         <div class="tab-content active" id="pendientes">
+            <div class="filtros-pendientes d-flex gap-2 mb-4 flex-wrap align-items-center">
+                <select name="tipo_gasto" class="form-select select-premium" id="filtro-tipo-gasto" style="max-width: 200px;">
+                    <option value="">Todos los tipos</option>
+                    <option value="alquiler">Alquiler</option>
+                    <option value="luz">Luz</option>
+                    <option value="agua">Agua</option>
+                    <option value="gas">Gas</option>
+                    <option value="internet">Internet</option>
+                    <option value="comunidad">Comunidad</option>
+                    <option value="reparacion">Reparación</option>
+                    <option value="otros">Otros</option>
+                </select>
+                <input type="text" name="nombre_gasto" class="form-control" id="filtro-nombre-gasto" placeholder="Buscar concepto..." style="max-width: 250px;">
+                <button type="button" class="btn btn-outline-secondary ms-auto mt-2 mt-md-0" id="btn-limpiar-pendientes" title="Limpiar filtros">
+                    <i class="bi bi-eraser"></i> Limpiar
+                </button>
+                <small id="error-filtro-concepto" class="text-danger d-none w-100 mt-1"></small>
+            </div>
+            
             <div class="lista-gastos-items">
                 @forelse($pendientes as $item)
                 <div class="gasto-item-row" data-id="{{ $item['id'] }}" data-tipo="{{ $item['tipo'] }}">
@@ -90,7 +109,7 @@
                     <div class="item-vencimiento">
                         <span class="date">{{ \Carbon\Carbon::parse($item['fecha_vencimiento'])->format('d/m/Y') }}</span>
                         @if($item['estado'] === 'atrasado')
-                            <span class="status-text atrasado">Hace {{ \Carbon\Carbon::parse($item['fecha_vencimiento'])->diffInDays() }} días</span>
+                            <span class="status-text atrasado">Hace {{ (int) \Carbon\Carbon::parse($item['fecha_vencimiento'])->diffInDays() }} días</span>
                         @else
                             <span class="status-text pendiente">Vence pronto</span>
                         @endif
@@ -121,6 +140,22 @@
 
         <!-- CONTENIDO TAB HISTORIAL -->
         <div class="tab-content" id="historial">
+            <div class="filtros-historial d-flex gap-2 mb-4 flex-wrap align-items-center">
+                <label for="filtro-fecha-desde" class="fw-bold mb-0">Desde:</label>
+                <input type="date" class="form-control" id="filtro-fecha-desde" style="max-width: 150px;">
+                
+                <label for="filtro-fecha-hasta" class="fw-bold mb-0 ms-md-2">Hasta:</label>
+                <input type="date" class="form-control" id="filtro-fecha-hasta" style="max-width: 150px;">
+                
+                <select class="form-select ms-md-auto mt-2 mt-md-0" id="filtro-orden" style="max-width: 200px;">
+                    <option value="desc">Más reciente primero</option>
+                    <option value="asc">Más antigua primero</option>
+                </select>
+                <button type="button" class="btn btn-outline-secondary mt-2 mt-md-0" id="btn-limpiar-historial" title="Limpiar filtros">
+                    <i class="bi bi-eraser"></i> Limpiar
+                </button>
+            </div>
+            
             <div class="lista-gastos-items" id="historial-pagos-lista">
                 <div class="mensaje-vacio" id="historial-pagos-cargando">
                     <i class="bi bi-hourglass-split"></i>

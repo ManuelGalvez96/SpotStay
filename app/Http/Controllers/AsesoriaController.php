@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ArticuloAsesoria;
 use App\Models\CategoriaArticulo;
+use Illuminate\Http\Request;
 
 class AsesoriaController extends Controller
 {
@@ -42,6 +43,34 @@ class AsesoriaController extends Controller
             'routePrefix' => $this->routePrefix(),
             'categoria' => $categoria,
         ]);
+    }
+
+    public function buscar(Request $request)
+    {
+        $q = $request->input('q');
+
+        if (!$q || strlen(trim($q)) < 1) {
+            return response()->json([]);
+        }
+
+        $articulos = ArticuloAsesoria::with('categoria')
+            ->where('estado', 1)
+            ->where('titulo', 'like', '%' . trim($q) . '%')
+            ->limit(10)
+            ->get()
+            ->map(function ($a) {
+                return [
+                    'id' => $a->id,
+                    'titulo' => $a->titulo,
+                    'categoria_nombre' => $a->categoria?->nombre,
+                    'categoria_slug' => $a->categoria?->slug,
+                    'url' => $a->categoria
+                        ? route($this->routePrefix() . '.asesoria.categoria', $a->categoria->slug) . '#art-' . $a->id
+                        : '#',
+                ];
+            });
+
+        return response()->json($articulos);
     }
 
     private function layout()

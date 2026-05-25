@@ -54,9 +54,15 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label for="dni_usuario" class="form-label">DNI</label>
-                                <input type="text" class="form-control" id="dni_usuario" name="dni_usuario"
-                                    value="{{ old('dni_usuario', $usuario->dni_usuario) }}">
+                                <label for="dni_usuario" class="form-label">Documento de Identidad</label>
+                                <div class="input-group">
+                                    <select class="form-select bg-light text-muted" id="tipo_documento_selector" style="max-width: 110px;">
+                                        <option value="DNI">DNI</option>
+                                        <option value="NIE">NIE</option>
+                                    </select>
+                                    <input type="text" class="form-control" id="dni_usuario" name="dni_usuario"
+                                        value="{{ old('dni_usuario', $usuario->dni_usuario) }}">
+                                </div>
                                 <div id="error-dni-usuario" class="text-danger small mt-1" aria-live="polite"></div>
                                 @error('dni_usuario')
                                     <div class="text-danger small mt-1">{{ $message }}</div>
@@ -85,15 +91,51 @@
                                 @enderror
                             </div>
 
-                            <div class="col-12">
-                                <label for="direccion_fiscal_usuario" class="form-label">Dirección fiscal</label>
-                                <textarea class="form-control" id="direccion_fiscal_usuario" name="direccion_fiscal_usuario" rows="3">{{ old('direccion_fiscal_usuario', $usuario->direccion_fiscal_usuario) }}</textarea>
-                                <div id="error-direccion-fiscal-usuario" class="text-danger small mt-1"
-                                    aria-live="polite"></div>
-                                @error('direccion_fiscal_usuario')
-                                    <div class="text-danger small mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
+                            @if($esArrendador)
+                                <div class="col-12 mt-4">
+                                    <h2 class="h5 mb-0">Datos de Facturación</h2>
+                                    <hr class="my-2">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="tipo_arrendador_usuario" class="form-label">Tipo de Arrendador</label>
+                                    <select class="form-select" id="tipo_arrendador_usuario" name="tipo_arrendador_usuario">
+                                        <option value="">Selecciona...</option>
+                                        <option value="particular" {{ old('tipo_arrendador_usuario', $usuario->tipo_arrendador_usuario) == 'particular' ? 'selected' : '' }}>Particular</option>
+                                        <option value="empresa" {{ old('tipo_arrendador_usuario', $usuario->tipo_arrendador_usuario) == 'empresa' ? 'selected' : '' }}>Empresa</option>
+                                    </select>
+                                    <div id="error-tipo-arrendador-usuario" class="text-danger small mt-1" aria-live="polite"></div>
+                                    @error('tipo_arrendador_usuario')
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-6" id="contenedor_cif_usuario" style="display: none;">
+                                    <label for="cif_usuario" class="form-label">NIF de la Empresa</label>
+                                    <input type="text" class="form-control" id="cif_usuario" name="cif_usuario"
+                                        value="{{ old('cif_usuario', $usuario->cif_usuario) }}" placeholder="B12345678">
+                                    <div id="error-cif-usuario" class="text-danger small mt-1" aria-live="polite"></div>
+                                    @error('cif_usuario')
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="iban_usuario" class="form-label">Cuenta Bancaria (IBAN)</label>
+                                    <input type="text" class="form-control" id="iban_usuario" name="iban_usuario"
+                                        value="{{ old('iban_usuario', $usuario->iban_usuario) }}" placeholder="ES00 0000 0000 0000 0000 0000">
+                                    <div id="error-iban-usuario" class="text-danger small mt-1" aria-live="polite"></div>
+                                    @error('iban_usuario')
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-12">
+                                    <label for="direccion_fiscal_usuario" class="form-label">Dirección fiscal</label>
+                                    <textarea class="form-control" id="direccion_fiscal_usuario" name="direccion_fiscal_usuario" rows="3">{{ old('direccion_fiscal_usuario', $usuario->direccion_fiscal_usuario) }}</textarea>
+                                    <div id="error-direccion-fiscal-usuario" class="text-danger small mt-1"
+                                        aria-live="polite"></div>
+                                    @error('direccion_fiscal_usuario')
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            @endif
 
                             <div class="col-12">
                                 <hr class="my-2">
@@ -172,13 +214,13 @@
                                 </div>
 
                                 <div class="row g-3 mt-3">
-                                    <div class="col-12 col-sm-6 col-lg-4">
+                                    <div class="col-12 col-sm-6 col-lg-6">
                                         <div class="p-3 rounded-3 bg-light h-100">
                                             <div class="text-muted small">Plan</div>
                                             <div class="fw-semibold">{{ $suscripcionActual->plan_suscripcion }}</div>
                                         </div>
                                     </div>
-                                    <div class="col-12 col-sm-6 col-lg-4">
+                                    <div class="col-12 col-sm-6 col-lg-6">
                                         <div class="p-3 rounded-3 bg-light h-100">
                                             <div class="text-muted small">Estado</div>
                                             <div class="fw-semibold">{{ ucfirst(str_replace('_', ' ', $suscripcionActual->estado_suscripcion)) }}</div>
@@ -186,7 +228,7 @@
                                     </div>
 
                                     @if($rolDestinatario === 'arrendador')
-                                        <div class="col-12 col-sm-6 col-lg-4">
+                                        <div class="mb-3 p-3 rounded-3 bg-light">
                                             <div class="p-3 rounded-3 bg-light h-100">
                                                 <div class="text-muted small">Máximo de propiedades</div>
                                                 <div class="fw-semibold">{{ $suscripcionActual->max_propiedades_suscripcion }}</div>
@@ -195,7 +237,7 @@
                                     @endif
 
                                     @if ((float) $suscripcionActual->precio_pagado_suscripcion > 0 && isset($diasRestantesSuscripcion))
-                                        <div class="col-12 col-sm-6 col-lg-4">
+                                        <div class="mb-3 p-3 rounded-3 bg-light">
                                             <div class="p-3 rounded-3 bg-light h-100">
                                                 <div class="text-muted small">Días restantes</div>
                                                 <div class="fw-semibold">

@@ -126,7 +126,11 @@ class InquilinoIncidenciaController extends Controller
             }
             return response()->json(['success' => true, 'estados' => $estados]);
         } catch (\Exception $e) {
-            return response()->json(['success' => true, 'estados' => ['abierta' => 'Abierta', 'resuelta' => 'Resuelta']]);
+            return response()->json(['success' => true, 'estados' => [
+                'abierta' => 'Abierta',
+                'solucionada' => 'Solucionada',
+                'resuelta' => 'Resuelta',
+            ]]);
         }
     }
 
@@ -135,7 +139,15 @@ class InquilinoIncidenciaController extends Controller
         $incidencia = DB::table('tbl_incidencia')->where('id_incidencia', $id)->first();
         if (!$incidencia || $incidencia->id_reporta_fk != Auth::id()) return back()->with('error', 'No permitido.');
 
-        DB::table('tbl_incidencia')->where('id_incidencia', $id)->update(['estado_incidencia' => 'resuelta', 'actualizado_incidencia' => now()]);
+        if ($incidencia->estado_incidencia !== 'solucionada') {
+            return back()->with('error', 'Solo puedes marcar como resuelta una incidencia solucionada.');
+        }
+
+        DB::table('tbl_incidencia')->where('id_incidencia', $id)->update([
+            'estado_incidencia' => 'resuelta',
+            'resuelto_incidencia' => now(),
+            'actualizado_incidencia' => now(),
+        ]);
         return request()->ajax() ? response()->json(['success' => true]) : back()->with('success', 'Incidencia cerrada.');
     }
 
@@ -144,7 +156,7 @@ class InquilinoIncidenciaController extends Controller
         $request->validate(['responsable' => 'required|in:inquilino,propietario']);
         DB::table('tbl_incidencia')->where('id_incidencia', $id)->update([
             'responsable_pago' => $request->responsable,
-            'estado_workflow' => ($request->responsable === 'inquilino') ? 'esperando_pago' : 'esperando_aprobacion_propietario',
+            'estado_incidencia' => ($request->responsable === 'inquilino') ? 'esperando_pago' : 'esperando_decision',
             'actualizado_incidencia' => now()
         ]);
         return response()->json(['success' => true]);

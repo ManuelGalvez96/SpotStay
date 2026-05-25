@@ -41,7 +41,9 @@ class PerfilController extends Controller
         /** @var Usuario $usuario */
         $usuario = Auth::user();
 
-        $datosValidados = $request->validate([
+        $esArrendador = $this->obtenerRolDestinatario($usuario) === 'arrendador';
+
+        $reglas = [
             'nombre_usuario' => ['required', 'string', 'max:100'],
             'email_usuario' => [
                 'required',
@@ -51,10 +53,11 @@ class PerfilController extends Controller
             ],
             'telefono_usuario' => ['nullable', 'string', 'max:20'],
             'dni_usuario' => ['nullable', 'string', 'max:20'],
-            'direccion_fiscal_usuario' => ['nullable', 'string', 'max:255'],
             'fecha_nacimiento_usuario' => ['nullable', 'date'],
             'avatar_usuario' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
-        ], [
+        ];
+
+        $mensajes = [
             'nombre_usuario.required' => 'El nombre es obligatorio.',
             'email_usuario.required' => 'El correo electrónico es obligatorio.',
             'email_usuario.email' => 'El correo electrónico no es válido.',
@@ -62,12 +65,35 @@ class PerfilController extends Controller
             'avatar_usuario.image' => 'El archivo debe ser una imagen.',
             'avatar_usuario.mimes' => 'La imagen debe ser JPEG, PNG, GIF o WebP.',
             'avatar_usuario.max' => 'La imagen no puede superar los 2MB.',
-        ]);
+        ];
+
+        if ($esArrendador) {
+            $reglas['direccion_fiscal_usuario'] = ['nullable', 'string', 'max:255'];
+            $reglas['iban_usuario'] = ['nullable', 'string', 'max:34'];
+            $reglas['tipo_arrendador_usuario'] = ['nullable', Rule::in(['particular', 'empresa'])];
+            
+            // Si es empresa, puede tener CIF
+            if ($request->input('tipo_arrendador_usuario') === 'empresa') {
+                $reglas['cif_usuario'] = ['nullable', 'string', 'max:20'];
+            }
+            
+            $mensajes['tipo_arrendador_usuario.in'] = 'El tipo de arrendador no es válido.';
+        }
+
+        $datosValidados = $request->validate($reglas, $mensajes);
 
         $datosValidados['nombre_usuario'] = trim($datosValidados['nombre_usuario']);
         $datosValidados['email_usuario'] = trim($datosValidados['email_usuario']);
 
-        foreach (['telefono_usuario', 'dni_usuario', 'direccion_fiscal_usuario'] as $campoOpcional) {
+        $camposOpcionales = ['telefono_usuario', 'dni_usuario'];
+        if ($esArrendador) {
+            $camposOpcionales[] = 'direccion_fiscal_usuario';
+            $camposOpcionales[] = 'iban_usuario';
+            $camposOpcionales[] = 'tipo_arrendador_usuario';
+            $camposOpcionales[] = 'cif_usuario';
+        }
+
+        foreach ($camposOpcionales as $campoOpcional) {
             if (array_key_exists($campoOpcional, $datosValidados)) {
                 $datosValidados[$campoOpcional] = filled($datosValidados[$campoOpcional])
                     ? trim((string) $datosValidados[$campoOpcional])
@@ -302,9 +328,25 @@ class PerfilController extends Controller
 
         if ($rolDestinatario !== null) {
             $idPlanActual = $suscripcionActual?->id_plan_fk;
-            $precioPlanActual = $suscripcionActual && $suscripcionActual->estado_suscripcion === 'activa'
-                ? (float) $suscripcionActual->precio_pagado_suscripcion
-                : null;
+
+            // Considerar suscripción todavía vigente aunque esté marcada como 'cancelada'
+            $precioPlanActual = null;
+            if ($suscripcionActual) {
+                $esVigentePorFecha = false;
+                if ($suscripcionActual->estado_suscripcion === 'activa') {
+                    $esVigentePorFecha = true;
+                } elseif ($suscripcionActual->estado_suscripcion === 'cancelada' && $suscripcionActual->fin_suscripcion) {
+                    $fin = Carbon::parse($suscripcionActual->fin_suscripcion);
+                    if (Carbon::now()->lt($fin)) {
+                        // Cancelada pero aún dentro del periodo pagado
+                        $esVigentePorFecha = true;
+                    }
+                }
+
+                if ($esVigentePorFecha) {
+                    $precioPlanActual = (float) $suscripcionActual->precio_pagado_suscripcion;
+                }
+            }
 
             $planesDisponibles = Plan::where('activo_plan', true)
                 ->where('rol_destino', $rolDestinatario)

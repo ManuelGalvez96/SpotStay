@@ -560,6 +560,14 @@ img.avatar-tabla {
     display: block;
 }
 
+.avatar-tabla {
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
 .admin-nombre {
     font-size: 13px;
     color: #6B7280;

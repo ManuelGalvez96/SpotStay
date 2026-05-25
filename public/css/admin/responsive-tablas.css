@@ -69,6 +69,55 @@
         display: none;
     }
 
+    #tablaPropiedades tbody td,
+    #tablaAlquileres tbody td {
+        text-align: center;
+        padding-left: 0;
+    }
+
+    #tablaPropiedades tbody td::before,
+    #tablaAlquileres tbody td::before {
+        position: static;
+        display: block;
+        width: auto;
+        text-align: center;
+        margin-bottom: 6px;
+    }
+
+    #tablaPropiedades .propiedad-celda,
+    #tablaAlquileres .propiedad-celda,
+    #tablaAlquileres .usuario-celda-mini {
+        justify-content: center;
+    }
+
+    #tablaPropiedades tbody td:nth-child(2) {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    #tablaPropiedades tbody td:nth-child(2) .d-flex {
+        display: flex !important;
+        width: auto;
+        margin: 0;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #tablaPropiedades .propiedad-celda {
+        align-items: center;
+    }
+
+    #tablaPropiedades .propiedad-nombre,
+    #tablaPropiedades .propiedad-ciudad,
+    #tablaAlquileres .propiedad-nombre,
+    #tablaAlquileres .propiedad-ciudad,
+    #tablaAlquileres .nombre-mini {
+        text-align: center;
+    }
+
     .tabla-admin .usuario-celda,
     .tabla-admin .propiedad-celda,
     .tabla-admin .solicitud-celda {

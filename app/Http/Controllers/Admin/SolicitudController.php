@@ -219,7 +219,7 @@ class SolicitudController extends Controller
 
     public function filtrar(Request $request)
     {
-        $tipoSolicitud = $this->resolverTipoSolicitud($request->input('tipo', 'all'));
+        $tipoSolicitud = $request->input('tipo', 'all');
         $solicitudes = $this->obtenerSolicitudesCombinadas(
             $request->input('estado'),
             $request->input('rango', 'mes'),
@@ -243,7 +243,7 @@ class SolicitudController extends Controller
 
     public function getKpisStatistics(Request $request)
     {
-        $tipoSolicitud = $this->resolverTipoSolicitud($request->input('tipo', 'all'));
+        $tipoSolicitud = $request->input('tipo', 'all');
         $solicitudes = $this->obtenerSolicitudesCombinadas(
             null,
             $request->input('rango', 'mes'),
@@ -511,7 +511,7 @@ class SolicitudController extends Controller
 
     private function resolverTipoSolicitud(?string $tipoSolicitud): string
     {
-        return in_array($tipoSolicitud, ['gestor', 'arrendador'], true) ? $tipoSolicitud : 'arrendador';
+        return in_array($tipoSolicitud, ['gestor', 'arrendador', 'all'], true) ? $tipoSolicitud : 'all';
     }
 
     private function formatearSolicitudArrendador($solicitud): array

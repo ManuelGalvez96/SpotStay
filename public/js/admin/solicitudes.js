@@ -59,7 +59,11 @@ var inicializarSolicitudesAdmin = function () {
     }
 };
 
-inicializarSolicitudesAdmin();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', inicializarSolicitudesAdmin);
+} else {
+    inicializarSolicitudesAdmin();
+}
 
 var asignarEventosFiltros = function () {
     var formFiltros = document.getElementById('formFiltrosSolicitudes');
@@ -262,7 +266,7 @@ var actualizarTabla = function (datos) {
                 '<td data-label="FECHA" class="col-tablet-hide">' + escaparHtml(fecha) + '</td>' +
                 '<td data-label="ESTADO"><span class="badge-estado badge-pendiente">' + escaparHtml(solicitud.estado_solicitud ? solicitud.estado_solicitud.charAt(0).toUpperCase() + solicitud.estado_solicitud.slice(1) : 'Pendiente') + '</span></td>' +
                 '<td data-label="PAGO">' + pagoHtml + '</td>' +
-                '<td data-label="ACCIONES"><div class="acciones-tabla"><button type="button" class="btn-icono btn-ver-sol" data-id="' + solicitud.id_solicitud + '" data-tipo="' + escaparHtml(solicitud.tipo_solicitud) + '" title="Ver detalles" onclick="abrirModal(this.getAttribute(\'data-id\'), this.getAttribute(\'data-tipo\'))"><i class="bi bi-eye"></i></button><button type="button" class="btn-icono btn-aprobar-sol" data-id="' + solicitud.id_solicitud + '" data-tipo="' + escaparHtml(solicitud.tipo_solicitud) + '" title="Aprobar" onclick="abrirModal(this.getAttribute(\'data-id\'), this.getAttribute(\'data-tipo\'))"><i class="bi bi-check-circle"></i></button><button type="button" class="btn-icono btn-rechazar-sol" data-id="' + solicitud.id_solicitud + '" data-tipo="' + escaparHtml(solicitud.tipo_solicitud) + '" title="Rechazar" onclick="abrirModal(this.getAttribute(\'data-id\'), this.getAttribute(\'data-tipo\'))"><i class="bi bi-x-circle"></i></button></div></td>';
+                '<td data-label="ACCIONES"><div class="acciones-tabla"><button type="button" class="btn-icono btn-ver-sol" data-id="' + solicitud.id_solicitud + '" data-tipo="' + escaparHtml(solicitud.tipo_solicitud) + '" title="Ver detalles"><i class="bi bi-eye"></i></button><button type="button" class="btn-icono btn-aprobar-sol" data-id="' + solicitud.id_solicitud + '" data-tipo="' + escaparHtml(solicitud.tipo_solicitud) + '" title="Aprobar"><i class="bi bi-check-circle"></i></button><button type="button" class="btn-icono btn-rechazar-sol" data-id="' + solicitud.id_solicitud + '" data-tipo="' + escaparHtml(solicitud.tipo_solicitud) + '" title="Rechazar"><i class="bi bi-x-circle"></i></button></div></td>';
 
             tablaBody.appendChild(fila);
         }

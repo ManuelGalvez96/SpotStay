@@ -93,6 +93,11 @@ class AppServiceProvider extends ServiceProvider
                     }
                 }
 
+                $esGestorUsuario = $usuario->roles()->where('slug_rol', 'gestor')->exists()
+                    || DB::table('tbl_propiedad')
+                        ->where('id_gestor_fk', $usuario->id_usuario)
+                        ->exists();
+
                 $view->with([
                     'nombreUsuario' => $nombre,
                     'tieneFoto' => $tieneFoto,
@@ -101,15 +106,11 @@ class AppServiceProvider extends ServiceProvider
                     'esInquilino' => $usuario->alquileres()->where('estado_alquiler', 'activo')->exists(),
                     'tienePagos' => $usuario->alquileres()->where('estado_alquiler', 'activo')->exists() || \Illuminate\Support\Facades\DB::table('tbl_pago')->where('id_pagador_fk', $usuario->id_usuario)->exists(),
                     'esArrendador' => $usuario->roles()->where('slug_rol', 'arrendador')->exists(),
-                    'esGestor' => $usuario->roles()->where('slug_rol', 'gestor')->exists(),
                     'notificacionesGestor' => $notificacionesGestor,
                     'notificacionesGestorSinLeer' => $notificacionesGestorSinLeer,
                     'notificacionesUsuario' => $notificacionesUsuario,
                     'notificacionesUsuarioSinLeer' => $notificacionesUsuarioSinLeer,
-                    'esGestor' => $usuario->roles()->where('slug_rol', 'gestor')->exists()
-                        || \Illuminate\Support\Facades\DB::table('tbl_propiedad')
-                            ->where('id_gestor_fk', $usuario->id_usuario)
-                            ->exists(),
+                    'esGestor' => $esGestorUsuario,
                 ]);
             } else {
                 $view->with([

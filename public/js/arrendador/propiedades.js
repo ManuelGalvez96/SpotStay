@@ -68,27 +68,63 @@ function iniciarValidacionFormularioPropiedad() {
     return Boolean(campo);
   });
 
-  function validarCampo(campo) {
+  formulario.noValidate = true;
+
+  function obtenerContenedorError(campo) {
+    if (!campo) {
+      return null;
+    }
+
+    var contenedor = campo.nextElementSibling;
+    if (contenedor && contenedor.classList && contenedor.classList.contains('campo-error')) {
+      return contenedor;
+    }
+
+    contenedor = document.createElement('div');
+    contenedor.className = 'campo-error';
+    contenedor.setAttribute('aria-live', 'polite');
+    contenedor.hidden = true;
+    campo.insertAdjacentElement('afterend', contenedor);
+    return contenedor;
+  }
+
+  function esCampoValido(campo) {
     if (!campo) {
       return true;
     }
 
     var valor = typeof campo.value === 'string' ? campo.value.trim() : '';
 
-    if (campo.required && valor === '') {
-      campo.setCustomValidity('Este campo es obligatorio.');
-    } else {
-      campo.setCustomValidity('');
+    return !(campo.required && valor === '');
+  }
+
+  function pintarErrorCampo(campo) {
+    if (!campo) {
+      return true;
     }
 
-    return campo.checkValidity();
+    var mensajeError = esCampoValido(campo) ? '' : 'Este campo es obligatorio.';
+
+    var contenedorError = obtenerContenedorError(campo);
+
+    if (contenedorError) {
+      contenedorError.textContent = mensajeError;
+      contenedorError.hidden = mensajeError === '';
+    }
+
+    campo.setAttribute('aria-invalid', mensajeError ? 'true' : 'false');
+    campo.classList.toggle('campo-invalido', mensajeError !== '');
+
+    return mensajeError === '';
   }
 
   function actualizarEstadoBoton() {
-    var formularioValido = formulario.checkValidity();
+    var formularioValido = true;
 
     camposObligatorios.forEach(function (campo) {
-      validarCampo(campo);
+      if (!esCampoValido(campo)) {
+        formularioValido = false;
+      }
     });
 
     if (botonEnviar) {
@@ -100,32 +136,42 @@ function iniciarValidacionFormularioPropiedad() {
 
   camposObligatorios.forEach(function (campo) {
     campo.oninput = function () {
-      validarCampo(campo);
+      if (campo.dataset.tocado === 'true') {
+        pintarErrorCampo(campo);
+      }
+
       actualizarEstadoBoton();
     };
 
     campo.onchange = function () {
-      validarCampo(campo);
+      if (campo.dataset.tocado === 'true') {
+        pintarErrorCampo(campo);
+      }
+
       actualizarEstadoBoton();
     };
 
     campo.onblur = function () {
-      validarCampo(campo);
+      campo.dataset.tocado = 'true';
+      pintarErrorCampo(campo);
       actualizarEstadoBoton();
-
-      if (!campo.checkValidity() && typeof campo.reportValidity === 'function') {
-        campo.reportValidity();
-      }
     };
   });
 
   formulario.onsubmit = function (evento) {
-    if (!actualizarEstadoBoton()) {
-      evento.preventDefault();
+    var formularioValido = true;
 
-      if (typeof formulario.reportValidity === 'function') {
-        formulario.reportValidity();
+    camposObligatorios.forEach(function (campo) {
+      campo.dataset.tocado = 'true';
+      if (!pintarErrorCampo(campo)) {
+        formularioValido = false;
       }
+    });
+
+    actualizarEstadoBoton();
+
+    if (!formularioValido) {
+      evento.preventDefault();
 
       mostrarMensaje('Completa los campos obligatorios antes de guardar la propiedad.', true);
       return false;
@@ -134,7 +180,6 @@ function iniciarValidacionFormularioPropiedad() {
     return true;
   };
 
-  actualizarEstadoBoton();
   window.actualizarEstadoValidacionFormularioPropiedad = actualizarEstadoBoton;
 }
 
@@ -210,11 +255,7 @@ function enviarFormularioConFetch(formulario) {
   formulario.onsubmit = function (evento) {
     evento.preventDefault();
 
-    if (typeof formulario.checkValidity === 'function' && !formulario.checkValidity()) {
-      if (typeof formulario.reportValidity === 'function') {
-        formulario.reportValidity();
-      }
-
+    if (!actualizarEstadoBoton()) {
       mostrarMensaje('Completa los campos obligatorios antes de guardar.', true);
       return;
     }
@@ -499,6 +540,17 @@ function abrirModalFormulario(arrendadorId, datosPropiedad) {
     document.getElementById('form-precio').value = '';
     document.getElementById('form-descripcion').value = '';
     document.getElementById('btn-submit-formulario').textContent = 'Crear propiedad';
+    formulario.querySelectorAll('.campo-error').forEach(function (error) {
+      error.textContent = '';
+      error.hidden = true;
+    });
+    formulario.querySelectorAll('.campo-invalido').forEach(function (campoInvalido) {
+      campoInvalido.classList.remove('campo-invalido');
+      campoInvalido.setAttribute('aria-invalid', 'false');
+    });
+    formulario.querySelectorAll('[data-tocado]').forEach(function (campoTocado) {
+      campoTocado.removeAttribute('data-tocado');
+    });
     
     // Limpiar archivos acumulados
     if (formulario._archivosAcumulados) {

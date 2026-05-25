@@ -143,6 +143,8 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
 .form-subsection label span { font-size: 13px; font-weight: 600; color: var(--texto); }
 .form-subsection input[type="text"], .form-subsection input[type="number"], .form-subsection input[type="file"], .form-subsection select, .form-subsection textarea { padding: 10px 12px; border: 1px solid var(--borde); border-radius: 8px; font-size: 13px; font-family: inherit; transition: all .2s ease; background: #fff; color: var(--texto); }
 .form-subsection input[type="text"]:focus, .form-subsection input[type="number"]:focus, .form-subsection input[type="file"]:focus, .form-subsection select:focus, .form-subsection textarea:focus { outline: none; border-color: var(--primario-claro); box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1); background: #f8faff; }
+.form-subsection .campo-invalido { border-color: var(--error) !important; background: #fff5f5; }
+.form-subsection .campo-error { margin-top: 4px; color: var(--error); font-size: 12px; font-weight: 600; line-height: 1.35; }
 .form-subsection textarea { resize: vertical; min-height: 100px; }
 .form-subsection.full-width { grid-column: 1 / -1; }
 .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--texto); cursor: pointer; padding: 8px; border-radius: 6px; transition: all .2s ease; }

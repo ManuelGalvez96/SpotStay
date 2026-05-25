@@ -798,26 +798,17 @@ function inicializarSelectorGestores(propiedadId, gestorIdActual) {
   let timeoutValidacion;
   
   inputCodigo.addEventListener('input', function(e) {
-    clearTimeout(timeoutValidacion);
     const codigo = e.target.value.trim().toUpperCase();
     
-    // Permitir solo GES-XXXX-XXXX
     if (codigo) {
-      // Auto-formatear si es necesario
       const codigoFormateado = formatearCodigoGestor(codigo);
       if (codigoFormateado !== codigo) {
         inputCodigo.value = codigoFormateado;
         return;
       }
     }
-    
-    if (codigo.length === 12) {
-      // Validar después de 300ms (debounce)
-      timeoutValidacion = setTimeout(() => validarCodigoGestor(codigo, propiedadId), 300);
-    } else {
-      // Limpiar si no tiene formato completo
-      limpiarValidacionGestor();
-    }
+
+    limpiarValidacionGestor();
   });
   
   inputCodigo.addEventListener('blur', function(e) {
@@ -960,9 +951,7 @@ function seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId, cod
   document.getElementById('permiso-incidencias').disabled = false;
 
   btnGuardar.disabled = false;
-  // Cerrar dropdown
-  cerrarDropdownGestores();
-  
+
   mostrarMensaje('Gestor seleccionado: ' + nombreGestor + '. Pulsa guardar para confirmar la asignación.', false);
 }
 

@@ -109,7 +109,7 @@
                         <div class="gestor-selector-wrap">
                             <span class="gestor-selector-label">Código del gestor</span>
                             <div class="gestor-input-row">
-                                <input type="text" id="codigo-gestor-input" class="codigo-gestor-input" placeholder="GES-XXXX-XXXX" maxlength="12" aria-label="Código del gestor" aria-describedby="codigo-gestor-error">
+                                <input type="text" id="codigo-gestor-input" class="codigo-gestor-input" placeholder="GES-XXXX-XXXX" maxlength="13" aria-label="Código del gestor" aria-describedby="codigo-gestor-error">
                                 <button type="button" class="btn-validar-codigo" id="btn-validar-codigo">Asignar</button>
                             </div>
                             <span class="codigo-gestor-validacion" id="codigo-gestor-validacion"></span>

@@ -12,7 +12,11 @@ class PerfilController extends Controller
     public function index()
     {
         $gestor = Auth::user();
-        return view('gestor.perfil', compact('gestor'));
+        $codigoGestor = \DB::table('tbl_codigo_gestor')
+            ->where('id_gestor_fk', $gestor->id_usuario)
+            ->where('estado_codigo_gestor', 'activo')
+            ->value('codigo_gestor');
+        return view('gestor.perfil', compact('gestor', 'codigoGestor'));
     }
 
     public function update(Request $request)

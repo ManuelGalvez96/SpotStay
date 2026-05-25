@@ -61,11 +61,38 @@ body {
 /* STATS GRID */
 /* ═══════════════════════════════════════════════════════════ */
 
-.stats-grid { 
-  margin: 24px 0; 
-  display: grid; 
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
-  gap: 16px; 
+.stats-grid {
+  margin: 24px 0;
+  display: grid;
+  /* Alert on top (full width) and counters below in a 5-column row */
+  grid-template-columns: repeat(5, minmax(140px, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+/* Alerta en la fila superior ocupando toda la anchura */
+.stats-grid > .alert, .stats-grid > .alert-limite {
+  grid-column: 1 / -1 !important;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Los contadores y el botón nueva propiedad ocuparán las columnas siguientes */
+.stats-grid .stat-card, .stats-grid .btn-nueva-propiedad {
+  grid-column: auto;
+}
+
+/* Responsive: en pantallas pequeñas apilamos en 1 columna */
+@media (max-width: 900px) {
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+  .stats-grid > .alert, .stats-grid > .alert-limite {
+    grid-column: 1 / -1 !important;
+    flex-direction: column;
+  }
 }
 
 .stat-card { 

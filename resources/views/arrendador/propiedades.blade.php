@@ -23,17 +23,12 @@
 
 <section class="stats-grid">
     @if ($limiteAlcanzado)
-    <div class="alert alert-warning" style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 10px; background: #fffcf4; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); box-sizing: border-box;">
+    <div class="alert alert-warning alert-limite" style="display: flex; flex-direction: column; gap: 10px; background: #fffcf4; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); box-sizing: border-box;">
         <div>
             <strong style="color: #856404; font-size: 16px;">💳 ¡Límite de Suscripción Alcanzado!</strong>
             <p style="margin: 5px 0 0 0; color: #664d03; line-height: 1.5; font-size: 14px;">
                 Has alcanzado el límite de tu plan actual <strong>{{ $nombrePlan }}</strong> (máximo de <strong>{{ $maxPropiedades }}</strong> propiedades registradas). Para registrar un nuevo inmueble en SpotStay, debes inactivar o eliminar alguna propiedad existente, o mejorar tu nivel de suscripción para ampliar la capacidad.
             </p>
-        </div>
-        <div style="margin-top: 5px;">
-            <a href="{{ route('miembro.suscripcion.index') }}" class="btn-primary" style="display: inline-block; text-decoration: none; padding: 8px 16px; font-size: 13px; border-radius: 6px; background-color: #856404; color: #fff; font-weight: bold; transition: background-color 0.2s; border: none; cursor: pointer;">
-                🚀 Mejorar Suscripción
-            </a>
         </div>
     </div>
     @endif

@@ -17,7 +17,12 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
 .alert-success { background: #ecfdf3; border-color: #abefc6; color: #05603a; }
 .alert-error { background: #fff1f0; border-color: #fecdca; color: #912018; }
 
-.stats-grid { margin: 16px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.stats-grid { margin: 16px 0; display: grid; /* alerta arriba, contadores en fila de 5 */ grid-template-columns: repeat(5, minmax(140px, 1fr)); gap: 12px; align-items: stretch; }
+
+/* Forzar que la alerta ocupe la fila superior completa */
+.stats-grid > .alert, .stats-grid > .alert-limite { grid-column: 1 / -1 !important; display: flex; flex-direction: column; justify-content: center; align-self: stretch; }
+
+.stats-grid .stat-card, .stats-grid .btn-nueva-propiedad { grid-column: auto; }
 .stat-card { background: #fff; border: 1px solid var(--borde); border-radius: 14px; padding: 14px; box-shadow: var(--sombra); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .stat-card span { display: block; font-size: 24px; font-weight: 700; color: var(--primario); }
 .stat-card small { color: var(--muted); }

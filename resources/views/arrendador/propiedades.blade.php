@@ -19,15 +19,39 @@
 <div class="alert alert-error">{{ session('error') }}</div>
 @endif
 
+
+
 <section class="stats-grid">
+    @if ($limiteAlcanzado)
+    <div class="alert alert-warning" style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 10px; background: #fffcf4; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); box-sizing: border-box;">
+        <div>
+            <strong style="color: #856404; font-size: 16px;">💳 ¡Límite de Suscripción Alcanzado!</strong>
+            <p style="margin: 5px 0 0 0; color: #664d03; line-height: 1.5; font-size: 14px;">
+                Has alcanzado el límite de tu plan actual <strong>{{ $nombrePlan }}</strong> (máximo de <strong>{{ $maxPropiedades }}</strong> propiedades registradas). Para registrar un nuevo inmueble en SpotStay, debes inactivar o eliminar alguna propiedad existente, o mejorar tu nivel de suscripción para ampliar la capacidad.
+            </p>
+        </div>
+        <div style="margin-top: 5px;">
+            <a href="{{ route('miembro.suscripcion.index') }}" class="btn-primary" style="display: inline-block; text-decoration: none; padding: 8px 16px; font-size: 13px; border-radius: 6px; background-color: #856404; color: #fff; font-weight: bold; transition: background-color 0.2s; border: none; cursor: pointer;">
+                🚀 Mejorar Suscripción
+            </a>
+        </div>
+    </div>
+    @endif
     <div class="stat-card"><span>{{ $totales['totalPropiedades'] }}</span><small>Total</small></div>
     <div class="stat-card"><span>{{ $totales['publicadas'] }}</span><small>Publicadas</small></div>
     <div class="stat-card"><span>{{ $totales['alquiladas'] }}</span><small>Alquiladas</small></div>
     <div class="stat-card"><span>{{ $totales['inactivas'] }}</span><small>Inactivas</small></div>
-    <button class="stat-card btn-nueva-propiedad" type="button" data-arrendador-id="{{ $arrendadorId }}" onclick="abrirModalFormulario(this.dataset.arrendadorId)">
-        <span>+</span>
-        <small>Nueva propiedad</small>
-    </button>
+    @if ($limiteAlcanzado)
+        <div class="stat-card btn-nueva-propiedad" style="background: #fce8e6 !important; border: 1px solid #f5c2c2 !important; cursor: not-allowed; opacity: 0.85; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;" title="Has alcanzado el límite de tu suscripción actual.">
+            <span style="color: #ea4335 !important; font-size: 24px;">✕</span>
+            <small style="color: #c5221f !important; font-weight: bold;">Límite alcanzado</small>
+        </div>
+    @else
+        <button class="stat-card btn-nueva-propiedad" type="button" data-arrendador-id="{{ $arrendadorId }}" onclick="abrirModalFormulario(this.dataset.arrendadorId)">
+            <span>+</span>
+            <small>Nueva propiedad</small>
+        </button>
+    @endif
 </section>
 
 <section class="content-grid">

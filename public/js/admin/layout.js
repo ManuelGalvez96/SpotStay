@@ -119,7 +119,11 @@ window.confirmarAdmin = function(titulo, mensaje) {
     });
 };
 
+var onloadAnteriorLayout = window.onload;
 window.onload = function() {
+    if (onloadAnteriorLayout) {
+        onloadAnteriorLayout();
+    }
     asignarEventosAdmin();
     asignarEventosNavIconos();
 };

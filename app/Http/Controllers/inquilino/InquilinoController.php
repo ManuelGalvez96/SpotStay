@@ -237,6 +237,7 @@ class InquilinoController extends Controller
 
         $fotos = DB::table('tbl_fotos')->where('id_propiedad_fk', $id)->get();
         $fotoPrincipal = $fotos->isNotEmpty() ? asset('img/' . $fotos->first()->ruta_foto) : null;
+        $categorias = DB::table('tbl_categoria')->get();
 
         return view('inquilino.ver_propiedad', [
             'alquiler' => $alquiler,
@@ -253,6 +254,7 @@ class InquilinoController extends Controller
             'companeros' => DB::table('tbl_alquiler')->join('tbl_usuario', 'tbl_usuario.id_usuario', '=', 'tbl_alquiler.id_inquilino_fk')->where('tbl_alquiler.id_propiedad_fk', $id)->where('tbl_alquiler.estado_alquiler', 'activo')->where('tbl_alquiler.id_inquilino_fk', '<>', $userId)->pluck('tbl_usuario.nombre_usuario')->toArray(),
             'incidencias' => DB::table('tbl_incidencia')->where('id_propiedad_fk', $id)->orderBy('creado_incidencia', 'desc')->get(),
             'esInquilino' => true,
+            'categorias' => $categorias,
             'pdfEjemplo' => 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
         ]);
     }

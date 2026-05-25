@@ -4,18 +4,25 @@
      data-iniciar-url="{{ $chatbotIniciarUrl }}"
      data-mensaje-url="{{ $chatbotMensajeUrl }}"
      data-historial-url="{{ $chatbotHistorialUrl }}"
-     data-avatar-url="{{ asset('img/spoty.png') }}">
+     data-avatar-url="{{ asset('img/spoty.png') }}"
+     data-usuario-avatar-url="{{ $chatbotUsuarioAvatar ?? '' }}"
+     data-usuario-nombre="{{ $chatbotUsuarioNombre ?? '' }}">
     <button class="spoty-chatbot-toggle" id="spotyChatbotToggle" aria-label="Abrir chat con Spoty">
         <img src="{{ asset('img/spoty.png') }}" alt="Spoty" class="spoty-chatbot-toggle-img">
         <span class="spoty-chatbot-toggle-close">✕</span>
     </button>
     <div class="spoty-chatbot-panel" id="spotyChatbotPanel">
         <div class="spoty-chatbot-header">
-            <img src="{{ asset('img/spoty.png') }}" alt="Spoty" class="spoty-chatbot-avatar">
-            <div>
-                <h3>Spoty</h3>
-                <p>Tu asistente legal IA</p>
+            <div class="spoty-chatbot-header-left">
+                <img src="{{ asset('img/spoty.png') }}" alt="Spoty" class="spoty-chatbot-avatar">
+                <div>
+                    <h3>Spoty</h3>
+                    <p>Tu asistente legal IA</p>
+                </div>
             </div>
+            <button class="spoty-chatbot-btn-cerrar" id="spotyChatbotCerrar" type="button" aria-label="Cerrar chat">
+                <i class="bi bi-x" aria-hidden="true"></i>
+            </button>
         </div>
         <div class="spoty-chatbot-mensajes" id="spotyChatbotMensajes">
             <div class="spoty-chatbot-mensaje spoty-chatbot-mensaje-ia">

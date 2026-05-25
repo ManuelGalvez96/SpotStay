@@ -12,6 +12,8 @@
     var mensajeUrl = widget.dataset.mensajeUrl;
     var historialUrl = widget.dataset.historialUrl;
     var avatarUrl = widget.dataset.avatarUrl;
+    var usuarioAvatarUrl = widget.dataset.usuarioAvatarUrl || '';
+    var usuarioNombre = widget.dataset.usuarioNombre || '';
 
     var idSesion = null;
     var enviando = false;
@@ -48,16 +50,29 @@
         var div = document.createElement('div');
         div.className = 'spoty-chatbot-mensaje ' + (rol === 'usuario' ? 'spoty-chatbot-mensaje-usuario' : 'spoty-chatbot-mensaje-ia');
 
-        var avatar = document.createElement('img');
-        avatar.src = avatarUrl;
-        avatar.alt = rol === 'usuario' ? 'Tú' : 'Spoty';
-        avatar.className = 'spoty-chatbot-avatar-msg';
+        if (rol === 'ia') {
+            var avatar = document.createElement('img');
+            avatar.src = avatarUrl;
+            avatar.alt = 'Spoty';
+            avatar.className = 'spoty-chatbot-avatar-msg';
+            div.appendChild(avatar);
+        } else if (usuarioAvatarUrl) {
+            var avatar = document.createElement('img');
+            avatar.src = usuarioAvatarUrl;
+            avatar.alt = 'Tú';
+            avatar.className = 'spoty-chatbot-avatar-msg spoty-chatbot-avatar-usuario';
+            div.appendChild(avatar);
+        } else if (usuarioNombre) {
+            var avatar = document.createElement('div');
+            avatar.className = 'spoty-chatbot-avatar-msg spoty-chatbot-avatar-inicial';
+            avatar.textContent = usuarioNombre.charAt(0).toUpperCase();
+            div.appendChild(avatar);
+        }
 
         var burbuja = document.createElement('div');
         burbuja.className = 'spoty-chatbot-burbuja';
         burbuja.innerHTML = convertirMarkdown(texto);
 
-        div.appendChild(avatar);
         div.appendChild(burbuja);
         mensajesContainer.appendChild(div);
         scrollAbajo();
@@ -162,6 +177,15 @@
         if (widget.classList.contains('abierto')) {
             setTimeout(function () { input.focus(); }, 300);
         }
+    }
+
+    function cerrarChat() {
+        widget.classList.remove('abierto');
+    }
+
+    var cerrarBtn = document.getElementById('spotyChatbotCerrar');
+    if (cerrarBtn) {
+        cerrarBtn.addEventListener('click', cerrarChat);
     }
 
     toggleBtn.addEventListener('click', toggleChat);

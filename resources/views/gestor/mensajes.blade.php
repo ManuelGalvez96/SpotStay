@@ -19,7 +19,12 @@
 
 <section class="contenedor-chat" data-gestor-id="{{ $gestorId }}">
     <aside class="panel-conversaciones">
-        <h2>Conversaciones</h2>
+        <div class="panel-conversaciones-header">
+            <h2>Conversaciones</h2>
+            <button class="boton-conversaciones-cerrar" id="botonCerrarConversaciones" type="button" aria-label="Cerrar conversaciones">
+                <i class="bi bi-x" aria-hidden="true"></i>
+            </button>
+        </div>
         <input type="text" id="filtroConversaciones" class="filtro-conversaciones" placeholder="🔍 Buscar usuario" autocomplete="off">
         <div class="lista-conversaciones" id="listaConversaciones">
             @forelse ($conversaciones as $conversacion)
@@ -67,6 +72,13 @@
     </aside>
 
     <main class="panel-mensajes">
+        <div class="mensajes-barra-mobile">
+            <button class="boton-conversaciones-toggle" id="botonAbrirConversaciones" type="button">
+                <i class="bi bi-list" aria-hidden="true"></i>
+                Conversaciones
+            </button>
+            <span class="mensajes-chat-actual" id="chatActualMobile">Selecciona una conversacion</span>
+        </div>
         <div class="cabecera-hilo">
             <h2 id="tituloHilo">Selecciona una conversación</h2>
             <p id="subtituloHilo" class="muted">El detalle aparecerá aquí.</p>

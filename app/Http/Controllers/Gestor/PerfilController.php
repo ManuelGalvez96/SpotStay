@@ -5,6 +5,10 @@ namespace App\Http\Controllers\Gestor;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+<<<<<<< HEAD
+=======
+use Illuminate\Support\Facades\DB;
+>>>>>>> 3ca289a72f6f933da16b663cd810f4770cb13395
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 
@@ -12,8 +16,9 @@ class PerfilController extends Controller
 {
     public function index()
     {
+        /** @var \App\Models\Usuario $gestor */
         $gestor = Auth::user();
-        $codigoGestor = \DB::table('tbl_codigo_gestor')
+        $codigoGestor = DB::table('tbl_codigo_gestor')
             ->where('id_gestor_fk', $gestor->id_usuario)
             ->where('estado_codigo_gestor', 'activo')
             ->value('codigo_gestor');
@@ -22,6 +27,7 @@ class PerfilController extends Controller
 
     public function update(Request $request)
     {
+        /** @var \App\Models\Usuario $gestor */
         $gestor = Auth::user();
         $datosActualizar = [];
 
@@ -55,6 +61,7 @@ class PerfilController extends Controller
                 'avatar_usuario.max' => 'La imagen no puede superar los 2MB.',
             ]);
 
+<<<<<<< HEAD
             $archivo = $request->file('avatar_usuario');
             $directorio = public_path('img/avatar/' . $gestor->id_usuario);
 
@@ -73,6 +80,20 @@ class PerfilController extends Controller
 
             File::put($directorio . DIRECTORY_SEPARATOR . $nombreArchivo, file_get_contents($archivo->getRealPath()));
             $datosActualizar['avatar_usuario'] = 'img/avatar/' . $gestor->id_usuario . '/' . $nombreArchivo;
+=======
+            $archivoAvatar = $request->file('avatar_usuario');
+            $directorioAvatar = public_path('img/avatares/' . $gestor->id_usuario);
+
+            if (!File::exists($directorioAvatar)) {
+                File::makeDirectory($directorioAvatar, 0755, true);
+            }
+
+            $nombreArchivo = 'avatar_' . $gestor->id_usuario . '_' . time() . '.' . $archivoAvatar->getClientOriginalExtension();
+            $rutaCompletaAvatar = $directorioAvatar . DIRECTORY_SEPARATOR . $nombreArchivo;
+            File::put($rutaCompletaAvatar, file_get_contents($archivoAvatar->getRealPath()));
+
+            $datosActualizar['avatar_usuario'] = 'img/avatares/' . $gestor->id_usuario . '/' . $nombreArchivo;
+>>>>>>> 3ca289a72f6f933da16b663cd810f4770cb13395
         }
 
         if ($request->filled('contrasena_usuario')) {

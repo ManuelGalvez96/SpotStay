@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
@@ -146,7 +147,7 @@ class PropiedadController extends Controller
             }
 
             $imagenesSubidas = $request->file('imagenes_propiedad', []);
-            \Log::info('Imagenes recibidas: ', ['imagenes' => $request->allFiles()]);
+            Log::info('Imagenes recibidas: ', ['imagenes' => $request->allFiles()]);
             if (!empty($imagenesSubidas)) {
                 $totalActual = (int) DB::table('tbl_fotos')
                     ->where('id_propiedad_fk', $propiedadId)
@@ -710,5 +711,56 @@ class PropiedadController extends Controller
                 'message' => 'Error al desasignar el gestor: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Valida un código de gestor y devuelve los datos del gestor asociado
+     */
+    public function validarCodigoGestor(Request $request)
+    {
+        $codigo = $request->input('codigo', '');
+
+        // Validar formato del código: GES-XXXX-XXXX
+        if (!preg_match('/^GES-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $codigo)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Formato de código inválido. Debe ser GES-XXXX-XXXX',
+            ], 422);
+        }
+
+        // Buscar el código en la base de datos
+        $codigoGestor = DB::table('tbl_codigo_gestor')
+            ->where('codigo_gestor', $codigo)
+            ->where('estado_codigo_gestor', 'activo')
+            ->first();
+
+        if (!$codigoGestor) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Código de gestor no encontrado o inactivo.',
+            ], 404);
+        }
+
+        // Obtener datos del gestor
+        $gestor = DB::table('tbl_usuario')
+            ->where('id_usuario', $codigoGestor->id_gestor_fk)
+            ->first();
+
+        if (!$gestor) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gestor no encontrado.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id_usuario' => $gestor->id_usuario,
+                'nombre_usuario' => $gestor->nombre_usuario,
+                'email_usuario' => $gestor->email_usuario,
+                'codigo_gestor' => $codigo,
+            ]
+        ], 200);
     }
 }

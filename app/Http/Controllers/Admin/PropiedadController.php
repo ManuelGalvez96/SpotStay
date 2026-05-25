@@ -811,7 +811,8 @@ class PropiedadController extends Controller
             return false;
         }
 
-        parse_str($componentes['query'], $parametros);
+        $queryString = $componentes['query'] ?? '';
+        parse_str($queryString, $parametros);
         $ahora = Carbon::now('UTC')->timestamp;
         $margenSeguridad = 30;
 

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 class ChatbotController extends Controller
 {
     private const SYSTEM_PROMPT = <<<'PROMPT'
-Eres Spoty, el oso polar mascota de SpotStay. Eres un asistente legal especializado en derecho español, con enfoque en alquiler, vivienda, contratos de arrendamiento y normativa relacionada. Respondes en español de forma clara, amable y cercana, como un amigo que entiende de leyes. Usa un tono cálido y accesible, y de vez en cuando puedes usar el icono 🐻‍❄️ para firmar tus mensajes. Si no sabes algo, lo dices honestamente. No eres un sustituto de un abogado profesional.
+Eres Spoty, el asistente legal de SpotStay. Eres un asistente legal especializado en derecho español, con enfoque en alquiler, vivienda, contratos de arrendamiento y normativa relacionada. Respondes en español de forma clara, amable y cercana, como un amigo que entiende de leyes. Usa un tono cálido y accesible. Si no sabes algo, lo dices honestamente. No eres un sustituto de un abogado profesional.
 PROMPT;
 
     public function iniciarSesion()
@@ -59,18 +59,17 @@ PROMPT;
             ->orderBy('creado_mensaje_chatbot', 'asc')
             ->get();
 
-        // Construir contents para Gemini
-        $contents = [];
-        foreach ($historial as $msg) {
-            $role = $msg->rol_mensaje_chatbot === 'usuario' ? 'user' : 'model';
-            $contents[] = [
-                'role' => $role,
-                'parts' => [['text' => $msg->cuerpo_mensaje_chatbot]],
-            ];
-        }
-
         // Buscar artículos relevantes como contexto (RAG opcional)
         $contextoArticulos = $this->buscarArticulosRelevantes($mensajeUsuario);
+
+        // Construir mensajes en formato OpenAI (Groq)
+        $mensajes = [
+            ['role' => 'system', 'content' => $this->buildSystemPrompt($contextoArticulos)],
+        ];
+        foreach ($historial as $msg) {
+            $role = $msg->rol_mensaje_chatbot === 'usuario' ? 'user' : 'assistant';
+            $mensajes[] = ['role' => $role, 'content' => $msg->cuerpo_mensaje_chatbot];
+        }
 
         try {
             $httpRequest = Http::timeout(30);
@@ -79,28 +78,25 @@ PROMPT;
                 $httpRequest = $httpRequest->withoutVerifying();
             }
 
-            $response = $httpRequest->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' . config('services.gemini.api_key'), [
-                'system_instruction' => [
-                    'parts' => [['text' => $this->buildSystemPrompt($contextoArticulos)]],
-                ],
-                'contents' => $contents,
-                'generationConfig' => [
+            $response = $httpRequest->withToken(config('services.groq.api_key'))
+                ->post('https://api.groq.com/openai/v1/chat/completions', [
+                    'model' => 'llama-3.3-70b-versatile',
+                    'messages' => $mensajes,
                     'temperature' => 0.7,
-                    'maxOutputTokens' => 1024,
-                ],
-            ]);
+                    'max_tokens' => 1024,
+                ]);
 
             if ($response->failed()) {
-                throw new \Exception('Gemini respondió con estado ' . $response->status() . ': ' . $response->body());
+                throw new \Exception('Groq respondió con estado ' . $response->status() . ': ' . $response->body());
             }
 
             $data = $response->json();
-            $respuestaTexto = $data['candidates'][0]['content']['parts'][0]['text'] ?? 'No he podido procesar tu consulta. 🐻‍❄️';
+            $respuestaTexto = $data['choices'][0]['message']['content'] ?? 'No he podido procesar tu consulta. Intentalo de nuevo.';
         } catch (\Exception $e) {
             Log::error('Chatbot error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
             ]);
-            $respuestaTexto = 'Lo siento, ahora mismo no puedo responder. Inténtalo de nuevo en un momento. 🐻‍❄️';
+            $respuestaTexto = 'Lo siento, ahora mismo no puedo responder. Intentalo de nuevo en un momento.';
         }
 
         // Guardar respuesta de la IA

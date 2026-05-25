@@ -103,7 +103,7 @@
         if (enviando || !texto.trim()) return;
 
         if (!inicializado) {
-            agregarMensaje('Espera un momento mientras conecto... 🐻‍❄️', 'ia');
+            agregarMensaje('Espera un momento mientras conecto...', 'ia');
             return;
         }
 
@@ -134,7 +134,7 @@
         })
         .catch(function () {
             ocultarEscribiendo();
-            agregarMensaje('Lo siento, hubo un error. Inténtalo de nuevo. 🐻‍❄️', 'ia');
+            agregarMensaje('Lo siento, hubo un error. Intentalo de nuevo.', 'ia');
         })
         .then(function () {
             enviando = false;

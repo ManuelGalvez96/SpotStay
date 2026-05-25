@@ -21,7 +21,7 @@
             <div class="spoty-chatbot-mensaje spoty-chatbot-mensaje-ia">
                 <img src="{{ asset('img/spoty.png') }}" alt="Spoty" class="spoty-chatbot-avatar-msg">
                 <div class="spoty-chatbot-burbuja">
-                    ¡Hola! Soy Spoty 🐻‍❄️, tu asistente legal de SpotStay. Pregúntame lo que quieras sobre alquiler, vivienda, contratos y normativa española.
+                    ¡Hola! Soy Spoty, tu asistente legal de SpotStay. Pregúntame lo que quieras sobre alquiler, vivienda, contratos y normativa española.
                 </div>
             </div>
         </div>

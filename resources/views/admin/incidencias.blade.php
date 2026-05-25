@@ -280,11 +280,7 @@
         </div>
         <div class="kanban-col-body">
             @forelse($solucionadas ?? [] as $inc)
-<<<<<<< HEAD
                 <div class="tarjeta-inc tarjeta-inc-solucionada" data-id="{{ $inc->id_incidencia }}" data-estado="solucionada" style="position:relative; border-left: 3px solid #0F766E">
-=======
-                <div class="tarjeta-inc tarjeta-inc-solucionada pos-relative" data-id="{{ $inc->id_incidencia }}">
->>>>>>> 28eaa6d7fb6bc24ec32734257638b2aa10519325
                     <i class="bi bi-check-circle-fill check-solucionada"></i>
                     <p class="tarjeta-titulo">{{ $inc->titulo_incidencia }}</p>
                     <div class="tarjeta-inc-bottom">
@@ -301,23 +297,19 @@
     <div class="kanban-col kanban-col-resuelta">
         <div class="kanban-col-header">
             <span class="kanban-punto kanban-punto-gris"></span>
-            <span>Resuelta</span>
+            <span>Cerradas</span>
             <span class="badge-kanban badge-kanban-gris">{{ count($resueltas ?? []) }}</span>
         </div>
         <div class="kanban-col-body">
             @forelse($resueltas ?? [] as $inc)
-<<<<<<< HEAD
                 <div class="tarjeta-inc tarjeta-inc-resuelta" data-id="{{ $inc->id_incidencia }}" data-estado="resuelta" style="position:relative; border-left: 3px solid #475569">
-=======
-                <div class="tarjeta-inc tarjeta-inc-resuelta pos-relative" data-id="{{ $inc->id_incidencia }}">
->>>>>>> 28eaa6d7fb6bc24ec32734257638b2aa10519325
                     <i class="bi bi-lock-fill lock-resuelta"></i>
                     <p class="tarjeta-titulo tarjeta-titulo-resuelta">{{ $inc->titulo_incidencia }}</p>
                     <p class="tarjeta-propiedad">{{ \Illuminate\Support\Str::limit($inc->direccion_propiedad ?? '', 20) }}</p>
-                    <p class="tarjeta-tiempo">Resuelta · {{ \Carbon\Carbon::parse($inc->creado_incidencia)->diffForHumans() }}</p>
+                    <p class="tarjeta-tiempo">Cerrada · {{ \Carbon\Carbon::parse($inc->creado_incidencia)->diffForHumans() }}</p>
                 </div>
             @empty
-                <p class="kanban-vacio">Sin incidencias resueltas</p>
+                <p class="kanban-vacio">Sin incidencias cerradas</p>
             @endforelse
         </div>
     </div>

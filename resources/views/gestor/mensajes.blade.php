@@ -2,6 +2,7 @@
 @section('titulo', 'Mensajes - Gestor SpotStay')
 
 @section('css')
+<link rel="stylesheet" href="{{ asset('css/admin/dashboard.css') }}">
 <link rel="stylesheet" href="{{ asset('css/gestor/mensajes.css') }}">
 @endsection
 
@@ -18,7 +19,12 @@
 
 <section class="contenedor-chat" data-gestor-id="{{ $gestorId }}">
     <aside class="panel-conversaciones">
-        <h2>Conversaciones</h2>
+        <div class="panel-conversaciones-header">
+            <h2>Conversaciones</h2>
+            <button class="boton-conversaciones-cerrar" id="botonCerrarConversaciones" type="button" aria-label="Cerrar conversaciones">
+                <i class="bi bi-x" aria-hidden="true"></i>
+            </button>
+        </div>
         <input type="text" id="filtroConversaciones" class="filtro-conversaciones" placeholder="🔍 Buscar usuario" autocomplete="off">
         <div class="lista-conversaciones" id="listaConversaciones">
             @forelse ($conversaciones as $conversacion)
@@ -37,7 +43,11 @@
                     data-conversacion-id="{{ $conversacion->id_conversacion }}"
                     data-propiedad-titulo="{{ $conversacion->propiedad->titulo_propiedad ?? 'Sin propiedad' }}"
                 >
-                    <div class="conv-avatar" style="background:{{ $esArrendador ? '#035498' : '#0b6e4f' }}">{{ $iniciales }}</div>
+                    @if ($otro && $otro->avatar_url)
+                        <img class="conv-avatar-img" src="{{ $otro->avatar_url }}" alt="">
+                    @else
+                        <div class="conv-avatar" style="background:{{ $esArrendador ? '#035498' : '#0b6e4f' }}">{{ $iniciales }}</div>
+                    @endif
                     <div class="conv-info">
                         <div class="conv-nombre">
                             {{ $otro->nombre_usuario ?? 'Usuario' }}
@@ -62,6 +72,13 @@
     </aside>
 
     <main class="panel-mensajes">
+        <div class="mensajes-barra-mobile">
+            <button class="boton-conversaciones-toggle" id="botonAbrirConversaciones" type="button">
+                <i class="bi bi-list" aria-hidden="true"></i>
+                Conversaciones
+            </button>
+            <span class="mensajes-chat-actual" id="chatActualMobile">Selecciona una conversacion</span>
+        </div>
         <div class="cabecera-hilo">
             <h2 id="tituloHilo">Selecciona una conversación</h2>
             <p id="subtituloHilo" class="muted">El detalle aparecerá aquí.</p>

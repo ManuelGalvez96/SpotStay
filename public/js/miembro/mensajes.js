@@ -193,10 +193,16 @@ function construirBurbuja(mensaje) {
 	var clase = mensaje.es_mio ? "mio" : "otro";
 	var texto = escaparHtml(mensaje.cuerpo_mensaje || "");
 	var fecha = escaparHtml(mensaje.fecha || "");
+	var avatarHtml = mensaje.avatar_url
+		? '<img class="burbuja-avatar" src="' + mensaje.avatar_url + '" alt="">'
+		: '';
 
 	return '<div class="mensajes-burbuja ' + clase + '">' +
+		avatarHtml +
+		'<div class="burbuja-contenido">' +
 		'<p class="mensajes-burbuja-texto">' + texto + '</p>' +
 		'<span class="mensajes-burbuja-fecha">' + fecha + '</span>' +
+		'</div>' +
 		'</div>';
 }
 

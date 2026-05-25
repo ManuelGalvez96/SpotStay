@@ -38,6 +38,36 @@
     margin-bottom: 24px;
     padding-bottom: 20px;
     border-bottom: 1px solid var(--admin-border);
+    justify-content: space-between;
+}
+
+.perfil-codigo-gestor {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.codigo-gestor-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    white-space: nowrap;
+}
+
+.codigo-gestor-input {
+    padding: 8px 12px;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    color: var(--admin-blue);
+    background: #f8fafc;
+    width: 170px;
+    cursor: default;
 }
 
 .perfil-avatar-preview {

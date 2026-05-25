@@ -20,11 +20,7 @@
     <!-- TOPBAR -->
     <div class="topbar">
         <div class="topbar-izq">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 4C2.44772 4 2 4.44772 2 5V16C2 17.1046 2.89543 18 4 18H16C17.1046 18 18 17.1046 18 16V5C18 4.44772 17.5523 4 17 4H3Z" fill="#035498"/>
-                <path d="M6 2V6M14 2V6" stroke="#035498" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            <span class="topbar-logo">SpotStay</span>
+            <img src="{{ asset('img/logo.png') }}" alt="SpotStay Logo" class="topbar-logo-img">
         </div>
 
         <div class="topbar-central">
@@ -39,9 +35,6 @@
             </button>
             <button class="btn-nav-icon {{ request()->is('gestor/mensajes*') ? 'activo' : '' }}" data-ruta="/gestor/mensajes" title="Mensajes">
                 <i class="bi bi-chat-dots"></i>
-            </button>
-            <button class="btn-nav-icon {{ request()->is('gestor/actividad*') ? 'activo' : '' }}" data-ruta="/gestor/actividad" title="Actividad">
-                <i class="bi bi-activity"></i>
             </button>
             <button class="btn-nav-icon {{ request()->is('gestor/asesoria*') ? 'activo' : '' }}" data-ruta="/gestor/asesoria" title="Asesoría Legal">
                 <i class="bi bi-bank2"></i>
@@ -62,7 +55,6 @@
                             <span class="campana-dropdown-titulo">Notificaciones</span>
                             <p class="campana-dropdown-subtitulo">Últimos avisos del sistema</p>
                         </div>
-                        <a href="{{ route('gestor.actividad') }}" class="campana-dropdown-ver-todo">Ver todo</a>
                     </div>
 
                     <div class="campana-dropdown-lista">
@@ -70,7 +62,7 @@
                             @php
                                 $icono = $notificacion->icono_notificacion ?? 'bell';
                                 $color = $notificacion->color_notificacion ?? '#035498';
-                                $url = !empty($notificacion->url_notificacion) ? $notificacion->url_notificacion : route('gestor.actividad');
+                                $url = !empty($notificacion->url_notificacion) ? $notificacion->url_notificacion : '#';
 
                                 if (is_string($url) && preg_match('#^/miembro/chat/(\d+)$#', $url, $coincidencias)) {
                                     $url = route('gestor.mensajes.index', ['activa' => (int) $coincidencias[1]]);
@@ -100,8 +92,12 @@
                 </div>
             </div>
             <div class="admin-container" id="adminContainer">
-                <div class="avatar-admin">G</div>
-                <span class="admin-nombre">Gestor</span>
+                @if ($tieneFoto)
+                    <img class="avatar-admin" src="{{ $fotoUsuario }}" alt="Foto de perfil">
+                @else
+                    <div class="avatar-admin">{{ $inicialUsuario }}</div>
+                @endif
+                <span class="admin-nombre">{{ $nombreUsuario ?? 'Gestor' }}</span>
                 
                 <i class="bi bi-chevron-down chevron-admin"></i>
 

@@ -45,5 +45,9 @@ return [
         'template_id' => env('PDFMONKEY_TEMPLATE_ID'),
         'template_id_suscripciones' => env('PDFMONKEY_TEMPLATE_ID_SUSCRIPCIONES'),
     ],
+
+    'groq' => [
+        'api_key' => env('GROQ_API_KEY'),
+    ],
 ];
 

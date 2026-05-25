@@ -366,21 +366,23 @@ function agregarEventosAcciones() {
     };
   });
 
-  document.querySelectorAll('[data-aprobar]').forEach(function (boton) {
+  document.querySelectorAll('[data-aprobar], .btn-aprobar-sol').forEach(function (boton) {
     boton.onclick = function (e) {
       e.preventDefault();
       var accionesDiv = boton.closest('[data-acciones]');
       var arrendadorId = accionesDiv ? accionesDiv.getAttribute('data-arrendador') : '';
-      aprobarSolicitud(boton.getAttribute('data-aprobar'), arrendadorId);
+      var solicitudId = boton.getAttribute('data-aprobar') || boton.getAttribute('data-id');
+      aprobarSolicitud(solicitudId, arrendadorId);
     };
   });
 
-  document.querySelectorAll('[data-rechazar]').forEach(function (boton) {
+  document.querySelectorAll('[data-rechazar], .btn-rechazar-sol').forEach(function (boton) {
     boton.onclick = function (e) {
       e.preventDefault();
       var accionesDiv = boton.closest('[data-acciones]');
       var arrendadorId = accionesDiv ? accionesDiv.getAttribute('data-arrendador') : '';
-      rechazarSolicitud(boton.getAttribute('data-rechazar'), arrendadorId);
+      var solicitudId = boton.getAttribute('data-rechazar') || boton.getAttribute('data-id');
+      rechazarSolicitud(solicitudId, arrendadorId);
     };
   });
 }

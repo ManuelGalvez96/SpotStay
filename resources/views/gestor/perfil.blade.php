@@ -34,7 +34,11 @@
             <div class="perfil-avatar-section">
                 <div class="perfil-avatar-preview">
                     @if($gestor->avatar_usuario)
-                        <img src="{{ asset('storage/' . $gestor->avatar_usuario) }}" alt="Avatar">
+<<<<<<< HEAD
+                        <img src="{{ $gestor->avatar_url }}" alt="Avatar">
+=======
+                        <img src="{{ asset($gestor->avatar_usuario) }}" alt="Avatar">
+>>>>>>> 3ca289a72f6f933da16b663cd810f4770cb13395
                     @else
                         <div class="perfil-avatar-placeholder">{{ strtoupper(substr($gestor->nombre_usuario, 0, 1)) }}</div>
                     @endif
@@ -46,6 +50,10 @@
                     <span class="avatar-filename" id="avatar-filename"></span>
                     <p class="perfil-avatar-hint">JPEG, PNG, WebP. Máx 2MB</p>
                     @error('avatar_usuario') <span class="error-mensaje">{{ $message }}</span> @enderror
+                </div>
+                <div class="perfil-codigo-gestor">
+                    <span class="codigo-gestor-label">Código de gestor:</span>
+                    <input type="text" class="codigo-gestor-input" value="{{ $codigoGestor ?? '—' }}" readonly>
                 </div>
             </div>
 

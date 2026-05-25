@@ -7,6 +7,7 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/arrendador/propiedades.css') }}" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 @endsection
 
 @section('content')
@@ -18,15 +19,34 @@
 <div class="alert alert-error">{{ session('error') }}</div>
 @endif
 
+
+
 <section class="stats-grid">
+    @if ($limiteAlcanzado)
+    <div class="alert alert-warning alert-limite" style="display: flex; flex-direction: column; gap: 10px; background: #fffcf4; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); box-sizing: border-box;">
+        <div>
+            <strong style="color: #856404; font-size: 16px;">💳 ¡Límite de Suscripción Alcanzado!</strong>
+            <p style="margin: 5px 0 0 0; color: #664d03; line-height: 1.5; font-size: 14px;">
+                Has alcanzado el límite de tu plan actual <strong>{{ $nombrePlan }}</strong> (máximo de <strong>{{ $maxPropiedades }}</strong> propiedades registradas). Para registrar un nuevo inmueble en SpotStay, debes inactivar o eliminar alguna propiedad existente, o mejorar tu nivel de suscripción para ampliar la capacidad.
+            </p>
+        </div>
+    </div>
+    @endif
     <div class="stat-card"><span>{{ $totales['totalPropiedades'] }}</span><small>Total</small></div>
     <div class="stat-card"><span>{{ $totales['publicadas'] }}</span><small>Publicadas</small></div>
     <div class="stat-card"><span>{{ $totales['alquiladas'] }}</span><small>Alquiladas</small></div>
     <div class="stat-card"><span>{{ $totales['inactivas'] }}</span><small>Inactivas</small></div>
-    <button class="stat-card btn-nueva-propiedad" type="button" data-arrendador-id="{{ $arrendadorId }}" onclick="abrirModalFormulario(this.dataset.arrendadorId)">
-        <span>+</span>
-        <small>Nueva propiedad</small>
-    </button>
+    @if ($limiteAlcanzado)
+        <div class="stat-card btn-nueva-propiedad" style="background: #fce8e6 !important; border: 1px solid #f5c2c2 !important; cursor: not-allowed; opacity: 0.85; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;" title="Has alcanzado el límite de tu suscripción actual.">
+            <span style="color: #ea4335 !important; font-size: 24px;">✕</span>
+            <small style="color: #c5221f !important; font-weight: bold;">Límite alcanzado</small>
+        </div>
+    @else
+        <button class="stat-card btn-nueva-propiedad" type="button" data-arrendador-id="{{ $arrendadorId }}" onclick="abrirModalFormulario(this.dataset.arrendadorId)">
+            <span>+</span>
+            <small>Nueva propiedad</small>
+        </button>
+    @endif
 </section>
 
 <section class="content-grid">
@@ -99,23 +119,44 @@
 
             <div class="gestor-config-grid">
                 <aside class="gestor-left-panel">
-                    <h3>Asignar gestor</h3>
-                    <p class="gestor-panel-help">Selecciona quién administrará esta propiedad. Se solicitará su código antes de asignarlo.</p>
+                    <div class="gestor-section-header">
+                        <h3 id="gestor-titulo">Asignar gestor</h3>
+                        <p class="gestor-panel-help" id="gestor-descripcion">Introduce el código del gestor para asignarlo a esta propiedad. El código tiene formato GES-XXXX-XXXX.</p>
+                    </div>
 
-                    <div class="gestor-selector-wrap">
-                        <span class="gestor-selector-label">Gestor seleccionado</span>
-                        <div class="gestor-selector-box" aria-live="polite">
-                            <div class="gestor-avatar" id="gestor_avatar_inicial">-</div>
-                            <div class="gestor-selector-info">
-                                <span class="gestor-selector-name" id="nombre_gestor">Sin gestor asignado</span>
-                                <span class="gestor-selector-email" id="email_gestor">Sin email disponible</span>
+                    <div class="gestor-section-bottom" id="gestor-section-asignar">
+                        <div class="gestor-selector-wrap">
+                            <span class="gestor-selector-label">Código del gestor</span>
+                            <div class="gestor-input-row">
+                                <input type="text" id="codigo-gestor-input" class="codigo-gestor-input" placeholder="GES-XXXX-XXXX" maxlength="13" aria-label="Código del gestor" aria-describedby="codigo-gestor-error">
+                                <button type="button" class="btn-validar-codigo" id="btn-validar-codigo">Asignar</button>
                             </div>
-                            <i class="bi bi-chevron-down"></i>
+                            <span class="codigo-gestor-validacion" id="codigo-gestor-validacion"></span>
+                            <div id="codigo-gestor-error" class="codigo-gestor-error" style="display:none;"></div>
+                        </div>
+
+                        <div class="gestor-info-container" id="gestor-info-container" style="display:none;margin-top:12px;padding:12px;background:#F5F5F5;border-radius:8px;">
+                            <span class="gestor-selector-label">Gestor identificado</span>
+                            <div class="gestor-info-display">
+                                <div class="gestor-avatar" id="gestor_avatar_inicial">-</div>
+                                <div class="gestor-selector-info">
+                                    <span class="gestor-selector-name" id="nombre_gestor">—</span>
+                                    <span class="gestor-selector-email" id="email_gestor">—</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <button type="button" class="btn-gestor-profile" id="btnVerPerfilGestor" disabled>Ver perfil del gestor</button>
-                    <button type="button" class="btn-desasignar-gestor" id="btnDesasignarGestor" style="display:none" onclick="desasignarGestorPropiedad()">Desasignar gestor</button>
+                    <div class="gestor-section-bottom" id="gestor-section-actual" style="display:none;">
+                        <div class="gestor-actual-card">
+                            <div class="gestor-avatar" id="gestor-actual-avatar-inicial">-</div>
+                            <div class="gestor-actual-info">
+                                <span class="gestor-actual-nombre" id="gestor-actual-nombre">—</span>
+                                <span class="gestor-actual-email" id="gestor-actual-email">—</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-desasignar-gestor" id="btnDesasignarGestor" onclick="desasignarGestorPropiedad()">Quitar gestor</button>
+                    </div>
                 </aside>
 
                 <section class="gestor-right-panel">
@@ -174,7 +215,7 @@
             <button class="modal-close" type="button" onclick="cerrarModalFormulario()">✕</button>
         </div>
         <div class="modal-body">
-            <form method="POST" action="{{ route('arrendador.propiedades.store') }}" class="property-form" data-ajax-form="true" enctype="multipart/form-data">
+            <form id="form-registrar-propiedad" method="POST" action="{{ route('arrendador.propiedades.store') }}" class="property-form" data-ajax-form="true" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="id_propiedad" id="form-id-propiedad" value="" />
                 <input type="hidden" name="arrendador_id" id="form-arrendador-id" value="{{ $arrendadorId }}" />
@@ -229,6 +270,25 @@
                             <label class="full-width">
                                 <span>Ciudad</span>
                                 <input type="text" name="ciudad_propiedad" id="form-ciudad" value="" required>
+                            </label>
+                            <label class="full-width">
+                                <span>Seleccionar en mapa</span>
+                                <div id="mapa-registro" class="mapa-registro-propiedad" style="height:300px;margin-top:8px;border:1px solid #ddd;border-radius:6px"></div>
+                            </label>
+
+                            <label class="full-width">
+                                <span>Latitud</span>
+                                <input type="number" step="0.0000001" name="latitud_propiedad" id="latitud_propiedad" value="" readonly required>
+                            </label>
+
+                            <label class="full-width">
+                                <span>Longitud</span>
+                                <input type="number" step="0.0000001" name="longitud_propiedad" id="longitud_propiedad" value="" readonly required>
+                            </label>
+
+                            <label class="full-width">
+                                <span>Dirección (autocompletada)</span>
+                                <input type="text" name="direccion_propiedad" id="direccion_propiedad" value="" readonly required>
                             </label>
                         </div>
                     </div>
@@ -333,6 +393,8 @@
 @endsection
 
 @section('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{ asset('js/arrendador/registrar_propiedad.js') }}"></script>
 <script src="{{ asset('js/arrendador/propiedades.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {

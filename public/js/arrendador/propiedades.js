@@ -47,6 +47,186 @@ function extraerMensajeError(datosRespuesta) {
   return 'Error al procesar la solicitud.';
 }
 
+function iniciarValidacionFormularioPropiedad() {
+  var formulario = document.querySelector('form[data-ajax-form="true"]');
+  if (!formulario) { return; }
+
+  var botonEnviar    = formulario.querySelector('button[type="submit"]');
+  var inputTitulo    = document.getElementById('form-titulo');
+  var inputLatitud   = document.getElementById('latitud_propiedad');
+  var inputLongitud  = document.getElementById('longitud_propiedad');
+
+  // Estado asíncrono del título
+  var tituloDisponible = true;
+  var timeoutTitulo;
+
+  formulario.noValidate = true;
+
+  // Campos obligatorios simples (sin comprobación asíncrona)
+  var camposObligatorios = [
+    document.getElementById('form-tipo'),
+    document.getElementById('form-calle'),
+    document.getElementById('form-numero'),
+    document.getElementById('form-codigo-postal'),
+    document.getElementById('form-ciudad'),
+    document.getElementById('form-precio')
+  ].filter(Boolean);
+
+  // ── Helpers ─────────────────────────────────────────────
+
+  function obtenerContenedorError(campo) {
+    if (!campo) { return null; }
+    var sig = campo.nextElementSibling;
+    if (sig && sig.classList.contains('campo-error')) { return sig; }
+    var div = document.createElement('div');
+    div.className = 'campo-error';
+    div.setAttribute('aria-live', 'polite');
+    div.hidden = true;
+    campo.insertAdjacentElement('afterend', div);
+    return div;
+  }
+
+  function mostrarError(campo, mensaje) {
+    var c = obtenerContenedorError(campo);
+    if (c) { c.textContent = mensaje; c.hidden = mensaje === ''; }
+    if (campo) {
+      campo.setAttribute('aria-invalid', mensaje ? 'true' : 'false');
+      campo.classList.toggle('campo-invalido', mensaje !== '');
+    }
+  }
+
+  function esCampoValido(campo) {
+    if (!campo) { return true; }
+    return !(campo.required && campo.value.trim() === '');
+  }
+
+  function tieneCoordenadas() {
+    return inputLatitud  && inputLatitud.value.trim()  !== '' &&
+           inputLongitud && inputLongitud.value.trim() !== '';
+  }
+
+  // ── Estado del botón ────────────────────────────────────
+
+  function actualizarEstadoBoton() {
+    var camposBasicosOk = camposObligatorios.every(esCampoValido);
+    var tituloOk        = inputTitulo && inputTitulo.value.trim() !== '' && tituloDisponible;
+    var coordenadasOk   = tieneCoordenadas();
+
+    var formularioValido = camposBasicosOk && tituloOk && coordenadasOk;
+
+    if (botonEnviar) {
+      botonEnviar.disabled = !formularioValido;
+    }
+
+    return formularioValido;
+  }
+
+  // ── Validación del TÍTULO (con debounce + fetch) ────────
+
+  function comprobarTitulo() {
+    var valor = inputTitulo ? inputTitulo.value.trim() : '';
+
+    if (valor === '') {
+      tituloDisponible = false;
+      mostrarError(inputTitulo, 'El título es obligatorio.');
+      actualizarEstadoBoton();
+      return;
+    }
+
+    // Obtener id de la propiedad en edición (si existe)
+    var idPropiedad = document.getElementById('form-id-propiedad');
+    var excluirId   = idPropiedad && idPropiedad.value ? '&excluir_id=' + idPropiedad.value : '';
+
+    fetch('/arrendador/propiedades/check-titulo?titulo=' + encodeURIComponent(valor) + excluirId, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+      credentials: 'same-origin'
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (datos) {
+        if (datos.disponible) {
+          tituloDisponible = true;
+          mostrarError(inputTitulo, '');
+        } else {
+          tituloDisponible = false;
+          mostrarError(inputTitulo, 'Ya existe una propiedad activa con este nombre en la plataforma.');
+        }
+        actualizarEstadoBoton();
+      })
+      .catch(function () {
+        // Si falla la comprobación, permitimos continuar
+        tituloDisponible = true;
+        actualizarEstadoBoton();
+      });
+  }
+
+  if (inputTitulo) {
+    inputTitulo.oninput = function () {
+      clearTimeout(timeoutTitulo);
+      timeoutTitulo = setTimeout(comprobarTitulo, 350);
+    };
+
+    inputTitulo.onblur = function () {
+      clearTimeout(timeoutTitulo);
+      inputTitulo.dataset.tocado = 'true';
+      comprobarTitulo();
+    };
+  }
+
+  // ── Validación de campos simples ─────────────────────────
+
+  camposObligatorios.forEach(function (campo) {
+    campo.oninput = function () {
+      if (campo.dataset.tocado === 'true') {
+        mostrarError(campo, esCampoValido(campo) ? '' : 'Este campo es obligatorio.');
+      }
+      actualizarEstadoBoton();
+    };
+
+    campo.onchange = campo.oninput;
+
+    campo.onblur = function () {
+      campo.dataset.tocado = 'true';
+      mostrarError(campo, esCampoValido(campo) ? '' : 'Este campo es obligatorio.');
+      actualizarEstadoBoton();
+    };
+  });
+
+  // ── Validación manual al enviar ─────────────────────────
+
+  formulario._validarCampos = function () {
+    var ok = true;
+
+    camposObligatorios.forEach(function (campo) {
+      campo.dataset.tocado = 'true';
+      var valido = esCampoValido(campo);
+      mostrarError(campo, valido ? '' : 'Este campo es obligatorio.');
+      if (!valido) { ok = false; }
+    });
+
+    if (inputTitulo && inputTitulo.value.trim() === '') {
+      mostrarError(inputTitulo, 'El título es obligatorio.');
+      ok = false;
+    }
+
+    if (!tieneCoordenadas()) {
+      mostrarMensaje('Debes seleccionar una ubicación en el mapa.', true);
+      ok = false;
+    }
+
+    if (!tituloDisponible) {
+      ok = false;
+    }
+
+    actualizarEstadoBoton();
+    return ok;
+  };
+
+  window.actualizarEstadoValidacionFormularioPropiedad = actualizarEstadoBoton;
+
+  // Estado inicial: botón desactivado
+  if (botonEnviar) { botonEnviar.disabled = true; }
+}
+
 function actualizarFilaPropiedad(datosPropiedad) {
   if (!datosPropiedad || !datosPropiedad.id_propiedad) {
     return;
@@ -119,6 +299,11 @@ function enviarFormularioConFetch(formulario) {
   formulario.onsubmit = function (evento) {
     evento.preventDefault();
 
+    if (formulario._validarCampos && !formulario._validarCampos()) {
+      mostrarMensaje('Completa los campos obligatorios antes de guardar la propiedad.', true);
+      return;
+    }
+
     var botonEnviar = formulario.querySelector('button[type="submit"]');
     var textoOriginal = botonEnviar ? botonEnviar.textContent : '';
 
@@ -130,6 +315,7 @@ function enviarFormularioConFetch(formulario) {
     var datosFormulario = new FormData(formulario);
 
     // Caso especial: formulario de propiedades con archivos acumulados
+    datosFormulario.delete('imagenes_propiedad[]');
     if (formulario._archivosAcumulados && formulario._archivosAcumulados.length > 0) {
       formulario._archivosAcumulados.forEach(function(obj) {
         datosFormulario.append('imagenes_propiedad[]', obj.archivo);
@@ -365,6 +551,30 @@ function cerrarModalPropiedad() {
 }
 
 function abrirModalFormulario(arrendadorId, datosPropiedad) {
+  function normalizarTipoPropiedad(tipoOriginal) {
+    if (!tipoOriginal || typeof tipoOriginal !== 'string') {
+      return '';
+    }
+
+    var tipoNormalizado = tipoOriginal
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+    var mapaTipos = {
+      piso: 'piso',
+      apartamento: 'piso',
+      atico: 'piso',
+      casa: 'casa',
+      estudio: 'estudio',
+      loft: 'estudio',
+      habitacion: 'habitacion'
+    };
+
+    return mapaTipos[tipoNormalizado] || tipoNormalizado;
+  }
+
   var modal = document.getElementById('modal-formulario');
   
   if (!modal) {
@@ -399,10 +609,21 @@ function abrirModalFormulario(arrendadorId, datosPropiedad) {
     document.getElementById('form-precio').value = '';
     document.getElementById('form-descripcion').value = '';
     document.getElementById('btn-submit-formulario').textContent = 'Crear propiedad';
+    formulario.querySelectorAll('.campo-error').forEach(function (error) {
+      error.textContent = '';
+      error.hidden = true;
+    });
+    formulario.querySelectorAll('.campo-invalido').forEach(function (campoInvalido) {
+      campoInvalido.classList.remove('campo-invalido');
+      campoInvalido.setAttribute('aria-invalid', 'false');
+    });
+    formulario.querySelectorAll('[data-tocado]').forEach(function (campoTocado) {
+      campoTocado.removeAttribute('data-tocado');
+    });
     
     // Limpiar archivos acumulados
     if (formulario._archivosAcumulados) {
-      formulario._archivosAcumulados = [];
+      formulario._archivosAcumulados.length = 0;
     }
     
     // Ocultar vista previa de imágenes
@@ -416,13 +637,18 @@ function abrirModalFormulario(arrendadorId, datosPropiedad) {
       document.getElementById('btn-submit-formulario').textContent = 'Guardar cambios';
       document.getElementById('form-id-propiedad').value = datosPropiedad.id_propiedad || '';
       document.getElementById('form-titulo').value = datosPropiedad.titulo_propiedad || '';
-      document.getElementById('form-tipo').value = datosPropiedad.tipo_propiedad || '';
+      document.getElementById('form-tipo').value = normalizarTipoPropiedad(datosPropiedad.tipo_propiedad);
       document.getElementById('form-calle').value = datosPropiedad.calle_propiedad || '';
       document.getElementById('form-numero').value = datosPropiedad.numero_propiedad || '';
       document.getElementById('form-piso').value = datosPropiedad.piso_propiedad || '';
       document.getElementById('form-puerta').value = datosPropiedad.puerta_propiedad || '';
       document.getElementById('form-codigo-postal').value = datosPropiedad.codigo_postal_propiedad || '';
       document.getElementById('form-ciudad').value = datosPropiedad.ciudad_propiedad || '';
+      document.getElementById('latitud_propiedad').value = datosPropiedad.latitud_propiedad || '';
+      document.getElementById('longitud_propiedad').value = datosPropiedad.longitud_propiedad || '';
+      if (document.getElementById('direccion_propiedad')) {
+        document.getElementById('direccion_propiedad').value = datosPropiedad.direccion_propiedad || '';
+      }
       document.getElementById('form-habitaciones').value = datosPropiedad.habitaciones_propiedad || '';
       document.getElementById('form-banos').value = datosPropiedad.banos_propiedad || '';
       document.getElementById('form-metros').value = datosPropiedad.metros_cuadrados_propiedad || '';
@@ -438,12 +664,26 @@ function abrirModalFormulario(arrendadorId, datosPropiedad) {
       document.getElementById('form-precio').value = datosPropiedad.precio_propiedad || '';
       document.getElementById('form-descripcion').value = datosPropiedad.descripcion_propiedad || '';
     }
+
+    if (typeof window.actualizarEstadoValidacionFormularioPropiedad === 'function') {
+      window.actualizarEstadoValidacionFormularioPropiedad();
+    }
   }
 
   if (!datosPropiedad) {
     document.getElementById('modal-formulario-titulo').textContent = 'Nueva propiedad';
   }
   modal.hidden = false;
+
+  // Centrar el mapa en las coordenadas actuales de los inputs
+  if (typeof window.centrarMapaEnCoordenadas === 'function') {
+    window.centrarMapaEnCoordenadas();
+  }
+
+  // Actualizar estado del botón al abrir el modal
+  if (typeof window.actualizarEstadoValidacionFormularioPropiedad === 'function') {
+    window.actualizarEstadoValidacionFormularioPropiedad();
+  }
 }
 
 function cerrarModalFormulario() {
@@ -534,11 +774,6 @@ function abrirModalGestor(propiedadId) {
       document.getElementById('permiso-gastos').disabled = !tieneGestor;
       document.getElementById('permiso-incidencias').disabled = !tieneGestor;
 
-      var btnVerPerfil = document.getElementById('btnVerPerfilGestor');
-      if (btnVerPerfil) {
-        btnVerPerfil.disabled = !tieneGestor;
-      }
-
       //Guardar IDs para el submit
       var btnGuardar = document.getElementById('btnGuardarPermisosGestor');
       if (btnGuardar) {
@@ -548,10 +783,32 @@ function abrirModalGestor(propiedadId) {
         btnGuardar.disabled = !tieneGestor;
       }
 
+      // Toggle title + description
+      var gestorTitulo = document.getElementById('gestor-titulo');
+      var gestorDescripcion = document.getElementById('gestor-descripcion');
+      if (tieneGestor) {
+        if (gestorTitulo) gestorTitulo.textContent = 'Gestor actual';
+        if (gestorDescripcion) gestorDescripcion.textContent = 'Gestor asignado a esta propiedad.';
+      } else {
+        if (gestorTitulo) gestorTitulo.textContent = 'Asignar gestor';
+        if (gestorDescripcion) gestorDescripcion.textContent = 'Introduce el código del gestor para asignarlo a esta propiedad. El código tiene formato GES-XXXX-XXXX.';
+      }
+
+      // Toggle sections: asignar vs actual
+      var sectionAsignar = document.getElementById('gestor-section-asignar');
+      var sectionActual = document.getElementById('gestor-section-actual');
+      if (sectionAsignar) sectionAsignar.style.display = tieneGestor ? 'none' : '';
+      if (sectionActual) sectionActual.style.display = tieneGestor ? '' : 'none';
+
+      if (tieneGestor) {
+        document.getElementById('gestor-actual-nombre').textContent = nombreGestor;
+        document.getElementById('gestor-actual-email').textContent = emailGestor;
+        document.getElementById('gestor-actual-avatar-inicial').textContent = inicialGestor;
+      }
+
       var btnDesasignar = document.getElementById('btnDesasignarGestor');
       if (btnDesasignar) {
         btnDesasignar.dataset.propiedadId = propiedadId;
-        btnDesasignar.style.display = tieneGestor ? '' : 'none';
       }
 
       // Inicializar selector de gestores
@@ -566,153 +823,135 @@ function abrirModalGestor(propiedadId) {
 
 // Inicializar selector de gestores
 function inicializarSelectorGestores(propiedadId, gestorIdActual) {
-  const selectorBox = document.querySelector('.gestor-selector-box');
-  if (!selectorBox) return;
+  const inputCodigo = document.getElementById('codigo-gestor-input');
+  if (!inputCodigo) return;
 
-  // Remover dropdown anterior si existe
-  const dropdownAnterior = document.getElementById('gestor-selector-dropdown');
-  if (dropdownAnterior) {
-    dropdownAnterior.remove();
-  }
-
-  // Agregar click handler al selector
-  selectorBox.style.cursor = 'pointer';
-  selectorBox.onclick = function(e) {
-    e.stopPropagation();
-    mostrarSelectorGestores(propiedadId);
-  };
-}
-
-// Mostrar dropdown de gestores
-function mostrarSelectorGestores(propiedadId) {
-  // Remover dropdown anterior si existe
-  const dropdownAnterior = document.getElementById('gestor-selector-dropdown');
-  if (dropdownAnterior) {
-    dropdownAnterior.remove();
-    return; // Si ya estaba abierto, cerrarlo
-  }
-
-  // Obtener lista de gestores disponibles
-  fetch('/arrendador/gestores/disponibles')
-    .then(response => response.json())
-    .then(gestores => {
-      crearDropdownGestores(gestores, propiedadId);
-    })
-    .catch(error => {
-      console.error('Error al cargar gestores:', error);
-      mostrarMensaje('No se pudieron cargar los gestores disponibles.', true);
-    });
-}
-
-// Crear dropdown con lista de gestores
-function crearDropdownGestores(gestores, propiedadId) {
-  const selectorBox = document.querySelector('.gestor-selector-box');
-  if (!selectorBox) return;
-
-  // Crear contenedor del dropdown
-  const dropdown = document.createElement('div');
-  dropdown.id = 'gestor-selector-dropdown';
-  dropdown.className = 'gestor-dropdown';
+  // Limpiar campo de entrada
+  inputCodigo.value = '';
+  inputCodigo.disabled = false;
+  document.getElementById('gestor-info-container').style.display = 'none';
   
-  const contenido = document.createElement('div');
-  contenido.className = 'gestor-dropdown-content';
+  // Agregar listeners al input
+  let timeoutValidacion;
   
-  gestores.forEach(gestor => {
-    const inicial = gestor.nombre_usuario && gestor.nombre_usuario.length > 0 
-      ? gestor.nombre_usuario.trim().charAt(0).toUpperCase() 
-      : '-';
+  inputCodigo.addEventListener('input', function(e) {
+    const codigo = e.target.value.trim().toUpperCase();
     
-    const item = document.createElement('div');
-    item.className = 'gestor-dropdown-item';
-    item.dataset.gestorId = gestor.id_usuario;
-    item.dataset.gestorNombre = gestor.nombre_usuario;
-    item.dataset.gestorEmail = gestor.email_usuario;
-    item.dataset.propiedadId = propiedadId;
-    
-    item.innerHTML = `
-      <div class="gestor-dropdown-avatar">${inicial}</div>
-      <div class="gestor-dropdown-info">
-        <div class="gestor-dropdown-nombre">${gestor.nombre_usuario}</div>
-        <div class="gestor-dropdown-email">${gestor.email_usuario}</div>
-      </div>
-    `;
-    
-    item.addEventListener('click', function() {
-      solicitarCodigoGestor(
-        parseInt(this.dataset.gestorId),
-        this.dataset.gestorNombre,
-        this.dataset.gestorEmail,
-        parseInt(this.dataset.propiedadId)
-      );
-    });
-    
-    contenido.appendChild(item);
+    if (codigo) {
+      const codigoFormateado = formatearCodigoGestor(codigo);
+      if (codigoFormateado !== codigo) {
+        inputCodigo.value = codigoFormateado;
+        return;
+      }
+    }
+
+    limpiarValidacionGestor();
   });
   
-  dropdown.appendChild(contenido);
+  inputCodigo.addEventListener('blur', function(e) {
+    const codigo = e.target.value.trim();
+    if (codigo && codigo.length < 12) {
+      limpiarValidacionGestor();
+    }
+  });
+
+  document.getElementById('btn-validar-codigo').addEventListener('click', function() {
+    const codigo = inputCodigo.value.trim();
+    if (codigo) {
+      validarCodigoGestor(codigo, propiedadId);
+    }
+  });
   
-  // Insertar dropdown después del selector
-  selectorBox.parentElement.insertBefore(dropdown, selectorBox.nextSibling);
-  
-  // Cerrar dropdown al hacer click fuera
-  setTimeout(() => {
-    document.addEventListener('click', cerrarDropdownGestores);
-  }, 0);
+  inputCodigo.focus();
 }
 
-// Cerrar dropdown de gestores
-function cerrarDropdownGestores(evento) {
-  if (evento && (evento.target.closest('.gestor-selector-box') || evento.target.closest('.gestor-dropdown'))) {
-    return; // No cerrar si se hace click en el selector o dropdown
+function formatearCodigoGestor(codigo) {
+  codigo = codigo.replace(/[^A-Z0-9-]/g, '').toUpperCase();
+  
+  if (!codigo.startsWith('GES')) {
+    return codigo;
   }
   
-  const dropdown = document.getElementById('gestor-selector-dropdown');
-  if (dropdown) {
-    dropdown.remove();
-    document.removeEventListener('click', cerrarDropdownGestores);
+  const partes = codigo.split('-');
+  if (partes.length === 1) {
+    if (codigo.length <= 3) return codigo;
+    if (codigo.length <= 7) return 'GES-' + codigo.substring(3);
+    return 'GES-' + codigo.substring(3, 7) + '-' + codigo.substring(7, 11);
   }
+  
+  return codigo;
 }
 
-function solicitarCodigoGestor(gestorId, nombreGestor, emailGestor, propiedadId) {
-  if (!window.Swal) {
-    var codigoManual = prompt('Introduce el código del gestor para asignarlo:');
-    if (codigoManual === null) {
-      return;
-    }
+function validarCodigoGestor(codigo, propiedadId) {
+  const inputCodigo = document.getElementById('codigo-gestor-input');
+  const divValidacion = document.getElementById('codigo-gestor-validacion');
 
-    codigoManual = codigoManual.trim();
-    if (!codigoManual) {
-      return;
-    }
-
-    seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId, codigoManual);
+  // Validar formato regex
+  const regexCodigo = /^GES-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+  if (!regexCodigo.test(codigo)) {
+    mostrarErrorValidacionGestor('Formato inválido. Debe ser GES-XXXX-XXXX');
     return;
   }
 
-  Swal.fire({
-    title: 'Código del gestor',
-    text: 'Introduce el código para poder asignar este gestor a la propiedad.',
-    input: 'password',
-    inputPlaceholder: 'Código del gestor',
-    showCancelButton: true,
-    confirmButtonText: 'Validar',
-    cancelButtonText: 'Cancelar',
-    confirmButtonColor: '#035498',
-    reverseButtons: true,
-    inputValidator: function (valor) {
-      if (!valor || !valor.trim()) {
-        return 'Debes introducir el código del gestor.';
-      }
-      return null;
-    }
-  }).then(function (resultado) {
-    if (!resultado.isConfirmed) {
-      return;
-    }
+  divValidacion.textContent = 'Validando código...';
+  divValidacion.style.color = '#035498';
 
-    seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId, resultado.value.trim());
+  fetch('/arrendador/gestores/validar-codigo', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': obtenerTokenCsrf()
+    },
+    body: JSON.stringify({ codigo: codigo })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      mostrarGestorIdentificado(data.data, codigo, propiedadId);
+      divValidacion.textContent = '✓ Código válido';
+      divValidacion.style.color = '#059669';
+    } else {
+      mostrarErrorValidacionGestor(data.message || 'Código no encontrado');
+    }
+  })
+  .catch(error => {
+    console.error('Error validando código:', error);
+    mostrarErrorValidacionGestor('Error al validar el código');
   });
 }
+
+function mostrarErrorValidacionGestor(mensaje) {
+  limpiarValidacionGestor();
+  Swal.fire({
+    iconHtml: crearOsoError(),
+    title: 'Código incorrecto',
+    text: mensaje,
+    customClass: { icon: 'oso-icon' },
+    confirmButtonText: 'Aceptar',
+    confirmButtonColor: '#d9534f'
+  });
+}
+
+function limpiarValidacionGestor() {
+  const divError = document.getElementById('codigo-gestor-error');
+  const divValidacion = document.getElementById('codigo-gestor-validacion');
+  divError.style.display = 'none';
+  divValidacion.textContent = '';
+  document.getElementById('gestor-info-container').style.display = 'none';
+}
+
+function mostrarGestorIdentificado(datosGestor, codigo, propiedadId) {
+  const gestorId = datosGestor.id_usuario;
+  const nombreGestor = datosGestor.nombre_usuario;
+  const emailGestor = datosGestor.email_usuario;
+  
+  seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId, codigo);
+}
+
+// [Funciones antigas removidas - ya no se necesitan]
+// mostrarSelectorGestores, crearDropdownGestores, cerrarDropdownGestores, solicitarCodigoGestor
+
+
 
 // Seleccionar gestor y actualizar modal
 function seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId, codigoGestor) {
@@ -724,6 +963,16 @@ function seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId, cod
   document.getElementById('nombre_gestor').textContent = nombreGestor;
   document.getElementById('email_gestor').textContent = emailGestor;
   document.getElementById('gestor_avatar_inicial').textContent = inicialGestor;
+  document.getElementById('nombre_gestor_subtitulo').textContent = nombreGestor;
+  
+  // Mostrar contenedor de información
+  document.getElementById('gestor-info-container').style.display = 'block';
+  
+  // Deshabilitar input de código una vez seleccionado
+  const inputCodigo = document.getElementById('codigo-gestor-input');
+  if (inputCodigo) {
+    inputCodigo.disabled = true;
+  }
   
   // Actualizar ID del gestor en el botón de guardado
   const btnGuardar = document.getElementById('btnGuardarPermisosGestor');
@@ -737,17 +986,9 @@ function seleccionarGestor(gestorId, nombreGestor, emailGestor, propiedadId, cod
   document.getElementById('permiso-editar').disabled = false;
   document.getElementById('permiso-gastos').disabled = false;
   document.getElementById('permiso-incidencias').disabled = false;
-  
-  var btnVerPerfil = document.getElementById('btnVerPerfilGestor');
-  if (btnVerPerfil) {
-    btnVerPerfil.disabled = false;
-  }
-  
+
   btnGuardar.disabled = false;
-  
-  // Cerrar dropdown
-  cerrarDropdownGestores();
-  
+
   mostrarMensaje('Gestor seleccionado: ' + nombreGestor + '. Pulsa guardar para confirmar la asignación.', false);
 }
 
@@ -911,7 +1152,7 @@ function construirContenidoModal(datos) {
   var textoEstado = propiedad.estado_propiedad.charAt(0).toUpperCase() + propiedad.estado_propiedad.slice(1);
 
   if (fotos.length > 0) {
-    htmlFotos = '<img src="/storage/' + fotos[0].ruta_foto + '" alt="' + propiedad.titulo_propiedad + '" style="width: 100%; height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;" />';
+    htmlFotos = '<img src="/img/' + fotos[0].ruta_foto + '" alt="' + propiedad.titulo_propiedad + '" style="width: 100%; height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;" />';
   } else {
     htmlFotos = '<div style="width: 100%; height: 300px; background: #e0e0e0; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; color: #999;">Sin imágenes</div>';
   }
@@ -919,7 +1160,7 @@ function construirContenidoModal(datos) {
   if (fotos.length > 1) {
     htmlMiniaturas = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 8px; margin-bottom: 20px;">';
     fotos.forEach(function (foto) {
-      htmlMiniaturas += '<img src="/storage/' + foto.ruta_foto + '" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer;" onclick="cambiarFotoModal(this.src)" />';
+      htmlMiniaturas += '<img src="/img/' + foto.ruta_foto + '" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer;" onclick="cambiarFotoModal(this.src)" />';
     });
     htmlMiniaturas += '</div>';
   }
@@ -1076,6 +1317,7 @@ function cargarTablaPropiedades(pagina) {
           '<td><div class="table-actions">' +
             '<button class="action-link" type="button" data-propiedad-id="' + p.id_propiedad + '" onclick="fetchEditData(this.dataset.propiedadId)">Editar</button>' +
             '<button class="action-link" type="button" data-propiedad-id="' + p.id_propiedad + '" data-arrendador-id="' + arrendadorId + '" onclick="abrirModalPropiedad(this.dataset.propiedadId, this.dataset.arrendadorId)">Previsualizar</button>' +
+            (p.estado_propiedad !== 'alquilada' ? '<button class="action-link" type="button" data-propiedad-id="' + p.id_propiedad + '" onclick="confirmarEliminarPropiedad(this.dataset.propiedadId)" style="color: #b42318; margin-left: 8px;">Eliminar</button>' : '') +
           '</div></td>' +
         '</tr>';
       });
@@ -1130,6 +1372,7 @@ function escaparHtml(texto) {
 
 document.querySelectorAll('form[data-ajax-form="true"]').forEach(enviarFormularioConFetch);
 iniciarValidacionImagenes();
+iniciarValidacionFormularioPropiedad();
 cargarTablaPropiedades();
 
 document.onkeydown = function (evento) {
@@ -1138,3 +1381,76 @@ document.onkeydown = function (evento) {
     cerrarModalFormulario();
   }
 };
+
+/**
+ * Muestra una confirmación SweetAlert para eliminar una propiedad del arrendador.
+ *
+ * @param {string} propiedadId
+ */
+function confirmarEliminarPropiedad(propiedadId) {
+  if (!window.Swal) {
+    if (confirm('¿Estás seguro de que deseas eliminar esta propiedad de forma permanente? Esta acción no se puede deshacer.')) {
+      ejecutarEliminacionPropiedad(propiedadId);
+    }
+    return;
+  }
+
+  Swal.fire({
+    title: '¿Eliminar propiedad?',
+    text: 'Esta acción eliminará de forma permanente la propiedad y todos sus datos relacionados (fotos, incidencias, gastos, etc.). Esta acción no se puede deshacer.',
+    iconHtml: window.crearOsoPregunta ? window.crearOsoPregunta() : undefined,
+    customClass: { icon: 'oso-icon' },
+    showCancelButton: true,
+    confirmButtonColor: '#b42318',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Eliminar de todos modos',
+    cancelButtonText: 'Cancelar'
+  }).then(function (resultado) {
+    if (resultado.isConfirmed) {
+      ejecutarEliminacionPropiedad(propiedadId);
+    }
+  });
+}
+
+/**
+ * Ejecuta la llamada Fetch DELETE para eliminar la propiedad en el servidor.
+ *
+ * @param {string} propiedadId
+ */
+function ejecutarEliminacionPropiedad(propiedadId) {
+  fetch('/arrendador/propiedades/' + propiedadId, {
+    method: 'DELETE',
+    headers: {
+      'X-CSRF-TOKEN': obtenerTokenCsrf(),
+      'X-Requested-With': 'XMLHttpRequest',
+      'Accept': 'application/json'
+    },
+    credentials: 'same-origin'
+  })
+    .then(function (respuesta) {
+      return respuesta.json().catch(function () { return {}; }).then(function (datos) {
+        return { ok: respuesta.ok, datos: datos };
+      });
+    })
+    .then(function (resultado) {
+      if (!resultado.ok || !resultado.datos.success) {
+        throw new Error(resultado.datos.message || 'No se pudo eliminar la propiedad.');
+      }
+
+      if (window.swalSuccess) {
+        swalSuccess('Propiedad eliminada', resultado.datos.message || 'La propiedad ha sido eliminada con éxito.').then(function () {
+          window.location.reload();
+        });
+      } else {
+        mostrarMensaje(resultado.datos.message || 'La propiedad ha sido eliminada con éxito.', false);
+        window.location.reload();
+      }
+    })
+    .catch(function (error) {
+      if (window.swalError) {
+        swalError('Error al eliminar', error.message || 'No se pudo completar la eliminación.');
+      } else {
+        mostrarMensaje(error.message || 'No se pudo completar la eliminación.', true);
+      }
+    });
+}

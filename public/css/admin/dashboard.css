@@ -81,6 +81,19 @@ body {
     padding: 24px 40px 0 40px;
 }
 
+/* Cuando queremos centrar un número reducido de KPIs (3), usar esta clase */
+.kpi-grid-centered {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    padding: 24px 40px 0 40px;
+    flex-wrap: wrap;
+}
+
+.kpi-grid-centered .kpi-card {
+    flex: 0 0 340px; /* ancho fijo para cada tarjeta, ajustable */
+}
+
 /* ── KPI Card ── */
 .kpi-card {
     background: white;
@@ -769,6 +782,33 @@ body {
     .buscador-input {
         width: 100%;
     }
+
+    .card-header-gradient .card-header-actions,
+    .card-header-gradient .card-header-acciones {
+        flex-wrap: wrap;
+        width: 100%;
+        gap: 8px;
+    }
+
+    .card-header-gradient .card-header-actions .buscador-input,
+    .card-header-gradient .card-header-acciones .buscador-input {
+        width: 100%;
+        flex: 1 1 220px;
+    }
+
+    .card-header-gradient .card-header-acciones #filtroTipoSolicitudes {
+        display: none !important;
+    }
+
+    .card-header-gradient .card-header-actions .link-ver-todos,
+    .card-header-gradient .card-header-acciones .link-ver-todos {
+        margin-left: auto;
+        white-space: nowrap;
+    }
+
+    #filtroEstadoIncidencias {
+        display: none !important;
+    }
 }
 
 /* ── Header Actions (Buscador y Ver todos) ── */
@@ -914,6 +954,80 @@ body {
 
 .tabla-contenedor-scroll::-webkit-scrollbar-thumb:hover {
     background: #9CA3AF;
+}
+
+@media (max-width: 767px) {
+    .tabla-contenedor-scroll {
+        max-height: 420px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    #tablaIncidencias {
+        border-collapse: separate;
+        border-spacing: 0 12px;
+    }
+
+    #tablaIncidencias thead {
+        display: none;
+    }
+
+    #tablaIncidencias tbody tr {
+        display: flex !important;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+        background: #fff;
+        box-sizing: border-box;
+    }
+
+    #tablaIncidencias tbody td {
+        display: block !important;
+        width: 100%;
+        text-align: left !important;
+        padding: 4px 0;
+        padding-left: 0 !important;
+        position: static;
+    }
+
+    #tablaIncidencias tbody td::before {
+        content: none !important;
+        display: none !important;
+    }
+
+    #tablaIncidencias tbody td:nth-child(2),
+    #tablaIncidencias tbody td:nth-child(5) {
+        display: none !important;
+    }
+
+    #tablaIncidencias tbody td:nth-child(1) {
+        font-size: 14px;
+        font-weight: 600;
+        color: #111827;
+        line-height: 1.35;
+        padding-bottom: 8px;
+    }
+
+    #tablaIncidencias tbody td:nth-child(3),
+    #tablaIncidencias tbody td:nth-child(4),
+    #tablaIncidencias tbody td:nth-child(6) {
+        width: auto;
+    }
+
+    #tablaIncidencias .badge-prioridad,
+    #tablaIncidencias .badge-estado {
+        display: inline-flex;
+        margin-top: 4px;
+        margin-right: 8px;
+    }
+
+    #tablaIncidencias .btn-contactar-inc {
+        margin-top: 10px;
+        align-self: flex-start;
+    }
 }
 
 /* ── Lista Solicitudes Scroll ── */

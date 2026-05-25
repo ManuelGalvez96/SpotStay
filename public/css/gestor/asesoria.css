@@ -3,22 +3,50 @@ html {
 }
 
 .hero-admin {
-    background: linear-gradient(135deg, #035498, #00A3E0);
-    padding: 36px 40px;
+    background: #035498;
+    padding: 28px 40px;
     border-radius: 0 0 20px 20px;
+    margin: 0 0 16px 0;
     position: relative;
     overflow: hidden;
-    margin: 0 0 12px 0;
 }
 .hero-content { position: relative; z-index: 2; }
 .hero-admin h1 {
-    color: white; font-size: 26px; font-weight: 700; margin: 0;
+    color: white; font-size: 22px; font-weight: 700; margin: 0;
 }
 .hero-admin h1 i {
     margin-right: 10px;
 }
 .hero-admin p {
-    color: rgba(255, 255, 255, 0.7); font-size: 14px; margin-top: 4px; margin-bottom: 0;
+    color: rgba(255, 255, 255, 0.7); font-size: 13px; margin-top: 4px; margin-bottom: 0;
+}
+
+.hero-deco {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    pointer-events: none;
+}
+
+.hero-deco-1 {
+    width: 300px;
+    height: 300px;
+    top: -100px;
+    right: -80px;
+}
+
+.hero-deco-2 {
+    width: 200px;
+    height: 200px;
+    bottom: -80px;
+    right: 200px;
+}
+
+.hero-deco-3 {
+    width: 150px;
+    height: 150px;
+    top: 20px;
+    right: 250px;
 }
 
 .asesoria-back-wrap {
@@ -195,8 +223,15 @@ html {
     font-weight: 500;
 }
 
+.asesoria-categoria-titulo-wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 40px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 .asesoria-categoria-titulo {
-    grid-column: 1 / -1;
     font-size: 20px;
     font-weight: 800;
     color: #111827;
@@ -340,22 +375,22 @@ html {
 /* --- FAQ section --- */
 .asesoria-faq {
     max-width: 1000px;
-    margin: 36px auto 0;
-    padding: 0 40px 40px;
+    margin: 28px auto 0;
+    padding: 0 40px 28px;
 }
 
 .asesoria-faq h2 {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
     color: #111827;
-    margin: 0 0 16px;
+    margin: 0 0 12px;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
 .asesoria-faq h2 i {
-    font-size: 20px;
+    font-size: 18px;
     color: #035498;
 }
 
@@ -375,21 +410,25 @@ html {
     border-radius: 14px;
 }
 
+.asesoria-faq .accordion-header {
+    margin: 0;
+}
+
 .asesoria-faq .accordion {
     --bs-accordion-bg: #fff;
     --bs-accordion-border-color: #E5E7EB;
     --bs-accordion-active-bg: #F9FAFB;
     --bs-accordion-active-color: #035498;
     --bs-accordion-btn-focus-box-shadow: none;
-    --bs-accordion-btn-padding-y: 14px;
-    --bs-accordion-btn-padding-x: 20px;
-    --bs-accordion-body-padding-y: 16px;
-    --bs-accordion-body-padding-x: 20px;
+    --bs-accordion-btn-padding-y: 10px;
+    --bs-accordion-btn-padding-x: 14px;
+    --bs-accordion-body-padding-y: 12px;
+    --bs-accordion-body-padding-x: 14px;
 }
 
 .asesoria-faq .accordion-button {
     font-weight: 600;
-    font-size: 14px;
+    font-size: 13px;
     color: #111827;
 }
 
@@ -400,12 +439,12 @@ html {
 }
 
 .asesoria-faq .accordion-button::after {
-    background-size: 16px;
+    background-size: 14px;
 }
 
 .asesoria-faq .accordion-body {
-    font-size: 14px;
-    line-height: 1.7;
+    font-size: 13px;
+    line-height: 1.6;
     color: #374151;
 }
 
@@ -445,47 +484,89 @@ html {
         gap: 12px;
     }
 
+    .asesoria-categoria-titulo-wrap {
+        padding: 0 12px;
+    }
+
+    .hero-admin {
+        padding: 20px 16px;
+    }
+    .hero-admin h1 {
+        font-size: 18px;
+    }
+    .hero-admin p {
+        font-size: 12px;
+    }
+
+    .asesoria-back-wrap {
+        height: auto;
+        padding: 0 12px 4px;
+    }
+    .asesoria-back-link {
+        position: static;
+    }
+
     .asesoria-card {
-        padding: 18px 12px 16px;
-        gap: 10px;
+        flex-direction: row;
+        text-align: left;
+        padding: 10px 12px;
+        gap: 8px;
+        border-radius: 100px;
     }
     .asesoria-card-icono {
-        width: 44px;
-        height: 44px;
+        width: 24px;
+        height: 24px;
     }
     .asesoria-card-icono i {
-        font-size: 20px;
+        font-size: 12px;
+    }
+    .asesoria-card-contenido {
+        flex: 1;
+        line-height: 1.2;
     }
     .asesoria-card-contenido h3 {
-        font-size: 13px;
+        font-size: 12px;
+        line-height: 1.2;
+    }
+    .asesoria-card-count {
+        font-size: 10px;
+        display: inline;
+        margin-top: 0;
+    }
+    .asesoria-card-flecha {
+        display: block;
+        margin-left: auto;
+        font-size: 11px;
+        color: #9CA3AF;
+        flex-shrink: 0;
     }
 
     .asesoria-faq {
-        padding: 0 12px 24px;
-        margin-top: 24px;
+        padding: 0 12px 16px;
+        margin-top: 16px;
     }
     .asesoria-faq h2 {
-        font-size: 16px;
+        font-size: 14px;
     }
 
     .asesoria-grid .accordion-button {
-        font-size: 13px;
-        padding: 12px 16px;
+        font-size: 12px;
+        padding: 10px 12px;
     }
 
     .asesoria-grid .accordion-body {
-        font-size: 13px;
-        padding: 12px 16px;
+        font-size: 12px;
+        padding: 10px 12px;
     }
 
     .asesoria-faq .accordion-button {
-        font-size: 13px;
-        padding: 12px 16px;
+        font-size: 12px;
+        padding: 10px 12px;
     }
 
     .asesoria-faq .accordion-body {
-        font-size: 13px;
-        padding: 12px 16px;
+        font-size: 12px;
+        padding: 10px 12px;
     }
 }
 

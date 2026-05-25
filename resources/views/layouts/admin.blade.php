@@ -63,8 +63,12 @@
         <!-- Zona derecha -->
         <div class="topbar-der">
                 <div class="perfil-miembro admin-container" id="adminContainer">
-                    <div class="avatar-admin">A</div>
-                    <span class="admin-nombre">Admin</span>
+                    @if ($tieneFoto)
+                        <img class="avatar-admin" src="{{ $fotoUsuario }}" alt="Foto de perfil">
+                    @else
+                        <div class="avatar-admin">{{ $inicialUsuario }}</div>
+                    @endif
+                    <span class="admin-nombre">{{ $nombreUsuario ?? 'Admin' }}</span>
                     <i class="bi bi-chevron-down chevron-admin"></i>
 
                     <!-- DROPDOWN MENU (estilo miembro) -->

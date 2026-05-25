@@ -349,6 +349,66 @@
     padding: 14px;
 }
 
+/* ── Paginación desktop ── */
+.paginacion-desktop {
+    display: flex;
+    justify-content: center;
+    padding: 14px 24px;
+}
+
+.paginacion-desktop .pagination {
+    display: flex;
+    gap: 4px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.paginacion-desktop .page-item .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 4px 10px;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    background: #F8FAFC;
+    color: #035498;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.paginacion-desktop .page-item .page-link:hover {
+    background: #EEF4FF;
+    border-color: #035498;
+}
+
+.paginacion-desktop .page-item.active .page-link {
+    background: #035498;
+    border-color: #035498;
+    color: #fff;
+}
+
+.paginacion-desktop .page-item.disabled .page-link {
+    color: #94A3B8;
+    background: #F8FAFC;
+    border-color: #E2E8F0;
+    pointer-events: none;
+}
+
+/* Mobile: ocultar paginación desktop */
+.paginacion-mobile {
+    display: none;
+}
+
+/* Vencer .d-none !important de admin/dashboard.css en desktop */
+.paginacion-desktop .d-none.d-sm-flex {
+    display: flex !important;
+}
+
 @media (max-width: 1024px) {
     .filtros-card-gestor,
     .tabla-propiedades-card {
@@ -432,6 +492,14 @@
     .pagos-legend-box {
         right: auto;
         left: 0;
+    }
+
+    .paginacion-desktop {
+        display: none;
+    }
+
+    .paginacion-mobile {
+        display: flex;
     }
 
     .paginacion-cargar-mas {

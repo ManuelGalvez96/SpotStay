@@ -41,8 +41,8 @@
         <article class="kpi"><span>{{ $resueltas }}</span><small>Resueltas / cerradas</small></article>
     </section>
 
-    <section class="filtros">
-        <form method="GET" action="{{ route('arrendador.incidencias') }}" class="form-filtros">
+    <section class="filtros" id="incidenciasFiltrosWrap">
+        <form method="GET" action="{{ route('arrendador.incidencias') }}" class="form-filtros" id="incidenciasFiltrosForm">
             <input type="hidden" name="arrendador_id" value="{{ $arrendadorId }}">
             <input type="text" name="titulo" value="{{ $titulo }}" placeholder="Filtrar por título">
             <input type="text" name="propiedad" value="{{ $propiedad }}" placeholder="Filtrar por propiedad">
@@ -63,11 +63,11 @@
                 <option value="urgente" {{ $prioridad === 'urgente' ? 'selected' : '' }}>Urgente</option>
             </select>
             <input type="date" name="fecha" value="{{ $fecha }}">
-            <button type="submit" class="btn-aplicar">Aplicar filtros</button>
         </form>
+        <p class="filtros-ayuda">Los filtros se aplican automáticamente al escribir o cambiar una opción.</p>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="incidenciasTablaWrap">
         <table class="tabla">
             <thead>
                 <tr>
@@ -122,4 +122,8 @@
         <div class="paginacion">{{ $incidencias->withQueryString()->links() }}</div>
     </section>
 </div>
+@endsection
+
+@section('scripts')
+<script src="{{ asset('js/arrendador/incidencias-filtros.js') }}"></script>
 @endsection

@@ -160,40 +160,6 @@ class DashboardController extends Controller
 
         $totalEsperandoDetalle = max(1, $esperandoArrendador + $esperandoEmpresa + $esperandoInquilino);
 
-        $notificaciones = DB::table('tbl_notificacion')
-            ->when($gestorId, function ($query) use ($gestorId) {
-                $query->where('id_usuario_fk', $gestorId);
-            })
-            ->whereIn('tipo_notificacion', [
-                'nueva_incidencia',
-                'incidencia_actualizada',
-                'pago_realizado',
-                'pago_atrasado',
-                'mensaje_nuevo',
-                'presupuesto_creado',
-                'gasto_creado',
-                'alquiler_pendiente',
-                'propiedad_estado',
-                'alquiler_creado',
-                'alquiler_aprobado',
-                'contrato_firmado',
-            ])
-            ->select(
-                'id_notificacion',
-                'tipo_notificacion',
-                'titulo_notificacion',
-                'mensaje_notificacion',
-                'url_notificacion',
-                'icono_notificacion',
-                'color_notificacion',
-                'tipo_entidad_notificacion',
-                'id_entidad_notificacion',
-                'creado_notificacion'
-            )
-            ->orderBy('creado_notificacion', 'desc')
-            ->limit(10)
-            ->get();
-
         $mensajesSinLeer = DB::table('tbl_conversacion')
             ->join('tbl_conversacion_usuario', function ($join) use ($gestorId) {
                 $join->on('tbl_conversacion_usuario.id_conversacion_fk', '=', 'tbl_conversacion.id_conversacion')
@@ -257,7 +223,6 @@ class DashboardController extends Controller
             'esperandoEmpresa',
             'esperandoInquilino',
             'totalEsperandoDetalle',
-            'notificaciones',
             'mensajesSinLeer',
             'pagosPendientesTotal',
             'contratosPorVencer',

@@ -102,6 +102,7 @@ class IncidenciaController extends Controller
             ->join('tbl_propiedad', 'tbl_propiedad.id_propiedad', '=', 'tbl_incidencia.id_propiedad_fk')
             ->join('tbl_usuario as reporta', 'reporta.id_usuario', '=', 'tbl_incidencia.id_reporta_fk')
             ->leftJoin('tbl_usuario as asignado', 'asignado.id_usuario', '=', 'tbl_incidencia.id_asignado_fk')
+            ->leftJoin('tbl_categoria', 'tbl_categoria.id_categoria', '=', 'tbl_incidencia.id_categoria_fk')
             ->join('tbl_usuario as arrendador', 'arrendador.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
             ->where('tbl_incidencia.id_incidencia', $id)
             ->select(
@@ -115,6 +116,7 @@ class IncidenciaController extends Controller
                 'reporta.nombre_usuario as nombre_reporta',
                 'reporta.email_usuario as email_reporta',
                 'asignado.nombre_usuario as nombre_asignado',
+                'tbl_categoria.nombre_categoria as categoria_incidencia',
                 'arrendador.id_usuario as id_arrendador',
                 'arrendador.nombre_usuario as nombre_arrendador'
             )

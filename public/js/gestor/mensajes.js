@@ -34,7 +34,7 @@ function escaparHtml(valor) {
     .replace(/'/g, '&#039;');
 }
 
-function renderizarMensajes(mensajes) {
+function renderizarMensajes(mensajes, avatarUrl) {
   var lista = document.getElementById('listaMensajes');
   if (!lista) return;
 
@@ -49,10 +49,16 @@ function renderizarMensajes(mensajes) {
     var nombre = escaparHtml(mensaje.nombre_remitente || 'Usuario');
     var cuerpo = escaparHtml(mensaje.cuerpo_mensaje || '');
     var fecha = formatearFecha(mensaje.creado_mensaje);
+    var avatarHtml = mensaje.avatar_url
+      ? '<img class="burbuja-avatar" src="' + mensaje.avatar_url + '" alt="">'
+      : '<div class="burbuja-avatar-texto">' + nombre.charAt(0).toUpperCase() + '</div>';
     contenidoHtml += '<div class="' + clase + '">';
+    contenidoHtml += avatarHtml;
+    contenidoHtml += '<div class="burbuja-contenido">';
     contenidoHtml += '<strong>' + nombre + '</strong>';
     contenidoHtml += '<div>' + cuerpo + '</div>';
     contenidoHtml += '<small>' + fecha + '</small>';
+    contenidoHtml += '</div>';
     contenidoHtml += '</div>';
   });
 
@@ -93,9 +99,13 @@ function cargarConversacion(idConversacion, propiedadTitulo) {
       var formulario = document.getElementById('formularioMensaje');
 
       if (titulo) {
-        var nombre = conversacion.otro ? escaparHtml(conversacion.otro.nombre_usuario) : 'Conversación';
-        var rol = conversacion.otro && conversacion.otro.rol ? conversacion.otro.rol : '';
-        titulo.innerHTML = nombre + (rol ? ' <span class="rol-badge">' + rol + '</span>' : '');
+        var otro = conversacion.otro;
+        var nombre = otro ? escaparHtml(otro.nombre_usuario) : 'Conversación';
+        var rol = otro && otro.rol ? otro.rol : '';
+        var avatarHtml = otro && otro.avatar_url
+          ? '<img class="hilo-avatar" src="' + otro.avatar_url + '" alt="">'
+          : (otro ? '<div class="hilo-avatar-texto">' + nombre.charAt(0).toUpperCase() + '</div>' : '');
+        titulo.innerHTML = avatarHtml + ' ' + nombre + (rol ? ' <span class="rol-badge">' + rol + '</span>' : '');
       }
       if (subtitulo) {
         var email = conversacion.otro && conversacion.otro.email_usuario ? escaparHtml(conversacion.otro.email_usuario) : '';
@@ -106,6 +116,11 @@ function cargarConversacion(idConversacion, propiedadTitulo) {
       }
       if (formulario) {
         formulario.hidden = false;
+      }
+
+      var chatActual = document.getElementById('chatActualMobile');
+      if (chatActual) {
+        chatActual.textContent = nombre;
       }
 
       renderizarMensajes(conversacion.mensajes);
@@ -231,3 +246,31 @@ if (filtro) {
     });
   });
 }
+
+/* ── Mobile overlay toggle ── */
+function abrirConversacionesMobile() {
+  document.body.classList.add('conversaciones-abiertas');
+}
+
+function cerrarConversacionesMobile() {
+  document.body.classList.remove('conversaciones-abiertas');
+}
+
+var btnAbrir = document.getElementById('botonAbrirConversaciones');
+var btnCerrar = document.getElementById('botonCerrarConversaciones');
+
+if (btnAbrir) {
+  btnAbrir.addEventListener('click', abrirConversacionesMobile);
+}
+if (btnCerrar) {
+  btnCerrar.addEventListener('click', cerrarConversacionesMobile);
+}
+
+// Cerrar overlay al seleccionar una conversacion en mobile
+document.querySelectorAll('.item-conversacion').forEach(function (boton) {
+  boton.addEventListener('click', function () {
+    if (document.body.classList.contains('conversaciones-abiertas')) {
+      cerrarConversacionesMobile();
+    }
+  });
+});

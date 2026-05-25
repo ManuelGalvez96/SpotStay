@@ -310,12 +310,12 @@ class PropiedadController extends Controller
             ->where('estado_propiedad', 'alquilada')->count();
         $publicadas = DB::table('tbl_propiedad')
             ->where('estado_propiedad', 'publicada')->count();
-        $inactivas = DB::table('tbl_propiedad')
-            ->where('estado_propiedad', 'inactiva')->count();
+        $borradores = DB::table('tbl_propiedad')
+            ->where('estado_propiedad', 'borrador')->count();
 
         return view('admin.propiedades', compact(
             'propiedades', 'totalPropiedades',
-            'alquiladas', 'publicadas', 'inactivas'));
+            'alquiladas', 'publicadas', 'borradores'));
     }
 
     public function filtrar(Request $request)
@@ -811,7 +811,8 @@ class PropiedadController extends Controller
             return false;
         }
 
-        parse_str($componentes['query'], $parametros);
+        $queryString = $componentes['query'] ?? '';
+        parse_str($queryString, $parametros);
         $ahora = Carbon::now('UTC')->timestamp;
         $margenSeguridad = 30;
 

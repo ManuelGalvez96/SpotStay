@@ -103,12 +103,12 @@
     </div>
     
     <div class="kpi-mini">
-        <div class="kpi-mini-icono kpi-mini-rojo">
-            <i class="bi bi-x-circle"></i>
+        <div class="kpi-mini-icono kpi-mini-naranja">
+            <i class="bi bi-pencil-square"></i>
         </div>
         <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ $inactivas }}</span>
-            <span class="kpi-mini-label">Inactivas</span>
+            <span class="kpi-mini-numero kpi-mini-numero-naranja">{{ $borradores }}</span>
+            <span class="kpi-mini-label">Borradores</span>
         </div>
     </div>
 </div>
@@ -536,6 +536,14 @@
             <div class="dato-item">
                 <span class="dato-label">Dirección</span>
                 <span class="dato-valor" id="dataDireccion">Calle Mayor 14</span>
+            </div>
+            <div class="dato-item">
+                <span class="dato-label">Latitud</span>
+                <span class="dato-valor" id="dataLatitud">-</span>
+            </div>
+            <div class="dato-item">
+                <span class="dato-label">Longitud</span>
+                <span class="dato-valor" id="dataLongitud">-</span>
             </div>
             <div class="dato-item">
                 <span class="dato-label">Habitaciones</span>

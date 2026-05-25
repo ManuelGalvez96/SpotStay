@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
@@ -25,12 +26,18 @@ class PropiedadController extends Controller
 
         $totales = $this->obtenerTotales($arrendadorId);
 
+        // Comprobar el estado del límite de la suscripción del arrendador
+        $infoLimite = $this->comprobarLimiteSuscripcion($arrendadorId);
+
         return view('arrendador.propiedades', [
             'arrendador' => $arrendador,
             'avatarInicial' => $this->obtenerInicialAvatar($arrendador?->nombre_usuario),
             'propiedades' => $propiedades,
             'totales' => $totales,
             'arrendadorId' => $arrendadorId,
+            'limiteAlcanzado' => $infoLimite['limiteAlcanzado'],
+            'maxPropiedades' => $infoLimite['maxPropiedades'],
+            'nombrePlan' => $infoLimite['nombrePlan'],
         ]);
     }
 
@@ -65,6 +72,8 @@ class PropiedadController extends Controller
             'puerta_propiedad' => ['nullable', 'string', 'max:20'],
             'ciudad_propiedad' => ['required', 'string', 'max:100'],
             'codigo_postal_propiedad' => ['required', 'string', 'max:10'],
+            'latitud_propiedad' => ['required', 'numeric', 'between:-90,90'],
+            'longitud_propiedad' => ['required', 'numeric', 'between:-180,180'],
             'habitaciones_propiedad' => ['nullable', 'string', 'max:20'],
             'banos_propiedad' => ['nullable', 'integer', 'min:0'],
             'metros_cuadrados_propiedad' => ['nullable', 'integer', 'min:0'],
@@ -88,13 +97,14 @@ class PropiedadController extends Controller
             'id_gestor_fk' => $arrendadorId,
             'titulo_propiedad' => $datos['titulo_propiedad'],
             'tipo_propiedad' => $datos['tipo_propiedad'],
-            'estado_propiedad' => 'borrador',
             'calle_propiedad' => $datos['calle_propiedad'],
             'numero_propiedad' => $datos['numero_propiedad'],
             'piso_propiedad' => $datos['piso_propiedad'] ?? null,
             'puerta_propiedad' => $datos['puerta_propiedad'] ?? null,
             'ciudad_propiedad' => $datos['ciudad_propiedad'],
             'codigo_postal_propiedad' => $datos['codigo_postal_propiedad'],
+            'latitud_propiedad' => $datos['latitud_propiedad'],
+            'longitud_propiedad' => $datos['longitud_propiedad'],
             'habitaciones_propiedad' => $datos['habitaciones_propiedad'] ?? null,
             'banos_propiedad' => $datos['banos_propiedad'] ?? null,
             'metros_cuadrados_propiedad' => $datos['metros_cuadrados_propiedad'] ?? null,
@@ -111,6 +121,23 @@ class PropiedadController extends Controller
             'descripcion_propiedad' => $datos['descripcion_propiedad'] ?? null,
             'actualizado_propiedad' => Carbon::now(),
         ];
+
+        // Validar límite del plan de suscripción en la creación de nuevas propiedades
+        if (!$esEdicion) {
+            $checkPlan = $this->comprobarLimiteSuscripcion($arrendadorId);
+            if ($checkPlan['limiteAlcanzado']) {
+                if ($request->expectsJson() || $request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $checkPlan['mensaje'],
+                    ], 422);
+                }
+
+                return redirect()
+                    ->route('arrendador.propiedades', ['arrendador_id' => $arrendadorId])
+                    ->with('error', $checkPlan['mensaje']);
+            }
+        }
 
         DB::beginTransaction();
 
@@ -142,10 +169,12 @@ class PropiedadController extends Controller
                     ->update($datosPropiedad);
             } else {
                 $datosPropiedad['creado_propiedad'] = Carbon::now();
+                $datosPropiedad['estado_propiedad'] = 'borrador';
                 $propiedadId = (int) DB::table('tbl_propiedad')->insertGetId($datosPropiedad);
             }
 
             $imagenesSubidas = $request->file('imagenes_propiedad', []);
+            Log::info('Imagenes recibidas: ', ['imagenes' => $request->allFiles()]);
             if (!empty($imagenesSubidas)) {
                 $totalActual = (int) DB::table('tbl_fotos')
                     ->where('id_propiedad_fk', $propiedadId)
@@ -357,6 +386,7 @@ class PropiedadController extends Controller
                 'p.descripcion_propiedad',
                 DB::raw("p.{$columnaPrecio} as precio_propiedad"),
                 'p.estado_propiedad',
+                'p.habitaciones_propiedad',
                 'p.banos_propiedad',
                 'p.metros_cuadrados_propiedad',
                 'p.ascensor_propiedad',
@@ -710,4 +740,321 @@ class PropiedadController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Elimina una propiedad del portafolio del arrendador de forma permanente.
+     * Solo permite eliminar si la propiedad no está en alquiler (alquilada).
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function eliminar(Request $request, int $id)
+    {
+        $arrendadorId = $this->obtenerIdArrendador($request);
+
+        // 1. Obtener la propiedad y comprobar que pertenezca al arrendador autenticado
+        $propiedad = DB::table('tbl_propiedad')
+            ->where('id_propiedad', $id)
+            ->where('id_arrendador_fk', $arrendadorId)
+            ->select('id_propiedad', 'estado_propiedad')
+            ->first();
+
+        if (!$propiedad) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró la propiedad especificada o no tienes permisos sobre ella.'
+            ], 404);
+        }
+
+        // 2. Bloquear la eliminación si la propiedad se encuentra en alquiler activo
+        if (isset($propiedad->estado_propiedad) && $propiedad->estado_propiedad === 'alquilada') {
+            return response()->json([
+                'success' => false,
+                'message' => 'No es posible eliminar una propiedad que se encuentra actualmente en alquiler activo.'
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            // 3. Obtener relaciones hijas (alquileres, gastos y cuotas)
+            $alquileresIds = DB::table('tbl_alquiler')
+                ->where('id_propiedad_fk', $id)
+                ->pluck('id_alquiler')
+                ->all();
+
+            $gastosIds = Schema::hasTable('tbl_gasto')
+                ? DB::table('tbl_gasto')
+                    ->where('id_propiedad_fk', $id)
+                    ->pluck('id_gasto')
+                    ->all()
+                : [];
+
+            $gastoCuotasIds = !empty($gastosIds) && Schema::hasTable('tbl_gasto_cuota')
+                ? DB::table('tbl_gasto_cuota')
+                    ->whereIn('id_gasto_fk', $gastosIds)
+                    ->pluck('id_gasto_cuota')
+                    ->all()
+                : [];
+
+            $detallesIds = [];
+            if (Schema::hasTable('tbl_gasto_cuota_detalle') && !empty($gastoCuotasIds)) {
+                $tieneColAlquiler = Schema::hasColumn('tbl_gasto_cuota_detalle', 'id_alquiler_fk');
+
+                if ($tieneColAlquiler && !empty($alquileresIds)) {
+                    $detallesIds = DB::table('tbl_gasto_cuota_detalle')
+                        ->where(function ($query) use ($alquileresIds, $gastoCuotasIds) {
+                            $query->whereIn('id_alquiler_fk', $alquileresIds)
+                                ->orWhereIn('id_gasto_cuota_fk', $gastoCuotasIds);
+                        })
+                        ->pluck('id_gasto_cuota_detalle')
+                        ->all();
+                } else {
+                    $detallesIds = DB::table('tbl_gasto_cuota_detalle')
+                        ->whereIn('id_gasto_cuota_fk', $gastoCuotasIds)
+                        ->pluck('id_gasto_cuota_detalle')
+                        ->all();
+                }
+            }
+
+            // 4. Borrado en cascada seguro para evitar violaciones de claves foráneas
+            if (Schema::hasTable('tbl_pago')) {
+                DB::table('tbl_pago')
+                    ->where(function ($query) use ($alquileresIds, $gastoCuotasIds, $detallesIds) {
+                        $hasCondition = false;
+                        if (!empty($alquileresIds)) {
+                            $query->whereIn('id_alquiler_fk', $alquileresIds);
+                            $hasCondition = true;
+                        }
+
+                        if (!empty($gastoCuotasIds)) {
+                            $hasCondition ? $query->orWhereIn('id_gasto_cuota_fk', $gastoCuotasIds) : $query->whereIn('id_gasto_cuota_fk', $gastoCuotasIds);
+                            $hasCondition = true;
+                        }
+
+                        if (!empty($detallesIds)) {
+                            $hasCondition ? $query->orWhereIn('id_gasto_cuota_detalle_fk', $detallesIds) : $query->whereIn('id_gasto_cuota_detalle_fk', $detallesIds);
+                        }
+                    })
+                    ->delete();
+            }
+
+            if (!empty($alquileresIds)) {
+                DB::table('tbl_contrato')
+                    ->whereIn('id_alquiler_fk', $alquileresIds)
+                    ->delete();
+
+                if (Schema::hasTable('tbl_valoracion')) {
+                    DB::table('tbl_valoracion')
+                        ->where('id_propiedad_fk', $id)
+                        ->orWhereIn('id_alquiler_fk', $alquileresIds)
+                        ->delete();
+                }
+            }
+
+            if (!empty($gastosIds) && Schema::hasTable('tbl_gasto')) {
+                DB::table('tbl_gasto')
+                    ->where('id_propiedad_fk', $id)
+                    ->delete();
+            }
+
+            // Eliminar incidencias de la propiedad
+            DB::table('tbl_incidencia')
+                ->where('id_propiedad_fk', $id)
+                ->delete();
+
+            if (Schema::hasTable('tbl_conversacion')) {
+                DB::table('tbl_conversacion')
+                    ->where('id_propiedad_fk', $id)
+                    ->delete();
+            }
+
+            // Eliminar alquileres de la propiedad
+            DB::table('tbl_alquiler')
+                ->where('id_propiedad_fk', $id)
+                ->delete();
+
+            // Eliminar fotos asociadas de la propiedad
+            DB::table('tbl_fotos')
+                ->where('id_propiedad_fk', $id)
+                ->delete();
+
+            // Eliminar la propiedad definitivamente
+            DB::table('tbl_propiedad')
+                ->where('id_propiedad', $id)
+                ->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'La propiedad y todos sus datos relacionados han sido eliminados correctamente.'
+            ]);
+        } catch (\Throwable $exception) {
+            DB::rollBack();
+
+            \Log::error('Error al eliminar propiedad del Arrendador ID ' . $id . ': ' . $exception->getMessage(), [
+                'trace' => $exception->getTraceAsString(),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error al intentar eliminar la propiedad: ' . $exception->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+
+     * Comprueba si el arrendador ha alcanzado el límite de propiedades permitidas por su suscripción activa.
+     *
+     * @param int $arrendadorId
+     * @return array
+     */
+    private function comprobarLimiteSuscripcion(int $arrendadorId): array
+    {
+        $hoy = Carbon::now()->toDateString();
+
+        // 1. Obtener la suscripción activa del arrendador actual
+        $suscripcionActiva = DB::table('tbl_suscripcion as sus')
+            ->leftJoin('tbl_plan as plan', 'plan.id_plan', '=', 'sus.id_plan_fk')
+            ->where('sus.id_usuario_fk', $arrendadorId)
+            ->where('sus.estado_suscripcion', 'activa')
+            ->where(function ($query) use ($hoy) {
+                $query->whereNull('sus.fin_suscripcion')
+                    ->orWhere('sus.fin_suscripcion', '>=', $hoy);
+            })
+            ->orderByDesc('sus.id_suscripcion')
+            ->select(
+                'sus.max_propiedades_suscripcion',
+                'sus.plan_suscripcion',
+                'plan.nombre_plan as nombre_plan'
+            )
+            ->first();
+
+        // 2. Si no hay suscripción activa, bloqueamos por seguridad
+        if (!$suscripcionActiva) {
+            return [
+                'limiteAlcanzado' => true,
+                'maxPropiedades' => 0,
+                'nombrePlan' => 'Sin plan activo',
+                'mensaje' => 'No tienes una suscripción activa para publicar propiedades.',
+            ];
+        }
+
+        $limite = (int) ($suscripcionActiva->max_propiedades_suscripcion ?? 0);
+
+        // 3. Si el límite es 0 o menor, el plan no permite publicar ninguna propiedad
+        if ($limite <= 0) {
+            $nombrePlan = $suscripcionActiva->nombre_plan
+                ?? ($suscripcionActiva->plan_suscripcion ? ucfirst($suscripcionActiva->plan_suscripcion) : 'actual');
+
+            return [
+                'limiteAlcanzado' => true,
+                'maxPropiedades' => 0,
+                'nombrePlan' => $nombrePlan,
+                'mensaje' => 'El plan ' . $nombrePlan . ' no permite publicar propiedades.',
+            ];
+        }
+
+        // 4. Contar el total global de propiedades creadas por el arrendador en su cuenta
+        $totalPropiedades = (int) DB::table('tbl_propiedad')
+            ->where('id_arrendador_fk', $arrendadorId)
+            ->count();
+
+        $limiteAlcanzado = $totalPropiedades >= $limite;
+
+        $nombrePlan = $suscripcionActiva->nombre_plan
+            ?? ($suscripcionActiva->plan_suscripcion ? ucfirst($suscripcionActiva->plan_suscripcion) : 'actual');
+
+        return [
+            'limiteAlcanzado' => $limiteAlcanzado,
+            'maxPropiedades' => $limite,
+            'nombrePlan' => $nombrePlan,
+            'totalPublicadas' => $totalPropiedades, // Cambiamos el valor de retorno para que contenga el total
+            'mensaje' => 'Has alcanzado el límite de tu plan ' . $nombrePlan . ' (' . $limite . ' propiedades registradas). Inactiva o elimina alguna propiedad existente o mejora tu suscripción.',
+        ];
+    }
+
+    /**
+     * Comprueba si un título de propiedad ya existe para el arrendador autenticado.
+     * Acepta un parámetro opcional 'excluir_id' para ignorar la propiedad que se está editando.
+     */
+    public function checkTitulo(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $titulo     = trim((string) $request->query('titulo', ''));
+        $excluirId  = (int) $request->query('excluir_id', 0);
+
+        if ($titulo === '') {
+            return response()->json(['disponible' => true]);
+        }
+
+        // Comprueba si existe alguna propiedad ACTIVA en toda la plataforma con ese nombre
+        $query = DB::table('tbl_propiedad')
+            ->whereIn('estado_propiedad', ['publicada', 'alquilada'])
+            ->whereRaw('LOWER(titulo_propiedad) = ?', [mb_strtolower($titulo)]);
+
+        // En edición, excluimos la propia propiedad
+        if ($excluirId > 0) {
+            $query->where('id_propiedad', '!=', $excluirId);
+        }
+
+        $existe = $query->exists();
+
+        return response()->json(['disponible' => !$existe]);
+    }
+
+    /**
+     * Valida un código de gestor y devuelve los datos del gestor asociado
+     */
+    public function validarCodigoGestor(Request $request)
+    {
+        $codigo = $request->input('codigo', '');
+
+        // Validar formato del código: GES-XXXX-XXXX
+        if (!preg_match('/^GES-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $codigo)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Formato de código inválido. Debe ser GES-XXXX-XXXX',
+            ], 422);
+        }
+
+        // Buscar el código en la base de datos
+        $codigoGestor = DB::table('tbl_codigo_gestor')
+            ->where('codigo_gestor', $codigo)
+            ->where('estado_codigo_gestor', 'activo')
+            ->first();
+
+        if (!$codigoGestor) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Código de gestor no encontrado o inactivo.',
+            ], 404);
+        }
+
+        // Obtener datos del gestor
+        $gestor = DB::table('tbl_usuario')
+            ->where('id_usuario', $codigoGestor->id_gestor_fk)
+            ->first();
+
+        if (!$gestor) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gestor no encontrado.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id_usuario' => $gestor->id_usuario,
+                'nombre_usuario' => $gestor->nombre_usuario,
+                'email_usuario' => $gestor->email_usuario,
+                'codigo_gestor' => $codigo,
+            ]
+        ], 200);
+    }
 }
+

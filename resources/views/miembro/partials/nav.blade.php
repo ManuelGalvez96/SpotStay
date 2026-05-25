@@ -39,7 +39,7 @@
                 <li><a href="{{ route('arrendador.inquilinos') }}" class="enlace-sub-nav {{ request()->is('arrendador/inquilinos*') ? 'activo' : '' }}"><i class="bi bi-people"></i> Inquilinos</a></li>
                 <li><a href="{{ route('arrendador.contratos') }}" class="enlace-sub-nav {{ request()->is('arrendador/contratos*') ? 'activo' : '' }}"><i class="bi bi-file-text"></i> Contratos</a></li>
                 <li><a href="{{ route('arrendador.incidencias') }}" class="enlace-sub-nav {{ request()->is('arrendador/incidencias*') ? 'activo' : '' }}"><i class="bi bi-exclamation-triangle"></i> Incidencias</a></li>
-                <li><a href="{{ route('arrendador.gestor') }}" class="enlace-sub-nav {{ request()->is('arrendador/gestor*') ? 'activo' : '' }}"><i class="bi bi-person-gear"></i> Gestores</a></li>
+                {{-- <li><a href="{{ route('arrendador.gestor') }}" class="enlace-sub-nav {{ request()->is('arrendador/gestor*') ? 'activo' : '' }}"><i class="bi bi-person-gear"></i> Gestores</a></li> --}}
                 <li><a href="{{ route('arrendador.precios-gastos') }}" class="enlace-sub-nav {{ request()->is('arrendador/precios-gastos*') ? 'activo' : '' }}"><i class="bi bi-cash-coin"></i> Precios/Gastos</a></li>
             </ul>
         </div>

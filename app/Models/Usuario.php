@@ -71,6 +71,29 @@ class Usuario extends Authenticatable
         return $this->contrasena_usuario;
     }
 
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if (!$this->avatar_usuario) {
+            return null;
+        }
+
+        $path = $this->avatar_usuario;
+
+        if (str_starts_with($path, 'http')) {
+            return $path;
+        }
+
+        if (str_starts_with($path, 'public/img/')) {
+            return asset(substr($path, 7));
+        }
+
+        if (str_starts_with($path, 'img/')) {
+            return asset($path);
+        }
+
+        return asset('storage/' . ltrim($path, '/'));
+    }
+
 
 
     // Roles asignados al usuario (relación many-to-many)

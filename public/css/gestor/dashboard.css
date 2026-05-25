@@ -112,6 +112,10 @@
     display: none;
 }
 
+.propiedades-grid-desktop {
+    display: block;
+}
+
 .propiedades-lista-mobile {
     display: none;
 }
@@ -137,16 +141,78 @@
     display: none;
 }
 
-/* ── Propiedades grid desktop ── */
-.propiedades-grid-desktop {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    padding: 12px 16px;
+/* ── Inferior grid override (single column) ── */
+.inferior-grid {
+    display: flex;
+    flex-direction: column;
 }
 
-.propiedades-grid-desktop .propiedad-card {
-    margin-bottom: 0;
+/* ── Propiedades grid desktop (tabla) ── */
+.propiedades-grid-desktop {
+    padding: 8px 16px 16px;
+    overflow-x: auto;
+}
+
+.propiedades-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.propiedades-table thead th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #E5E7EB;
+    white-space: nowrap;
+}
+
+.propiedades-table tbody td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #F3F4F6;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.propiedad-table-row:hover {
+    background: #F9FAFB;
+}
+
+.propiedad-table-row.fila-inactiva td {
+    opacity: 0.65;
+}
+
+.td-titulo {
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+}
+
+.td-dir {
+    color: #6B7280;
+}
+
+.td-detalles {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.td-detalles span {
+    white-space: nowrap;
+}
+
+.td-atrasados {
+    color: #991B1B;
+}
+
+.propiedades-table .btn-revisar {
+    padding: 6px 14px;
+    font-size: 13px;
 }
 
 /* ── Resumen pills ── */
@@ -278,6 +344,10 @@
     .incidencias-lista-mobile {
         display: block;
         padding: 0 12px 12px;
+    }
+
+    .propiedades-grid-desktop {
+        display: none;
     }
 
     .propiedades-lista-mobile {

@@ -20,52 +20,6 @@
     <div class="hero-deco hero-deco-3"></div>
 </div>
 
-<!-- KPI RÁPIDOS -->
-<div class="kpi-grid-pequeno">
-    <div class="kpi-mini">
-        <div class="kpi-mini-icono kpi-mini-verde">
-            <i class="bi bi-house-check"></i>
-        </div>
-        <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ $activos }}</span>
-            <span class="kpi-mini-label">Alquileres activos</span>
-        </div>
-    </div>
-
-    <div class="kpi-mini">
-        <div class="kpi-mini-icono kpi-mini-naranja">
-            <i class="bi bi-clock"></i>
-        </div>
-        <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-naranja">{{ $pendientes }}</span>
-            <span class="kpi-mini-label">Pendientes de aprobación</span>
-            @if($pendientes > 0)
-                <span class="badge-atencion">Requiere atención</span>
-            @endif
-        </div>
-    </div>
-
-    <div class="kpi-mini">
-        <div class="kpi-mini-icono kpi-mini-rojo">
-            <i class="bi bi-x-circle"></i>
-        </div>
-        <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero kpi-mini-numero-rojo">{{ $rechazados }}</span>
-            <span class="kpi-mini-label">Rechazados este mes</span>
-        </div>
-    </div>
-
-    <div class="kpi-mini">
-        <div class="kpi-mini-icono kpi-mini-azul">
-            <i class="bi bi-calendar"></i>
-        </div>
-        <div class="kpi-mini-datos">
-            <span class="kpi-mini-numero">{{ $finalizanMes }}</span>
-            <span class="kpi-mini-label">Finalizan este mes</span>
-        </div>
-    </div>
-</div>
-
 <!-- BARRA DE HERRAMIENTAS -->
 <div class="toolbar-admin">
     <div class="toolbar-izquierda">
@@ -160,14 +114,48 @@
 
                     <td data-label="INQUILINO">
                         <div class="usuario-celda-mini">
-                            <div class="avatar-tabla avatar-sm" style="background:{{ $colorInq }}">{{ $inicialesInq }}</div>
+                            @php
+                                $avatarInq = $alquiler->avatar_inquilino ?? null;
+                                $avatarUrlInq = '';
+                                if ($avatarInq) {
+                                    if (str_starts_with($avatarInq, 'http')) {
+                                        $avatarUrlInq = $avatarInq;
+                                    } elseif (str_starts_with($avatarInq, 'img/')) {
+                                        $avatarUrlInq = asset($avatarInq);
+                                    } else {
+                                        $avatarUrlInq = asset('storage/' . ltrim($avatarInq, '/'));
+                                    }
+                                }
+                            @endphp
+                            @if ($avatarUrlInq)
+                                <img class="avatar-tabla avatar-sm" src="{{ $avatarUrlInq }}" alt="">
+                            @else
+                                <div class="avatar-tabla avatar-sm" style="background:{{ $colorInq }}">{{ $inicialesInq }}</div>
+                            @endif
                             <span class="nombre-mini">{{ $alquiler->nombre_inquilino }}</span>
                         </div>
                     </td>
 
                     <td data-label="ARRENDADOR" class="col-mobile-hide">
                         <div class="usuario-celda-mini">
-                            <div class="avatar-tabla avatar-sm" style="background:{{ $colorArr }}">{{ $inicialesArr }}</div>
+                            @php
+                                $avatarArr = $alquiler->avatar_arrendador ?? null;
+                                $avatarUrlArr = '';
+                                if ($avatarArr) {
+                                    if (str_starts_with($avatarArr, 'http')) {
+                                        $avatarUrlArr = $avatarArr;
+                                    } elseif (str_starts_with($avatarArr, 'img/')) {
+                                        $avatarUrlArr = asset($avatarArr);
+                                    } else {
+                                        $avatarUrlArr = asset('storage/' . ltrim($avatarArr, '/'));
+                                    }
+                                }
+                            @endphp
+                            @if ($avatarUrlArr)
+                                <img class="avatar-tabla avatar-sm" src="{{ $avatarUrlArr }}" alt="">
+                            @else
+                                <div class="avatar-tabla avatar-sm" style="background:{{ $colorArr }}">{{ $inicialesArr }}</div>
+                            @endif
                             <span class="nombre-mini">{{ $alquiler->nombre_arrendador }}</span>
                         </div>
                     </td>

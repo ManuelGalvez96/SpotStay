@@ -538,6 +538,14 @@
                 <span class="dato-valor" id="dataDireccion">Calle Mayor 14</span>
             </div>
             <div class="dato-item">
+                <span class="dato-label">Latitud</span>
+                <span class="dato-valor" id="dataLatitud">-</span>
+            </div>
+            <div class="dato-item">
+                <span class="dato-label">Longitud</span>
+                <span class="dato-valor" id="dataLongitud">-</span>
+            </div>
+            <div class="dato-item">
                 <span class="dato-label">Habitaciones</span>
                 <span class="dato-valor" id="dataHabitaciones">3</span>
             </div>

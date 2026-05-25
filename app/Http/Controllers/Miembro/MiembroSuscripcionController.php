@@ -26,18 +26,10 @@ class MiembroSuscripcionController extends Controller
     {
         /** @var Usuario $usuario */
         $usuario = Auth::user();
-<<<<<<< HEAD
-        $usuarioModelo = Usuario::find($usuario->id_usuario);
-        
-        // Buscamos la suscripción pendiente o activa más reciente
-
-        // Buscamos la suscripción pendiente más reciente
-=======
 
         $usuarioModelo = Usuario::find($usuario->id_usuario);
 
         // Buscamos la suscripción pendiente o activa más reciente
->>>>>>> 4cd8f0f0a42ed266651ea635ab791fd659c43e13
         $suscripcion = Suscripcion::where('id_usuario_fk', $usuario->id_usuario)
             ->whereIn('estado_suscripcion', ['pendiente_pago', 'activa', 'cancelada'])
             ->latest('id_suscripcion')

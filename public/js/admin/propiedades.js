@@ -277,12 +277,58 @@ var abrirModal = function(id) {
         .then(function(data) {
             var propiedad = data.propiedad;
             var alquileres = data.alquileres || [];
+            var fotos = data.fotos || [];
             propiedadActual = {
                 id: id,
                 direccion: propiedad.direccion_propiedad,
                 ciudad: propiedad.ciudad_propiedad,
                 titulo: propiedad.titulo_propiedad
             };
+
+            // Portada interactiva
+            var modalImagenPropiedad = document.getElementById('modalImagenPropiedad');
+            if (modalImagenPropiedad) {
+                var fotoPrincipal = fotos.find(function(f) { return f.es_principal_foto; }) || fotos[0];
+                if (fotoPrincipal) {
+                    modalImagenPropiedad.style.backgroundImage = "url('/img/" + fotoPrincipal.ruta_foto + "')";
+                    modalImagenPropiedad.style.backgroundSize = 'cover';
+                    modalImagenPropiedad.style.backgroundPosition = 'center';
+                } else {
+                    modalImagenPropiedad.style.background = 'linear-gradient(135deg, #8AAAC4, #B8CCE4)';
+                }
+            }
+
+            // Rellenar galería de imágenes
+            var seccionGaleriaModal = document.getElementById('seccionGaleriaModal');
+            var galeriaModal = document.getElementById('galeriaModal');
+            if (seccionGaleriaModal && galeriaModal) {
+                galeriaModal.innerHTML = '';
+                if (fotos.length > 0) {
+                    seccionGaleriaModal.style.display = 'block';
+                    fotos.forEach(function(foto, idx) {
+                        var imgEl = document.createElement('img');
+                        imgEl.src = '/img/' + foto.ruta_foto;
+                        imgEl.style.cssText = 'height: 100px; width: 140px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s;';
+                        imgEl.title = 'Haz clic para previsualizar esta imagen';
+                        
+                        // Marcar la foto activa en el borde
+                        if (foto.es_principal_foto || (!fotos.some(function(f) { return f.es_principal_foto; }) && idx === 0)) {
+                            imgEl.style.borderColor = '#007BFF';
+                        }
+
+                        imgEl.onclick = function() {
+                            modalImagenPropiedad.style.backgroundImage = "url('/img/" + foto.ruta_foto + "')";
+                            galeriaModal.querySelectorAll('img').forEach(function(img) {
+                                img.style.borderColor = 'transparent';
+                            });
+                            imgEl.style.borderColor = '#007BFF';
+                        };
+                        galeriaModal.appendChild(imgEl);
+                    });
+                } else {
+                    seccionGaleriaModal.style.display = 'none';
+                }
+            }
 
             // Información general
             document.getElementById('modalDireccion').textContent = propiedad.direccion_propiedad + ', ' + propiedad.ciudad_propiedad;

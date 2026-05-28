@@ -505,9 +505,15 @@ class PropiedadController extends Controller
             ->select('tbl_alquiler.*', 'tbl_usuario.nombre_usuario')
             ->get();
 
+        $fotos = DB::table('tbl_fotos')
+            ->where('id_propiedad_fk', $id)
+            ->orderBy('es_principal_foto', 'desc')
+            ->get();
+
         return response()->json([
             'propiedad' => $propiedad,
-            'alquileres' => $alquileres
+            'alquileres' => $alquileres,
+            'fotos' => $fotos
         ]);
     }
 

@@ -585,6 +585,16 @@
 
         <div class="modal-separador"></div>
 
+        <!-- SECCIÓN GALERÍA DE IMÁGENES -->
+        <div id="seccionGaleriaModal" style="display: none; margin-bottom: 20px;">
+            <span class="seccion-label">GALERÍA DE IMÁGENES</span>
+            <div id="galeriaModal" style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; margin-top: 10px;">
+                <!-- Se rellenará dinámicamente con JavaScript -->
+            </div>
+        </div>
+
+        <div class="modal-separador"></div>
+
         <!-- SECCIÓN EXTRAS -->
         <span class="seccion-label">EXTRAS DE LA PROPIEDAD</span>
         <div class="extras-modal" id="extrasModal">

@@ -25,7 +25,7 @@ class PropiedadController extends Controller
         return view('admin.propiedades-crear');
     }
 
-    public function editar($id)
+    public function editar(Request $request, $id)
     {
         $propiedad = DB::table('tbl_propiedad')
             ->join('tbl_usuario as arrendador', 'arrendador.id_usuario', '=', 'tbl_propiedad.id_arrendador_fk')
@@ -48,6 +48,13 @@ class PropiedadController extends Controller
             ->where('id_propiedad_fk', $id)
             ->orderBy('es_principal_foto', 'desc')
             ->get();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'propiedad' => $propiedad,
+                'fotos' => $fotos,
+            ]);
+        }
 
         return view('admin.propiedades-crear', [
             'propiedadEditando' => $propiedad,

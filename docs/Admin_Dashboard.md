@@ -418,32 +418,16 @@ Después de cambios, verifica:
 
 ---
 
-## 🚀 Próximos Pasos
-
-1. **Implementar "Perfil"**: Llevar a `/admin/perfil` o modal
-2. **Implementar "Configuración"**: Llevar a `/admin/configuracion`
-3. **Agregar más opciones** al dropdown (Cambiar contraseña, etc.)
-4. **Mejorar animaciones**: Añadir más transiciones suaves
-5. **Notificaciones en tiempo real**: Websockets para la campana
-
----
-
-**Última actualización**: Abril 2026  
-**Laravel**: 13.4.0  
-**Estado**: ✅ Dropdown funcional y seguro
-
----
-
 ## 📊 Página de Dashboard - KPIs e Incidencias
 
 ### Vista: `resources/views/admin/dashboard.blade.php`
 
 **Propósito:**
+- Resumen ejecutivo con KPIs principales
 - Saludo personalizado con fecha dinámica
-- 3 KPIs principales de administración
-- Tabla de últimas incidencias inactivas
-- Búsqueda y filtro en tiempo real
-- Enlace rápido al listado completo de incidencias
+- Tabla de últimas incidencias sin resolver
+- Búsqueda y filtro de incidencias en tiempo real
+- Enlace rápido a la vista completa de incidencias
 
 ---
 
@@ -472,114 +456,14 @@ actualizarFecha();
 
 ## 📊 KPIs (3 Tarjetas)
 
-| KPI | Dato | Origen |
-|-----|------|--------|
-| USUARIOS REGISTRADOS | `$totalUsuarios` | COUNT `tbl_usuario` |
-| PROPIEDADES ACTIVAS | `$propiedadesActivas` | COUNT propiedades publicadas |
-| SOLICITUDES NUEVAS | `$solicitudesNuevas` | COUNT solicitudes pendientes |
+| KPI | CSS | Dato | Origen |
+|-----|-----|------|--------|
+| **USUARIOS REGISTRADOS** | `.kpi-card` | `$totalUsuarios` | COUNT tbl_usuario |
+| **PROPIEDADES ACTIVAS** | `.kpi-card` | `$propiedadesActivas` | COUNT tbl_propiedad WHERE estado='publicada' |
+| **SOLICITUDES NUEVAS** | `.kpi-card .kpi-numero-red` | `$solicitudesNuevas` | COUNT tbl_solicitud WHERE estado='pendiente' |
 
-**HTML resumido:**
+**HTML:**
 ```html
-<div class="admin-kpi-grid">
-    <div class="kpi-card">
-        <h3>USUARIOS REGISTRADOS</h3>
-        <p class="kpi-numero">{{ $totalUsuarios }}</p>
-    </div>
-    <div class="kpi-card">
-        <h3>PROPIEDADES ACTIVAS</h3>
-        <p class="kpi-numero">{{ $propiedadesActivas }}</p>
-    </div>
-    <div class="kpi-card kpi-numero-red">
-        <h3>SOLICITUDES NUEVAS</h3>
-        <p class="kpi-numero">{{ $solicitudesNuevas }}</p>
-    </div>
-</div>
-```
+<d... (truncated)
 
----
-
-## 🎛️ Búsqueda y Filtro de Incidencias
-
-| Control | ID HTML |
-|---------|---------|
-| Buscar | `#buscadorIncidencias` |
-| Estado | `#filtroEstadoIncidencias` |
-
-**JavaScript real:**
-```javascript
-document.getElementById('buscadorIncidencias').addEventListener('input', function(e) {
-    const valor = e.target.value.toLowerCase();
-    document.querySelectorAll('#tbodyIncidencias tr').forEach(fila => {
-        const titulo = fila.getAttribute('data-titulo')?.toLowerCase() || '';
-        const propiedad = fila.getAttribute('data-propiedad')?.toLowerCase() || '';
-        fila.style.display = titulo.includes(valor) || propiedad.includes(valor) ? '' : 'none';
-    });
-});
-
-document.getElementById('filtroEstadoIncidencias').addEventListener('change', function(e) {
-    const estado = e.target.value;
-    document.querySelectorAll('#tbodyIncidencias tr').forEach(fila => {
-        const filaEstado = fila.getAttribute('data-estado');
-        fila.style.display = !estado || filaEstado === estado ? '' : 'none';
-    });
-});
-```
-
----
-
-## 📋 Tabla de incidencias
-
-Columnas visibles:
-- Propiedad
-- Categoría
-- Prioridad
-- Estado
-- Última actividad
-- Acción
-
-**Atributos útiles:**
-- `data-id`
-- `data-titulo`
-- `data-propiedad`
-- `data-estado`
-
----
-
-## 📱 Responsive Design
-
-### Desktop
-- KPIs en 3 columnas.
-- Tabla completa.
-- Filtros visibles.
-
-### Mobile
-- KPIs apilados.
-- `col-mobile-hide` oculta última actividad y acción.
-- Búsqueda y filtro en ancho completo.
-
----
-
-## 📊 Datos pasados a la vista
-
-```php
-compact('totalUsuarios', 'propiedadesActivas', 'solicitudesNuevas', 'ultimasIncidenciasInactivas')
-```
-
----
-
-## 🔘 Botones y acciones
-
-| Botón | Acción |
-|-------|--------|
-| Ver | Abre la incidencia |
-| Ver todas → | Lleva a `/admin/incidencias` |
-
----
-
-## ⚠️ Puntos importantes
-
-1. El dashboard resume solo datos críticos.
-2. Las incidencias se filtran con `data-*` en frontend.
-3. La fecha se formatea con `Intl.DateTimeFormat` en español.
-4. La columna de acción se oculta en móvil.
-
+(End of file - total 467 lines)

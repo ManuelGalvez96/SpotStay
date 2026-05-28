@@ -63,10 +63,10 @@
             <span>Ver en el mapa</span>
         </button>
         --}}
-        <a href="/admin/propiedades/nueva" id="btnAniadirPropiedad" class="btn-primario">
+        <button type="button" id="btnAniadirPropiedad" class="btn-primario">
             <i class="bi bi-plus"></i>
             <span>Añadir propiedad</span>
-        </a>
+        </button>
     </div>
 </div>
 
@@ -695,6 +695,197 @@
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CREAR / EDITAR PROPIEDAD -->
+<div class="modal fade" id="modalFormPropiedad" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalFormTitulo">Nueva propiedad</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <div class="modal-body">
+                <form id="formPropiedad" enctype="multipart/form-data">
+                    <div class="form-grid">
+                        <div class="campo-full">
+                            <label for="inputTitulo">Título</label>
+                            <input id="inputTitulo" name="titulo" type="text" placeholder="Ej. Piso céntrico en Gran Vía">
+                            <small class="error-mensaje" id="errorTituloPropiedad"></small>
+                        </div>
+
+                        <div>
+                            <label for="inputCalle">Calle</label>
+                            <input id="inputCalle" name="calle" type="text" placeholder="Calle Mayor">
+                            <small class="error-mensaje" id="errorCallePropiedad"></small>
+                        </div>
+
+                        <div>
+                            <label for="inputNumero">Número</label>
+                            <input id="inputNumero" name="numero" type="text" placeholder="14">
+                            <small class="error-mensaje" id="errorNumeroPropiedad"></small>
+                        </div>
+
+                        <div>
+                            <label for="inputPiso">Piso</label>
+                            <input id="inputPiso" name="piso" type="text" placeholder="2ª">
+                        </div>
+
+                        <div>
+                            <label for="inputPuerta">Puerta</label>
+                            <input id="inputPuerta" name="puerta" type="text" placeholder="A">
+                        </div>
+
+                        <div>
+                            <label for="inputCiudad">Ciudad</label>
+                            <input id="inputCiudad" name="ciudad" type="text" placeholder="Madrid">
+                            <small class="error-mensaje" id="errorCiudadPropiedad"></small>
+                        </div>
+
+                        <div>
+                            <label for="inputCodigoPostal">Código postal</label>
+                            <input id="inputCodigoPostal" name="codigo_postal" type="text" placeholder="28001">
+                            <small class="error-mensaje" id="errorCodigoPostalPropiedad"></small>
+                        </div>
+
+                        <div>
+                            <label for="inputPrecio">Precio mensual</label>
+                            <input id="inputPrecio" name="precio" type="number" min="0" step="0.01" placeholder="1200">
+                            <small class="error-mensaje" id="errorPrecioPropiedad"></small>
+                        </div>
+
+                        <div>
+                            <label for="inputTipo">Tipo de propiedad</label>
+                            <select id="inputTipo" name="tipo">
+                                <option value="">Seleccionar tipo...</option>
+                                <option value="piso">Piso</option>
+                                <option value="casa">Casa</option>
+                                <option value="estudio">Estudio</option>
+                                <option value="chalet">Chalet</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="inputHabitaciones">Habitaciones</label>
+                            <select id="inputHabitaciones" name="habitaciones">
+                                <option value="">Seleccionar...</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="4+">4+</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="inputMetros">Metros cuadrados</label>
+                            <input id="inputMetros" name="metros" type="number" min="1" placeholder="75">
+                        </div>
+
+                        <div>
+                            <label for="inputBanos">Baños</label>
+                            <select id="inputBanos" name="banos">
+                                <option value="">Seleccionar...</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="3+">3+</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="inputEstado">Estado</label>
+                            <select id="inputEstado" name="estado">
+                                <option value="publicada">Publicada</option>
+                                <option value="alquilada">Alquilada</option>
+                                <option value="borrador">Borrador</option>
+                                <option value="inactiva">Inactiva</option>
+                            </select>
+                            <small class="error-mensaje" id="errorEstadoPropiedad"></small>
+                        </div>
+
+                        <div class="campo-full">
+                            <label for="inputEmailArrendador">Email del arrendador</label>
+                            <input id="inputEmailArrendador" name="arrendador_email" type="email" placeholder="arrendador@example.com">
+                            <small class="error-mensaje" id="errorEmailArrendadorPropiedad"></small>
+                        </div>
+
+                        <div class="campo-full">
+                            <label for="inputDescripcion">Descripción</label>
+                            <textarea id="inputDescripcion" name="descripcion" rows="4" placeholder="Describe la propiedad..."></textarea>
+                        </div>
+
+                        <div class="campo-full">
+                            <fieldset class="extras-fieldset">
+                                <legend><strong>Extras de la propiedad</strong></legend>
+                                <div class="extras-grid">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="extras[]" value="amueblado">
+                                        <span>Amueblado</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="extras[]" value="piscina">
+                                        <span>Piscina</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="extras[]" value="terraza">
+                                        <span>Terraza</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="extras[]" value="garaje">
+                                        <span>Garaje</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="extras[]" value="ascensor">
+                                        <span>Ascensor</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="extras[]" value="aire_acondicionado">
+                                        <span>Aire acondicionado</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="extras[]" value="calefaccion">
+                                        <span>Calefacción</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="extras[]" value="trastero">
+                                        <span>Trastero</span>
+                                    </label>
+                                </div>
+                            </fieldset>
+                        </div>
+
+                        <div class="campo-full">
+                            <label for="inputAdicional">Otros extras (especificar)</label>
+                            <textarea id="inputAdicional" name="adicional" rows="2" placeholder="Ej: Jardín privado, Gimnasio, Entrada independiente..."></textarea>
+                        </div>
+
+                        <div class="campo-full">
+                            <label for="inputImagenes">Imágenes de la propiedad</label>
+                            <input type="file" name="imagenes_propiedad[]" id="inputImagenes" accept="image/jpeg,image/png,image/webp" multiple style="padding: 10px; width: 100%; border: 1px solid #d1d5db; border-radius: 10px;">
+                            <small style="display: block; margin-top: 4px; color: #6B7280;">Puedes seleccionar varias imágenes (JPG, PNG, WEBP). Máximo 10.</small>
+                        </div>
+
+                        {{-- Fotos existentes (solo en edición) --}}
+                        <div class="campo-full" id="seccionFotosExistentes" style="display: none;">
+                            <label>Imágenes actuales</label>
+                            <div id="contenedorFotosExistentes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; margin-top: 10px;"></div>
+                            <input type="hidden" name="eliminar_fotos" id="inputEliminarFotos" value="">
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-cancelar-gris" data-bs-dismiss="modal" id="btnCancelarFormPropiedad">Cancelar</button>
+                <button type="button" class="btn-primario" id="btnGuardarPropiedad">
+                    <i class="bi bi-check-lg"></i>
+                    <span>Guardar propiedad</span>
+                </button>
             </div>
         </div>
     </div>

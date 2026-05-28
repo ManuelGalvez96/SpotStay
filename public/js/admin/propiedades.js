@@ -7,6 +7,14 @@ var paginaActual = 1;
 var totalPaginas = 1;
 var propiedadActual = null;
 
+var modalFormPropiedad = null;
+var editandoPropiedadId = null;
+
+// Referencias al formulario del modal
+var formPropiedad, camposForm, erroresForm;
+var _valTitulo = false, _valCalle = false, _valNumero = false, _valCiudad = false;
+var _valCodigoPostal = false, _valPrecio = false, _valEstado = false, _valEmail = false;
+
 var esEstadoAlquilada = function(estado) {
     return String(estado || '').trim().toLowerCase() === 'alquilada';
 };
@@ -58,10 +66,45 @@ var actualizarBotonMapaGeneral = function() {
 /* ── window.onload ── */
 window.onload = function() {
     csrfToken = document.querySelector('meta[name=csrf-token]').content;
+
+    // Inicializar modal del formulario
+    var modalFormEl = document.getElementById('modalFormPropiedad');
+    if (modalFormEl && typeof bootstrap !== 'undefined') {
+        modalFormPropiedad = new bootstrap.Modal(modalFormEl);
+        // Limpiar errores al cerrar el modal
+        modalFormEl.addEventListener('hidden.bs.modal', function() {
+            limpiarErroresFormPropiedad();
+        });
+    }
+
+    // Inicializar referencias del formulario
+    formPropiedad = document.getElementById('formPropiedad');
+    camposForm = {
+        titulo: document.getElementById('inputTitulo'),
+        calle: document.getElementById('inputCalle'),
+        numero: document.getElementById('inputNumero'),
+        ciudad: document.getElementById('inputCiudad'),
+        codigoPostal: document.getElementById('inputCodigoPostal'),
+        precio: document.getElementById('inputPrecio'),
+        estado: document.getElementById('inputEstado'),
+        emailArrendador: document.getElementById('inputEmailArrendador')
+    };
+    erroresForm = {
+        titulo: document.getElementById('errorTituloPropiedad'),
+        calle: document.getElementById('errorCallePropiedad'),
+        numero: document.getElementById('errorNumeroPropiedad'),
+        ciudad: document.getElementById('errorCiudadPropiedad'),
+        codigoPostal: document.getElementById('errorCodigoPostalPropiedad'),
+        precio: document.getElementById('errorPrecioPropiedad'),
+        estado: document.getElementById('errorEstadoPropiedad'),
+        emailArrendador: document.getElementById('errorEmailArrendadorPropiedad')
+    };
+
     asignarEventosFiltros();
     asignarEventosTabla();
     asignarEventosModal();
     asignarEventosPaginacion();
+    asignarEventosFormPropiedad();
     filtrarPropiedades(1);
 };
 
@@ -840,13 +883,412 @@ var actualizarPaginacion = function(paginaActiva, totalPaginasNuevas) {
     }
 };
 
-/* ── Botón añadir propiedad ── */
-var btnAniadirPropiedad = document.getElementById('btnAniadirPropiedad');
-if (btnAniadirPropiedad) {
-    btnAniadirPropiedad.onclick = function() {
-        window.location.href = '/admin/propiedades/nueva';
-    };
+/* ════════════════════════════════════════ */
+/* MODAL CREAR / EDITAR PROPIEDAD        */
+/* ════════════════════════════════════════ */
+
+var asignarEventosFormPropiedad = function() {
+    var btnAniadir = document.getElementById('btnAniadirPropiedad');
+    if (btnAniadir) {
+        btnAniadir.onclick = function() {
+            abrirModalCrearPropiedad();
+        };
+    }
+
+    var btnGuardar = document.getElementById('btnGuardarPropiedad');
+    if (btnGuardar) {
+        btnGuardar.onclick = function() {
+            guardarPropiedad();
+        };
+    }
+
+    // Activar validación en tiempo real
+    activarValidacionCamposPropiedad();
+};
+
+/* ── Abrir modal en modo crear ── */
+var abrirModalCrearPropiedad = function() {
+    editandoPropiedadId = null;
+    formPropiedad.reset();
+    formPropiedad.removeAttribute('data-propiedad-id');
+    document.getElementById('modalFormTitulo').textContent = 'Nueva propiedad';
+    document.getElementById('btnGuardarPropiedad').querySelector('span').textContent = 'Guardar propiedad';
+
+    // Ocultar sección de fotos existentes
+    document.getElementById('seccionFotosExistentes').style.display = 'none';
+    document.getElementById('contenedorFotosExistentes').innerHTML = '';
+    document.getElementById('inputEliminarFotos').value = '';
+
+    // Limpiar errores
+    limpiarErroresFormPropiedad();
+
+    // Cambiar placeholder del email
+    camposForm.emailArrendador.placeholder = 'arrendador@example.com';
+
+    if (modalFormPropiedad) {
+        modalFormPropiedad.show();
+    }
+};
+
+/* ── Abrir modal en modo editar ── */
+var abrirModalEditarPropiedad = function(id) {
+    editandoPropiedadId = id;
+
+    fetch('/admin/propiedades/' + id + '/editar', {
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(function(response) {
+        if (!response.ok) throw new Error('Error al cargar propiedad');
+        return response.json();
+    })
+    .then(function(data) {
+        var propiedad = data.propiedad;
+        var fotos = data.fotos || [];
+
+        document.getElementById('modalFormTitulo').textContent = 'Editar propiedad';
+        document.getElementById('btnGuardarPropiedad').querySelector('span').textContent = 'Guardar cambios';
+        formPropiedad.setAttribute('data-propiedad-id', id);
+
+        // Poblar campos
+        camposForm.titulo.value = propiedad.titulo_propiedad || '';
+        camposForm.calle.value = propiedad.calle_propiedad || '';
+        camposForm.numero.value = propiedad.numero_propiedad || '';
+        document.getElementById('inputPiso').value = propiedad.piso_propiedad || '';
+        document.getElementById('inputPuerta').value = propiedad.puerta_propiedad || '';
+        camposForm.ciudad.value = propiedad.ciudad_propiedad || '';
+        camposForm.codigoPostal.value = propiedad.codigo_postal_propiedad || '';
+        camposForm.precio.value = propiedad.precio_propiedad || '';
+        document.getElementById('inputTipo').value = propiedad.tipo_propiedad || '';
+        document.getElementById('inputHabitaciones').value = propiedad.habitaciones_propiedad || '';
+        document.getElementById('inputMetros').value = propiedad.metros_cuadrados_propiedad || '';
+        document.getElementById('inputBanos').value = propiedad.banos_propiedad || '';
+        camposForm.estado.value = propiedad.estado_propiedad || 'publicada';
+        camposForm.emailArrendador.value = propiedad.email_arrendador || '';
+        document.getElementById('inputDescripcion').value = propiedad.descripcion_propiedad || '';
+        document.getElementById('inputAdicional').value = propiedad.adicional_propiedad || '';
+        camposForm.emailArrendador.placeholder = 'arrendador@example.com';
+
+        // Extras checkboxes
+        var extras = ['amueblado','piscina','terraza','garaje','ascensor','aire_acondicionado','calefaccion','trastero'];
+        for (var e = 0; e < extras.length; e++) {
+            var columna = extras[e] + '_propiedad';
+            var checkbox = formPropiedad.querySelector('input[name="extras[]"][value="' + extras[e] + '"]');
+            if (checkbox) {
+                checkbox.checked = propiedad[columna] == 1 || propiedad[columna] === true;
+            }
+        }
+
+        // Fotos existentes
+        mostrarFotosExistentes(fotos);
+
+        // Limpiar errores
+        limpiarErroresFormPropiedad();
+
+        // Cerrar el modal de detalle si está abierto
+        cerrarModal();
+
+        if (modalFormPropiedad) {
+            modalFormPropiedad.show();
+        }
+    })
+    .catch(function(error) {
+        console.error('Error al cargar propiedad para editar:', error);
+        if (window.mostrarAlertaAdminError) {
+            window.mostrarAlertaAdminError('Error', 'No se pudieron cargar los datos de la propiedad.');
+        }
+    });
+};
+
+/* ── Mostrar fotos existentes en edición ── */
+var fotosEliminadas = [];
+
+var mostrarFotosExistentes = function(fotos) {
+    var seccion = document.getElementById('seccionFotosExistentes');
+    var contenedor = document.getElementById('contenedorFotosExistentes');
+    var inputEliminar = document.getElementById('inputEliminarFotos');
+
+    fotosEliminadas = [];
+
+    if (!fotos || fotos.length === 0) {
+        seccion.style.display = 'none';
+        return;
+    }
+
+    seccion.style.display = 'block';
+    contenedor.innerHTML = '';
+
+    for (var i = 0; i < fotos.length; i++) {
+        var foto = fotos[i];
+        var card = document.createElement('div');
+        card.className = 'foto-card-admin';
+        card.id = 'foto-card-' + foto.id_foto;
+        card.style.cssText = 'border: 2px solid #ccc; border-radius: 8px; padding: 8px; position: relative; transition: all 0.2s;';
+
+        var img = document.createElement('img');
+        img.src = '/img/' + foto.ruta_foto;
+        img.style.cssText = 'width: 100%; height: 90px; object-fit: cover; border-radius: 4px; display: block;';
+        card.appendChild(img);
+
+        var btnWrap = document.createElement('div');
+        btnWrap.style.cssText = 'margin-top: 6px; display: flex; align-items: center; justify-content: center;';
+
+        var btnEliminar = document.createElement('button');
+        btnEliminar.type = 'button';
+        btnEliminar.textContent = 'Eliminar';
+        btnEliminar.style.cssText = 'background: #ff6b6b; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px; font-weight: bold; width: 100%;';
+        btnEliminar.onclick = function(idFoto) {
+            return function() {
+                fotosEliminadas.push(idFoto);
+                inputEliminar.value = fotosEliminadas.join(',');
+
+                var cardEl = document.getElementById('foto-card-' + idFoto);
+                cardEl.style.opacity = '0.4';
+                cardEl.style.borderColor = '#ff6b6b';
+                var btns = cardEl.querySelectorAll('button');
+                btns[0].style.display = 'none';
+                btns[1].style.display = 'block';
+            };
+        }(foto.id_foto);
+        btnWrap.appendChild(btnEliminar);
+
+        var btnRestaurar = document.createElement('button');
+        btnRestaurar.type = 'button';
+        btnRestaurar.textContent = 'Restaurar';
+        btnRestaurar.style.cssText = 'background: #4CAF50; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px; font-weight: bold; display: none; width: 100%;';
+        btnRestaurar.onclick = function(idFoto) {
+            return function() {
+                fotosEliminadas = fotosEliminadas.filter(function(pid) { return pid !== idFoto; });
+                inputEliminar.value = fotosEliminadas.join(',');
+
+                var cardEl = document.getElementById('foto-card-' + idFoto);
+                cardEl.style.opacity = '1';
+                cardEl.style.borderColor = '#ccc';
+                var btns = cardEl.querySelectorAll('button');
+                btns[1].style.display = 'none';
+                btns[0].style.display = 'block';
+            };
+        }(foto.id_foto);
+        btnWrap.appendChild(btnRestaurar);
+
+        card.appendChild(btnWrap);
+        contenedor.appendChild(card);
+    }
+};
+
+/* ── Función editarPropiedad (desde tabla o modal detalle) ── */
+var editarPropiedad = function(id) {
+    if (!id) return;
+    abrirModalEditarPropiedad(id);
+};
+
+/* ════════════════════════════════════════ */
+/* VALIDACIÓN DEL FORMULARIO              */
+/* ════════════════════════════════════════ */
+
+function valorLimpio(el) {
+    return el && typeof el.value === 'string' ? el.value.trim() : '';
 }
+
+function textoError(el, msg) {
+    if (el) el.textContent = msg;
+}
+
+function limpiarErrorForm(campo) {
+    textoError(erroresForm[campo], '');
+}
+
+function limpiarErroresFormPropiedad() {
+    for (var k in erroresForm) {
+        textoError(erroresForm[k], '');
+    }
+}
+
+function validarEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function validarTituloPropiedad() {
+    var v = valorLimpio(camposForm.titulo);
+    if (!v) { textoError(erroresForm.titulo, 'El título es obligatorio.'); _valTitulo = false; return false; }
+    if (v.length < 3) { textoError(erroresForm.titulo, 'Mínimo 3 caracteres.'); _valTitulo = false; return false; }
+    limpiarErrorForm('titulo'); _valTitulo = true; return true;
+}
+
+function validarCallePropiedad() {
+    var v = valorLimpio(camposForm.calle);
+    if (!v) { textoError(erroresForm.calle, 'La calle es obligatoria.'); _valCalle = false; return false; }
+    if (v.length < 3) { textoError(erroresForm.calle, 'Mínimo 3 caracteres.'); _valCalle = false; return false; }
+    limpiarErrorForm('calle'); _valCalle = true; return true;
+}
+
+function validarNumeroPropiedad() {
+    var v = valorLimpio(camposForm.numero);
+    if (!v) { textoError(erroresForm.numero, 'El número es obligatorio.'); _valNumero = false; return false; }
+    limpiarErrorForm('numero'); _valNumero = true; return true;
+}
+
+function validarCiudadPropiedad() {
+    var v = valorLimpio(camposForm.ciudad);
+    if (!v) { textoError(erroresForm.ciudad, 'La ciudad es obligatoria.'); _valCiudad = false; return false; }
+    if (v.length < 2) { textoError(erroresForm.ciudad, 'Mínimo 2 caracteres.'); _valCiudad = false; return false; }
+    limpiarErrorForm('ciudad'); _valCiudad = true; return true;
+}
+
+function validarCodigoPostalPropiedad() {
+    var v = valorLimpio(camposForm.codigoPostal);
+    if (!v) { textoError(erroresForm.codigoPostal, 'El código postal es obligatorio.'); _valCodigoPostal = false; return false; }
+    if (!/^\d{5}$/.test(v)) { textoError(erroresForm.codigoPostal, 'Debe tener 5 dígitos.'); _valCodigoPostal = false; return false; }
+    limpiarErrorForm('codigoPostal'); _valCodigoPostal = true; return true;
+}
+
+function validarPrecioPropiedad() {
+    var v = valorLimpio(camposForm.precio);
+    if (!v) { textoError(erroresForm.precio, 'El precio es obligatorio.'); _valPrecio = false; return false; }
+    if (isNaN(v) || parseFloat(v) < 0) { textoError(erroresForm.precio, 'Debe ser un número >= 0.'); _valPrecio = false; return false; }
+    limpiarErrorForm('precio'); _valPrecio = true; return true;
+}
+
+function validarEstadoPropiedad() {
+    var v = valorLimpio(camposForm.estado);
+    if (!v) { textoError(erroresForm.estado, 'El estado es obligatorio.'); _valEstado = false; return false; }
+    limpiarErrorForm('estado'); _valEstado = true; return true;
+}
+
+function validarEmailArrendadorPropiedad() {
+    var v = valorLimpio(camposForm.emailArrendador);
+    if (!v) { textoError(erroresForm.emailArrendador, 'El email es obligatorio.'); _valEmail = false; return false; }
+    if (!validarEmail(v)) { textoError(erroresForm.emailArrendador, 'Email no válido.'); _valEmail = false; return false; }
+    limpiarErrorForm('emailArrendador'); _valEmail = true; return true;
+}
+
+function validarFormularioPropiedad() {
+    var ok = true;
+    if (!validarTituloPropiedad()) ok = false;
+    if (!validarCallePropiedad()) ok = false;
+    if (!validarNumeroPropiedad()) ok = false;
+    if (!validarCiudadPropiedad()) ok = false;
+    if (!validarCodigoPostalPropiedad()) ok = false;
+    if (!validarPrecioPropiedad()) ok = false;
+    if (!validarEmailArrendadorPropiedad()) ok = false;
+    if (!validarEstadoPropiedad()) ok = false;
+    return ok;
+}
+
+function activarValidacionCamposPropiedad() {
+    if (!camposForm.titulo) return;
+
+    function activar(campo, fn, cond) {
+        if (!campo) return;
+        campo.onblur = fn;
+        campo.oninput = function() {
+            if (cond()) fn();
+        };
+    }
+
+    activar(camposForm.titulo, validarTituloPropiedad, function() { return valorLimpio(camposForm.titulo).length >= 3; });
+    activar(camposForm.calle, validarCallePropiedad, function() { return valorLimpio(camposForm.calle).length >= 3; });
+    activar(camposForm.numero, validarNumeroPropiedad, function() { return valorLimpio(camposForm.numero).length > 0; });
+    activar(camposForm.ciudad, validarCiudadPropiedad, function() { return valorLimpio(camposForm.ciudad).length >= 2; });
+    activar(camposForm.codigoPostal, validarCodigoPostalPropiedad, function() { return /^\d{5}$/.test(valorLimpio(camposForm.codigoPostal)); });
+    activar(camposForm.precio, validarPrecioPropiedad, function() { return valorLimpio(camposForm.precio).length > 0; });
+    activar(camposForm.estado, validarEstadoPropiedad, function() { return valorLimpio(camposForm.estado).length > 0; });
+    activar(camposForm.emailArrendador, validarEmailArrendadorPropiedad, function() { return validarEmail(valorLimpio(camposForm.emailArrendador)); });
+}
+
+/* ════════════════════════════════════════ */
+/* GUARDAR PROPIEDAD (CREAR / ACTUALIZAR) */
+/* ════════════════════════════════════════ */
+
+function mostrarErroresServidorPropiedad(errores) {
+    var mapa = {
+        titulo: 'titulo',
+        calle: 'calle',
+        numero: 'numero',
+        ciudad: 'ciudad',
+        codigo_postal: 'codigoPostal',
+        precio: 'precio',
+        estado: 'estado',
+        arrendador_email: 'emailArrendador'
+    };
+    for (var campo in errores) {
+        if (mapa[campo] && errores[campo] && errores[campo].length) {
+            textoError(erroresForm[mapa[campo]], errores[campo][0]);
+        }
+    }
+}
+
+var guardarPropiedad = function() {
+    if (!validarFormularioPropiedad()) return;
+
+    var esEdicion = editandoPropiedadId !== null;
+    var url = esEdicion ? '/admin/propiedades/' + editandoPropiedadId + '/editar' : '/admin/propiedades/crear';
+    var formData = new FormData(formPropiedad);
+    formData.append('_token', csrfToken);
+
+    var btnGuardar = document.getElementById('btnGuardarPropiedad');
+    var textoOriginal = btnGuardar ? btnGuardar.innerHTML : '';
+    if (btnGuardar) {
+        btnGuardar.disabled = true;
+        btnGuardar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Guardando...';
+    }
+
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+    .then(function(response) {
+        if (response.status === 422) {
+            return response.json().then(function(data) {
+                mostrarErroresServidorPropiedad(data.errors || {});
+                throw new Error('Revisa los campos marcados.');
+            });
+        }
+        if (!response.ok) {
+            return response.json().then(function(data) {
+                throw new Error(data.message || 'Error en la solicitud');
+            }).catch(function(err) {
+                if (err.message === 'Revisa los campos marcados.') throw err;
+                throw new Error('Error en la solicitud');
+            });
+        }
+        return response.json();
+    })
+    .then(function(data) {
+        if (data.success) {
+            // Cerrar modal
+            if (modalFormPropiedad) modalFormPropiedad.hide();
+
+            // Refrescar tabla
+            filtrarPropiedades(1);
+
+            // Mostrar alerta
+            var titulo = esEdicion ? 'Propiedad actualizada' : 'Propiedad creada';
+            var mensaje = esEdicion ? 'Los cambios se guardaron correctamente.' : 'La propiedad se creó correctamente.';
+            if (window.mostrarAlertaAdminExito) {
+                window.mostrarAlertaAdminExito(titulo, mensaje);
+            }
+        }
+    })
+    .catch(function(error) {
+        if (error && error.message === 'Revisa los campos marcados.') return;
+        var msg = error && error.message ? error.message : 'Error al procesar el formulario.';
+        if (window.mostrarAlertaAdminError) {
+            window.mostrarAlertaAdminError('Error', msg);
+        }
+    })
+    .finally(function() {
+        if (btnGuardar) {
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = textoOriginal;
+        }
+    });
+};
 
 /* ── Botón exportar ── */
 var btnExportarPropiedades = document.getElementById('btnExportar');
@@ -855,11 +1297,3 @@ if (btnExportarPropiedades) {
         window.location.href = '/admin/propiedades/exportar';
     };
 }
-
-/* ── Función editarPropiedad (placeholder) ── */
-var editarPropiedad = function(id) {
-    if (!id) {
-        return;
-    }
-    window.location.href = '/admin/propiedades/' + id + '/editar';
-};

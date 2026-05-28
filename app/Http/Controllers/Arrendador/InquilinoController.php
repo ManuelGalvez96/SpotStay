@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Auth;
+
 
 class InquilinoController extends Controller
 {
@@ -100,6 +102,18 @@ class InquilinoController extends Controller
 
     private function obtenerIdArrendador(Request $request): int
     {
+        if (Auth::check()) {
+            $usuarioAutenticado = Auth::user();
+            if ($usuarioAutenticado && DB::table('tbl_rol_usuario as ru')
+                ->join('tbl_rol as r', 'r.id_rol', '=', 'ru.id_rol_fk')
+                ->where('ru.id_usuario_fk', $usuarioAutenticado->id_usuario)
+                ->where('r.slug_rol', 'arrendador')
+                ->exists()
+            ) {
+                return (int) $usuarioAutenticado->id_usuario;
+            }
+        }
+
         $arrendadorId = (int) $request->query('arrendador_id', 0);
 
         if ($arrendadorId > 0) {

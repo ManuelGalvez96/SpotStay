@@ -74,9 +74,15 @@ class ContratoController extends Controller
             ->count('c.id_contrato');
 
         // La funcionalidad de firma por arrendador ha sido eliminada.
-        // Mantener métricas sencillas: todos pendientes de firma por defecto.
-        $firmados = 0;
-        $pendientes = $total;
+        // Calcular las métricas dinámicamente basadas en el estado real del contrato.
+        $firmados = DB::table('tbl_contrato as c')
+            ->join('tbl_alquiler as a', 'a.id_alquiler', '=', 'c.id_alquiler_fk')
+            ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'a.id_propiedad_fk')
+            ->where('p.id_arrendador_fk', $arrendadorId)
+            ->where('c.' . ($columnas['estado'] ?? 'estado_contrato'), 'firmado')
+            ->count('c.id_contrato');
+
+        $pendientes = $total - $firmados;
 
         return view('arrendador.contratos', [
             'arrendador' => $arrendador,
@@ -209,6 +215,9 @@ class ContratoController extends Controller
         $datosActualizar = [];
         if ($columnas['url_pdf']) {
             $datosActualizar[$columnas['url_pdf']] = $rutaRelativa;
+        }
+        if ($columnas['estado']) {
+            $datosActualizar[$columnas['estado']] = 'firmado';
         }
         if ($columnas['actualizado']) {
             $datosActualizar[$columnas['actualizado']] = Carbon::now();

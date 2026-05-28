@@ -75,13 +75,12 @@
                 <h2>Acciones del gestor</h2>
 
                 @if($accionActual === 'presupuesto')
-                    <form method="POST" action="{{ route('gestor.incidencias.presupuesto', ['id' => $incidencia->id_incidencia]) }}" enctype="multipart/form-data" class="bloque-accion bloque-unico">
+                    <form method="POST" action="{{ route('gestor.incidencias.presupuesto', ['id' => $incidencia->id_incidencia]) }}" class="bloque-accion bloque-unico">
                         @csrf
                         <h3>Generar presupuesto de reparación</h3>
                         <p>Introduce el coste para enviarlo al arrendador. La incidencia pasará a esperando decisión.</p>
                         <input type="number" step="0.01" min="0" name="importe" placeholder="Importe (EUR)" required>
                         <textarea name="detalle_presupuesto" required placeholder="Detalle del presupuesto"></textarea>
-                        <input type="file" name="pdf_presupuesto" accept="application/pdf">
                         <button type="submit" class="btn-principal">Confirmar presupuesto</button>
                     </form>
                 @elseif($accionActual === 'sin_permiso_asignado')
@@ -105,7 +104,7 @@
                 @elseif($accionActual === 'resuelta')
                     <div class="bloque-accion bloque-unico">
                         <h3>Incidencia resuelta</h3>
-                        <p>El presupuesto ya se ha pagado. Falta que el inquilino confirme la resolución para cerrarla.</p>
+                        <p>La incidencia ha sido resuelta y cerrada por el inquilino.</p>
                     </div>
                 @elseif($accionActual === 'cerrada')
                     <div class="bloque-accion bloque-unico">

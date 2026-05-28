@@ -82,7 +82,18 @@
             </div>
             @endif
 
-            @if($accionActual === 'esperando_decision')
+            @if($accionActual === 'presupuesto')
+            <div class="bloque-accion">
+                <h3>Generar presupuesto de reparación</h3>
+                <p>Introduce el coste estimado para enviarlo al gestor y continuar con la gestión.</p>
+                <form method="POST" action="{{ route('arrendador.incidencias.presupuesto', ['id' => $incidencia->id_incidencia]) }}">
+                    @csrf
+                    <input type="number" step="0.01" min="0" name="importe" placeholder="Importe (EUR)" required>
+                    <textarea name="detalle_presupuesto" required placeholder="Detalle del presupuesto"></textarea>
+                    <button type="submit" class="btn-accion btn-primario">Confirmar presupuesto</button>
+                </form>
+            </div>
+            @elseif($accionActual === 'esperando_decision')
             <div class="bloque-accion">
                 <h3>Decidir quién paga</h3>
                 <p>La incidencia está esperando tu decisión. Indica si la paga el arrendador o el inquilino para pasar al siguiente estado.</p>

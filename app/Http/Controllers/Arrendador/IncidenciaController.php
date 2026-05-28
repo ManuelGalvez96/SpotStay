@@ -179,7 +179,9 @@ class IncidenciaController extends Controller
             $accionActual = 'resuelta';
         } elseif ($incidencia->estado_incidencia === 'cerrada') {
             $accionActual = 'cerrada';
-        } elseif (in_array($incidencia->estado_incidencia, ['abierta', 'en_proceso'], true)) {
+        } elseif ($incidencia->estado_incidencia === 'abierta') {
+            $accionActual = 'presupuesto';
+        } elseif ($incidencia->estado_incidencia === 'en_proceso') {
             $accionActual = 'en_seguimiento';
         }
 
@@ -365,6 +367,54 @@ class IncidenciaController extends Controller
         });
 
         return redirect()->back()->with('ok', 'Pago registrado correctamente.');
+    }
+
+    public function crearPresupuesto(Request $request, int $id): RedirectResponse
+    {
+        $request->validate([
+            'importe' => 'required|numeric|min:0',
+            'detalle_presupuesto' => 'required|string|max:1000',
+        ]);
+
+        $arrendadorId = $this->obtenerIdArrendador($request);
+
+        $incidencia = DB::table('tbl_incidencia as i')
+            ->join('tbl_propiedad as p', 'p.id_propiedad', '=', 'i.id_propiedad_fk')
+            ->where('i.id_incidencia', $id)
+            ->where('p.id_arrendador_fk', $arrendadorId)
+            ->select('i.*', 'p.titulo_propiedad')
+            ->first();
+
+        if (!$incidencia) {
+            return redirect()->back()->with('error', 'Incidencia no encontrada.');
+        }
+
+        if ($incidencia->estado_incidencia !== 'abierta') {
+            return redirect()->back()->with('error', 'Solo se puede generar presupuesto para incidencias abiertas.');
+        }
+
+        $ahora = Carbon::now();
+
+        DB::table('tbl_incidencia')
+            ->where('id_incidencia', $id)
+            ->update([
+                'presupuesto_importe_incidencia' => $request->importe,
+                'detalle_presupuesto_incidencia' => $request->detalle_presupuesto,
+                'estado_incidencia' => 'esperando_decision',
+                'esperando_de_incidencia' => 'arrendador',
+                'actualizado_incidencia' => $ahora,
+            ]);
+
+        DB::table('tbl_historial_incidencia')->insert([
+            'id_incidencia_fk' => $id,
+            'id_usuario_fk' => $arrendadorId,
+            'comentario_historial' => 'Presupuesto generado (' . number_format((float) $request->importe, 2, ',', '.') . ' EUR): ' . $request->detalle_presupuesto,
+            'cambio_estado_historial' => 'esperando_decision',
+            'creado_historial' => $ahora,
+            'actualizado_historial' => $ahora,
+        ]);
+
+        return redirect()->back()->with('ok', 'Presupuesto enviado correctamente.');
     }
 
     private function crearGastoDesdeIncidencia(int $idIncidencia, mixed $incidencia, string $responsablePago): void

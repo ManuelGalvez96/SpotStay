@@ -289,6 +289,7 @@ Route::middleware(['role:arrendador', 'arrendador.activo'])->group(function () {
     Route::get('/arrendador/incidencias/{id}', [ArrendadorIncidenciaController::class, 'show'])->name('arrendador.incidencias.show');
     Route::post('/arrendador/incidencias/{id}/decision', [ArrendadorIncidenciaController::class, 'decidirPago'])->name('arrendador.incidencias.decision');
     Route::post('/arrendador/incidencias/{id}/pagar', [ArrendadorIncidenciaController::class, 'pagarPresupuesto'])->name('arrendador.incidencias.pagar');
+    Route::post('/arrendador/incidencias/{id}/presupuesto', [ArrendadorIncidenciaController::class, 'crearPresupuesto'])->name('arrendador.incidencias.presupuesto');
 });
 
 Route::middleware(['role:miembro,inquilino,arrendador', 'arrendador.activo'])->group(function () {

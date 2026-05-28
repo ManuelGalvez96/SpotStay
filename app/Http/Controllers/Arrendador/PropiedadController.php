@@ -742,6 +742,10 @@ class PropiedadController extends Controller
         DB::beginTransaction();
 
         try {
+            $currentGestorId = DB::table('tbl_propiedad')
+                ->where('id_propiedad', $idPropiedad)
+                ->value('id_gestor_fk');
+
             DB::table('tbl_propiedad')
                 ->where('id_propiedad', $idPropiedad)
                 ->update([
@@ -752,6 +756,13 @@ class PropiedadController extends Controller
             DB::table('tbl_propiedad_permisos')
                 ->where('id_propiedad_fk', $idPropiedad)
                 ->delete();
+
+            if ($currentGestorId) {
+                DB::table('tbl_incidencia')
+                    ->where('id_propiedad_fk', $idPropiedad)
+                    ->where('id_asignado_fk', $currentGestorId)
+                    ->update(['id_asignado_fk' => null]);
+            }
 
             DB::commit();
 

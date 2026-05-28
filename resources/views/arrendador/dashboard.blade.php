@@ -145,7 +145,7 @@
                     </div>
                 </div>
                 <p class="card-description">
-                    Accede al panel de gestor para administrar incidencias y tareas operativas.
+                    Accede al panel de gestor para gestionar propiedades, gastos y otras tareas operativas.
                 </p>
                 <div class="card-footer">
                     <a class="btn btn-outline btn-sm" href="{{ route('gestor.dashboard') }}">Ir al Panel Gestor</a>

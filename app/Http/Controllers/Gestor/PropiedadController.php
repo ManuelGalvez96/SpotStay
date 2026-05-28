@@ -750,8 +750,6 @@ class PropiedadController extends Controller
      */
     private function ensureCuotasMensualesGeneradas(int $propiedadId, int $gestorId): void
     {
-        $hoy = Carbon::today()->startOfMonth();
-
         $gastos = DB::table('tbl_gasto')
             ->where('id_propiedad_fk', $propiedadId)
             ->where('id_gestor_fk', $gestorId)
@@ -762,37 +760,22 @@ class PropiedadController extends Controller
 
         foreach ($gastos as $gasto) {
             $inicio = Carbon::parse($gasto->fecha_inicio_gasto)->startOfMonth();
-            $fin = $gasto->fecha_fin_gasto
-                ? Carbon::parse($gasto->fecha_fin_gasto)->startOfMonth()
-                : $hoy;
 
-            if ($fin->greaterThan($hoy)) {
-                $fin = $hoy->copy();
-            }
+            $existe = DB::table('tbl_gasto_cuota')
+                ->where('id_gasto_fk', $gasto->id_gasto)
+                ->where('mes_cuota', $inicio->toDateString())
+                ->exists();
 
-            if ($inicio->greaterThan($fin)) {
-                continue;
-            }
-
-            $cursor = $inicio->copy();
-            while ($cursor->lessThanOrEqualTo($fin)) {
-                $existe = DB::table('tbl_gasto_cuota')
-                    ->where('id_gasto_fk', $gasto->id_gasto)
-                    ->where('mes_cuota', $cursor->toDateString())
-                    ->exists();
-
-                if (!$existe) {
-                    $this->crearCuotaMensualConDetalles(
-                        (int) $gasto->id_gasto,
-                        $cursor->copy(),
-                        (float) ($gasto->importe_estimado ?? 0),
-                        (int) $gasto->dia_vencimiento,
-                        (string) $gasto->pagador_gasto,
-                        $alquileresActivos
-                    );
-                }
-
-                $cursor->addMonth();
+            if (!$existe) {
+                $this->crearCuotaMensualConDetalles(
+                    (int) $gasto->id_gasto,
+                    $inicio->copy(),
+                    (float) ($gasto->importe_estimado ?? 0),
+                    (int) $gasto->dia_vencimiento,
+                    (string) $gasto->pagador_gasto,
+                    $alquileresActivos,
+                    Carbon::today()->addMonth()
+                );
             }
         }
     }

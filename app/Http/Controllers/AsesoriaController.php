@@ -59,6 +59,7 @@ class AsesoriaController extends Controller
 
         $articulos = ArticuloAsesoria::with('categoria')
             ->where('estado', 1)
+            ->whereHas('categoria', fn($q) => $q->where('estado', 1))
             ->where('titulo', 'like', '%' . trim($q) . '%')
             ->limit(10)
             ->get()

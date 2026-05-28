@@ -161,8 +161,10 @@ class IncidenciaController extends Controller
         $esGestorAsignado = (int) ($incidencia->id_asignado_fk ?? 0) === $this->obtenerIdGestor();
 
         $accionActual = 'sin_accion';
-        if (in_array($incidencia->estado_incidencia, ['abierta', 'esperando_decision'], true)) {
+        if ($incidencia->estado_incidencia === 'abierta') {
             $accionActual = $esGestorAsignado ? 'presupuesto' : 'sin_permiso_asignado';
+        } elseif ($incidencia->estado_incidencia === 'esperando_decision') {
+            $accionActual = $esGestorAsignado ? 'esperando_decision' : 'sin_permiso_asignado';
         } elseif ($incidencia->estado_incidencia === 'esperando_pago') {
             $accionActual = 'esperando_pago';
         } elseif ($incidencia->estado_incidencia === 'solucionada') {

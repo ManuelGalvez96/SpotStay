@@ -29,7 +29,6 @@
                     <th>Contrato</th>
                     <th>Propiedad</th>
                     <th>Inquilino</th>
-                    <th>Firma inquilino</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
@@ -47,12 +46,6 @@
                             <span class="muted">{{ $contrato->direccion_propiedad }}</span>
                         </td>
                         <td>{{ $contrato->nombre_inquilino }}</td>
-                        <td>
-                            {{ $firmadoInquilino ? 'Firmado' : 'Pendiente' }}
-                            @if ($firmadoInquilino && $contrato->fecha_firma_inquilino)
-                                <br><span class="muted">{{ \Carbon\Carbon::parse($contrato->fecha_firma_inquilino)->format('d/m/Y H:i') }}</span>
-                            @endif
-                        </td>
                         <td>
                             <span class="estado estado-{{ $estado }}" id="estado-{{ $contrato->id_contrato }}">{{ ucfirst($estado) }}</span>
                         </td>
@@ -74,7 +67,7 @@
                     </tr>
                 @empty
                 <tr>
-                    <td colspan="7">No hay contratos disponibles para este arrendador.</td>
+                    <td colspan="5">No hay contratos disponibles para este arrendador.</td>
                 </tr>
                 @endforelse
             </tbody>

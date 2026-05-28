@@ -219,6 +219,12 @@ class ContratoController extends Controller
         if ($columnas['estado']) {
             $datosActualizar[$columnas['estado']] = 'firmado';
         }
+        if ($columnas['firmado_inquilino']) {
+            $datosActualizar[$columnas['firmado_inquilino']] = 1;
+        }
+        if ($columnas['fecha_firma_inquilino']) {
+            $datosActualizar[$columnas['fecha_firma_inquilino']] = Carbon::now();
+        }
         if ($columnas['actualizado']) {
             $datosActualizar[$columnas['actualizado']] = Carbon::now();
         }

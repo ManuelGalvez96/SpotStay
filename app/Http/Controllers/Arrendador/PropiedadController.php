@@ -90,6 +90,7 @@ class PropiedadController extends Controller
             'descripcion_propiedad' => ['nullable', 'string'],
             'imagenes_propiedad' => ['nullable', 'array', 'max:10'],
             'imagenes_propiedad.*' => ['file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'eliminar_fotos' => ['nullable', 'string'],
         ]);
 
         $datosPropiedad = [
@@ -167,6 +168,24 @@ class PropiedadController extends Controller
                     ->where('id_propiedad', $propiedadId)
                     ->where('id_arrendador_fk', $arrendadorId)
                     ->update($datosPropiedad);
+
+                $eliminarFotos = $request->input('eliminar_fotos');
+                if (!empty($eliminarFotos)) {
+                    $idsEliminar = explode(',', $eliminarFotos);
+                    foreach ($idsEliminar as $idFoto) {
+                        $foto = DB::table('tbl_fotos')
+                            ->where('id_foto', (int) $idFoto)
+                            ->where('id_propiedad_fk', $propiedadId)
+                            ->first();
+                        if ($foto) {
+                            $rutaFisica = public_path('img/' . $foto->ruta_foto);
+                            if (\Illuminate\Support\Facades\File::exists($rutaFisica)) {
+                                \Illuminate\Support\Facades\File::delete($rutaFisica);
+                            }
+                            DB::table('tbl_fotos')->where('id_foto', $foto->id_foto)->delete();
+                        }
+                    }
+                }
             } else {
                 $datosPropiedad['creado_propiedad'] = Carbon::now();
                 $datosPropiedad['estado_propiedad'] = 'borrador';
@@ -319,9 +338,15 @@ class PropiedadController extends Controller
             ], 404);
         }
 
+        $fotos = DB::table('tbl_fotos')
+            ->where('id_propiedad_fk', $id)
+            ->orderBy('es_principal_foto', 'desc')
+            ->get();
+
         return response()->json([
             'success' => true,
             'propiedad' => $propiedad,
+            'fotos' => $fotos,
         ]);
     }
 

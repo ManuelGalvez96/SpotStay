@@ -44,8 +44,14 @@ class PropiedadController extends Controller
             abort(403, 'No se puede editar una propiedad alquilada.');
         }
 
+        $fotos = DB::table('tbl_fotos')
+            ->where('id_propiedad_fk', $id)
+            ->orderBy('es_principal_foto', 'desc')
+            ->get();
+
         return view('admin.propiedades-crear', [
             'propiedadEditando' => $propiedad,
+            'fotos' => $fotos,
         ]);
     }
 
@@ -70,6 +76,8 @@ class PropiedadController extends Controller
             'extras.*' => 'string|in:amueblado,piscina,terraza,garaje,ascensor,aire_acondicionado,calefaccion,trastero',
             'adicional' => 'nullable|string|max:255',
             'arrendador_email' => 'required|email',
+            'imagenes_propiedad' => 'nullable|array|max:10',
+            'imagenes_propiedad.*' => 'file|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
         $arrendador = DB::table('tbl_usuario as u')
@@ -143,6 +151,21 @@ class PropiedadController extends Controller
             'actualizado_propiedad' => $ahora,
         ]);
 
+        $imagenesSubidas = $request->file('imagenes_propiedad', []);
+        if (!empty($imagenesSubidas)) {
+            foreach ($imagenesSubidas as $indice => $imagenSubida) {
+                $nombreArchivo = now()->format('YmdHis') . '_' . $idPropiedad . '_' . $indice . '_' . uniqid() . '.' . $imagenSubida->getClientOriginalExtension();
+                $rutaGuardada = 'propiedades/' . $nombreArchivo;
+                $imagenSubida->move(public_path('img/propiedades'), $nombreArchivo);
+
+                DB::table('tbl_fotos')->insert([
+                    'id_propiedad_fk' => $idPropiedad,
+                    'ruta_foto' => $rutaGuardada,
+                    'es_principal_foto' => ($indice === 0) ? 1 : 0,
+                ]);
+            }
+        }
+
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
@@ -192,6 +215,9 @@ class PropiedadController extends Controller
             'extras.*' => 'string|in:amueblado,piscina,terraza,garaje,ascensor,aire_acondicionado,calefaccion,trastero',
             'adicional' => 'nullable|string|max:255',
             'arrendador_email' => 'required|email',
+            'imagenes_propiedad' => 'nullable|array|max:10',
+            'imagenes_propiedad.*' => 'file|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'eliminar_fotos' => 'nullable|string',
         ]);
 
         $arrendador = DB::table('tbl_usuario as u')
@@ -263,6 +289,45 @@ class PropiedadController extends Controller
                 'estado_propiedad' => $datos['estado'],
                 'actualizado_propiedad' => Carbon::now(),
             ]);
+
+        // Eliminar fotos seleccionadas
+        $eliminarFotos = $request->input('eliminar_fotos');
+        if (!empty($eliminarFotos)) {
+            $idsEliminar = explode(',', $eliminarFotos);
+            foreach ($idsEliminar as $idFoto) {
+                $foto = DB::table('tbl_fotos')
+                    ->where('id_foto', (int) $idFoto)
+                    ->where('id_propiedad_fk', $id)
+                    ->first();
+                if ($foto) {
+                    $rutaFisica = public_path('img/' . $foto->ruta_foto);
+                    if (\Illuminate\Support\Facades\File::exists($rutaFisica)) {
+                        \Illuminate\Support\Facades\File::delete($rutaFisica);
+                    }
+                    DB::table('tbl_fotos')->where('id_foto', $foto->id_foto)->delete();
+                }
+            }
+        }
+
+        // Subir nuevas fotos
+        $imagenesSubidas = $request->file('imagenes_propiedad', []);
+        if (!empty($imagenesSubidas)) {
+            $totalActual = (int) DB::table('tbl_fotos')
+                ->where('id_propiedad_fk', $id)
+                ->count();
+
+            foreach ($imagenesSubidas as $indice => $imagenSubida) {
+                $nombreArchivo = now()->format('YmdHis') . '_' . $id . '_' . $indice . '_' . uniqid() . '.' . $imagenSubida->getClientOriginalExtension();
+                $rutaGuardada = 'propiedades/' . $nombreArchivo;
+                $imagenSubida->move(public_path('img/propiedades'), $nombreArchivo);
+
+                DB::table('tbl_fotos')->insert([
+                    'id_propiedad_fk' => $id,
+                    'ruta_foto' => $rutaGuardada,
+                    'es_principal_foto' => ($totalActual === 0 && $indice === 0) ? 1 : 0,
+                ]);
+            }
+        }
 
         if ($propiedadExistente->estado_propiedad !== $datos['estado'] && $propiedadExistente->id_gestor_fk) {
             $this->actividadService->propiedadEstadoCambiado(

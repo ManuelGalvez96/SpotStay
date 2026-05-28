@@ -284,7 +284,7 @@ function fetchEditData(propiedadId) {
         throw new Error(extraerMensajeError(resultado.datos));
       }
 
-      abrirModalFormulario(null, resultado.datos.propiedad);
+      abrirModalFormulario(null, resultado.datos.propiedad, resultado.datos.fotos);
     })
     .catch(function (error) {
       if (window.swalError) {
@@ -550,7 +550,7 @@ function cerrarModalPropiedad() {
   }
 }
 
-function abrirModalFormulario(arrendadorId, datosPropiedad) {
+function abrirModalFormulario(arrendadorId, datosPropiedad, fotosExistentes) {
   function normalizarTipoPropiedad(tipoOriginal) {
     if (!tipoOriginal || typeof tipoOriginal !== 'string') {
       return '';
@@ -632,6 +632,16 @@ function abrirModalFormulario(arrendadorId, datosPropiedad) {
       contenedorPrevia.hidden = true;
     }
 
+    // Ocultar y limpiar imágenes existentes
+    var contenedorExistentes = document.getElementById('contenedor-imagenes-existentes');
+    var listaExistentes = document.getElementById('lista-imagenes-existentes');
+    var inputEliminar = document.getElementById('eliminar-fotos-input');
+    if (contenedorExistentes && listaExistentes && inputEliminar) {
+      contenedorExistentes.hidden = true;
+      listaExistentes.innerHTML = '';
+      inputEliminar.value = '';
+    }
+
     if (datosPropiedad) {
       document.getElementById('modal-formulario-titulo').textContent = 'Editar propiedad';
       document.getElementById('btn-submit-formulario').textContent = 'Guardar cambios';
@@ -663,6 +673,63 @@ function abrirModalFormulario(arrendadorId, datosPropiedad) {
       document.getElementById('form-adicional').value = datosPropiedad.adicional_propiedad || '';
       document.getElementById('form-precio').value = datosPropiedad.precio_propiedad || '';
       document.getElementById('form-descripcion').value = datosPropiedad.descripcion_propiedad || '';
+
+      // Renderizar fotos existentes
+      if (fotosExistentes && fotosExistentes.length > 0 && contenedorExistentes && listaExistentes && inputEliminar) {
+        contenedorExistentes.hidden = false;
+        var fotosEliminadas = [];
+
+        fotosExistentes.forEach(function (foto) {
+          var card = document.createElement('div');
+          card.id = 'foto-existente-card-' + foto.id_foto;
+          card.style.cssText = 'border: 2px solid #ccc; border-radius: 8px; padding: 8px; position: relative; transition: all 0.2s;';
+
+          var img = document.createElement('img');
+          img.src = '/img/' + foto.ruta_foto;
+          img.style.cssText = 'width: 100%; height: 80px; object-fit: cover; border-radius: 4px; display: block;';
+
+          var actionDiv = document.createElement('div');
+          actionDiv.style.cssText = 'margin-top: 6px; display: flex; align-items: center; justify-content: center;';
+
+          var btnEliminar = document.createElement('button');
+          btnEliminar.type = 'button';
+          btnEliminar.textContent = 'Eliminar';
+          btnEliminar.style.cssText = 'background: #ff6b6b; color: white; border: none; border-radius: 4px; padding: 2px 6px; cursor: pointer; font-size: 11px;';
+
+          var btnRestaurar = document.createElement('button');
+          btnRestaurar.type = 'button';
+          btnRestaurar.textContent = 'Restaurar';
+          btnRestaurar.style.cssText = 'background: #4CAF50; color: white; border: none; border-radius: 4px; padding: 2px 6px; cursor: pointer; font-size: 11px; display: none;';
+
+          btnEliminar.onclick = function (e) {
+            e.preventDefault();
+            fotosEliminadas.push(foto.id_foto);
+            inputEliminar.value = fotosEliminadas.join(',');
+            
+            card.style.opacity = '0.4';
+            card.style.borderColor = '#ff6b6b';
+            btnEliminar.style.display = 'none';
+            btnRestaurar.style.display = 'block';
+          };
+
+          btnRestaurar.onclick = function (e) {
+            e.preventDefault();
+            fotosEliminadas = fotosEliminadas.filter(function (id) { return id !== foto.id_foto; });
+            inputEliminar.value = fotosEliminadas.join(',');
+
+            card.style.opacity = '1';
+            card.style.borderColor = '#ccc';
+            btnRestaurar.style.display = 'none';
+            btnEliminar.style.display = 'block';
+          };
+
+          actionDiv.appendChild(btnEliminar);
+          actionDiv.appendChild(btnRestaurar);
+          card.appendChild(img);
+          card.appendChild(actionDiv);
+          listaExistentes.appendChild(card);
+        });
+      }
     }
 
     if (typeof window.actualizarEstadoValidacionFormularioPropiedad === 'function') {

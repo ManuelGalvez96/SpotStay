@@ -71,7 +71,7 @@
             </div>
             <span class="card-header-sub-crear">{{ $modoEdicion ? 'Edición' : 'Alta manual' }}</span>
         </div>
-        <form action="{{ $modoEdicion ? '/admin/propiedades/' . $propiedadEditando->id_propiedad . '/editar' : '/admin/propiedades/crear' }}" method="POST" class="form-grid" id="formCrearPropiedad">
+        <form action="{{ $modoEdicion ? '/admin/propiedades/' . $propiedadEditando->id_propiedad . '/editar' : '/admin/propiedades/crear' }}" method="POST" class="form-grid" id="formCrearPropiedad" enctype="multipart/form-data">
             @csrf
 
             <div class="campo-full">
@@ -226,6 +226,30 @@
                 <textarea id="adicional" name="adicional" rows="2" placeholder="Ej: Jardín privado, Gimnasio, Entrada independiente...">{{ old('adicional', $modoEdicion ? $propiedadEditando->adicional_propiedad : '') }}</textarea>
             </div>
 
+            <div class="campo-full" style="margin-top: 15px; margin-bottom: 15px;">
+                <label for="imagenes_propiedad">Imágenes de la propiedad</label>
+                <input type="file" name="imagenes_propiedad[]" id="imagenes_propiedad" accept="image/jpeg,image/png,image/webp" multiple style="padding: 10px; width: 100%; border: 1px solid #ddd; border-radius: 6px;">
+                <small class="input-help" style="display: block; margin-top: 4px; color: #666;">Puedes seleccionar varias imágenes (JPG, PNG, WEBP).</small>
+            </div>
+
+            @if($modoEdicion && isset($fotos) && $fotos->count() > 0)
+            <div class="campo-full" style="margin-top: 15px; margin-bottom: 20px;">
+                <label>Imágenes actuales</label>
+                <div class="fotos-existentes-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; margin-top: 10px;">
+                    @foreach($fotos as $foto)
+                        <div class="foto-card-admin" id="foto-card-{{ $foto->id_foto }}" style="border: 2px solid #ccc; border-radius: 8px; padding: 8px; position: relative; transition: all 0.2s;">
+                            <img src="{{ asset('img/' . $foto->ruta_foto) }}" style="width: 100%; height: 90px; object-fit: cover; border-radius: 4px; display: block;" />
+                            <div style="margin-top: 6px; display: flex; align-items: center; justify-content: center;">
+                                <button type="button" class="btn-eliminar-foto-admin" data-id="{{ $foto->id_foto }}" style="background: #ff6b6b; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px; font-weight: bold; width: 100%;">Eliminar</button>
+                                <button type="button" class="btn-restaurar-foto-admin" data-id="{{ $foto->id_foto }}" style="background: #4CAF50; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px; font-weight: bold; display: none; width: 100%;">Restaurar</button>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                <input type="hidden" name="eliminar_fotos" id="eliminar-fotos-input-admin" value="" />
+            </div>
+            @endif
+
             <div class="acciones-form campo-full">
                 <a href="/admin/propiedades" class="btn-exportar">Cancelar</a>
                 <button type="submit" class="btn-primario">
@@ -240,4 +264,42 @@
 
 @section('scripts')
     <script src="{{ asset('js/admin/propiedades-crear.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var deletedPhotos = [];
+            var inputDeleted = document.getElementById('eliminar-fotos-input-admin');
+
+            if (inputDeleted) {
+                document.querySelectorAll('.btn-eliminar-foto-admin').forEach(function(btn) {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        var id = this.dataset.id;
+                        deletedPhotos.push(id);
+                        inputDeleted.value = deletedPhotos.join(',');
+
+                        var card = document.getElementById('foto-card-' + id);
+                        card.style.opacity = '0.4';
+                        card.style.borderColor = '#ff6b6b';
+                        this.style.display = 'none';
+                        card.querySelector('.btn-restaurar-foto-admin').style.display = 'block';
+                    });
+                });
+
+                document.querySelectorAll('.btn-restaurar-foto-admin').forEach(function(btn) {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        var id = this.dataset.id;
+                        deletedPhotos = deletedPhotos.filter(function(pid) { return pid !== id; });
+                        inputDeleted.value = deletedPhotos.join(',');
+
+                        var card = document.getElementById('foto-card-' + id);
+                        card.style.opacity = '1';
+                        card.style.borderColor = '#ccc';
+                        this.style.display = 'none';
+                        card.querySelector('.btn-eliminar-foto-admin').style.display = 'block';
+                    });
+                });
+            }
+        });
+    </script>
 @endsection

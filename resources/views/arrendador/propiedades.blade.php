@@ -377,6 +377,13 @@
                                 <input type="file" name="imagenes_propiedad[]" id="imagenes-propiedad" accept="image/jpeg,image/png,image/webp" multiple>
                                 <small class="input-help">Puedes subir hasta 10 imágenes (JPG, PNG, WEBP). Solo puedes anclar una como principal.</small>
                             </label>
+                            
+                            <div id="contenedor-imagenes-existentes" class="full-width" hidden style="margin-top: 15px; margin-bottom: 15px;">
+                                <p class="input-help"><strong>Imágenes actuales:</strong></p>
+                                <div id="lista-imagenes-existentes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; margin-top: 10px;"></div>
+                                <input type="hidden" name="eliminar_fotos" id="eliminar-fotos-input" value="" />
+                            </div>
+
                             <div id="contenedor-previa-imagenes" hidden>
                                 <p class="input-help"><strong>Vista previa y seleccionar principal:</strong></p>
                                 <div id="lista-previa-imagenes"></div>

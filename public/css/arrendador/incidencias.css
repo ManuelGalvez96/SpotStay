@@ -72,6 +72,21 @@ body { margin: 0; font-family: Inter, sans-serif; background: var(--fondo); colo
 .doc-meta a { color: var(--primario); text-decoration: none; font-weight: 600; }
 
 .bloque-accion h3 { margin-top: 0; color: var(--texto); }
+.bloque-accion input,
+.bloque-accion textarea {
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    font-size: 14px;
+    padding: 9px 10px;
+    outline: none;
+    font-family: inherit;
+    width: 100%;
+    background: #fff;
+}
+.bloque-accion textarea {
+    min-height: 80px;
+    resize: vertical;
+}
 .bloque-accion.info { background: #eef3fb; border-color: #c7d9ee; }
 .nota-pago { font-size: 13px; color: #4b5563; margin: 8px 0; }
 
